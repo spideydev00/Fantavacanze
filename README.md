@@ -2,7 +2,7 @@
 Fantavacanze è un’app in Flutter pensata per competere in modo divertente mentre si è in vacanza o, semplicemente, durante una serata in discoteca 🪩 ♥️. 
 
 ## Tecnologie Utilizzate 
-Il progetto è implementato usando la **CLEAN Architecture**. Per riferimento guardare l'introduzione (circa 1 ora) del seguente video [Link Text](https://www.youtube.com/watch?v=ELFORM9fmss).
+Il progetto è implementato usando la **CLEAN Architecture**. Per riferimento guardare l'introduzione (circa 1 ora) del seguente [VIDEO](https://www.youtube.com/watch?v=ELFORM9fmss).
 
 - 💾 Il database usato per l'autenticazione e come storage è **Supabase**. Tramite un cubit (**flutter_bloc**) si verifica se nella corrente sessione esiste un utente (quindi c’è un token di accesso attivo) e, in tal caso, si reindirizza direttamente alla home page. Altrimenti bisgna effettuare il login.
 
