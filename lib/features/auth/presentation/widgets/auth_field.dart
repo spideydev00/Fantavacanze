@@ -16,6 +16,7 @@ class AuthField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return TextFormField(
+      cursorColor: ColorPalette.white,
       style: context.textTheme.bodyLarge!.copyWith(
         color: ColorPalette.black,
       ),

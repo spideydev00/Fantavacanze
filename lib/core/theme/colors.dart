@@ -49,4 +49,7 @@ class ColorPalette {
   static const Color softGrey = Color(0xFFF4F4F4);
   static const Color lightGrey = Color(0xFFF9F9F9);
   static const Color white = Color(0xFFFFFFFF);
+
+  // Extra
+  static const Color darkerGreen = Color.fromARGB(255, 28, 60, 49);
 }

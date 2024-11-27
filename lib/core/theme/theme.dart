@@ -11,10 +11,13 @@ class AppTheme {
   static get fontFamily => GoogleFonts.numans;
 
   //border re-usable function
-  static _border([Color color = ColorPalette.borderColor]) {
+  static border(
+      [Color color = ColorPalette.borderColor,
+      double width = 3,
+      double radius = 10]) {
     return OutlineInputBorder(
-      borderSide: BorderSide(color: color, width: 3),
-      borderRadius: BorderRadius.circular(10),
+      borderSide: BorderSide(color: color, width: width),
+      borderRadius: BorderRadius.circular(radius),
     );
   }
 
@@ -31,10 +34,10 @@ class AppTheme {
           contentPadding: const EdgeInsets.all(24),
           filled: true,
           fillColor: ColorPalette.white.withOpacity(0.85),
-          border: _border(),
-          enabledBorder: _border(),
-          focusedBorder: _border(ColorPalette.focusedBorder),
-          errorBorder: _border(ColorPalette.error),
+          border: border(),
+          enabledBorder: border(),
+          focusedBorder: border(ColorPalette.focusedBorder),
+          errorBorder: border(ColorPalette.error),
         ),
 
         /* ---------------------------------------------------------------- */

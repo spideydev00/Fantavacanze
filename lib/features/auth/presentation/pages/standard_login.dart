@@ -6,22 +6,36 @@ import 'package:fantavacanze_official/features/auth/presentation/widgets/auth_fi
 import 'package:fantavacanze_official/features/auth/presentation/widgets/rich_text.dart';
 import 'package:flutter/material.dart';
 
-class StandardLoginPage extends StatelessWidget {
+class StandardLoginPage extends StatefulWidget {
   static get route =>
       MaterialPageRoute(builder: (context) => const StandardLoginPage());
   const StandardLoginPage({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final emailController = TextEditingController();
-    final passwordController = TextEditingController();
+  State<StandardLoginPage> createState() => _StandardLoginPageState();
+}
 
+class _StandardLoginPageState extends State<StandardLoginPage> {
+  final GlobalKey<FormState> formKey = GlobalKey<FormState>();
+  final emailController = TextEditingController();
+  final passwordController = TextEditingController();
+
+  @override
+  void dispose() {
+    emailController.dispose();
+    passwordController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return EmptyBrandedPage(
       bgImagePath: "images/bg.png",
       mainColumnAlignment: MainAxisAlignment.spaceBetween,
       isBackNavigationActive: true,
       widgets: [
         Form(
+          key: formKey,
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: ThemeSizes.lg),
             child: Column(
