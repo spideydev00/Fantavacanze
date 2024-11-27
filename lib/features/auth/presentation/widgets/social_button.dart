@@ -11,6 +11,7 @@ class SocialButton extends StatelessWidget {
   final bool isGradient;
   final List<Color>? bgGradient;
   final Color? bgColor;
+  final Color foregroundColor;
   final double width;
   final bool isIconOnly;
 
@@ -23,6 +24,7 @@ class SocialButton extends StatelessWidget {
     required this.isIconOnly,
     this.bgGradient,
     this.bgColor,
+    this.foregroundColor = ColorPalette.white,
   });
 
   @override
@@ -68,12 +70,17 @@ class SocialButton extends StatelessWidget {
                 'Accedi con $socialName',
                 style: context.textTheme.bodyLarge!.copyWith(
                   fontSize: ThemeSizes.fontSizeMd,
-                  fontWeight: FontWeight.w500,
+                  fontWeight: FontWeight.w600,
+                  color: foregroundColor,
                 ),
               ),
               icon: SvgPicture.asset(
                 'images/${socialName.toLowerCase()}.svg',
                 width: Constants.getWidth(context) * 0.1,
+                colorFilter: ColorFilter.mode(
+                  foregroundColor,
+                  BlendMode.srcIn,
+                ),
               ),
             ),
     );
