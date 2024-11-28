@@ -48,18 +48,21 @@ class _OtpPageState extends State<OtpPage> {
 
     resendCodeTimer?.cancel(); // Cancella l'eventuale timer precedente
 
-    resendCodeTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (duration.inSeconds > 0) {
-        setState(() {
-          duration -= const Duration(seconds: 1); // Decrementa il tempo
-        });
-      } else {
-        timer.cancel();
-        setState(() {
-          isTimerRunning = false; // Ferma il timer
-        });
-      }
-    });
+    resendCodeTimer = Timer.periodic(
+      const Duration(seconds: 1),
+      (timer) {
+        if (duration.inSeconds > 0) {
+          setState(() {
+            duration -= const Duration(seconds: 1); // Decrementa il tempo
+          });
+        } else {
+          timer.cancel();
+          setState(() {
+            isTimerRunning = false; // Ferma il timer
+          });
+        }
+      },
+    );
   }
 
   @override
@@ -166,7 +169,7 @@ class _OtpPageState extends State<OtpPage> {
   }
 }
 
-// FUNZIONE HELPER PER MAGGIORE LEGGIBILITA'
+// FUNZIONE HELPER
 Widget getOtpFieldsRow(String otpCode) {
   int i;
   const int length = 6;
