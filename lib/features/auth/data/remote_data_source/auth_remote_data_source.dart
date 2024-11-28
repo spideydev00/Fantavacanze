@@ -28,9 +28,11 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   Future<UserModel> signInWithGoogle() async {
     try {
       const iosClientId = AppSecrets.iosClientId;
+      const webClientId = AppSecrets.webClientId;
 
       GoogleSignIn googleSignIn = GoogleSignIn(
         clientId: iosClientId,
+        serverClientId: webClientId,
         scopes: [
           'email',
         ],
