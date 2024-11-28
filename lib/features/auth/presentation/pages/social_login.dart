@@ -1,8 +1,12 @@
+import 'package:fantavacanze_official/core/common/widgets/loader.dart';
 import 'package:fantavacanze_official/core/constants/constants.dart';
 import 'package:fantavacanze_official/core/extensions/context_extension.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:fantavacanze_official/core/pages/empty_branded_page.dart';
+import 'package:fantavacanze_official/core/utils/show_snackbar.dart';
+import 'package:fantavacanze_official/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:fantavacanze_official/features/auth/presentation/pages/onboarding.dart';
 import 'package:fantavacanze_official/features/auth/presentation/pages/otp_page.dart';
 import 'package:fantavacanze_official/features/auth/presentation/pages/standard_login.dart';
 import 'package:fantavacanze_official/features/auth/presentation/widgets/phone_input_field.dart';
@@ -10,6 +14,7 @@ import 'package:fantavacanze_official/features/auth/presentation/widgets/promo_t
 import 'package:fantavacanze_official/features/auth/presentation/widgets/rich_text.dart';
 import 'package:fantavacanze_official/features/auth/presentation/widgets/social_button.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl_phone_number_input/intl_phone_number_input.dart';
 
 class SocialLoginPage extends StatefulWidget {
@@ -56,13 +61,38 @@ class _SocialLoginPageState extends State<SocialLoginPage> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              SocialButton(
-                onPressed: () {},
-                socialName: 'Google',
-                isGradient: true,
-                bgGradient: ColorPalette.googleGradientsBg,
-                width: Constants.getWidth(context) * 0.25,
-                isIconOnly: true,
+              BlocConsumer<AuthBloc, AuthState>(
+                listener: (context, state) {
+                  if (state is AuthFailure) {
+                    showSnackBar(context, state.message);
+                  }
+                  if (state is AuthSuccess) {
+                    Navigator.of(context).push(OnBoardingPage.route);
+                  }
+                },
+                builder: (context, state) {
+                  if (state is AuthLoading) {
+                    return const Center(
+                      child: Padding(
+                        padding:
+                            EdgeInsets.symmetric(horizontal: ThemeSizes.xl),
+                        child: Loader(
+                          color: ColorPalette.primary,
+                        ),
+                      ),
+                    );
+                  }
+                  return SocialButton(
+                    onPressed: () {
+                      context.read<AuthBloc>().add(AuthGoogleSignIn());
+                    },
+                    socialName: 'Google',
+                    isGradient: true,
+                    bgGradient: ColorPalette.googleGradientsBg,
+                    width: Constants.getWidth(context) * 0.25,
+                    isIconOnly: true,
+                  );
+                },
               ),
               const SizedBox(width: 10),
               SocialButton(
