@@ -4,6 +4,7 @@ class ColorPalette {
   // App theme colors
   static const Color primary = Color.fromARGB(255, 196, 67, 67);
   static const Color secondary = Color.fromARGB(255, 242, 166, 166);
+  static const Color ternary = Color.fromARGB(255, 255, 219, 219);
   static const Color accent = Color.fromARGB(255, 157, 49, 49);
 
   // Text colors
@@ -22,9 +23,9 @@ class ColorPalette {
 
   // Background Container colors
   static const Color lightContainer = Color(0xFFF6F6F6);
-  static Color darkContainer = const Color.fromARGB(255, 20, 20, 20);
-  static Color blueContainer = const Color.fromARGB(255, 46, 74, 144);
-  static Color greenContainer = const Color.fromARGB(255, 64, 138, 115);
+  static const Color darkContainer = Color.fromARGB(255, 20, 20, 20);
+  static const Color blueContainer = Color.fromARGB(255, 46, 74, 144);
+  static const Color greenContainer = Color.fromARGB(255, 64, 138, 115);
 
   // Button colors
   static const Color buttonPrimary = Color.fromARGB(255, 196, 67, 67);
