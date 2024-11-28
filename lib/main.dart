@@ -1,16 +1,24 @@
-import 'package:fantavacanze_official/core/secrets/app_secrets.dart';
 import 'package:fantavacanze_official/core/theme/theme.dart';
+import 'package:fantavacanze_official/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:fantavacanze_official/features/auth/presentation/pages/social_login.dart';
+import 'package:fantavacanze_official/init_dependencies.dart';
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 void main() async {
-  await Supabase.initialize(
-    anonKey: AppSecrets.supabaseKey,
-    url: AppSecrets.supabaseUrl,
-  );
+  WidgetsFlutterBinding.ensureInitialized();
+  await initDependencies();
 
-  runApp(const MyApp());
+  runApp(
+    MultiBlocProvider(
+      providers: [
+        BlocProvider(
+          create: (_) => serviceLocator<AuthBloc>(),
+        ),
+      ],
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {

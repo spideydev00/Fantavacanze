@@ -58,11 +58,16 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         throw Failure("Errore nella creazione dell'utente.");
       }
 
-      final user = response.user;
-      //debugging
-      print(user);
+      //create a user
+      final user = UserModel.fromJson(response.user!.toJson());
 
-      return UserModel.fromJson(user!.toJson());
+      print("'id': ${user.id}");
+      print("'e-mail': ${user.email}");
+      print("'name': ${user.name}");
+
+      return user;
+    } on AuthException catch (e) {
+      throw ServerException(e.toString());
     } catch (e) {
       throw ServerException(e.toString());
     }
