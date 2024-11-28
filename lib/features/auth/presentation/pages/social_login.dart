@@ -3,6 +3,7 @@ import 'package:fantavacanze_official/core/extensions/context_extension.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:fantavacanze_official/core/pages/empty_branded_page.dart';
+import 'package:fantavacanze_official/features/auth/presentation/pages/otp_page.dart';
 import 'package:fantavacanze_official/features/auth/presentation/pages/standard_login.dart';
 import 'package:fantavacanze_official/features/auth/presentation/widgets/phone_input_field.dart';
 import 'package:fantavacanze_official/features/auth/presentation/widgets/promo_text.dart';
@@ -123,8 +124,14 @@ class _SocialLoginPageState extends State<SocialLoginPage> {
                   ElevatedButton(
                     onPressed: isValidPhoneNumber
                         ? () {
-                            //supabase call
-                            //go to OTP page
+                            //Phone SignUp Use-Case
+
+                            //Go to OTP page
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (context) => const OtpPage(),
+                              ),
+                            );
                           }
                         : null, // Disabilitato se non valido
                     style: context.elevatedButtonThemeData.style!.copyWith(

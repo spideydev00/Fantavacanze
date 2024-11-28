@@ -62,11 +62,27 @@ class AppTheme {
                 Radius.circular(ThemeSizes.borderRadiusLg),
               ),
             ),
-            elevation: 2.0,
+            elevation: 0,
+          ),
+        ),
+        textButtonTheme: TextButtonThemeData(
+          style: TextButton.styleFrom(
+            foregroundColor: ColorPalette.primary,
+            textStyle: context.textTheme.bodyLarge!.copyWith(
+              fontSize: 17,
+              fontWeight: FontWeight.w500,
+            ),
           ),
         ),
         /* ---------------------------------------------------------------- */
+        //SCAFFOLD
+        scaffoldBackgroundColor: ColorPalette.white,
+        appBarTheme: const AppBarTheme(
+          foregroundColor: ColorPalette.black,
+          backgroundColor: Colors.transparent,
+        ),
+        /* ---------------------------------------------------------------- */
         //TEXT THEME
-        textTheme: GoogleFonts.numansTextTheme(ThemeData.dark().textTheme),
+        textTheme: GoogleFonts.numansTextTheme(ThemeData.light().textTheme),
       );
 }

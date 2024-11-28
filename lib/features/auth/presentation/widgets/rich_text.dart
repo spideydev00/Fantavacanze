@@ -1,3 +1,4 @@
+import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:fantavacanze_official/core/extensions/context_extension.dart';
 
@@ -22,7 +23,9 @@ class CustomRichText extends StatelessWidget {
       child: RichText(
         text: TextSpan(
           text: initialText,
-          style: context.textTheme.bodyLarge,
+          style: context.textTheme.bodyLarge!.copyWith(
+            color: ColorPalette.white,
+          ),
           children: [
             TextSpan(
               text: ' $richText',

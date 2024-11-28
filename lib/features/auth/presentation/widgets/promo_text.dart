@@ -12,6 +12,7 @@ class PromoText extends StatelessWidget {
       text,
       textAlign: TextAlign.center,
       style: context.textTheme.displayMedium!.copyWith(
+        color: ColorPalette.white,
         shadows: [
           const Shadow(
             color: ColorPalette.darkerGrey,

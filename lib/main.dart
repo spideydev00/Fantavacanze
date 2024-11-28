@@ -15,6 +15,7 @@ class MyApp extends StatelessWidget {
       title: 'Fantavacanze',
       home: const SocialLoginPage(),
       theme: AppTheme.getDarkTheme(context),
+      debugShowCheckedModeBanner: false,
     );
   }
 }
