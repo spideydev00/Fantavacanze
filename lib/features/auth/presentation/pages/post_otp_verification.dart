@@ -1,3 +1,4 @@
+import 'package:fantavacanze_official/core/constants/constants.dart';
 import 'package:fantavacanze_official/core/pages/empty_branded_page.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:fantavacanze_official/features/auth/presentation/widgets/auth_field.dart';
@@ -17,7 +18,7 @@ class PostOtpVerification extends StatelessWidget {
       bgImagePath: "images/insert-name.jpg",
       mainColumnAlignment: MainAxisAlignment.start,
       widgets: [
-        const SizedBox(height: 40),
+        SizedBox(height: Constants.getHeight(context) * 0.18),
         const Padding(
           padding: EdgeInsets.all(ThemeSizes.lg),
           child: PromoText(text: "Sei ad un passo."),

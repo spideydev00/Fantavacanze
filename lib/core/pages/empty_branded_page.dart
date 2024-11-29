@@ -7,6 +7,7 @@ class EmptyBrandedPage extends StatelessWidget {
   final bool isBackNavigationActive;
   final List<Widget> widgets;
   final List<Widget>? newColumnWidgets;
+  final Widget? leading;
 
   const EmptyBrandedPage({
     super.key,
@@ -15,6 +16,7 @@ class EmptyBrandedPage extends StatelessWidget {
     required this.mainColumnAlignment,
     required this.widgets,
     this.newColumnWidgets,
+    this.leading,
   });
 
   @override
@@ -41,32 +43,35 @@ class EmptyBrandedPage extends StatelessWidget {
           appBar: AppBar(
             automaticallyImplyLeading: isBackNavigationActive,
             forceMaterialTransparency: true,
+            leading: leading,
           ),
           resizeToAvoidBottomInset: false,
           backgroundColor: Colors.transparent,
-          body: Column(
-            mainAxisAlignment: mainColumnAlignment,
-            children: [
-              Center(
-                child: Column(
-                  children: [
-                    const SizedBox(height: 30),
-                    Image.asset(
-                      'images/logo-neon.png',
-                      width: Constants.getWidth(context) * 0.5,
-                    ),
-                    const SizedBox(height: 5),
-                    ...widgets
-                  ],
+          body: SingleChildScrollView(
+            child: Column(
+              mainAxisAlignment: mainColumnAlignment,
+              children: [
+                Center(
+                  child: Column(
+                    children: [
+                      const SizedBox(height: 30),
+                      Image.asset(
+                        'images/logo-neon.png',
+                        width: Constants.getWidth(context) * 0.5,
+                      ),
+                      const SizedBox(height: 5),
+                      ...widgets
+                    ],
+                  ),
                 ),
-              ),
-              //Only use widgets with a space between, around or evenly
-              _conditions && newColumnWidgets != null
-                  ? Column(
-                      children: [...newColumnWidgets!],
-                    )
-                  : const SizedBox(),
-            ],
+                //Only use widgets with a space between, around or evenly
+                _conditions && newColumnWidgets != null
+                    ? Column(
+                        children: [...newColumnWidgets!],
+                      )
+                    : const SizedBox(),
+              ],
+            ),
           ),
         ),
       ),

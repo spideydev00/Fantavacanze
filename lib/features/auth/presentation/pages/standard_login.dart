@@ -33,6 +33,13 @@ class _StandardLoginPageState extends State<StandardLoginPage> {
       bgImagePath: "images/bg.png",
       mainColumnAlignment: MainAxisAlignment.spaceBetween,
       isBackNavigationActive: true,
+      leading: IconButton(
+        onPressed: () {
+          Navigator.pop(context);
+        },
+        icon: const Icon(Icons.arrow_back_ios_new_rounded),
+        color: ColorPalette.white,
+      ),
       widgets: [
         Form(
           key: formKey,

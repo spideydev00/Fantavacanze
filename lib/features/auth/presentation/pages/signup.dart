@@ -1,4 +1,5 @@
 import 'package:fantavacanze_official/core/pages/empty_branded_page.dart';
+import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:fantavacanze_official/features/auth/presentation/widgets/auth_field.dart';
 import 'package:flutter/material.dart';
@@ -18,6 +19,13 @@ class SignUpPage extends StatelessWidget {
       bgImagePath: "images/bg.png",
       isBackNavigationActive: true,
       mainColumnAlignment: MainAxisAlignment.start,
+      leading: IconButton(
+        onPressed: () {
+          Navigator.pop(context);
+        },
+        icon: const Icon(Icons.arrow_back_ios_new_rounded),
+        color: ColorPalette.white,
+      ),
       widgets: [
         Form(
           child: Padding(
