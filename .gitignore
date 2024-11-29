@@ -44,3 +44,8 @@ app.*.map.json
 
 # App secrets
 /lib/core/secrets/
+
+# Examples
+/lib/features/auth/data/examples/
+/lib/core/database_table_examples/
+
