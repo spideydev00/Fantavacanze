@@ -32,7 +32,7 @@ class PostOtpVerification extends StatelessWidget {
         ElevatedButton.icon(
           onPressed: () {},
           label: const Text("Inizia Ora"),
-          icon: const Icon(Icons.scatter_plot_outlined),
+          icon: const Icon(Icons.start_rounded),
         )
       ],
     );

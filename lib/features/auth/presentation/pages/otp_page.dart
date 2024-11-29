@@ -74,7 +74,7 @@ class _OtpPageState extends State<OtpPage> {
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(),
-      backgroundColor: Colors.white,
+      backgroundColor: ColorPalette.darkBg,
       body: SingleChildScrollView(
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: ThemeSizes.lg),
@@ -100,14 +100,14 @@ class _OtpPageState extends State<OtpPage> {
                     "Inserisci il codice di verifica inviato a",
                     textAlign: TextAlign.center,
                     style: context.textTheme.bodyLarge!.copyWith(
-                      color: ColorPalette.darkGrey,
+                      color: ColorPalette.darkGrey.withOpacity(0.8),
                     ),
                   ),
                   Text(
                     "+39 349 233 5705",
                     textAlign: TextAlign.center,
                     style: context.textTheme.bodyLarge!.copyWith(
-                      color: ColorPalette.darkGrey,
+                      color: ColorPalette.darkGrey.withOpacity(0.9),
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -115,7 +115,7 @@ class _OtpPageState extends State<OtpPage> {
               ),
               const SizedBox(height: 30),
               VerificationCode(
-                cursorColor: ColorPalette.black,
+                cursorColor: ColorPalette.lightGrey,
                 length: 6,
                 textStyle: context.textTheme.headlineSmall!,
                 keyboardType: const TextInputType.numberWithOptions(
@@ -126,7 +126,7 @@ class _OtpPageState extends State<OtpPage> {
                 //when clicked
                 underlineColor: ColorPalette.primary,
                 //when unclicked
-                underlineUnfocusedColor: ColorPalette.grey,
+                underlineUnfocusedColor: ColorPalette.darkerGrey,
                 onCompleted: (value) {
                   setState(() {
                     _code = value;
@@ -142,7 +142,7 @@ class _OtpPageState extends State<OtpPage> {
                   Text(
                     "Non hai ricevuto il codice?",
                     style: context.textTheme.bodyMedium!.copyWith(
-                      color: ColorPalette.darkGrey,
+                      color: ColorPalette.darkGrey.withOpacity(0.8),
                     ),
                   ),
                   TextButton(
