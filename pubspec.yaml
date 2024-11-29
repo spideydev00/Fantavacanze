@@ -45,6 +45,7 @@ dependencies:
   flutter_bloc: ^8.1.6
   get_it: ^8.0.2
   flutter_verification_code: ^1.1.7
+  smooth_page_indicator: ^1.2.0+3
   
 dev_dependencies:
   flutter_test:
@@ -76,6 +77,9 @@ flutter:
   - images/logo-neon.png
   - images/logo-neon-dark.png
   - images/otp-verification-icon.png
+  - images/angry-heart.png
+  - images/games-icon.png
+  - images/summer-holiday-icon.png
   - images/google.svg
   - images/apple.svg
   - images/telefono.svg

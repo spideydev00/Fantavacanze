@@ -76,7 +76,7 @@ class AppTheme {
         ),
         /* ---------------------------------------------------------------- */
         //SCAFFOLD
-        scaffoldBackgroundColor: ColorPalette.white,
+        scaffoldBackgroundColor: ColorPalette.darkBg,
         appBarTheme: const AppBarTheme(
           foregroundColor: ColorPalette.white,
           backgroundColor: Colors.transparent,

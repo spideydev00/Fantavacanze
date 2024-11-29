@@ -67,7 +67,7 @@ class _SocialLoginPageState extends State<SocialLoginPage> {
                     showSnackBar(context, state.message);
                   }
                   if (state is AuthSuccess) {
-                    Navigator.of(context).push(OnBoardingPage.route);
+                    Navigator.of(context).push(OnBoardingScreen.route);
                   }
                 },
                 builder: (context, state) {

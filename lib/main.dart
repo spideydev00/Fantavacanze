@@ -1,6 +1,6 @@
 import 'package:fantavacanze_official/core/theme/theme.dart';
 import 'package:fantavacanze_official/features/auth/presentation/bloc/auth_bloc.dart';
-import 'package:fantavacanze_official/features/auth/presentation/pages/social_login.dart';
+import 'package:fantavacanze_official/features/auth/presentation/pages/onboarding.dart';
 import 'package:fantavacanze_official/init_dependencies.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -34,7 +34,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Fantavacanze',
-      home: const SocialLoginPage(),
+      home: const OnBoardingScreen(),
       theme: AppTheme.getDarkTheme(context),
       debugShowCheckedModeBanner: false,
     );
