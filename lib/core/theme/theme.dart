@@ -78,11 +78,11 @@ class AppTheme {
         //SCAFFOLD
         scaffoldBackgroundColor: ColorPalette.white,
         appBarTheme: const AppBarTheme(
-          foregroundColor: ColorPalette.black,
+          foregroundColor: ColorPalette.white,
           backgroundColor: Colors.transparent,
         ),
         /* ---------------------------------------------------------------- */
         //TEXT THEME
-        textTheme: GoogleFonts.numansTextTheme(ThemeData.light().textTheme),
+        textTheme: GoogleFonts.numansTextTheme(ThemeData.dark().textTheme),
       );
 }

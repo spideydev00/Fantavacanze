@@ -47,11 +47,11 @@ class EmptyBrandedPage extends StatelessWidget {
           ),
           resizeToAvoidBottomInset: false,
           backgroundColor: Colors.transparent,
-          body: SingleChildScrollView(
-            child: Column(
-              mainAxisAlignment: mainColumnAlignment,
-              children: [
-                Center(
+          body: Column(
+            mainAxisAlignment: mainColumnAlignment,
+            children: [
+              Center(
+                child: SingleChildScrollView(
                   child: Column(
                     children: [
                       const SizedBox(height: 30),
@@ -64,14 +64,14 @@ class EmptyBrandedPage extends StatelessWidget {
                     ],
                   ),
                 ),
-                //Only use widgets with a space between, around or evenly
-                _conditions && newColumnWidgets != null
-                    ? Column(
-                        children: [...newColumnWidgets!],
-                      )
-                    : const SizedBox(),
-              ],
-            ),
+              ),
+              //Only use widgets with a space between, around or evenly
+              _conditions && newColumnWidgets != null
+                  ? Column(
+                      children: [...newColumnWidgets!],
+                    )
+                  : const SizedBox(),
+            ],
           ),
         ),
       ),

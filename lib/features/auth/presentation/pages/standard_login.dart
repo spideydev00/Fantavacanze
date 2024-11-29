@@ -33,13 +33,6 @@ class _StandardLoginPageState extends State<StandardLoginPage> {
       bgImagePath: "images/bg.png",
       mainColumnAlignment: MainAxisAlignment.spaceBetween,
       isBackNavigationActive: true,
-      leading: IconButton(
-        onPressed: () {
-          Navigator.pop(context);
-        },
-        icon: const Icon(Icons.arrow_back_ios_new_rounded),
-        color: ColorPalette.white,
-      ),
       widgets: [
         Form(
           key: formKey,
@@ -61,7 +54,7 @@ class _StandardLoginPageState extends State<StandardLoginPage> {
                 ElevatedButton.icon(
                   onPressed: () {},
                   label: const Text("Accedi"),
-                  icon: const Icon(Icons.play_arrow_rounded),
+                  icon: const Icon(Icons.start_rounded),
                 ),
               ],
             ),
