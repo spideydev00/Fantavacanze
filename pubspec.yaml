@@ -73,13 +73,12 @@ flutter:
   assets:
   - images/bg.png
   - images/insert-name.jpg
-  - images/logo.png
+  - images/baddie-bg.jpg
+  - images/emotions-bg.jpg
+  - images/social-enhance-bg.jpg
   - images/logo-neon.png
-  - images/logo-neon-dark.png
+  - images/logo-high-padding.png
   - images/otp-verification-icon.png
-  - images/angry-heart.png
-  - images/games-icon.png
-  - images/summer-holiday-icon.png
   - images/google.svg
   - images/apple.svg
   - images/telefono.svg
