@@ -25,6 +25,7 @@ class OnBoardingPageContent extends StatelessWidget {
         children: [
           SizedBox(height: ySpace),
           PromoText(text: title),
+          const SizedBox(height: 5),
           Text(
             description,
             textAlign: TextAlign.center,
