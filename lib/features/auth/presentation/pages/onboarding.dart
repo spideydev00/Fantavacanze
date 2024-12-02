@@ -1,7 +1,7 @@
 import 'package:fantavacanze_official/core/constants/constants.dart';
+import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:fantavacanze_official/features/auth/presentation/widgets/on_boarding_page_content.dart';
-import 'package:fantavacanze_official/features/auth/presentation/widgets/promo_text.dart';
 import 'package:fantavacanze_official/home.dart';
 import 'package:flutter/material.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
@@ -91,31 +91,14 @@ class _OnBoardingScreenState extends State<OnBoardingScreen> {
                 title: "Sfida Gli Amici.",
                 description:
                     "Partecipa a delle leghe con il tuo gruppo di amici per decretare il king o la baddie dell'estate!",
-                ySpace: Constants.getHeight(context) * 0.4,
+                ySpace: Constants.getHeight(context) * 0.35,
               ),
-              Stack(
-                children: [
-                  // Promo Text at the top
-                  Positioned(
-                    top: Constants.getHeight(context) * 0.17,
-                    left: 0,
-                    right: 0,
-                    child: const PromoText(text: "Conosci Persone."),
-                  ),
-
-                  // Descriptive Text below
-                  Positioned(
-                    top: Constants.getHeight(context) * 0.17 +
-                        100 +
-                        16, // Adjust placement
-                    left: ThemeSizes.xxl,
-                    right: ThemeSizes.xxl,
-                    child: const Text(
-                      "Costruisci nuovi rapporti e rafforza le tue relazioni. Buttati, non avere paura di rischiare. YOLO!",
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                ],
+              OnBoardingPageContent(
+                title: "Conosci Persone.",
+                description:
+                    "Costruisci nuovi rapporti e rafforza le tue relazioni. Buttati, non avere paura di rischiare. YOLO!",
+                alignment: MainAxisAlignment.start,
+                ySpace: Constants.getHeight(context) * 0.17,
               ),
               const OnBoardingPageContent(
                 title: "Vivi Momenti Unici.",
@@ -134,11 +117,25 @@ class _OnBoardingScreenState extends State<OnBoardingScreen> {
                   onTap: () {
                     controller.jumpToPage(2);
                   },
-                  child: const Text("Skip"),
+                  child: Container(
+                    padding: const EdgeInsets.all(ThemeSizes.md),
+                    decoration: BoxDecoration(
+                      borderRadius:
+                          BorderRadius.circular(ThemeSizes.borderRadiusLg),
+                      color: ColorPalette.accent.withOpacity(0.8),
+                    ),
+                    child: const Text("Salta"),
+                  ),
                 ),
 
                 //dot indicators
-                SmoothPageIndicator(controller: controller, count: 3),
+                SmoothPageIndicator(
+                  controller: controller,
+                  count: 3,
+                  effect: WormEffect(
+                      activeDotColor: ColorPalette.primary,
+                      dotColor: ColorPalette.white.withOpacity(0.8)),
+                ),
 
                 onLastPage
                     //done
@@ -147,7 +144,15 @@ class _OnBoardingScreenState extends State<OnBoardingScreen> {
                           Navigator.of(context).pushAndRemoveUntil(
                               HomePage.route, (route) => false);
                         },
-                        child: const Text("Done"),
+                        child: Container(
+                          padding: const EdgeInsets.all(ThemeSizes.md),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(
+                                ThemeSizes.borderRadiusLg),
+                            color: ColorPalette.success.withOpacity(0.7),
+                          ),
+                          child: const Text("Fatto"),
+                        ),
                       )
                     //next
                     : GestureDetector(
@@ -157,7 +162,15 @@ class _OnBoardingScreenState extends State<OnBoardingScreen> {
                             curve: Curves.easeIn,
                           );
                         },
-                        child: const Text("Next"),
+                        child: Container(
+                          padding: const EdgeInsets.all(ThemeSizes.md),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(
+                                ThemeSizes.borderRadiusLg),
+                            color: ColorPalette.accent.withOpacity(0.8),
+                          ),
+                          child: const Text("Avanti"),
+                        ),
                       ),
               ],
             ),
