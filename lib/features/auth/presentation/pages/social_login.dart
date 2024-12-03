@@ -1,6 +1,10 @@
+import 'dart:io';
+
+import 'package:cloudflare_turnstile/cloudflare_turnstile.dart';
 import 'package:fantavacanze_official/core/common/widgets/loader.dart';
 import 'package:fantavacanze_official/core/constants/constants.dart';
 import 'package:fantavacanze_official/core/extensions/context_extension.dart';
+import 'package:fantavacanze_official/core/secrets/app_secrets.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:fantavacanze_official/core/pages/empty_branded_page.dart';
@@ -35,11 +39,23 @@ class _SocialLoginPageState extends State<SocialLoginPage> {
   final phoneNumberController = TextEditingController();
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
 
+  late String turnstileToken;
+
+  final TurnstileOptions options = TurnstileOptions(
+    size: TurnstileSize.normal,
+    theme: TurnstileTheme.light,
+    language: 'IT',
+    retryAutomatically: false,
+    refreshTimeout: TurnstileRefreshTimeout.auto,
+    borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusMd),
+  );
+
   @override
   void initState() {
     super.initState();
     isPhoneButtonPressed = false;
     isValidPhoneNumber = false;
+    turnstileToken = '';
   }
 
   @override
@@ -67,7 +83,8 @@ class _SocialLoginPageState extends State<SocialLoginPage> {
                     showSnackBar(context, state.message);
                   }
                   if (state is AuthSuccess) {
-                    Navigator.of(context).push(OnBoardingScreen.route);
+                    Navigator.of(context).pushAndRemoveUntil(
+                        OnBoardingScreen.route, (route) => false);
                   }
                 },
                 builder: (context, state) {
@@ -95,14 +112,23 @@ class _SocialLoginPageState extends State<SocialLoginPage> {
                 },
               ),
               const SizedBox(width: 10),
-              SocialButton(
-                onPressed: () {},
-                socialName: 'Apple',
-                isGradient: false,
-                bgColor: Colors.black,
-                width: Constants.getWidth(context) * 0.25,
-                isIconOnly: true,
-              ),
+              Platform.isIOS
+                  ? SocialButton(
+                      onPressed: () {},
+                      socialName: 'Apple',
+                      isGradient: false,
+                      bgColor: Colors.black,
+                      width: Constants.getWidth(context) * 0.25,
+                      isIconOnly: true,
+                    )
+                  : SocialButton(
+                      onPressed: () {},
+                      socialName: 'Facebook',
+                      isGradient: false,
+                      bgColor: const Color.fromARGB(255, 32, 71, 134),
+                      width: Constants.getWidth(context) * 0.25,
+                      isIconOnly: true,
+                    ),
             ],
           ),
         ),
@@ -137,6 +163,7 @@ class _SocialLoginPageState extends State<SocialLoginPage> {
                             isPhoneButtonPressed = false;
                             isValidPhoneNumber = false;
                             phoneNumberController.clear();
+                            turnstileToken = '';
                           },
                         );
                       },
@@ -150,9 +177,24 @@ class _SocialLoginPageState extends State<SocialLoginPage> {
                       },
                     ),
                   ),
-                  const SizedBox(height: 10),
+                  Padding(
+                    padding:
+                        const EdgeInsets.symmetric(vertical: ThemeSizes.md),
+                    child: CloudflareTurnstile(
+                      siteKey: AppSecrets.turnstileKey,
+                      baseUrl: AppSecrets.supabaseUrl,
+                      options: options,
+                      onTokenReceived: (token) {
+                        setState(() {
+                          turnstileToken = token;
+                        });
+
+                        // print("Token: $turnstileToken");
+                      },
+                    ),
+                  ),
                   ElevatedButton(
-                    onPressed: isValidPhoneNumber
+                    onPressed: isValidPhoneNumber && turnstileToken.isNotEmpty
                         ? () {
                             //Phone SignUp Use-Case
 
@@ -178,6 +220,17 @@ class _SocialLoginPageState extends State<SocialLoginPage> {
                         "Inserisci un numero valido.",
                         style: context.textTheme.bodyLarge!.copyWith(
                           color: ColorPalette.error,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ),
+                  if (turnstileToken.isEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(top: ThemeSizes.md),
+                      child: Text(
+                        "Completa la verifica Captcha.",
+                        style: context.textTheme.bodyLarge!.copyWith(
+                          color: ColorPalette.warning,
                           fontSize: 14,
                         ),
                       ),

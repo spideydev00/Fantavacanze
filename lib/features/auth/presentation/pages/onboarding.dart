@@ -46,9 +46,11 @@ class _OnBoardingScreenState extends State<OnBoardingScreen> {
       extendBodyBehindAppBar: true,
       backgroundColor: Colors.transparent,
       appBar: AppBar(
-        title: Image.asset(
-          "images/logo-high-padding.png",
-          width: Constants.getWidth(context) * 0.60,
+        title: Padding(
+          padding: const EdgeInsets.all(ThemeSizes.lg),
+          child: Image.asset(
+            "images/logo-high-padding.png",
+          ),
         ),
         toolbarHeight: 150,
       ),
