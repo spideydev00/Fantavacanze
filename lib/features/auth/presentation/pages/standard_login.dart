@@ -53,8 +53,7 @@ class _StandardLoginPageState extends State<StandardLoginPage> {
                 const SizedBox(height: 25),
                 ElevatedButton.icon(
                   onPressed: () {},
-                  label: const Text("Accedi"),
-                  icon: const Icon(Icons.start_rounded),
+                  label: const Text("Accedi!"),
                 ),
               ],
             ),
