@@ -1,10 +1,7 @@
 import 'dart:io';
-
-import 'package:cloudflare_turnstile/cloudflare_turnstile.dart';
 import 'package:fantavacanze_official/core/common/widgets/loader.dart';
 import 'package:fantavacanze_official/core/constants/constants.dart';
 import 'package:fantavacanze_official/core/extensions/context_extension.dart';
-import 'package:fantavacanze_official/core/secrets/app_secrets.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:fantavacanze_official/core/pages/empty_branded_page.dart';
@@ -13,6 +10,7 @@ import 'package:fantavacanze_official/features/auth/presentation/bloc/auth_bloc.
 import 'package:fantavacanze_official/features/auth/presentation/pages/onboarding.dart';
 import 'package:fantavacanze_official/features/auth/presentation/pages/otp_page.dart';
 import 'package:fantavacanze_official/features/auth/presentation/pages/standard_login.dart';
+import 'package:fantavacanze_official/features/auth/presentation/widgets/cloudflare_turnstile_widget.dart';
 import 'package:fantavacanze_official/features/auth/presentation/widgets/phone_input_field.dart';
 import 'package:fantavacanze_official/features/auth/presentation/widgets/promo_text.dart';
 import 'package:fantavacanze_official/features/auth/presentation/widgets/rich_text.dart';
@@ -38,17 +36,7 @@ class _SocialLoginPageState extends State<SocialLoginPage> {
   late bool isValidPhoneNumber;
   final phoneNumberController = TextEditingController();
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
-
   late String turnstileToken;
-
-  final TurnstileOptions options = TurnstileOptions(
-    size: TurnstileSize.normal,
-    theme: TurnstileTheme.light,
-    language: 'IT',
-    retryAutomatically: false,
-    refreshTimeout: TurnstileRefreshTimeout.auto,
-    borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusMd),
-  );
 
   @override
   void initState() {
@@ -179,15 +167,14 @@ class _SocialLoginPageState extends State<SocialLoginPage> {
                   ),
                   Padding(
                     padding:
-                        const EdgeInsets.symmetric(vertical: ThemeSizes.md),
-                    child: CloudflareTurnstile(
-                      siteKey: AppSecrets.turnstileKey,
-                      baseUrl: AppSecrets.supabaseUrl,
-                      options: options,
+                        const EdgeInsets.symmetric(vertical: ThemeSizes.lg),
+                    child: CloudflareTurnstileWidget(
                       onTokenReceived: (token) {
-                        setState(() {
-                          turnstileToken = token;
-                        });
+                        setState(
+                          () {
+                            turnstileToken = token;
+                          },
+                        );
 
                         // print("Token: $turnstileToken");
                       },
