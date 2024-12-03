@@ -1,8 +1,7 @@
-import 'package:cloudflare_turnstile/cloudflare_turnstile.dart';
 import 'package:fantavacanze_official/core/pages/empty_branded_page.dart';
-import 'package:fantavacanze_official/core/secrets/app_secrets.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:fantavacanze_official/features/auth/presentation/widgets/auth_field.dart';
+import 'package:fantavacanze_official/features/auth/presentation/widgets/cloudflare_turnstile_widget.dart';
 import 'package:flutter/material.dart';
 
 class SignUpPage extends StatefulWidget {
@@ -21,15 +20,6 @@ class _SignUpPageState extends State<SignUpPage> {
     final nameController = TextEditingController();
     final passwordController = TextEditingController();
     late String turnstileToken;
-
-    final TurnstileOptions options = TurnstileOptions(
-      size: TurnstileSize.normal,
-      theme: TurnstileTheme.light,
-      language: 'IT',
-      retryAutomatically: false,
-      refreshTimeout: TurnstileRefreshTimeout.auto,
-      borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusMd),
-    );
 
     return EmptyBrandedPage(
       bgImagePath: "images/bg.png",
@@ -58,10 +48,7 @@ class _SignUpPageState extends State<SignUpPage> {
                 ),
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: ThemeSizes.lg),
-                  child: CloudflareTurnstile(
-                    siteKey: AppSecrets.turnstileKey,
-                    baseUrl: AppSecrets.supabaseUrl,
-                    options: options,
+                  child: CloudflareTurnstileWidget(
                     onTokenReceived: (token) {
                       setState(() {
                         turnstileToken = token;
