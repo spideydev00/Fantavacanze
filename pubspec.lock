@@ -159,7 +159,7 @@ packages:
     source: hosted
     version: "8.1.6"
   flutter_inappwebview:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: flutter_inappwebview
       sha256: a8f5c9dd300a8cc7fde7bb902ae57febe95e9269424e4d08d5a1a56214e1e6ff
