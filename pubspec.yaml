@@ -46,7 +46,6 @@ dependencies:
   get_it: ^8.0.2
   flutter_verification_code: ^1.1.7
   smooth_page_indicator: ^1.2.0+3
-  flutter_inappwebview: ^6.1.5
   cloudflare_turnstile: ^3.2.0
   
 dev_dependencies:
@@ -84,6 +83,7 @@ flutter:
   - images/google.svg
   - images/apple.svg
   - images/facebook.svg
+  - images/discord.svg
   - images/telefono.svg
 
   # An image asset can refer to one or more resolution-specific "variants", see

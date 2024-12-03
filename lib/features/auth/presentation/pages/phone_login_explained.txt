@@ -1,0 +1,121 @@
+        CODICE PER FARE IL LOGIN CON IL TELEFONO (al momento rimosso per costi elevati):
+
+        variabili necessarie:
+        late bool isPhoneButtonPressed;
+        late PhoneNumber phoneNumber;
+        late bool isValidPhoneNumber;
+        final phoneNumberController = TextEditingController();
+        
+        @override
+        void initState() {
+            super.initState();
+            isPhoneButtonPressed = false;
+            isValidPhoneNumber = false;
+        }
+        
+        also dispose the phone number controller.
+        
+        /* ----------------------------------------------------------- */
+        //Login con telefono (per ora disattivato)
+        const SizedBox(height: 15),
+        !isPhoneButtonPressed
+            ? SocialButton(
+                onPressed: () {
+                  setState(
+                    () {
+                      isPhoneButtonPressed = true;
+                    },
+                  );
+                },
+                socialName: "Telefono",
+                isGradient: false,
+                bgColor: ColorPalette.primary.withOpacity(0.92),
+                foregroundColor: ColorPalette.white,
+                width: Constants.getWidth(context) * 0.80,
+                isIconOnly: false,
+              )
+            : Column(
+                children: [
+                  SizedBox(
+                    width: Constants.getWidth(context) * 0.90,
+                    child: PhoneInputField(
+                      controller: phoneNumberController,
+                      onTrashIconTap: () {
+                        setState(
+                          () {
+                            isPhoneButtonPressed = false;
+                            isValidPhoneNumber = false;
+                            phoneNumberController.clear();
+                            turnstileToken = '';
+                          },
+                        );
+                      },
+                      onInputChanged: (number) {
+                        phoneNumber = number;
+                      },
+                      onInputValidated: (isValidNumber) {
+                        setState(() {
+                          isValidPhoneNumber = isValidNumber;
+                        });
+                      },
+                    ),
+                  ),
+                  Padding(
+                    padding:
+                        const EdgeInsets.symmetric(vertical: ThemeSizes.lg),
+                    child: CloudflareTurnstileWidget(
+                      onTokenReceived: (token) {
+                        setState(
+                          () {
+                            turnstileToken = token;
+                          },
+                        );
+
+                        // print("Token: $turnstileToken");
+                      },
+                    ),
+                  ),
+                  ElevatedButton(
+                    onPressed: isValidPhoneNumber && turnstileToken.isNotEmpty
+                        ? () {
+                            //Phone SignUp Use-Case
+
+                            //Go to OTP page
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (context) => const OtpPage(),
+                              ),
+                            );
+                          }
+                        : null, // Disabilitato se non valido
+                    style: context.elevatedButtonThemeData.style!.copyWith(
+                      elevation: const WidgetStatePropertyAll(1),
+                    ),
+                    child: const Text(
+                      "Richiedi Codice",
+                    ),
+                  ),
+                  if (!isValidPhoneNumber)
+                    Padding(
+                      padding: const EdgeInsets.only(top: ThemeSizes.md),
+                      child: Text(
+                        "Inserisci un numero valido.",
+                        style: context.textTheme.bodyLarge!.copyWith(
+                          color: ColorPalette.error,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ),
+                  if (turnstileToken.isEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(top: ThemeSizes.md),
+                      child: Text(
+                        "Completa la verifica Captcha.",
+                        style: context.textTheme.bodyLarge!.copyWith(
+                          color: ColorPalette.warning,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ),
+                ],
+              ),

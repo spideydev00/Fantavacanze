@@ -6,9 +6,9 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 abstract interface class AuthRemoteDataSource {
+  // void signInWithPhone();
   Future<UserModel> signInWithGoogle();
   void signInWithApple();
-  void signInWithPhone();
   void signUpWithEmailPassword();
   void signInWithEmailPassword();
 }
@@ -70,9 +70,6 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       throw ServerException(e.toString());
     }
   }
-
-  @override
-  void signInWithPhone() {}
 
   @override
   void signUpWithEmailPassword() {}
