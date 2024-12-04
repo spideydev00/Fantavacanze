@@ -19,4 +19,15 @@ class AuthRepositoryImpl implements AuthRepository {
       return left(Failure(e.message));
     }
   }
+
+  @override
+  Future<Either<Failure, User>> appleSignIn() async {
+    try {
+      final user = await authRemoteDataSource.signInWithApple();
+
+      return right(user);
+    } on ServerException catch (e) {
+      return left(Failure(e.message));
+    }
+  }
 }
