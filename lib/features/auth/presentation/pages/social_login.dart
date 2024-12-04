@@ -57,23 +57,53 @@ class _SocialLoginPageState extends State<SocialLoginPage> {
                 isIconOnly: true,
               ),
               const SizedBox(width: 10),
-              Platform.isIOS
-                  ? SocialButton(
-                      onPressed: () {},
-                      socialName: 'Apple',
-                      isGradient: false,
-                      bgColor: Colors.black,
-                      width: Constants.getWidth(context) * 0.25,
-                      isIconOnly: true,
-                    )
-                  : SocialButton(
-                      onPressed: () {},
-                      socialName: 'Facebook',
-                      isGradient: false,
-                      bgColor: const Color.fromARGB(255, 32, 71, 134),
-                      width: Constants.getWidth(context) * 0.25,
-                      isIconOnly: true,
-                    ),
+              // ------------------------------------------- //
+              // -- APPLE LOGIN or FACEBOOK LOGIN -- //
+              BlocConsumer<AuthBloc, AuthState>(
+                listener: (context, state) {
+                  if (state is AuthFailure) {
+                    showSnackBar(context, state.message);
+                  }
+                  if (state is AuthSuccess) {
+                    Navigator.of(context).pushAndRemoveUntil(
+                        OnBoardingScreen.route, (route) => false);
+                  }
+                },
+                builder: (context, state) {
+                  if (state is AuthLoading) {
+                    return Center(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: ThemeSizes.xl),
+                        child: Loader(
+                          color: Platform.isIOS
+                              ? Colors.black
+                              : const Color.fromARGB(255, 32, 71, 134),
+                        ),
+                      ),
+                    );
+                  }
+                  return Platform.isIOS
+                      ? SocialButton(
+                          onPressed: () {
+                            context.read<AuthBloc>().add(AuthAppleSignIn());
+                          },
+                          socialName: 'Apple',
+                          isGradient: false,
+                          bgColor: Colors.black,
+                          width: Constants.getWidth(context) * 0.25,
+                          isIconOnly: true,
+                        )
+                      : SocialButton(
+                          onPressed: () {},
+                          socialName: 'Facebook',
+                          isGradient: false,
+                          bgColor: const Color.fromARGB(255, 32, 71, 134),
+                          width: Constants.getWidth(context) * 0.25,
+                          isIconOnly: true,
+                        );
+                },
+              ),
             ],
           ),
         ),

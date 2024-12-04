@@ -2,6 +2,7 @@ import 'package:fantavacanze_official/core/secrets/app_secrets.dart';
 import 'package:fantavacanze_official/features/auth/data/remote_data_source/auth_remote_data_source.dart';
 import 'package:fantavacanze_official/features/auth/data/repository/auth_repository_impl.dart';
 import 'package:fantavacanze_official/features/auth/domain/repository/auth_repository.dart';
+import 'package:fantavacanze_official/features/auth/domain/use-cases/apple_sign_in.dart';
 import 'package:fantavacanze_official/features/auth/domain/use-cases/google_sign_in.dart';
 import 'package:fantavacanze_official/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:get_it/get_it.dart';
@@ -34,8 +35,14 @@ void _initAuth() {
     ..registerFactory(
       () => GoogleSignIn(authRepository: serviceLocator()),
     )
+    ..registerFactory(
+      () => AppleSignIn(authRepository: serviceLocator()),
+    )
     //bloc
     ..registerLazySingleton(
-      () => AuthBloc(googleSignIn: serviceLocator()),
+      () => AuthBloc(
+        googleSignIn: serviceLocator(),
+        appleSignIn: serviceLocator(),
+      ),
     );
 }

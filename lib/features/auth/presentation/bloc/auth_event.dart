@@ -4,3 +4,5 @@ part of 'auth_bloc.dart';
 sealed class AuthEvent {}
 
 class AuthGoogleSignIn extends AuthEvent {}
+
+class AuthAppleSignIn extends AuthEvent {}
