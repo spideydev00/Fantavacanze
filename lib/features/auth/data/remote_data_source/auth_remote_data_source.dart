@@ -37,8 +37,6 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         nonce: hashedNonce,
       );
 
-      final givenName = credential.givenName;
-
       final idToken = credential.identityToken;
       if (idToken == null) {
         throw ServerException(
@@ -52,42 +50,39 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         nonce: rawNonce,
       );
 
-      if (response.user == null) {
+      final user = response.user;
+
+      if (user == null) {
         throw ServerException("Errore nella creazione dell'utente.");
       }
 
-      // Retrieve the user's profile
-      Map<String, dynamic>? profileTableRes = await supabaseClient
-          .from('profiles')
-          .select('name')
-          .eq('id', response.user!.id)
-          .maybeSingle();
+      final givenName = credential.givenName;
+      final userId = user.id;
+      late UserModel userModel;
 
-      // If it's the user's first access, store the given name
-      if (profileTableRes == null || profileTableRes['name'] == 'Anonymous') {
-        final updatedProfilesTable = await supabaseClient
-            .from('profiles')
-            .upsert({
-              'id': response.user!.id,
-              'updated_at': DateTime.now().toIso8601String(),
-              'name': givenName,
-            })
-            .select('name')
-            .single();
-
+      //Check if it's first access
+      if (!(user.userMetadata!.containsKey('full_name'))) {
+        //update auth.users to include name
         await supabaseClient.auth
             .updateUser(UserAttributes(data: {'full_name': givenName}));
 
-        // Assign the updated table
-        profileTableRes = updatedProfilesTable;
+        //update profiles
+        await supabaseClient
+            .from('profiles')
+            .update({'name': givenName}).eq('id', userId);
+
+        //create the user model with the updated name
+        userModel = UserModel.fromJson(user.toJson()).copyWith(
+          name: givenName,
+        );
+
+        return userModel;
       }
 
-      // Create the user model with the updated name
-      final user = UserModel.fromJson(response.user!.toJson());
+      //If it's not first access
+      userModel = UserModel.fromJson(user.toJson());
 
-      print("name: ${user.name}");
-
-      return user;
+      return userModel;
     } on AuthException catch (e) {
       throw ServerException(e.toString());
       //apple related exception
