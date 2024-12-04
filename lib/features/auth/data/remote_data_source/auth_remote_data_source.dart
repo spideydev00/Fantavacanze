@@ -37,6 +37,8 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         nonce: hashedNonce,
       );
 
+      final givenName = credential.givenName;
+
       final idToken = credential.identityToken;
       if (idToken == null) {
         throw ServerException(
@@ -54,7 +56,36 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         throw ServerException("Errore nella creazione dell'utente.");
       }
 
+      // Retrieve the user's profile
+      Map<String, dynamic>? profileTableRes = await supabaseClient
+          .from('profiles')
+          .select('name')
+          .eq('id', response.user!.id)
+          .maybeSingle();
+
+      // If it's the user's first access, store the given name
+      if (profileTableRes == null || profileTableRes['name'] == 'Anonymous') {
+        final updatedProfilesTable = await supabaseClient
+            .from('profiles')
+            .upsert({
+              'id': response.user!.id,
+              'updated_at': DateTime.now().toIso8601String(),
+              'name': givenName,
+            })
+            .select('name')
+            .single();
+
+        await supabaseClient.auth
+            .updateUser(UserAttributes(data: {'full_name': givenName}));
+
+        // Assign the updated table
+        profileTableRes = updatedProfilesTable;
+      }
+
+      // Create the user model with the updated name
       final user = UserModel.fromJson(response.user!.toJson());
+
+      print("name: ${user.name}");
 
       return user;
     } on AuthException catch (e) {
