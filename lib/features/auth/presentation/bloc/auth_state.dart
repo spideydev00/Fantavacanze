@@ -7,6 +7,14 @@ final class AuthInitial extends AuthState {}
 
 final class AuthLoading extends AuthState {}
 
+//in order to display loader
+final class AuthGoogleLoading extends AuthState {}
+
+final class AuthAppleOrFbLoading extends AuthState {}
+
+final class AuthDiscordLoading extends AuthState {}
+// for just one button
+
 final class AuthFailure extends AuthState {
   final String message;
 
