@@ -26,8 +26,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
   Future<void> _onGoogleSignIn(
       AuthGoogleSignIn event, Emitter<AuthState> emit) async {
-    emit(AuthLoading());
-
+    emit(AuthGoogleLoading());
     final res = await _googleSignIn.call(NoParams());
 
     res.fold((l) => emit(AuthFailure(l.message)), (r) => emit(AuthSuccess(r)));
@@ -35,8 +34,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
   Future<void> _onAppleSignIn(
       AuthAppleSignIn event, Emitter<AuthState> emit) async {
-    emit(AuthLoading());
-
+    emit(AuthAppleOrFbLoading());
     final res = await _appleSignIn.call(NoParams());
 
     res.fold((l) => emit(AuthFailure(l.message)), (r) => emit(AuthSuccess(r)));

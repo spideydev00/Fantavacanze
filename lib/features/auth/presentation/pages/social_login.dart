@@ -1,12 +1,9 @@
 import 'dart:io';
-import 'package:fantavacanze_official/core/common/widgets/loader.dart';
 import 'package:fantavacanze_official/core/constants/constants.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:fantavacanze_official/core/pages/empty_branded_page.dart';
-import 'package:fantavacanze_official/core/utils/show_snackbar.dart';
 import 'package:fantavacanze_official/features/auth/presentation/bloc/auth_bloc.dart';
-import 'package:fantavacanze_official/features/auth/presentation/pages/onboarding.dart';
 import 'package:fantavacanze_official/features/auth/presentation/pages/standard_login.dart';
 import 'package:fantavacanze_official/features/auth/presentation/widgets/promo_text.dart';
 import 'package:fantavacanze_official/features/auth/presentation/widgets/rich_text.dart';
@@ -43,104 +40,58 @@ class _SocialLoginPageState extends State<SocialLoginPage> {
       widgets: [
         /* ----------------------------------------------------------- */
         //Discord e Apple(Facebook) login
-        Form(
-          key: formKey,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              SocialButton(
-                onPressed: () {},
-                socialName: 'Discord',
-                isGradient: false,
-                bgColor: const Color.fromARGB(255, 103, 125, 205),
-                width: Constants.getWidth(context) * 0.25,
-                isIconOnly: true,
-              ),
-              const SizedBox(width: 10),
-              // ------------------------------------------- //
-              // -- APPLE LOGIN or FACEBOOK LOGIN -- //
-              BlocConsumer<AuthBloc, AuthState>(
-                listener: (context, state) {
-                  if (state is AuthFailure) {
-                    showSnackBar(context, state.message);
-                  }
-                  if (state is AuthSuccess) {
-                    Navigator.of(context).pushAndRemoveUntil(
-                        OnBoardingScreen.route, (route) => false);
-                  }
-                },
-                builder: (context, state) {
-                  if (state is AuthLoading) {
-                    return Center(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: ThemeSizes.xl),
-                        child: Loader(
-                          color: Platform.isIOS
-                              ? Colors.black
-                              : const Color.fromARGB(255, 32, 71, 134),
-                        ),
-                      ),
-                    );
-                  }
-                  return Platform.isIOS
-                      ? SocialButton(
-                          onPressed: () {
-                            context.read<AuthBloc>().add(AuthAppleSignIn());
-                          },
-                          socialName: 'Apple',
-                          isGradient: false,
-                          bgColor: Colors.black,
-                          width: Constants.getWidth(context) * 0.25,
-                          isIconOnly: true,
-                        )
-                      : SocialButton(
-                          onPressed: () {},
-                          socialName: 'Facebook',
-                          isGradient: false,
-                          bgColor: const Color.fromARGB(255, 32, 71, 134),
-                          width: Constants.getWidth(context) * 0.25,
-                          isIconOnly: true,
-                        );
-                },
-              ),
-            ],
-          ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            SocialButton(
+              onPressed: () {},
+              socialName: 'Discord',
+              isGradient: false,
+              bgColor: ColorPalette.discord,
+              width: Constants.getWidth(context) * 0.25,
+              isIconOnly: true,
+              loaderColor: ColorPalette.discord,
+              loadingState: AuthDiscordLoading(),
+            ),
+            const SizedBox(width: 10),
+            Platform.isIOS
+                ? SocialButton(
+                    onPressed: () {
+                      context.read<AuthBloc>().add(AuthAppleSignIn());
+                    },
+                    socialName: 'Apple',
+                    isGradient: false,
+                    bgColor: ColorPalette.apple,
+                    width: Constants.getWidth(context) * 0.25,
+                    isIconOnly: true,
+                    loaderColor: ColorPalette.apple,
+                    loadingState: AuthAppleOrFbLoading(),
+                  )
+                : SocialButton(
+                    onPressed: () {},
+                    socialName: 'Facebook',
+                    isGradient: false,
+                    bgColor: ColorPalette.facebook,
+                    width: Constants.getWidth(context) * 0.25,
+                    isIconOnly: true,
+                    loaderColor: ColorPalette.facebook,
+                    loadingState: AuthAppleOrFbLoading(),
+                  ),
+          ],
         ),
         //Login con Google
         const SizedBox(height: 15),
-        BlocConsumer<AuthBloc, AuthState>(
-          listener: (context, state) {
-            if (state is AuthFailure) {
-              showSnackBar(context, state.message);
-            }
-            if (state is AuthSuccess) {
-              Navigator.of(context)
-                  .pushAndRemoveUntil(OnBoardingScreen.route, (route) => false);
-            }
+        SocialButton(
+          onPressed: () {
+            context.read<AuthBloc>().add(AuthGoogleSignIn());
           },
-          builder: (context, state) {
-            if (state is AuthLoading) {
-              return const Center(
-                child: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: ThemeSizes.xl),
-                  child: Loader(
-                    color: ColorPalette.primary,
-                  ),
-                ),
-              );
-            }
-            return SocialButton(
-              onPressed: () {
-                context.read<AuthBloc>().add(AuthGoogleSignIn());
-              },
-              socialName: 'Google',
-              isGradient: true,
-              bgGradient: ColorPalette.googleGradientsBg,
-              width: Constants.getWidth(context) * 0.53,
-              isIconOnly: true,
-            );
-          },
+          socialName: 'Google',
+          isGradient: true,
+          bgGradient: ColorPalette.googleGradientsBg,
+          width: Constants.getWidth(context) * 0.53,
+          isIconOnly: true,
+          loaderColor: ColorPalette.primary,
+          loadingState: AuthGoogleLoading(),
         ),
       ],
       newColumnWidgets: [

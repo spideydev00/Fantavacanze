@@ -15,11 +15,16 @@ class ColorPalette {
   static const Color lightBg = Color(0xFFF6F6F6);
   static const Color darkBg = Color.fromARGB(255, 15, 16, 19);
 
+  //social buttons colors
   static const List<Color> googleGradientsBg = [
     Color.fromARGB(255, 187, 57, 57),
     Color.fromARGB(255, 226, 225, 119),
     Color.fromARGB(255, 83, 140, 183),
   ];
+
+  static const Color discord = Color.fromARGB(255, 103, 125, 205);
+  static const Color apple = Colors.black;
+  static const Color facebook = Color.fromARGB(255, 32, 71, 134);
 
   // Background Container colors
   static const Color lightContainer = Color(0xFFF6F6F6);
