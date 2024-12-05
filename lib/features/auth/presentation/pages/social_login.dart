@@ -44,7 +44,9 @@ class _SocialLoginPageState extends State<SocialLoginPage> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             SocialButton(
-              onPressed: () {},
+              onPressed: () {
+                context.read<AuthBloc>().add(AuthDiscordSignIn());
+              },
               socialName: 'Discord',
               isGradient: false,
               bgColor: ColorPalette.discord,

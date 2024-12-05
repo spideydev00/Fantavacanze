@@ -1,9 +1,11 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:crypto/crypto.dart';
 import 'package:fantavacanze_official/core/errors/server_exception.dart';
 import 'package:fantavacanze_official/core/secrets/app_secrets.dart';
 import 'package:fantavacanze_official/features/auth/data/models/user_model.dart';
+import 'package:flutter/foundation.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -12,17 +14,45 @@ abstract interface class AuthRemoteDataSource {
   // void signInWithPhone();
   Future<UserModel> signInWithGoogle();
   Future<UserModel> signInWithApple();
-  void signInWithDiscord();
+  Future<UserModel> signInWithDiscord();
   void signInWithFacebook();
   void signUpWithEmailPassword();
   void signInWithEmailPassword();
+
+  //helper methods
+  Future<UserModel?> getCurrentUserData();
+  Session? get currentSession;
 }
 
 class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   final SupabaseClient supabaseClient;
-
   AuthRemoteDataSourceImpl({required this.supabaseClient});
 
+  // ------------------ GET CURRENT SESSION ------------------ //
+  @override
+  Session? get currentSession => supabaseClient.auth.currentSession;
+
+  // ------------------ GET USER DATA ------------------ //
+  @override
+  Future<UserModel?> getCurrentUserData() async {
+    try {
+      if (currentSession != null) {
+        final userData = await supabaseClient
+            .from('profiles')
+            .select()
+            .eq('id', currentSession!.user.id);
+
+        return UserModel.fromJson(userData.first)
+            .copyWith(email: currentSession!.user.email);
+      }
+
+      return null;
+    } catch (e) {
+      throw ServerException(e.toString());
+    }
+  }
+
+  // ------------------ APPLE ------------------ //
   @override
   Future<UserModel> signInWithApple() async {
     try {
@@ -93,11 +123,13 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     }
   }
 
+  // ------------------ EMAIL SIGNIN ------------------ //
   @override
   void signInWithEmailPassword() {
     // TODO: implement signInWithDiscord
   }
 
+  // ------------------ GOOGLE ------------------ //
   @override
   Future<UserModel> signInWithGoogle() async {
     try {
@@ -145,16 +177,60 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     }
   }
 
+  // ------------------ EMAIL SIGNUP ------------------ //
   @override
   void signUpWithEmailPassword() {
     // TODO: implement signInWithDiscord
   }
 
+  // ------------------ DISCORD ------------------ //
   @override
-  void signInWithDiscord() {
-    // TODO: implement signInWithDiscord
+  Future<UserModel> signInWithDiscord() async {
+    try {
+      final response = await supabaseClient.auth.signInWithOAuth(
+        OAuthProvider.discord,
+        redirectTo: kIsWeb
+            ? null
+            : 'https://afbnmosmovvcsnxpflyi.supabase.co/auth/v1/callback',
+        authScreenLaunchMode: kIsWeb
+            ? LaunchMode.platformDefault
+            : LaunchMode.externalApplication, //Fai partire app su web
+      );
+
+      if (!response) {
+        throw ServerException("Nessuna risposta dal Server Discord.");
+      }
+
+      late UserModel userModel;
+
+      // Puoi ascoltare i cambiamenti dello stato di autenticazione
+      final StreamSubscription<AuthState> subscription =
+          supabaseClient.auth.onAuthStateChange.listen(
+        (data) {
+          final Session? session = data.session;
+          if (session != null) {
+            final User user = session.user;
+            // Crea il tuo UserModel con le informazioni dell'utente
+            userModel = UserModel.fromJson(user.toJson());
+            print("id: ${userModel.id}");
+            print("email: ${userModel.email}");
+            print("name: ${userModel.name}");
+          }
+        },
+      );
+
+      // Assicurati di gestire la cancellazione della subscription quando non è più necessaria
+      subscription.cancel();
+
+      return userModel;
+    } on AuthException catch (e) {
+      throw ServerException(e.toString());
+    } catch (e) {
+      throw ServerException(e.toString());
+    }
   }
 
+  // ------------------ FACEBOOK ------------------ //
   @override
   void signInWithFacebook() {
     // TODO: implement signInWithFacebook

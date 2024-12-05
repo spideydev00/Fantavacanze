@@ -30,8 +30,13 @@
 			<key>CFBundleURLSchemes</key>
 			<array>
 				<string>com.googleusercontent.apps.531436741316-1bvhvp1ckeg4u8bf9ksnmds0j617dp8k</string>
+				<string>afbnmosmovvcsnxpflyi.supabase.co</string>
 			</array>
 		</dict>
+	</array>
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+  		<string>https</string>
 	</array>
 	<key>CFBundleVersion</key>
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
