@@ -25,15 +25,15 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
 
-             <!-- Redirect URL for discord login -->
+        <!-- App Links / Universal Links -->
             <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW" />
-                    <category android:name="android.intent.category.DEFAULT" />
-                    <category android:name="android.intent.category.BROWSABLE" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <!-- Accepts URIs that begin with https://your_host -->
                 <data
                     android:scheme="https"
-                    android:host="afbnmosmovvcsnxpflyi.supabase.co"
-                    android:pathPrefix="/auth/v1/callback" />
+                    android:host="fantavacanze.it" />
             </intent-filter>
         </activity>
         <!-- Don't delete the meta-data below.
