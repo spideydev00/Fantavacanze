@@ -189,7 +189,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     try {
       final response = await supabaseClient.auth.signInWithOAuth(
         OAuthProvider.discord,
-        redirectTo: kIsWeb ? null : 'http://localhost:3000',
+        redirectTo: kIsWeb ? null : 'https://fantavacanze.it/auth/callback',
         authScreenLaunchMode: kIsWeb
             ? LaunchMode.platformDefault
             : LaunchMode.externalApplication, //Fai partire app su web
