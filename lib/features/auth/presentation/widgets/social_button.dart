@@ -52,7 +52,7 @@ class SocialButton extends StatelessWidget {
         if (state.runtimeType == loadingState.runtimeType) {
           return Center(
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: ThemeSizes.xl),
+              padding: const EdgeInsets.symmetric(vertical: ThemeSizes.lg),
               child: Loader(
                 color: loaderColor,
               ),
