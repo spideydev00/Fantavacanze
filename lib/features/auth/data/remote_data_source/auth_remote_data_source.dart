@@ -5,7 +5,6 @@ import 'package:crypto/crypto.dart';
 import 'package:fantavacanze_official/core/errors/server_exception.dart';
 import 'package:fantavacanze_official/core/secrets/app_secrets.dart';
 import 'package:fantavacanze_official/features/auth/data/models/user_model.dart';
-import 'package:flutter/foundation.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -14,7 +13,6 @@ abstract interface class AuthRemoteDataSource {
   // void signInWithPhone();
   Future<UserModel> signInWithGoogle();
   Future<UserModel> signInWithApple();
-  Future<UserModel> signInWithDiscord();
   void signInWithFacebook();
   void signUpWithEmailPassword();
   void signInWithEmailPassword();
@@ -181,51 +179,6 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   @override
   void signUpWithEmailPassword() {
     // TODO: implement signInWithDiscord
-  }
-
-  // ------------------ DISCORD ------------------ //
-  @override
-  Future<UserModel> signInWithDiscord() async {
-    try {
-      final response = await supabaseClient.auth.signInWithOAuth(
-        OAuthProvider.discord,
-        redirectTo: kIsWeb ? null : 'https://fantavacanze.it/auth/callback',
-        authScreenLaunchMode: kIsWeb
-            ? LaunchMode.platformDefault
-            : LaunchMode.externalApplication, //Fai partire app su web
-      );
-
-      if (!response) {
-        throw ServerException("Nessuna risposta dal Server Discord.");
-      }
-
-      late UserModel userModel;
-
-      // Puoi ascoltare i cambiamenti dello stato di autenticazione
-      final StreamSubscription<AuthState> subscription =
-          supabaseClient.auth.onAuthStateChange.listen(
-        (data) {
-          final Session? session = data.session;
-          if (session != null) {
-            final User user = session.user;
-            // Crea il tuo UserModel con le informazioni dell'utente
-            userModel = UserModel.fromJson(user.toJson());
-            print("id: ${userModel.id}");
-            print("email: ${userModel.email}");
-            print("name: ${userModel.name}");
-          }
-        },
-      );
-
-      // Assicurati di gestire la cancellazione della subscription quando non è più necessaria
-      subscription.cancel();
-
-      return userModel;
-    } on AuthException catch (e) {
-      throw ServerException(e.toString());
-    } catch (e) {
-      throw ServerException(e.toString());
-    }
   }
 
   // ------------------ FACEBOOK ------------------ //

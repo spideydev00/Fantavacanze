@@ -5,5 +5,4 @@ import 'package:fpdart/fpdart.dart';
 abstract interface class AuthRepository {
   Future<Either<Failure, User>> googleSignIn();
   Future<Either<Failure, User>> appleSignIn();
-  Future<Either<Failure, User>> discordSignIn();
 }

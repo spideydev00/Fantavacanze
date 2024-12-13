@@ -39,48 +39,29 @@ class _SocialLoginPageState extends State<SocialLoginPage> {
       mainColumnAlignment: MainAxisAlignment.spaceBetween,
       widgets: [
         /* ----------------------------------------------------------- */
-        //Discord e Apple(Facebook) login
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            SocialButton(
-              onPressed: () {
-                context.read<AuthBloc>().add(AuthDiscordSignIn());
-              },
-              socialName: 'Discord',
-              isGradient: false,
-              bgColor: ColorPalette.discord,
-              width: Constants.getWidth(context) * 0.25,
-              isIconOnly: true,
-              loaderColor: ColorPalette.discord,
-              loadingState: AuthDiscordLoading(),
-            ),
-            const SizedBox(width: 10),
-            Platform.isIOS
-                ? SocialButton(
-                    onPressed: () {
-                      context.read<AuthBloc>().add(AuthAppleSignIn());
-                    },
-                    socialName: 'Apple',
-                    isGradient: false,
-                    bgColor: ColorPalette.apple,
-                    width: Constants.getWidth(context) * 0.25,
-                    isIconOnly: true,
-                    loaderColor: ColorPalette.apple,
-                    loadingState: AuthAppleOrFbLoading(),
-                  )
-                : SocialButton(
-                    onPressed: () {},
-                    socialName: 'Facebook',
-                    isGradient: false,
-                    bgColor: ColorPalette.facebook,
-                    width: Constants.getWidth(context) * 0.25,
-                    isIconOnly: true,
-                    loaderColor: ColorPalette.facebook,
-                    loadingState: AuthAppleOrFbLoading(),
-                  ),
-          ],
-        ),
+        Platform.isIOS
+            ? SocialButton(
+                onPressed: () {
+                  context.read<AuthBloc>().add(AuthAppleSignIn());
+                },
+                socialName: 'Apple',
+                isGradient: false,
+                bgColor: ColorPalette.apple,
+                width: Constants.getWidth(context) * 0.53,
+                isIconOnly: true,
+                loaderColor: ColorPalette.apple,
+                loadingState: AuthAppleOrFbLoading(),
+              )
+            : SocialButton(
+                onPressed: () {},
+                socialName: 'Facebook',
+                isGradient: false,
+                bgColor: ColorPalette.facebook,
+                width: Constants.getWidth(context) * 0.53,
+                isIconOnly: true,
+                loaderColor: ColorPalette.facebook,
+                loadingState: AuthAppleOrFbLoading(),
+              ),
         //Login con Google
         const SizedBox(height: 15),
         SocialButton(
