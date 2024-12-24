@@ -34,6 +34,9 @@ target 'Runner' do
   # PhoneNumberKit Compatible Version
   pod 'PhoneNumberKit', '~> 3.7.6'
 
+  # Facebook Login
+  pod 'FBSDKLoginKit'
+
   flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
   target 'RunnerTests' do
     inherit! :search_paths

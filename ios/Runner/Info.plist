@@ -22,6 +22,31 @@
 	<string>$(FLUTTER_BUILD_NAME)</string>
 	<key>CFBundleSignature</key>
 	<string>????</string>
+    <!-- FB Login -->
+    <key>CFBundleURLTypes</key>
+    <array>
+      <dict>
+      <key>CFBundleURLSchemes</key>
+      <array>
+        <string>fb2926177020891119</string>
+      </array>
+      </dict>
+    </array>
+    <key>FacebookAppID</key>
+    <string>2926177020891119</string>
+    <key>FacebookClientToken</key>
+    <string>c38d89dc0e63212a38047cd7230d49e0</string>
+    <key>FacebookDisplayName</key>
+    <string>Fantavacanze</string>
+	
+	<!-- FB integrations -->
+	<!-- <key>LSApplicationQueriesSchemes</key>
+	<array>
+	<string>fbapi</string>
+	<string>fb-messenger-share-api</string>
+	</array> -->
+
+	<!-- Google Login -->
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>
@@ -48,6 +73,7 @@
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
 	<string>Main</string>
+	<!-- Disable horizontal orientation -->
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
