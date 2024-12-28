@@ -30,4 +30,15 @@ class AuthRepositoryImpl implements AuthRepository {
       return left(Failure(e.message));
     }
   }
+
+  @override
+  Future<Either<Failure, User>> facebookSignIn() async {
+    try {
+      final user = await authRemoteDataSource.signInWithFacebook();
+
+      return right(user);
+    } on ServerException catch (e) {
+      return left(Failure(e.message));
+    }
+  }
 }

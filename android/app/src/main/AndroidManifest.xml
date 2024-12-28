@@ -32,8 +32,8 @@
                 <category android:name="android.intent.category.BROWSABLE" />
                 <!-- Accepts URIs that begin with https://your_host -->
                 <data
-                    android:scheme="https"
-                    android:host="fantavacanze.it" />
+                    android:scheme="io.supabase.fantavacanze"
+                    android:host="login-callback" />
             </intent-filter>
         </activity>
         <!-- Don't delete the meta-data below.

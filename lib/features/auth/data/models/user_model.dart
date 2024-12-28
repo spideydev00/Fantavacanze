@@ -11,7 +11,7 @@ class UserModel extends User {
     return UserModel(
       id: map['id'] ?? '',
       email: map['email'] ?? '',
-      name: map['user_metadata']?['full_name'] ?? '',
+      name: map['user_metadata']?['full_name'] ?? map['name'] ?? '',
     );
   }
 
