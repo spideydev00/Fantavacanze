@@ -40,7 +40,7 @@ class _SocialLoginPageState extends State<SocialLoginPage> {
       widgets: [
         /* ----------------------------------------------------------- */
         Platform.isIOS
-            ? SocialButton(
+            ? /* SocialButton(
                 onPressed: () {
                   context.read<AuthBloc>().add(AuthAppleSignIn());
                 },
@@ -50,6 +50,18 @@ class _SocialLoginPageState extends State<SocialLoginPage> {
                 width: Constants.getWidth(context) * 0.53,
                 isIconOnly: true,
                 loaderColor: ColorPalette.apple,
+                loadingState: AuthAppleOrFbLoading(),
+              ) */
+            SocialButton(
+                onPressed: () {
+                  context.read<AuthBloc>().add(AuthFacebookSignIn());
+                },
+                socialName: 'Facebook',
+                isGradient: false,
+                bgColor: ColorPalette.facebook,
+                width: Constants.getWidth(context) * 0.53,
+                isIconOnly: true,
+                loaderColor: ColorPalette.facebook,
                 loadingState: AuthAppleOrFbLoading(),
               )
             : SocialButton(
