@@ -53,7 +53,7 @@
         <dict>
             <key>CFBundleURLSchemes</key>
             <array>
-                <string>fb2926177020891119</string>
+                <string>fb952626859621154</string>
             </array>
         </dict>
         <!-- Google Login -->
@@ -79,9 +79,9 @@
 
     <!-- Facebook Config -->
     <key>FacebookAppID</key>
-    <string>2926177020891119</string>
+    <string>952626859621154</string>
     <key>FacebookClientToken</key>
-    <string>c38d89dc0e63212a38047cd7230d49e0</string>
+    <string>dfe4634f4705b3dcf2cb4d7749e027be</string>
     <key>FacebookDisplayName</key>
     <string>Fantavacanze</string>
 

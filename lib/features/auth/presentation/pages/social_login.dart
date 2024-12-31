@@ -4,6 +4,7 @@ import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:fantavacanze_official/core/pages/empty_branded_page.dart';
 import 'package:fantavacanze_official/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:fantavacanze_official/features/auth/presentation/pages/signup.dart';
 import 'package:fantavacanze_official/features/auth/presentation/pages/standard_login.dart';
 import 'package:fantavacanze_official/features/auth/presentation/widgets/promo_text.dart';
 import 'package:fantavacanze_official/features/auth/presentation/widgets/rich_text.dart';
@@ -40,7 +41,7 @@ class _SocialLoginPageState extends State<SocialLoginPage> {
       widgets: [
         /* ----------------------------------------------------------- */
         Platform.isIOS
-            ? /* SocialButton(
+            ? SocialButton(
                 onPressed: () {
                   context.read<AuthBloc>().add(AuthAppleSignIn());
                 },
@@ -51,27 +52,17 @@ class _SocialLoginPageState extends State<SocialLoginPage> {
                 isIconOnly: true,
                 loaderColor: ColorPalette.apple,
                 loadingState: AuthAppleOrFbLoading(),
-              ) */
-            SocialButton(
-                onPressed: () {
-                  context.read<AuthBloc>().add(AuthFacebookSignIn());
-                },
-                socialName: 'Facebook',
-                isGradient: false,
-                bgColor: ColorPalette.facebook,
-                width: Constants.getWidth(context) * 0.53,
-                isIconOnly: true,
-                loaderColor: ColorPalette.facebook,
-                loadingState: AuthAppleOrFbLoading(),
               )
             : SocialButton(
-                onPressed: () {},
-                socialName: 'Facebook',
+                onPressed: () {
+                  Navigator.of(context).push(SignUpPage.route);
+                },
+                socialName: 'Email',
                 isGradient: false,
-                bgColor: ColorPalette.facebook,
+                bgColor: ColorPalette.primary,
                 width: Constants.getWidth(context) * 0.53,
                 isIconOnly: true,
-                loaderColor: ColorPalette.facebook,
+                loaderColor: ColorPalette.primary,
                 loadingState: AuthAppleOrFbLoading(),
               ),
         //Login con Google
