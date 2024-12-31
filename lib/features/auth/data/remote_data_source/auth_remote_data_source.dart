@@ -5,7 +5,6 @@ import 'package:crypto/crypto.dart';
 import 'package:fantavacanze_official/core/errors/server_exception.dart';
 import 'package:fantavacanze_official/core/secrets/app_secrets.dart';
 import 'package:fantavacanze_official/features/auth/data/models/user_model.dart';
-import 'package:flutter/foundation.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -14,7 +13,7 @@ abstract interface class AuthRemoteDataSource {
   // void signInWithPhone();
   Future<UserModel> signInWithGoogle();
   Future<UserModel> signInWithApple();
-  Future<UserModel> signInWithFacebook();
+  // Future<UserModel> signInWithFacebook();
   void signUpWithEmailPassword();
   void signInWithEmailPassword();
 
@@ -189,32 +188,32 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   }
 
   // ------------------ FACEBOOK ------------------ //
-  @override
-  Future<UserModel> signInWithFacebook() async {
-    try {
-      final response = await supabaseClient.auth.signInWithOAuth(
-        OAuthProvider.facebook,
-        redirectTo:
-            kIsWeb ? null : 'io.supabase.fantavacanze://login-callback/',
-        authScreenLaunchMode: kIsWeb
-            ? LaunchMode.platformDefault
-            : LaunchMode
-                .externalApplication, // Launch the auth screen in a new webview on mobile.
-      );
+  // @override
+  // Future<UserModel> signInWithFacebook() async {
+  //   try {
+  //     final response = await supabaseClient.auth.signInWithOAuth(
+  //       OAuthProvider.facebook,
+  //       redirectTo:
+  //           kIsWeb ? null : 'io.supabase.fantavacanze://login-callback/',
+  //       authScreenLaunchMode: kIsWeb
+  //           ? LaunchMode.platformDefault
+  //           : LaunchMode
+  //               .externalApplication, // Launch the auth screen in a new webview on mobile.
+  //     );
 
-      if (!response) {
-        throw ServerException("Errore nella risposta da Facebook");
-      }
+  //     if (!response) {
+  //       throw ServerException("Errore nella risposta da Facebook");
+  //     }
 
-      final user = await getCurrentUserData();
+  //     // final user = await getCurrentUserData();
 
-      // print("email: ${user!.email}");
-      // print("name: ${user!.name}");
-      // print("id: ${user!.id}");
+  //     // print("email: ${user!.email}");
+  //     // print("name: ${user!.name}");
+  //     // print("id: ${user!.id}");
 
-      return user!;
-    } catch (e) {
-      throw ServerException(e.toString());
-    }
-  }
+  //     // return user!;
+  //   } catch (e) {
+  //     throw ServerException(e.toString());
+  //   }
+  // }
 }

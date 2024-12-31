@@ -4,7 +4,6 @@ import 'package:fantavacanze_official/features/auth/data/remote_data_source/auth
 import 'package:fantavacanze_official/features/auth/data/repository/auth_repository_impl.dart';
 import 'package:fantavacanze_official/features/auth/domain/repository/auth_repository.dart';
 import 'package:fantavacanze_official/features/auth/domain/use-cases/apple_sign_in.dart';
-import 'package:fantavacanze_official/features/auth/domain/use-cases/facebook_sign_in.dart';
 import 'package:fantavacanze_official/features/auth/domain/use-cases/google_sign_in.dart';
 import 'package:fantavacanze_official/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:get_it/get_it.dart';
@@ -40,9 +39,6 @@ void _initAuth() {
     ..registerFactory(
       () => AppleSignIn(authRepository: serviceLocator()),
     )
-    ..registerFactory(
-      () => FacebookSignIn(authRepository: serviceLocator()),
-    )
     //app-wide cubits
     ..registerLazySingleton(() => AppUserCubit())
     //bloc
@@ -50,7 +46,6 @@ void _initAuth() {
       () => AuthBloc(
         googleSignIn: serviceLocator(),
         appleSignIn: serviceLocator(),
-        facebookSignIn: serviceLocator(),
         appUserCubit: serviceLocator(),
       ),
     );
