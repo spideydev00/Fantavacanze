@@ -1,0 +1,64 @@
+lib/
+├── core/                                 // File e componenti globali
+│   ├── cubits/app_user
+│   │   └── app_user_cubit_cubit.dart      // Gestione stato globale dell’utente
+│   │   └── app_user_cubit_state.dart      
+│   ├── constants/
+│   │   └── constants.dart                 // Costanti dell’app
+│   ├── errors/
+│   │   ├── failure.dart                   // Gestione degli errori
+│   │   └── server_exception.dart
+│   ├── pages/
+│   │   └── empty_branded_page.dart        // Pagina di base per layout branded
+│   ├── secrets/
+│   │   └── app_secrets.dart               // Credenziali e segreti
+│   ├── theme/
+│   │   ├── colors.dart                    // Palette dei colori
+│   │   └── sizes.dart                     // Dimensioni e spaziature
+│   │   └── theme.dart                     // Theming
+│   └── use-case/
+│       └── usecase.dart                   // Base per i casi d’uso
+│   └── utils/
+│       └── format_duration.dart           // Formatta tempo
+│       └── show_snackbar.dart             // Metodo per mostrare snackbar
+│
+├── features/                             // Moduli funzionali
+│   └── auth/                             // Modulo di autenticazione
+│       ├── data/                         // Implementazioni concrete
+│       │   ├── models/
+│       │   │   └── user_model.dart        // Modello dati utente
+│       │   ├── remote_data_source/
+│       │   │   └── auth_remote_data_source.dart
+│       │   └── repository/
+│       │       └── auth_repository_impl.dart
+│       │
+│       ├── domain/                       // Logica di business e astrazioni
+│       │   ├── entities/
+│       │   │   └── user.dart              // Entità utente
+│       │   ├── repository/
+│       │   │   └── auth_repository.dart   // Interfaccia repository
+│       │   └── use-cases/
+│       │       ├── google_sign_in.dart    // Casi d’uso per Google sign in
+│       │       └── apple_sign_in.dart     // Casi d’uso per Apple sign in
+│       │
+│       └── presentation/                 // Interfaccia utente e gestione stati
+│           ├── bloc/
+│           │   └── auth_bloc.dart         // Bloc per l’autenticazione
+│           │   └── auth_event.dart        // Eventi Bloc 
+│           │   └── auth_state.dart        // Stati Bloc
+│           ├── pages/
+│           │   ├── signup.dart            // Pagina di registrazione
+│           │   ├── social_login.dart      // Pagina login social
+│           │   ├── standard_login.dart    // Pagina login standard
+│           │   └── onboarding.dart        // Pagina di onboarding
+│           └── widgets/
+│               ├── auth_field.dart                  // Campo di input per auth
+│               ├── cloudflare_turnstile_widget.dart // Widget per turnstile
+│               ├── promo_text.dart                  // Testi promozionali
+│               ├── rich_text.dart                   // Testo formattato
+│               └── on_boarding_page_content.dart    // Contenuti per l’onboarding
+│               └── social_button.dart               // Pulsante con icona social dinamica e check stato
+│
+├── home.dart                              // Home page principale
+├── init_dependencies.dart                 // Inizializzazione delle dipendenze
+└── main.dart                              // Entry point dell’app

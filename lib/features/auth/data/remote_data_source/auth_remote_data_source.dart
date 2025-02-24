@@ -20,7 +20,6 @@ abstract interface class AuthRemoteDataSource {
   //helper methods
   Future<UserModel?> getCurrentUserData();
   Session? get currentSession;
-  Stream<AuthState> get authStateStream;
 }
 
 class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
@@ -30,11 +29,6 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   // ------------------ GET CURRENT SESSION ------------------ //
   @override
   Session? get currentSession => supabaseClient.auth.currentSession;
-
-  // ------------------ GET STATE INFO ------------------ //
-  @override
-  Stream<AuthState> get authStateStream =>
-      supabaseClient.auth.onAuthStateChange;
 
   // ------------------ GET USER DATA ------------------ //
   @override
