@@ -1,94 +1,93 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
-<dict>
-    <key>CADisableMinimumFrameDurationOnPhone</key>
-    <true/>
-    <key>CFBundleDevelopmentRegion</key>
-    <string>$(DEVELOPMENT_LANGUAGE)</string>
-    <key>CFBundleDisplayName</key>
-    <string>Fantavacanze Official</string>
-    <key>CFBundleExecutable</key>
-    <string>$(EXECUTABLE_NAME)</string>
-    <key>CFBundleIdentifier</key>
-    <string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
-    <key>CFBundleInfoDictionaryVersion</key>
-    <string>6.0</string>
-    <key>CFBundleName</key>
-    <string>fantavacanze_official</string>
-    <key>CFBundlePackageType</key>
-    <string>APPL</string>
-    <key>CFBundleShortVersionString</key>
-    <string>$(FLUTTER_BUILD_NAME)</string>
-    <key>CFBundleSignature</key>
-    <string>????</string>
-    <key>CFBundleVersion</key>
-    <string>$(FLUTTER_BUILD_NUMBER)</string>
-    <key>LSRequiresIPhoneOS</key>
-    <true/>
-    <key>UIApplicationSupportsIndirectInputEvents</key>
-    <true/>
-    <key>UILaunchStoryboardName</key>
-    <string>LaunchScreen</string>
-    <key>UIMainStoryboardFile</key>
-    <string>Main</string>
-    <key>UISupportedInterfaceOrientations</key>
-    <array>
-        <string>UIInterfaceOrientationPortrait</string>
-        <string>UIInterfaceOrientationLandscapeLeft</string>
-        <string>UIInterfaceOrientationLandscapeRight</string>
-    </array>
-    <key>UISupportedInterfaceOrientations~ipad</key>
-    <array>
-        <string>UIInterfaceOrientationPortrait</string>
-        <string>UIInterfaceOrientationPortraitUpsideDown</string>
-        <string>UIInterfaceOrientationLandscapeLeft</string>
-        <string>UIInterfaceOrientationLandscapeRight</string>
-    </array>
-
-    <!-- URL Schemes -->
-    <key>CFBundleURLTypes</key>
-    <array>
-        <!-- Facebook Login -->
-        <dict>
-            <key>CFBundleURLSchemes</key>
-            <array>
-                <string>fb952626859621154</string>
-            </array>
-        </dict>
-        <!-- Google Login -->
-        <dict>
-            <key>CFBundleTypeRole</key>
-            <string>Editor</string>
-            <key>CFBundleURLSchemes</key>
-            <array>
-                <string>com.googleusercontent.apps.531436741316-1bvhvp1ckeg4u8bf9ksnmds0j617dp8k</string>
-                <string>afbnmosmovvcsnxpflyi.supabase.co</string>
-            </array>
-        </dict>
-        <!-- Deep Links -->
-        <dict>
-            <key>CFBundleTypeRole</key>
-            <string>Editor</string>
-            <key>CFBundleURLSchemes</key>
-            <array>
-                <string>io.supabase.fantavacanze</string>
-            </array>
-        </dict>
-    </array>
-
-    <!-- Facebook Config -->
-    <key>FacebookAppID</key>
-    <string>952626859621154</string>
-    <key>FacebookClientToken</key>
-    <string>dfe4634f4705b3dcf2cb4d7749e027be</string>
-    <key>FacebookDisplayName</key>
-    <string>Fantavacanze</string>
-
-    <!-- Allowed Queries -->
-    <key>LSApplicationQueriesSchemes</key>
-    <array>
-        <string>https</string>
-    </array>
-</dict>
+	<dict>
+		<key>CADisableMinimumFrameDurationOnPhone</key>
+		<true/>
+		<key>CFBundleDevelopmentRegion</key>
+		<string>$(DEVELOPMENT_LANGUAGE)</string>
+		<key>CFBundleDisplayName</key>
+		<string>Fantavacanze Official</string>
+		<key>CFBundleExecutable</key>
+		<string>$(EXECUTABLE_NAME)</string>
+		<key>CFBundleIdentifier</key>
+		<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+		<key>CFBundleInfoDictionaryVersion</key>
+		<string>6.0</string>
+		<key>CFBundleName</key>
+		<string>fantavacanze_official</string>
+		<key>CFBundlePackageType</key>
+		<string>APPL</string>
+		<key>CFBundleShortVersionString</key>
+		<string>$(FLUTTER_BUILD_NAME)</string>
+		<key>CFBundleSignature</key>
+		<string>????</string>
+		<key>CFBundleVersion</key>
+		<string>$(FLUTTER_BUILD_NUMBER)</string>
+		<key>LSRequiresIPhoneOS</key>
+		<true/>
+		<key>UIApplicationSupportsIndirectInputEvents</key>
+		<true/>
+		<key>UILaunchStoryboardName</key>
+		<string>LaunchScreen</string>
+		<key>UIMainStoryboardFile</key>
+		<string>Main</string>
+		<key>UISupportedInterfaceOrientations</key>
+		<array>
+			<string>UIInterfaceOrientationPortrait</string>
+			<string>UIInterfaceOrientationLandscapeLeft</string>
+			<string>UIInterfaceOrientationLandscapeRight</string>
+		</array>
+		<key>UISupportedInterfaceOrientations~ipad</key>
+		<array>
+			<string>UIInterfaceOrientationPortrait</string>
+			<string>UIInterfaceOrientationPortraitUpsideDown</string>
+			<string>UIInterfaceOrientationLandscapeLeft</string>
+			<string>UIInterfaceOrientationLandscapeRight</string>
+		</array>
+		<!-- URL Schemes -->
+		<key>CFBundleURLTypes</key>
+		<array>
+			<!-- Facebook Login -->
+			<dict>
+				<key>CFBundleURLSchemes</key>
+				<array>
+					<string>fb952626859621154</string>
+				</array>
+			</dict>
+			<!-- Google Login -->
+			<dict>
+				<key>CFBundleTypeRole</key>
+				<string>Editor</string>
+				<key>CFBundleURLSchemes</key>
+				<array>
+					<string>com.googleusercontent.apps.531436741316-1bvhvp1ckeg4u8bf9ksnmds0j617dp8k</string>
+					<string>afbnmosmovvcsnxpflyi.supabase.co</string>
+				</array>
+			</dict>
+			<!-- Deep Links -->
+			<dict>
+				<key>CFBundleTypeRole</key>
+				<string>Editor</string>
+				<key>CFBundleURLSchemes</key>
+				<array>
+					<string>io.supabase.fantavacanze</string>
+				</array>
+			</dict>
+		</array>
+		<!-- Facebook Config -->
+		<key>FacebookAppID</key>
+		<string>952626859621154</string>
+		<key>FacebookClientToken</key>
+		<string>dfe4634f4705b3dcf2cb4d7749e027be</string>
+		<key>FacebookDisplayName</key>
+		<string>Fantavacanze</string>
+		<!-- Allowed Queries -->
+		<key>LSApplicationQueriesSchemes</key>
+		<array>
+			<string>https</string>
+		</array>
+		<key>UIStatusBarHidden</key>
+		<false/>
+	</dict>
 </plist>

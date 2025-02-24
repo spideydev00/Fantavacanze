@@ -4,6 +4,7 @@ import 'package:fantavacanze_official/features/auth/data/remote_data_source/auth
 import 'package:fantavacanze_official/features/auth/data/repository/auth_repository_impl.dart';
 import 'package:fantavacanze_official/features/auth/domain/repository/auth_repository.dart';
 import 'package:fantavacanze_official/features/auth/domain/use-cases/apple_sign_in.dart';
+import 'package:fantavacanze_official/features/auth/domain/use-cases/get_current_user.dart';
 import 'package:fantavacanze_official/features/auth/domain/use-cases/google_sign_in.dart';
 import 'package:fantavacanze_official/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:get_it/get_it.dart';
@@ -39,8 +40,12 @@ void _initAuth() {
     ..registerFactory(
       () => AppleSignIn(authRepository: serviceLocator()),
     )
+    ..registerFactory(
+      () => GetCurrentUser(authRepository: serviceLocator()),
+    )
     //app-wide cubits
-    ..registerLazySingleton(() => AppUserCubit())
+    ..registerLazySingleton(
+        () => AppUserCubit(getCurrentUser: serviceLocator()))
     //bloc
     ..registerLazySingleton(
       () => AuthBloc(
