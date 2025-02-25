@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 
-class HomePage extends StatelessWidget {
-  static get route => MaterialPageRoute(builder: (context) => const HomePage());
-  const HomePage({super.key});
+class DashboardScreen extends StatelessWidget {
+  static get route =>
+      MaterialPageRoute(builder: (context) => const DashboardScreen());
+  const DashboardScreen({super.key});
 
   @override
   Widget build(BuildContext context) {

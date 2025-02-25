@@ -2,7 +2,7 @@ import 'package:fantavacanze_official/core/constants/constants.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:fantavacanze_official/features/auth/presentation/widgets/on_boarding_page_content.dart';
-import 'package:fantavacanze_official/home.dart';
+import 'package:fantavacanze_official/features/dashboard/presentation/pages/dashboard.dart';
 import 'package:flutter/material.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
@@ -144,7 +144,7 @@ class _OnBoardingScreenState extends State<OnBoardingScreen> {
                     ? GestureDetector(
                         onTap: () {
                           Navigator.of(context).pushAndRemoveUntil(
-                              HomePage.route, (route) => false);
+                              DashboardScreen.route, (route) => false);
                         },
                         child: Container(
                           padding: const EdgeInsets.all(ThemeSizes.md),
