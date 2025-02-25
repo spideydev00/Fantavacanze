@@ -27,7 +27,7 @@ class AuthField extends StatelessWidget {
       obscureText: isPassword,
       validator: (value) {
         if (value!.isEmpty) {
-          return 'Please add $hintText';
+          return 'Inserisci $hintText';
         }
 
         return null;

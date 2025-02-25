@@ -83,12 +83,15 @@ flutter:
   - images/logo-neon.png
   - images/logo-high-padding.png
   - images/otp-verification-icon.png
-  - images/google.svg
-  - images/apple.svg
-  - images/facebook.svg
-  - images/discord.svg
-  - images/telefono.svg
-  - images/email.svg
+  - images/auth_icons/google.svg
+  - images/auth_icons/apple.svg
+  - images/auth_icons/facebook.svg
+  - images/auth_icons/discord.svg
+  - images/auth_icons/telefono.svg
+  - images/auth_icons/email.svg
+  - images/error-icon.svg
+  - images/success-icon.svg
+  - images/mail-notification.svg
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

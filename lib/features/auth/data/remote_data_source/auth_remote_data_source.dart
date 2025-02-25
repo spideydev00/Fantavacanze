@@ -15,15 +15,15 @@ abstract interface class AuthRemoteDataSource {
   Future<UserModel> signInWithApple();
   // Future<UserModel> signInWithFacebook();
 
-  Future<UserModel> signUpWithEmailPassword({
-    required String name,
-    required String email,
-    required String password,
-  });
-  Future<UserModel> loginWithEmailPassword({
-    required String email,
-    required String password,
-  });
+  Future<UserModel> signUpWithEmailPassword(
+      {required String name,
+      required String email,
+      required String password,
+      required String hCaptcha});
+  Future<UserModel> loginWithEmailPassword(
+      {required String email,
+      required String password,
+      required String hCaptcha});
 
   //helper methods
   Future<UserModel?> getCurrentUserData();
@@ -131,15 +131,13 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
 
   // ------------------ EMAIL SIGNIN ------------------ //
   @override
-  Future<UserModel> loginWithEmailPassword({
-    required String email,
-    required String password,
-  }) async {
+  Future<UserModel> loginWithEmailPassword(
+      {required String email,
+      required String password,
+      required String hCaptcha}) async {
     try {
       final response = await supabaseClient.auth.signInWithPassword(
-        password: password,
-        email: email,
-      );
+          password: password, email: email, captchaToken: hCaptcha);
       if (response.user == null) {
         throw ServerException('User is null!');
       }
@@ -205,11 +203,13 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     required String name,
     required String email,
     required String password,
+    required String hCaptcha,
   }) async {
     try {
       final response = await supabaseClient.auth.signUp(
         password: password,
         email: email,
+        captchaToken: hCaptcha,
         data: {
           'name': name,
         },

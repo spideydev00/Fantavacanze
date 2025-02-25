@@ -36,10 +36,12 @@ class AuthRepositoryImpl implements AuthRepository {
   //E-mail
   @override
   Future<Either<Failure, User>> loginWithEmailPassword(
-      {required String email, required String password}) async {
+      {required String email,
+      required String password,
+      required String hCaptcha}) async {
     try {
       final user = await authRemoteDataSource.loginWithEmailPassword(
-          email: email, password: password);
+          email: email, password: password, hCaptcha: hCaptcha);
 
       return right(user);
     } on ServerException catch (e) {
@@ -51,10 +53,11 @@ class AuthRepositoryImpl implements AuthRepository {
   Future<Either<Failure, User>> signUpWithEmailPassword(
       {required String name,
       required String email,
-      required String password}) async {
+      required String password,
+      required String hCaptcha}) async {
     try {
       final user = await authRemoteDataSource.signUpWithEmailPassword(
-          name: name, email: email, password: password);
+          name: name, email: email, password: password, hCaptcha: hCaptcha);
 
       return right(user);
     } on ServerException catch (e) {

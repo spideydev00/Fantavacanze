@@ -12,13 +12,17 @@ class EmailSignIn implements Usecase<User, SignInParams> {
   @override
   Future<Either<Failure, User>> call(SignInParams params) async {
     return await authRepository.loginWithEmailPassword(
-        email: params.email, password: params.password);
+        email: params.email,
+        password: params.password,
+        hCaptcha: params.hCaptcha);
   }
 }
 
 class SignInParams {
   final String email;
   final String password;
+  final String hCaptcha;
 
-  SignInParams({required this.email, required this.password});
+  SignInParams(
+      {required this.email, required this.password, required this.hCaptcha});
 }
