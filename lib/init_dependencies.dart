@@ -4,6 +4,8 @@ import 'package:fantavacanze_official/features/auth/data/remote_data_source/auth
 import 'package:fantavacanze_official/features/auth/data/repository/auth_repository_impl.dart';
 import 'package:fantavacanze_official/features/auth/domain/repository/auth_repository.dart';
 import 'package:fantavacanze_official/features/auth/domain/use-cases/apple_sign_in.dart';
+import 'package:fantavacanze_official/features/auth/domain/use-cases/email_sign_in.dart';
+import 'package:fantavacanze_official/features/auth/domain/use-cases/email_sign_up.dart';
 import 'package:fantavacanze_official/features/auth/domain/use-cases/get_current_user.dart';
 import 'package:fantavacanze_official/features/auth/domain/use-cases/google_sign_in.dart';
 import 'package:fantavacanze_official/features/auth/presentation/bloc/auth_bloc.dart';
@@ -41,6 +43,12 @@ void _initAuth() {
       () => AppleSignIn(authRepository: serviceLocator()),
     )
     ..registerFactory(
+      () => EmailSignIn(authRepository: serviceLocator()),
+    )
+    ..registerFactory(
+      () => EmailSignUp(authRepository: serviceLocator()),
+    )
+    ..registerFactory(
       () => GetCurrentUser(authRepository: serviceLocator()),
     )
     //app-wide cubits
@@ -52,6 +60,8 @@ void _initAuth() {
         googleSignIn: serviceLocator(),
         appleSignIn: serviceLocator(),
         appUserCubit: serviceLocator(),
+        emailSignIn: serviceLocator(),
+        emailSignUp: serviceLocator(),
       ),
     );
 }
