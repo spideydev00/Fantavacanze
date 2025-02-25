@@ -213,6 +213,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         data: {
           'name': name,
         },
+        emailRedirectTo: "https://fantavacanze.it/",
       );
       if (response.user == null) {
         throw ServerException('User is null!');
