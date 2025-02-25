@@ -74,7 +74,7 @@ class AppTheme {
             ),
           ),
         ),
-        dialogBackgroundColor: ColorPalette.dialogBg,
+        dialogBackgroundColor: ColorPalette.darkBg,
         /* ---------------------------------------------------------------- */
         //SCAFFOLD
         scaffoldBackgroundColor: ColorPalette.darkBg,

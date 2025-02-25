@@ -11,6 +11,7 @@ class CustomDialogBox extends StatelessWidget {
   final String title;
   final String description;
   final String buttonText;
+  final Color? bgColor;
   final bool isMultiButton;
 
   const CustomDialogBox({
@@ -20,11 +21,13 @@ class CustomDialogBox extends StatelessWidget {
     required this.description,
     this.isMultiButton = false,
     this.buttonText = "Chiudi",
+    this.bgColor,
   });
 
   @override
   Widget build(BuildContext context) {
     return Dialog(
+      backgroundColor: bgColor ?? Theme.of(context).dialogBackgroundColor,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusLg),
       ),
