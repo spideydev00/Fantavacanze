@@ -31,6 +31,7 @@ class ColorPalette {
   static const Color darkContainer = Color.fromARGB(255, 20, 20, 20);
   static const Color blueContainer = Color.fromARGB(255, 46, 74, 144);
   static const Color greenContainer = Color.fromARGB(255, 64, 138, 115);
+  static const Color dialogBg = Color.fromARGB(255, 24, 26, 33);
 
   // Button colors
   static const Color buttonPrimary = Color.fromARGB(255, 196, 67, 67);
@@ -45,7 +46,7 @@ class ColorPalette {
   static const Color error = Color(0xFFD32F2F);
   static const Color success = Color(0xFF388E3C);
   static const Color warning = Color(0xFFF57C00);
-  static const Color info = Color(0xFF1976D2);
+  static const Color info = Color.fromARGB(255, 135, 126, 209);
 
   // Neutral Shades
   static const Color black = Color(0xFF232323);

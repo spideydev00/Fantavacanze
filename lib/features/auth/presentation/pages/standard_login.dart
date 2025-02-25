@@ -1,10 +1,16 @@
+import 'package:fantavacanze_official/core/common/widgets/loader.dart';
 import 'package:fantavacanze_official/core/pages/empty_branded_page.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
+import 'package:fantavacanze_official/core/widgets/custom_dialog_box.dart';
+import 'package:fantavacanze_official/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:fantavacanze_official/features/auth/presentation/pages/signup.dart';
 import 'package:fantavacanze_official/features/auth/presentation/widgets/auth_field.dart';
+import 'package:fantavacanze_official/features/auth/presentation/widgets/cloudflare_turnstile_widget.dart';
 import 'package:fantavacanze_official/features/auth/presentation/widgets/rich_text.dart';
+import 'package:fantavacanze_official/home.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class StandardLoginPage extends StatefulWidget {
   static get route =>
@@ -17,6 +23,8 @@ class StandardLoginPage extends StatefulWidget {
 
 class _StandardLoginPageState extends State<StandardLoginPage> {
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
+  String turnstileToken = "";
+
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
 
@@ -50,10 +58,70 @@ class _StandardLoginPageState extends State<StandardLoginPage> {
                   isPassword: true,
                   hintText: "Password",
                 ),
-                const SizedBox(height: 25),
-                ElevatedButton.icon(
-                  onPressed: () {},
-                  label: const Text("Accedi!"),
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: ThemeSizes.lg),
+                  child: CloudflareTurnstileWidget(
+                    onTokenReceived: (token) {
+                      setState(() {
+                        turnstileToken = token;
+                      });
+
+                      // print("Token: $turnstileToken");
+                    },
+                  ),
+                ),
+                BlocConsumer<AuthBloc, AuthState>(
+                  listener: (context, state) {
+                    if (state is AuthFailure) {
+                      showDialog(
+                        context: context,
+                        builder: (context) => CustomDialogBox(
+                          title: "Errore Login!",
+                          description: state.message,
+                          type: DialogType.error,
+                          isMultiButton: false,
+                        ),
+                      );
+                    }
+                    if (state is AuthSuccess) {
+                      Navigator.of(context)
+                          .pushAndRemoveUntil(HomePage.route, (route) => false);
+                    }
+                  },
+                  builder: (context, state) {
+                    if (state is AuthLoading) {
+                      return Center(
+                        child: Loader(
+                          color: ColorPalette.primary,
+                        ),
+                      );
+                    }
+                    return ElevatedButton.icon(
+                      onPressed: () {
+                        if (turnstileToken.isEmpty) {
+                          showDialog(
+                            context: context,
+                            builder: (context) => CustomDialogBox(
+                              title: "hCaptcha Error..",
+                              description: "Dimostra di essere un umano!",
+                              type: DialogType.error,
+                              isMultiButton: false,
+                            ),
+                          );
+                        }
+                        if (formKey.currentState!.validate()) {
+                          context.read<AuthBloc>().add(
+                                AuthEmailSignIn(
+                                  email: emailController.text,
+                                  password: passwordController.text,
+                                  hCaptcha: turnstileToken,
+                                ),
+                              );
+                        }
+                      },
+                      label: const Text("Accedi"),
+                    );
+                  },
                 ),
               ],
             ),

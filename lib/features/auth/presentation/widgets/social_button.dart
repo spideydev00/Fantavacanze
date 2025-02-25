@@ -3,7 +3,7 @@ import 'package:fantavacanze_official/core/constants/constants.dart';
 import 'package:fantavacanze_official/core/extensions/context_extension.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
-import 'package:fantavacanze_official/core/utils/show_snackbar.dart';
+import 'package:fantavacanze_official/core/widgets/custom_dialog_box.dart';
 import 'package:fantavacanze_official/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:fantavacanze_official/features/auth/presentation/pages/onboarding.dart';
 import 'package:flutter/material.dart';
@@ -41,7 +41,15 @@ class SocialButton extends StatelessWidget {
     return BlocConsumer<AuthBloc, AuthState>(
       listener: (context, state) {
         if (state is AuthFailure) {
-          showSnackBar(context, state.message);
+          showDialog(
+            context: context,
+            builder: (context) => CustomDialogBox(
+              title: "$socialName Error!",
+              description: state.message,
+              type: DialogType.error,
+              isMultiButton: false,
+            ),
+          );
         }
         if (state is AuthSuccess) {
           Navigator.of(context)
@@ -84,7 +92,7 @@ class SocialButton extends StatelessWidget {
                     elevation: 0,
                   ),
                   child: SvgPicture.asset(
-                    'images/${socialName.toLowerCase()}.svg',
+                    'images/auth_icons/${socialName.toLowerCase()}.svg',
                     width: Constants.getWidth(context) * 0.12,
                   ),
                 )
@@ -105,7 +113,7 @@ class SocialButton extends StatelessWidget {
                     ),
                   ),
                   icon: SvgPicture.asset(
-                    'images/${socialName.toLowerCase()}.svg',
+                    'images/auth_icons/${socialName.toLowerCase()}.svg',
                     width: Constants.getWidth(context) * 0.1,
                     colorFilter: ColorFilter.mode(
                       foregroundColor,

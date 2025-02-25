@@ -3,7 +3,7 @@ import 'package:fantavacanze_official/core/constants/constants.dart';
 import 'package:fantavacanze_official/core/extensions/context_extension.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
-import 'package:fantavacanze_official/features/auth/presentation/pages/post_otp_verification.dart';
+import 'package:fantavacanze_official/features/auth/presentation/pages/phone_login(unused)/post_otp_verification.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
 

@@ -12,7 +12,10 @@ class EmailSignUp implements Usecase<User, SignUpParams> {
   @override
   Future<Either<Failure, User>> call(SignUpParams params) async {
     return await authRepository.signUpWithEmailPassword(
-        name: params.name, email: params.email, password: params.password);
+        name: params.name,
+        email: params.email,
+        password: params.password,
+        hCaptcha: params.hCaptcha);
   }
 }
 
@@ -20,7 +23,11 @@ class SignUpParams {
   final String name;
   final String email;
   final String password;
+  final String hCaptcha;
 
   SignUpParams(
-      {required this.name, required this.email, required this.password});
+      {required this.name,
+      required this.email,
+      required this.password,
+      required this.hCaptcha});
 }

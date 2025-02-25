@@ -63,8 +63,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   Future<void> _onEmailSignIn(
       AuthEmailSignIn event, Emitter<AuthState> emit) async {
     emit(AuthLoading());
-    final res = await _emailSignIn
-        .call(SignInParams(email: event.email, password: event.password));
+    final res = await _emailSignIn.call(SignInParams(
+        email: event.email,
+        password: event.password,
+        hCaptcha: event.hCaptcha));
 
     res.fold((l) => emit(AuthFailure(l.message)),
         (r) => emit(_emitAuthSuccess(r, emit)));
@@ -74,7 +76,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       AuthEmailSignUp event, Emitter<AuthState> emit) async {
     emit(AuthLoading());
     final res = await _emailSignUp.call(SignUpParams(
-        name: event.name, email: event.email, password: event.password));
+        name: event.name,
+        email: event.email,
+        password: event.password,
+        hCaptcha: event.hCaptcha));
 
     res.fold((l) => emit(AuthFailure(l.message)),
         (r) => emit(_emitAuthSuccess(r, emit)));
