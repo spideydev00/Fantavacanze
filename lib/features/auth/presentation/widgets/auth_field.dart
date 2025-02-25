@@ -1,8 +1,10 @@
 import 'package:fantavacanze_official/core/extensions/context_extension.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
+import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 
-class AuthField extends StatelessWidget {
+class AuthField extends StatefulWidget {
   const AuthField(
       {super.key,
       required this.controller,
@@ -14,20 +16,51 @@ class AuthField extends StatelessWidget {
   final bool isPassword;
 
   @override
+  State<AuthField> createState() => _AuthFieldState();
+}
+
+class _AuthFieldState extends State<AuthField> {
+  late bool showText;
+
+  @override
+  void initState() {
+    super.initState();
+    showText = false;
+  }
+
+  @override
   Widget build(BuildContext context) {
     return TextFormField(
       cursorColor: ColorPalette.softBlack,
       style: context.textTheme.bodyLarge!.copyWith(
         color: ColorPalette.black,
       ),
-      controller: controller,
+      controller: widget.controller,
       decoration: InputDecoration(
-        hintText: hintText,
+        hintText: widget.hintText,
+        suffixIcon: widget.isPassword
+            ? Padding(
+                padding: const EdgeInsets.symmetric(
+                  vertical: ThemeSizes.sm,
+                  horizontal: ThemeSizes.md,
+                ),
+                child: GestureDetector(
+                  child: !showText
+                      ? SvgPicture.asset("images/eye-show.svg")
+                      : SvgPicture.asset("images/eye-hide.svg"),
+                  onTap: () {
+                    setState(() {
+                      showText = !showText;
+                    });
+                  },
+                ),
+              )
+            : null,
       ),
-      obscureText: isPassword,
+      obscureText: widget.isPassword && !showText,
       validator: (value) {
         if (value!.isEmpty) {
-          return 'Inserisci $hintText';
+          return 'Inserisci ${widget.hintText}';
         }
 
         return null;

@@ -113,7 +113,7 @@ class _SignUpPageState extends State<SignUpPage> {
                         ),
                       );
                     }
-                    return ElevatedButton.icon(
+                    return ElevatedButton(
                       onPressed: () {
                         if (turnstileToken.isEmpty) {
                           showDialog(
@@ -137,8 +137,7 @@ class _SignUpPageState extends State<SignUpPage> {
                               );
                         }
                       },
-                      label: const Text("Registrati Ora!"),
-                      icon: const Icon(Icons.person_add_alt_1_sharp),
+                      child: const Text("Registrati Ora"),
                     );
                   },
                 ),
