@@ -8,7 +8,7 @@ import 'package:fantavacanze_official/features/auth/presentation/pages/signup.da
 import 'package:fantavacanze_official/features/auth/presentation/widgets/auth_field.dart';
 import 'package:fantavacanze_official/features/auth/presentation/widgets/cloudflare_turnstile_widget.dart';
 import 'package:fantavacanze_official/features/auth/presentation/widgets/rich_text.dart';
-import 'package:fantavacanze_official/home.dart';
+import 'package:fantavacanze_official/features/dashboard/presentation/pages/dashboard.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -84,8 +84,8 @@ class _StandardLoginPageState extends State<StandardLoginPage> {
                       );
                     }
                     if (state is AuthSuccess) {
-                      Navigator.of(context)
-                          .pushAndRemoveUntil(HomePage.route, (route) => false);
+                      Navigator.of(context).pushAndRemoveUntil(
+                          DashboardScreen.route, (route) => false);
                     }
                   },
                   builder: (context, state) {
