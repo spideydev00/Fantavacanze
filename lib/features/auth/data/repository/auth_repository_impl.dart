@@ -9,6 +9,7 @@ class AuthRepositoryImpl implements AuthRepository {
   final AuthRemoteDataSource authRemoteDataSource;
   AuthRepositoryImpl({required this.authRemoteDataSource});
 
+  //Google
   @override
   Future<Either<Failure, User>> googleSignIn() async {
     try {
@@ -20,6 +21,7 @@ class AuthRepositoryImpl implements AuthRepository {
     }
   }
 
+  //Apple
   @override
   Future<Either<Failure, User>> appleSignIn() async {
     try {
@@ -31,6 +33,36 @@ class AuthRepositoryImpl implements AuthRepository {
     }
   }
 
+  //E-mail
+  @override
+  Future<Either<Failure, User>> loginWithEmailPassword(
+      {required String email, required String password}) async {
+    try {
+      final user = await authRemoteDataSource.loginWithEmailPassword(
+          email: email, password: password);
+
+      return right(user);
+    } on ServerException catch (e) {
+      return left(Failure(e.message));
+    }
+  }
+
+  @override
+  Future<Either<Failure, User>> signUpWithEmailPassword(
+      {required String name,
+      required String email,
+      required String password}) async {
+    try {
+      final user = await authRemoteDataSource.signUpWithEmailPassword(
+          name: name, email: email, password: password);
+
+      return right(user);
+    } on ServerException catch (e) {
+      return left(Failure(e.message));
+    }
+  }
+
+  //Get User if logged in
   @override
   Future<Either<Failure, User>> currentUser() async {
     try {
