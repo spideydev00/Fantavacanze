@@ -9,10 +9,12 @@ class AuthField extends StatefulWidget {
       {super.key,
       required this.controller,
       required this.hintText,
+      this.icon,
       this.isPassword = false});
 
   final TextEditingController controller;
   final String hintText;
+  final Widget? icon;
   final bool isPassword;
 
   @override
@@ -38,6 +40,7 @@ class _AuthFieldState extends State<AuthField> {
       controller: widget.controller,
       decoration: InputDecoration(
         hintText: widget.hintText,
+        prefixIcon: widget.icon,
         suffixIcon: widget.isPassword
             ? Padding(
                 padding: const EdgeInsets.symmetric(
