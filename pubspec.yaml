@@ -94,6 +94,9 @@ flutter:
   - images/mail-notification.svg
   - images/eye-hide.svg
   - images/eye-show.svg
+  - images/add-email-icon.svg
+  - images/lock-icon.svg
+  - images/text-icon.svg
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

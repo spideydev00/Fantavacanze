@@ -11,6 +11,7 @@ import 'package:fantavacanze_official/features/auth/presentation/widgets/rich_te
 import 'package:fantavacanze_official/home.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_svg/svg.dart';
 
 class StandardLoginPage extends StatefulWidget {
   static get route =>
@@ -51,12 +52,32 @@ class _StandardLoginPageState extends State<StandardLoginPage> {
                 AuthField(
                   controller: emailController,
                   hintText: "E-mail",
+                  icon: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      vertical: ThemeSizes.sm,
+                      horizontal: ThemeSizes.md,
+                    ),
+                    child: SvgPicture.asset(
+                      "images/add-email-icon.svg",
+                      width: 35,
+                    ),
+                  ),
                 ),
                 const SizedBox(height: 12),
                 AuthField(
                   controller: passwordController,
                   isPassword: true,
                   hintText: "Password",
+                  icon: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      vertical: ThemeSizes.sm,
+                      horizontal: ThemeSizes.md,
+                    ),
+                    child: SvgPicture.asset(
+                      "images/lock-icon.svg",
+                      width: 35,
+                    ),
+                  ),
                 ),
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: ThemeSizes.lg),
