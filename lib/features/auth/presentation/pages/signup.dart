@@ -59,7 +59,7 @@ class _SignUpPageState extends State<SignUpPage> {
                       horizontal: ThemeSizes.md,
                     ),
                     child: SvgPicture.asset(
-                      "images/text-icon.svg",
+                      "images/user-icon.svg",
                       width: 35,
                     ),
                   ),
