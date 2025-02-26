@@ -34,7 +34,7 @@ class ColorPalette {
   static const Color dialogBg = Color.fromARGB(255, 24, 26, 33);
 
   // Button colors
-  static const Color buttonPrimary = Color.fromARGB(255, 196, 67, 67);
+  static const Color buttonPrimary = Color.fromARGB(255, 194, 34, 34);
   static const Color buttonSecondary = Color(0xFF6C757D);
   static const Color buttonDisabled = Color(0xFFC4C4C4);
 
