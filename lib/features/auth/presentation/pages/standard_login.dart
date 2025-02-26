@@ -75,7 +75,7 @@ class _StandardLoginPageState extends State<StandardLoginPage> {
                     ),
                     child: SvgPicture.asset(
                       "images/lock-icon.svg",
-                      width: 35,
+                      width: 33,
                     ),
                   ),
                 ),

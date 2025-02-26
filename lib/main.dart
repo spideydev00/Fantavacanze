@@ -1,7 +1,6 @@
 import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit_cubit.dart';
 import 'package:fantavacanze_official/core/theme/theme.dart';
 import 'package:fantavacanze_official/features/auth/presentation/bloc/auth_bloc.dart';
-import 'package:fantavacanze_official/features/auth/presentation/pages/social_login.dart';
 import 'package:fantavacanze_official/init_dependencies.dart';
 import 'package:fantavacanze_official/initial_page.dart';
 import 'package:flutter/material.dart';
@@ -63,7 +62,7 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Fantavacanze',
-      home: const SocialLoginPage(),
+      home: const InitialPage(),
       theme: AppTheme.getDarkTheme(context),
       debugShowCheckedModeBanner: false,
     );
