@@ -85,7 +85,7 @@ class _OtpPageState extends State<OtpPage> {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Image.asset(
-                "images/otp-verification-icon.png",
+                "assets/images/otp-verification-icon.png",
                 height: Constants.getHeight(context) * 0.3,
               ),
               const SizedBox(height: 30),

@@ -56,7 +56,7 @@ class EmptyBrandedPage extends StatelessWidget {
                     children: [
                       const SizedBox(height: 30),
                       Image.asset(
-                        'images/logo-neon.png',
+                        'assets/images/logo-neon.png',
                         width: Constants.getWidth(context) * 0.5,
                       ),
                       const SizedBox(height: 5),

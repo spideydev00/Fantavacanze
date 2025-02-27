@@ -39,7 +39,7 @@ class _StandardLoginPageState extends State<StandardLoginPage> {
   @override
   Widget build(BuildContext context) {
     return EmptyBrandedPage(
-      bgImagePath: "images/bg.png",
+      bgImagePath: "assets/images/bg.png",
       mainColumnAlignment: MainAxisAlignment.spaceBetween,
       isBackNavigationActive: true,
       widgets: [
@@ -58,7 +58,7 @@ class _StandardLoginPageState extends State<StandardLoginPage> {
                       horizontal: ThemeSizes.md,
                     ),
                     child: SvgPicture.asset(
-                      "images/add-email-icon.svg",
+                      "assets/images/icons/auth_field_icons/add-email-icon.svg",
                       width: 35,
                     ),
                   ),
@@ -74,7 +74,7 @@ class _StandardLoginPageState extends State<StandardLoginPage> {
                       horizontal: ThemeSizes.md,
                     ),
                     child: SvgPicture.asset(
-                      "images/lock-icon.svg",
+                      "assets/images/icons/auth_field_icons/lock-icon.svg",
                       width: 33,
                     ),
                   ),
