@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit_cubit.dart';
+import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit.dart';
 import 'package:fantavacanze_official/core/use-case/usecase.dart';
 import 'package:fantavacanze_official/features/auth/domain/entities/user.dart';
 import 'package:fantavacanze_official/features/auth/domain/use-cases/apple_sign_in.dart';
@@ -47,16 +47,16 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     emit(AuthGoogleLoading());
     final res = await _googleSignIn.call(NoParams());
 
-    res.fold((l) => emit(AuthFailure(l.message)),
+    res.fold((l) => emit(AuthFailure("Google: ${l.message}")),
         (r) => emit(_emitAuthSuccess(r, emit)));
   }
 
   Future<void> _onAppleSignIn(
       AuthAppleSignIn event, Emitter<AuthState> emit) async {
-    emit(AuthAppleOrFbLoading());
+    emit(AuthAppleLoading());
     final res = await _appleSignIn.call(NoParams());
 
-    res.fold((l) => emit(AuthFailure(l.message)),
+    res.fold((l) => emit(AuthFailure("Apple: ${l.message}")),
         (r) => emit(_emitAuthSuccess(r, emit)));
   }
 

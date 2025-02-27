@@ -4,7 +4,7 @@ import 'package:fantavacanze_official/features/auth/domain/use-cases/get_current
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-part 'app_user_cubit_state.dart';
+part 'app_user_state.dart';
 
 class AppUserCubit extends Cubit<AppUserState> {
   final GetCurrentUser _getCurrentUser;

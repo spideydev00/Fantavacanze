@@ -49,8 +49,10 @@ class _AuthFieldState extends State<AuthField> {
                 ),
                 child: GestureDetector(
                   child: !showText
-                      ? SvgPicture.asset("assets/images/eye-show.svg")
-                      : SvgPicture.asset("assets/images/eye-hide.svg"),
+                      ? SvgPicture.asset(
+                          "assets/images/icons/auth_field_icons/eye-show.svg")
+                      : SvgPicture.asset(
+                          "assets/images/icons/auth_field_icons/eye-hide.svg"),
                   onTap: () {
                     setState(() {
                       showText = !showText;

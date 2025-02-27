@@ -1,4 +1,4 @@
-import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit_cubit.dart';
+import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit.dart';
 import 'package:fantavacanze_official/features/auth/presentation/pages/social_login.dart';
 import 'package:fantavacanze_official/features/dashboard/presentation/pages/dashboard.dart';
 import 'package:flutter/material.dart';
