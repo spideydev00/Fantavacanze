@@ -44,16 +44,22 @@ class _DashboardScreenState extends State<DashboardScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {},
-        child: RiveAsset(
-          path: "assets/animations/rive/icons.riv",
-          artboard: "CHAT",
-          stateMachineName: "CHAT_Interactivity",
-          title: "",
+      appBar: AppBar(),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      floatingActionButton: Container(
+        height: 50,
+        margin: EdgeInsets.only(bottom: ThemeSizes.md + 5),
+        child: FloatingActionButton(
+          onPressed: () {},
+          child: RiveAsset(
+            path: "assets/animations/rive/icons.riv",
+            artboard: "SEARCH",
+            stateMachineName: "SEARCH_Interactivity",
+            height: ThemeSizes.xl,
+            width: ThemeSizes.xl,
+          ),
         ),
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       bottomNavigationBar: SafeArea(
         child: Container(
           padding: EdgeInsets.all(ThemeSizes.xs),
