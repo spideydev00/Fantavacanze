@@ -53,4 +53,7 @@ class ThemeSizes {
 
   // Loading indicator size
   static const double loadingIndicatorSize = 36.0;
+
+  // Loading indicator size
+  static const double riveIcon = 44.0;
 }
