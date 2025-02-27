@@ -10,7 +10,7 @@ final class AuthLoading extends AuthState {}
 //in order to display loader
 final class AuthGoogleLoading extends AuthState {}
 
-final class AuthAppleOrFbLoading extends AuthState {}
+final class AuthAppleLoading extends AuthState {}
 // for just one button
 
 final class AuthFailure extends AuthState {

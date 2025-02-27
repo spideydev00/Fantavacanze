@@ -1,4 +1,4 @@
-part of 'app_user_cubit_cubit.dart';
+part of 'app_user_cubit.dart';
 
 @immutable
 sealed class AppUserState {}

@@ -9,11 +9,12 @@ import 'package:fantavacanze_official/features/auth/presentation/pages/standard_
 import 'package:fantavacanze_official/features/auth/presentation/widgets/promo_text.dart';
 import 'package:fantavacanze_official/features/auth/presentation/widgets/rich_text.dart';
 import 'package:fantavacanze_official/features/auth/presentation/widgets/social_button.dart';
+import 'package:fantavacanze_official/core/widgets/custom_dialog_box.dart';
+import 'package:fantavacanze_official/features/auth/presentation/pages/onboarding.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class SocialLoginPage extends StatefulWidget {
-  //login page route
   static get route =>
       MaterialPageRoute(builder: (context) => const SocialLoginPage());
 
@@ -24,78 +25,84 @@ class SocialLoginPage extends StatefulWidget {
 }
 
 class _SocialLoginPageState extends State<SocialLoginPage> {
-  final GlobalKey<FormState> formKey = GlobalKey<FormState>();
-  late String turnstileToken;
-
-  @override
-  void initState() {
-    super.initState();
-    turnstileToken = '';
-  }
-
   @override
   Widget build(BuildContext context) {
-    return EmptyBrandedPage(
-      bgImagePath: "assets/images/bg.png",
-      mainColumnAlignment: MainAxisAlignment.spaceBetween,
-      widgets: [
-        /* ----------------------------------------------------------- */
-        Platform.isIOS
-            ? SocialButton(
-                onPressed: () {
-                  context.read<AuthBloc>().add(AuthAppleSignIn());
-                },
-                socialName: 'Apple',
-                isGradient: false,
-                bgColor: ColorPalette.apple,
-                width: Constants.getWidth(context) * 0.53,
-                isIconOnly: true,
-                loaderColor: ColorPalette.apple,
-                loadingState: AuthAppleOrFbLoading(),
-              )
-            : SocialButton(
-                onPressed: () {
-                  Navigator.of(context).push(SignUpPage.route);
-                },
-                socialName: 'Email',
-                isGradient: false,
-                bgColor: ColorPalette.primary,
-                width: Constants.getWidth(context) * 0.53,
-                isIconOnly: true,
-                loaderColor: ColorPalette.primary,
-                loadingState: AuthAppleOrFbLoading(),
+    return BlocConsumer<AuthBloc, AuthState>(
+      listener: (context, state) {
+        if (state is AuthFailure) {
+          showDialog(
+            context: context,
+            builder: (context) => CustomDialogBox(
+              title: "Login Error!",
+              description: state.message,
+              type: DialogType.error,
+              isMultiButton: false,
+            ),
+          );
+        }
+        if (state is AuthSuccess) {
+          Navigator.of(context)
+              .pushAndRemoveUntil(OnBoardingScreen.route, (route) => false);
+        }
+      },
+      builder: (context, state) {
+        bool isAppleLoading = state is AuthAppleLoading;
+        bool isGoogleLoading = state is AuthGoogleLoading;
+
+        return EmptyBrandedPage(
+          bgImagePath: "assets/images/bg.png",
+          mainColumnAlignment: MainAxisAlignment.spaceBetween,
+          widgets: [
+            Platform.isIOS
+                ? SocialButton(
+                    onPressed: () =>
+                        context.read<AuthBloc>().add(AuthAppleSignIn()),
+                    socialName: 'Apple',
+                    isGradient: false,
+                    bgColor: ColorPalette.apple,
+                    width: Constants.getWidth(context) * 0.53,
+                    isIconOnly: true,
+                    loaderColor: ColorPalette.apple,
+                    isLoading: isAppleLoading,
+                  )
+                : SocialButton(
+                    onPressed: () =>
+                        Navigator.of(context).push(SignUpPage.route),
+                    socialName: 'Email',
+                    isGradient: false,
+                    bgColor: Colors.black,
+                    width: Constants.getWidth(context) * 0.53,
+                    isIconOnly: true,
+                    loaderColor: Colors.black,
+                    isLoading: false,
+                  ),
+            const SizedBox(height: 15),
+            SocialButton(
+              onPressed: () => context.read<AuthBloc>().add(AuthGoogleSignIn()),
+              socialName: 'Google',
+              isGradient: true,
+              bgGradient: ColorPalette.googleGradientsBg,
+              width: Constants.getWidth(context) * 0.53,
+              isIconOnly: true,
+              loaderColor: ColorPalette.primary,
+              isLoading: isGoogleLoading,
+            ),
+          ],
+          newColumnWidgets: [
+            const PromoText(text: "Diventa il re della festa."),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: ThemeSizes.xl),
+              child: CustomRichText(
+                onPressed: () =>
+                    Navigator.of(context).push(StandardLoginPage.route),
+                initialText: "Oppure accedi",
+                richText: "con le tue credenziali",
+                richTxtColor: ColorPalette.secondary,
               ),
-        //Login con Google
-        const SizedBox(height: 15),
-        SocialButton(
-          onPressed: () {
-            context.read<AuthBloc>().add(AuthGoogleSignIn());
-          },
-          socialName: 'Google',
-          isGradient: true,
-          bgGradient: ColorPalette.googleGradientsBg,
-          width: Constants.getWidth(context) * 0.53,
-          isIconOnly: true,
-          loaderColor: ColorPalette.primary,
-          loadingState: AuthGoogleLoading(),
-        ),
-      ],
-      newColumnWidgets: [
-        /* ----------------------------------------------------------- */
-        //Testo nella parte bassa della pagina
-        const PromoText(text: "Diventa il re della festa."),
-        Padding(
-          padding: const EdgeInsets.symmetric(vertical: ThemeSizes.xl),
-          child: CustomRichText(
-            onPressed: () {
-              Navigator.of(context).push(StandardLoginPage.route);
-            },
-            initialText: "Oppure accedi",
-            richText: "con le tue credenziali",
-            richTxtColor: ColorPalette.secondary,
-          ),
-        ),
-      ],
+            ),
+          ],
+        );
+      },
     );
   }
 }

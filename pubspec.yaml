@@ -98,7 +98,7 @@ flutter:
   - assets/images/icons/auth_field_icons/add-email-icon.svg
   - assets/images/icons/auth_field_icons/lock-icon.svg
   - assets/images/icons/auth_field_icons/user-icon.svg
-  - assets/animations/rive/google_loading.riv
+  - assets/animations/rive/material_loader.riv
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-assets/images

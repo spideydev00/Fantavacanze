@@ -1,4 +1,4 @@
-import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit_cubit.dart';
+import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit.dart';
 import 'package:fantavacanze_official/core/secrets/app_secrets.dart';
 import 'package:fantavacanze_official/features/auth/data/remote_data_source/auth_remote_data_source.dart';
 import 'package:fantavacanze_official/features/auth/data/repository/auth_repository_impl.dart';
