@@ -5,8 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:rive/rive.dart';
 
 class RiveAsset extends StatefulWidget {
-  final String artboard, stateMachineName, path, triggerValue, title;
-  final double additionalPadding;
+  final String artboard, stateMachineName, path, triggerValue;
+  final String? title;
+  final double additionalPadding, height, width;
 
   const RiveAsset({
     super.key,
@@ -15,7 +16,9 @@ class RiveAsset extends StatefulWidget {
     required this.stateMachineName,
     this.triggerValue = "active",
     this.additionalPadding = 0,
-    required this.title,
+    this.height = ThemeSizes.riveIcon,
+    this.width = ThemeSizes.riveIcon,
+    this.title,
   });
 
   @override
@@ -45,8 +48,8 @@ class _RiveAssetState extends State<RiveAsset> {
           Padding(
             padding: EdgeInsets.only(bottom: widget.additionalPadding),
             child: SizedBox(
-              height: ThemeSizes.riveIcon,
-              width: ThemeSizes.riveIcon,
+              height: widget.height,
+              width: widget.width,
               child: RiveAnimation.asset(
                 widget.path,
                 artboard: widget.artboard,
@@ -69,10 +72,12 @@ class _RiveAssetState extends State<RiveAsset> {
           SizedBox(height: 3),
           Padding(
             padding: EdgeInsets.only(bottom: widget.additionalPadding),
-            child: Text(
-              widget.title,
-              style: context.textTheme.labelSmall,
-            ),
+            child: widget.title != null
+                ? Text(
+                    widget.title!,
+                    style: context.textTheme.labelSmall,
+                  )
+                : null,
           )
         ],
       ),
