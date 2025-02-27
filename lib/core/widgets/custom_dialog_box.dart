@@ -43,10 +43,10 @@ class CustomDialogBox extends StatelessWidget {
             // Icona di alert
             SvgPicture.asset(
               type == DialogType.error
-                  ? 'images/error-icon.svg'
+                  ? 'assets/images/icons/other/error-icon.svg'
                   : type == DialogType.success
-                      ? 'images/success-icon.svg'
-                      : 'images/mail-notification.svg',
+                      ? 'assets/images/icons/other/success-icon.svg'
+                      : 'assets/images/icons/other/mail-notification.svg',
               width: 72,
             ),
             const SizedBox(height: 24),

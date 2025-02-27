@@ -92,7 +92,7 @@ class SocialButton extends StatelessWidget {
                     elevation: 0,
                   ),
                   child: SvgPicture.asset(
-                    'images/auth_icons/${socialName.toLowerCase()}.svg',
+                    'assets/images/icons/auth_icons/${socialName.toLowerCase()}.svg',
                     width: Constants.getWidth(context) * 0.12,
                   ),
                 )
@@ -113,7 +113,7 @@ class SocialButton extends StatelessWidget {
                     ),
                   ),
                   icon: SvgPicture.asset(
-                    'images/auth_icons/${socialName.toLowerCase()}.svg',
+                    'assets/images/icons/auth_icons/${socialName.toLowerCase()}.svg',
                     width: Constants.getWidth(context) * 0.1,
                     colorFilter: ColorFilter.mode(
                       foregroundColor,

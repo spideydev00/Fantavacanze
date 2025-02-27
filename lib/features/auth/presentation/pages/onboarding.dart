@@ -30,13 +30,13 @@ class _OnBoardingScreenState extends State<OnBoardingScreen> {
   String _getBackgroundImage(int index) {
     switch (index) {
       case 0:
-        return "images/baddie-bg.jpg";
+        return "assets/images/baddie-bg.jpg";
       case 1:
-        return "images/social-enhance-bg.jpg";
+        return "assets/images/social-enhance-bg.jpg";
       case 2:
-        return "images/emotions-bg.jpg";
+        return "assets/images/emotions-bg.jpg";
       default:
-        return "images/baddie-bg.jpg";
+        return "assets/images/baddie-bg.jpg";
     }
   }
 
@@ -49,7 +49,7 @@ class _OnBoardingScreenState extends State<OnBoardingScreen> {
         title: Padding(
           padding: const EdgeInsets.all(ThemeSizes.lg),
           child: Image.asset(
-            "images/logo-high-padding.png",
+            "assets/images/logo-high-padding.png",
           ),
         ),
         toolbarHeight: 150,

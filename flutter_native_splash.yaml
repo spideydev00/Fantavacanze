@@ -4,11 +4,11 @@ flutter_native_splash:
   web: false
 
   color: "#101313"
-  image: "images/splash_screen_logos/logo-fv-ios.png"
-  # branding: "images/splash_screen_logos/branding-fv.png"
+  image: "assets/images/splash_screen_logos/logo-fv-ios.png"
+  # branding: "assets/images/splash_screen_logos/branding-fv.png"
 
   android_12:
     color: "#101313"
-    image: "images/splash_screen_logos/logo-fv-android.png"
-    # branding: "images/splash_screen_logos/branding-fv.png"
+    image: "assets/images/splash_screen_logos/logo-fv-android.png"
+    # branding: "assets/images/splash_screen_logos/branding-fv.png"
 

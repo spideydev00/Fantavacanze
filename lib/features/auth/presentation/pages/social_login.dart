@@ -36,7 +36,7 @@ class _SocialLoginPageState extends State<SocialLoginPage> {
   @override
   Widget build(BuildContext context) {
     return EmptyBrandedPage(
-      bgImagePath: "images/bg.png",
+      bgImagePath: "assets/images/bg.png",
       mainColumnAlignment: MainAxisAlignment.spaceBetween,
       widgets: [
         /* ----------------------------------------------------------- */

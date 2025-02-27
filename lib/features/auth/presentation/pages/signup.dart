@@ -40,7 +40,7 @@ class _SignUpPageState extends State<SignUpPage> {
   @override
   Widget build(BuildContext context) {
     return EmptyBrandedPage(
-      bgImagePath: "images/bg.png",
+      bgImagePath: "assets/images/bg.png",
       isBackNavigationActive: true,
       mainColumnAlignment: MainAxisAlignment.start,
       widgets: [
@@ -59,7 +59,7 @@ class _SignUpPageState extends State<SignUpPage> {
                       horizontal: ThemeSizes.md,
                     ),
                     child: SvgPicture.asset(
-                      "images/user-icon.svg",
+                      "assets/images/icons/auth_field_icons/user-icon.svg",
                       width: 35,
                     ),
                   ),
@@ -74,7 +74,7 @@ class _SignUpPageState extends State<SignUpPage> {
                       horizontal: ThemeSizes.md,
                     ),
                     child: SvgPicture.asset(
-                      "images/add-email-icon.svg",
+                      "assets/images/icons/auth_field_icons/add-email-icon.svg",
                       width: 35,
                     ),
                   ),
@@ -90,7 +90,7 @@ class _SignUpPageState extends State<SignUpPage> {
                       horizontal: ThemeSizes.md,
                     ),
                     child: SvgPicture.asset(
-                      "images/lock-icon.svg",
+                      "assets/images/icons/auth_field_icons/lock-icon.svg",
                       width: 35,
                     ),
                   ),
