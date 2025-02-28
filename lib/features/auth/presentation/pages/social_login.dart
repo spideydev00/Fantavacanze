@@ -50,6 +50,7 @@ class _SocialLoginPageState extends State<SocialLoginPage> {
         bool isGoogleLoading = state is AuthGoogleLoading;
 
         return EmptyBrandedPage(
+          logoImagePath: "assets/images/logo-neon.png",
           bgImagePath: "assets/images/bg.png",
           mainColumnAlignment: MainAxisAlignment.spaceBetween,
           widgets: [

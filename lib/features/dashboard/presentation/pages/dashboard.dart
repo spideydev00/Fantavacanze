@@ -1,4 +1,8 @@
+import 'package:fantavacanze_official/core/extensions/context_extension.dart';
+import 'package:fantavacanze_official/core/pages/empty_branded_page.dart';
+import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
+import 'package:fantavacanze_official/features/dashboard/presentation/widgets/article_card.dart';
 import 'package:fantavacanze_official/features/dashboard/presentation/widgets/rive_asset.dart';
 import 'package:flutter/material.dart';
 
@@ -12,7 +16,7 @@ class DashboardScreen extends StatefulWidget {
 }
 
 class _DashboardScreenState extends State<DashboardScreen> {
-  List bottomNavIcons = [
+  List<RiveAsset> bottomNavIcons = [
     RiveAsset(
       path: "assets/animations/rive/icons.riv",
       artboard: "HOME",
@@ -43,43 +47,62 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      floatingActionButton: Container(
-        height: 50,
-        margin: EdgeInsets.only(bottom: ThemeSizes.md + 5),
+    return EmptyBrandedPage.withoutImage(
+      logoImagePath: "assets/images/logo-high-padding.png",
+      isBackNavigationActive: false,
+      mainColumnAlignment: MainAxisAlignment.start,
+      widgets: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: ThemeSizes.xl),
+          child: Divider(
+            thickness: 0.3,
+            color: ColorPalette.darkGrey,
+          ),
+        ),
+        SizedBox(height: 15),
+        Text(
+          "Al momento non partecipi a nessuna lega.",
+          style: context.textTheme.bodySmall!.copyWith(
+            color: ColorPalette.darkGrey,
+            fontStyle: FontStyle.italic,
+          ),
+        ),
+        SizedBox(height: 15),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: ThemeSizes.xl),
+          child: Divider(
+            thickness: 0.3,
+            color: ColorPalette.darkGrey,
+          ),
+        ),
+        ArticleCard(),
+        ArticleCard(),
+      ],
+      bottomNavBar: SafeArea(
+        child: Container(
+          padding: EdgeInsets.all(ThemeSizes.xs),
+          margin: EdgeInsets.symmetric(horizontal: ThemeSizes.md),
+          decoration: BoxDecoration(
+            color: Colors.black.withOpacity(0.75),
+            borderRadius: BorderRadius.all(Radius.circular(ThemeSizes.xl)),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: bottomNavIcons,
+          ),
+        ),
+      ),
+      floatingButton: Container(
+        height: 48,
+        margin: EdgeInsets.only(bottom: ThemeSizes.md),
         child: FloatingActionButton(
           onPressed: () {},
           child: RiveAsset(
             path: "assets/animations/rive/icons.riv",
             artboard: "SEARCH",
             stateMachineName: "SEARCH_Interactivity",
-            height: ThemeSizes.xl,
-            width: ThemeSizes.xl,
-          ),
-        ),
-      ),
-      bottomNavigationBar: SafeArea(
-        child: Container(
-          padding: EdgeInsets.all(ThemeSizes.xs),
-          margin: EdgeInsets.symmetric(horizontal: ThemeSizes.md),
-          decoration: BoxDecoration(
-            color: Colors.black.withOpacity(0.90),
-            borderRadius: BorderRadius.all(
-              Radius.circular(ThemeSizes.lg),
-            ),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              ...List.generate(
-                bottomNavIcons.length,
-                (index) {
-                  return bottomNavIcons[index];
-                },
-              )
-            ],
+            height: ThemeSizes.riveIconSm,
+            width: ThemeSizes.riveIconSm,
           ),
         ),
       ),

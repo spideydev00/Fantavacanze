@@ -26,6 +26,7 @@ class ThemeSizes {
 
   // Image sizes
   static const double imageThumbSize = 80.0;
+  static const double imageThumbSizeLg = 120.0;
 
   // Default spacing between sections
   static const double defaultSpace = 24.0;
@@ -54,6 +55,7 @@ class ThemeSizes {
   // Loading indicator size
   static const double loadingIndicatorSize = 36.0;
 
-  // Loading indicator size
-  static const double riveIcon = 40.0;
+  // Rive Icon size
+  static const double riveIcon = 36.0;
+  static const double riveIconSm = 24.0;
 }

@@ -76,6 +76,13 @@ class AppTheme {
         ),
         dialogBackgroundColor: ColorPalette.darkBg,
         /* ---------------------------------------------------------------- */
+        //FLOATING BUTTON
+        floatingActionButtonTheme: FloatingActionButtonThemeData(
+          backgroundColor: ColorPalette.primary,
+          shape: CircleBorder(),
+          elevation: 2,
+        ),
+        /* ---------------------------------------------------------------- */
         //SCAFFOLD
         scaffoldBackgroundColor: ColorPalette.darkBg,
         appBarTheme: const AppBarTheme(

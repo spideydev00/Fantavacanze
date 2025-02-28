@@ -40,6 +40,7 @@ class _SignUpPageState extends State<SignUpPage> {
   @override
   Widget build(BuildContext context) {
     return EmptyBrandedPage(
+      logoImagePath: "assets/images/logo-neon.png",
       bgImagePath: "assets/images/bg.png",
       isBackNavigationActive: true,
       mainColumnAlignment: MainAxisAlignment.start,

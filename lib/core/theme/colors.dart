@@ -13,7 +13,7 @@ class ColorPalette {
 
   // Background colors
   static const Color lightBg = Color(0xFFF6F6F6);
-  static const Color darkBg = Color.fromARGB(255, 15, 16, 19);
+  static const Color darkBg = Color.fromARGB(255, 24, 25, 30);
 
   //social buttons colors
   static const List<Color> googleGradientsBg = [
