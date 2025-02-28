@@ -75,7 +75,9 @@ class _RiveAssetState extends State<RiveAsset> {
             child: widget.title != null
                 ? Text(
                     widget.title!,
-                    style: context.textTheme.labelSmall,
+                    style: context.textTheme.labelSmall!.copyWith(
+                      fontSize: ThemeSizes.labelSm,
+                    ),
                   )
                 : null,
           )
