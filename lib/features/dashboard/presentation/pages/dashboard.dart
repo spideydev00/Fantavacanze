@@ -1,8 +1,7 @@
 import 'package:fantavacanze_official/core/pages/empty_branded_page.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
-import 'package:fantavacanze_official/features/dashboard/presentation/pages/challenge.dart';
 import 'package:fantavacanze_official/features/dashboard/presentation/pages/home.dart';
-import 'package:fantavacanze_official/features/dashboard/presentation/pages/memories.dart';
+import 'package:fantavacanze_official/features/dashboard/presentation/pages/become_premium_preview.dart';
 import 'package:fantavacanze_official/features/dashboard/presentation/pages/rankings.dart';
 import 'package:fantavacanze_official/features/dashboard/presentation/widgets/rive_asset.dart';
 import 'package:flutter/material.dart';
@@ -22,8 +21,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   final List<Widget> _pages = [
     HomePage(),
     RankingsPage(),
-    ChallengePage(),
-    MemoriesPage()
+    BecomePremiumPreview(),
   ];
 
   @override
@@ -48,7 +46,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: ThemeSizes.sm),
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: List.generate(bottomNavIcons.length, (index) {
               return RiveAsset(
                 path: bottomNavIcons[index].path,
@@ -88,15 +86,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ),
         RiveAsset(
           path: "assets/animations/rive/icons.riv",
-          artboard: "TIMER",
-          stateMachineName: "TIMER_Interactivity",
-          title: "Sfida",
-        ),
-        RiveAsset(
-          path: "assets/animations/rive/icons.riv",
-          artboard: "CHAT",
-          stateMachineName: "CHAT_Interactivity",
-          title: "Ricordi",
+          artboard: "LIKE/STAR",
+          stateMachineName: "STAR_Interactivity",
+          title: "Premium",
         ),
       ];
 }

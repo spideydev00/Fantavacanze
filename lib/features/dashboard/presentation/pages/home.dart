@@ -1,6 +1,5 @@
 // homepage.dart
 import 'package:fantavacanze_official/core/theme/sizes.dart';
-import 'package:fantavacanze_official/features/dashboard/presentation/pages/challenge.dart';
 import 'package:fantavacanze_official/features/dashboard/presentation/widgets/article_card.dart';
 import 'package:fantavacanze_official/features/dashboard/presentation/widgets/divider.dart';
 import 'package:fantavacanze_official/features/dashboard/presentation/widgets/page_redirection_card.dart';
@@ -61,13 +60,13 @@ class _Articles extends StatelessWidget {
           imagePath: 'assets/images/baddie-bg.jpg',
           title: 'Rimorchiare come un pro in vacanza',
           readingTime: '2 min',
-          redirectPage: ChallengePage(),
+          redirectPage: HomePage(),
         ),
         ArticleCard(
           imagePath: 'assets/images/social-enhance-bg.jpg',
           title: 'Come vivere una vacanza indimenticabile',
           readingTime: '2 min',
-          redirectPage: ChallengePage(),
+          redirectPage: HomePage(),
         ),
       ],
     );
