@@ -98,6 +98,7 @@ flutter:
   - assets/images/icons/auth_field_icons/add-email-icon.svg
   - assets/images/icons/auth_field_icons/lock-icon.svg
   - assets/images/icons/auth_field_icons/user-icon.svg
+  - assets/images/icons/other/trophy-icon.svg
   - assets/animations/rive/material_loader.riv
   - assets/animations/rive/icons.riv
 

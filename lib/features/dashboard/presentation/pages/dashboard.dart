@@ -5,6 +5,7 @@ import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:fantavacanze_official/features/dashboard/presentation/widgets/article_card.dart';
 import 'package:fantavacanze_official/features/dashboard/presentation/widgets/rive_asset.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 
 class DashboardScreen extends StatefulWidget {
   static get route =>
@@ -60,12 +61,23 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
         ),
         SizedBox(height: 15),
-        Text(
-          "Al momento non partecipi a nessuna lega.",
-          style: context.textTheme.bodySmall!.copyWith(
-            color: ColorPalette.darkGrey,
-            fontStyle: FontStyle.italic,
-          ),
+        //Qui inserire controllo condizionale con bloc (partecipa a lega?)
+        Column(
+          children: [
+            SvgPicture.asset(
+              "assets/images/icons/other/trophy-icon.svg",
+              width: 70,
+              height: 70,
+            ),
+            SizedBox(height: 20),
+            Text(
+              "Al momento non partecipi a nessuna lega.",
+              style: context.textTheme.bodySmall!.copyWith(
+                color: ColorPalette.darkGrey,
+                fontStyle: FontStyle.italic,
+              ),
+            ),
+          ],
         ),
         SizedBox(height: 15),
         Padding(
@@ -75,23 +87,28 @@ class _DashboardScreenState extends State<DashboardScreen> {
             color: ColorPalette.darkGrey,
           ),
         ),
-        ArticleCard(),
-        ArticleCard(),
+        ArticleCard(
+          imagePath: 'assets/images/baddie-bg.jpg',
+          title: 'Come rimorchiare come un pro in vacanza',
+          readingTime: '2 min',
+        ),
+        ArticleCard(
+          imagePath: 'assets/images/social-enhance-bg.jpg',
+          title: 'Come vivere una vacanza indimenticabile',
+          readingTime: '2 min',
+        ),
       ],
       bottomNavBar: SafeArea(
-        child: Container(
-          padding: EdgeInsets.all(ThemeSizes.xs),
-          margin: EdgeInsets.symmetric(horizontal: ThemeSizes.md),
-          decoration: BoxDecoration(
-            color: Colors.black.withOpacity(0.75),
-            borderRadius: BorderRadius.all(Radius.circular(ThemeSizes.xl)),
-          ),
+        child: Padding(
+          padding: const EdgeInsets.all(ThemeSizes.xs),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: bottomNavIcons,
           ),
         ),
       ),
+      //Qui inserire controllo condizionale con bloc (partecipa a lega?
+      //E' admin della lega?)
       floatingButton: Container(
         height: 48,
         margin: EdgeInsets.only(bottom: ThemeSizes.md),
