@@ -3,6 +3,7 @@ import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:fantavacanze_official/features/dashboard/presentation/pages/home.dart';
 import 'package:fantavacanze_official/features/dashboard/presentation/pages/become_premium_preview.dart';
 import 'package:fantavacanze_official/features/dashboard/presentation/pages/rankings.dart';
+import 'package:fantavacanze_official/features/dashboard/presentation/widgets/custom_leading.dart';
 import 'package:fantavacanze_official/features/dashboard/presentation/widgets/rive_asset.dart';
 import 'package:flutter/material.dart';
 
@@ -28,20 +29,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Widget build(BuildContext context) {
     return EmptyBrandedPage.withoutImage(
       logoImagePath: "assets/images/logo-high-padding.png",
+      logoTopMargin: 10,
       isBackNavigationActive: false,
       mainColumnAlignment: MainAxisAlignment.start,
-      widgets: [
-        AnimatedSwitcher(
-          duration: const Duration(milliseconds: 600),
-          transitionBuilder: (child, animation) {
-            return FadeTransition(
-              opacity: animation,
-              child: child,
-            );
-          },
-          child: _pages[_selectedIndex],
-        ),
-      ],
+      leading: CustomLeading(
+        onTap: () {},
+      ),
       bottomNavBar: SafeArea(
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: ThemeSizes.sm),
@@ -66,6 +59,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
         ),
       ),
+      widgets: [
+        AnimatedSwitcher(
+          duration: const Duration(milliseconds: 600),
+          transitionBuilder: (child, animation) {
+            return FadeTransition(
+              opacity: animation,
+              child: child,
+            );
+          },
+          child: _pages[_selectedIndex],
+        ),
+      ],
     );
   }
 
