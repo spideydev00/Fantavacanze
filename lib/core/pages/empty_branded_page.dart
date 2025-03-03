@@ -1,15 +1,20 @@
+import 'dart:async';
 import 'package:fantavacanze_official/core/constants/constants.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
+import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:flutter/material.dart';
 
-class EmptyBrandedPage extends StatelessWidget {
+class EmptyBrandedPage extends StatefulWidget {
   final String? bgImagePath;
   final String logoImagePath;
+  final double logoTopMargin;
   final MainAxisAlignment mainColumnAlignment;
   final bool isBackNavigationActive;
   final List<Widget> widgets;
   final List<Widget>? newColumnWidgets;
   final Widget? leading;
+  final double leadingTop;
+  final double leadingLeft;
   final Widget? bottomNavBar;
   final Widget? floatingButton;
 
@@ -21,12 +26,15 @@ class EmptyBrandedPage extends StatelessWidget {
     required this.mainColumnAlignment,
     required this.widgets,
     this.newColumnWidgets,
+    this.logoTopMargin = 30,
     this.leading,
+    this.leadingTop = 85,
+    this.leadingLeft = 30,
     this.bottomNavBar,
     this.floatingButton,
   });
 
-  /// Named constructor for a version without a background image
+  // Versione senza immagine di sfondo
   const EmptyBrandedPage.withoutImage({
     super.key,
     required this.logoImagePath,
@@ -34,64 +42,122 @@ class EmptyBrandedPage extends StatelessWidget {
     required this.mainColumnAlignment,
     required this.widgets,
     this.newColumnWidgets,
+    this.logoTopMargin = 30,
     this.leading,
+    this.leadingTop = 85,
+    this.leadingLeft = 30,
     this.bottomNavBar,
     this.floatingButton,
   }) : bgImagePath = null;
 
   @override
-  Widget build(BuildContext context) {
-    // ignore: no_leading_underscores_for_local_identifiers
-    final bool _conditions =
-        (mainColumnAlignment == MainAxisAlignment.spaceBetween ||
-            mainColumnAlignment == MainAxisAlignment.spaceEvenly ||
-            mainColumnAlignment == MainAxisAlignment.spaceAround);
+  State<EmptyBrandedPage> createState() => _EmptyBrandedPageState();
+}
 
+class _EmptyBrandedPageState extends State<EmptyBrandedPage> {
+  bool _isLeadingVisible = true;
+  bool _isScrolling = false;
+  Timer? _scrollTimer;
+
+  @override
+  Widget build(BuildContext context) {
     Widget scaffold = Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
-        automaticallyImplyLeading: isBackNavigationActive,
+        automaticallyImplyLeading: widget.isBackNavigationActive,
         forceMaterialTransparency: true,
-        leading: leading,
       ),
       resizeToAvoidBottomInset: false,
       backgroundColor:
-          bgImagePath != null ? Colors.transparent : ColorPalette.darkBg,
-      body: Column(
-        mainAxisAlignment: mainColumnAlignment,
+          widget.bgImagePath != null ? Colors.transparent : ColorPalette.darkBg,
+      body: Stack(
         children: [
-          Expanded(
-            child: SingleChildScrollView(
-              child: Column(
-                children: [
-                  const SizedBox(height: 30),
-                  Image.asset(
-                    logoImagePath,
-                    width: Constants.getWidth(context) * 0.5,
+          Column(
+            mainAxisAlignment: widget.mainColumnAlignment,
+            children: [
+              Expanded(
+                child: NotificationListener<ScrollNotification>(
+                  onNotification: (scrollNotification) {
+                    if (scrollNotification is ScrollUpdateNotification) {
+                      setState(() {
+                        _isLeadingVisible = false;
+                        _isScrolling = true;
+                      });
+
+                      _scrollTimer?.cancel();
+                      _scrollTimer =
+                          Timer(const Duration(milliseconds: 500), () {
+                        setState(() {
+                          _isLeadingVisible = true;
+                          _isScrolling = false;
+                        });
+                      });
+                    }
+                    return false;
+                  },
+                  child: SingleChildScrollView(
+                    child: Column(
+                      children: [
+                        SizedBox(height: widget.logoTopMargin),
+                        Image.asset(
+                          widget.logoImagePath,
+                          width: Constants.getWidth(context) * 0.5,
+                        ),
+                        const SizedBox(height: 5),
+                        ...widget.widgets,
+                      ],
+                    ),
                   ),
-                  const SizedBox(height: 5),
-                  ...widgets
-                ],
+                ),
+              ),
+              if ((widget.mainColumnAlignment ==
+                          MainAxisAlignment.spaceBetween ||
+                      widget.mainColumnAlignment ==
+                          MainAxisAlignment.spaceEvenly ||
+                      widget.mainColumnAlignment ==
+                          MainAxisAlignment.spaceAround) &&
+                  widget.newColumnWidgets != null)
+                Column(children: [...widget.newColumnWidgets!]),
+            ],
+          ),
+
+          // Il leading animato quando si scorre
+          if (widget.leading != null)
+            Positioned(
+              top: widget.leadingTop,
+              left: widget.leadingLeft,
+              child: AnimatedOpacity(
+                duration: const Duration(milliseconds: 200),
+                opacity: _isLeadingVisible ? 1.0 : 0.0,
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 100),
+                  decoration: BoxDecoration(
+                    color: _isScrolling
+                        ? Colors.transparent
+                        : ColorPalette.secondaryBg,
+                    borderRadius: BorderRadius.circular(ThemeSizes.xl),
+                  ),
+                  child: GestureDetector(
+                    child: widget.leading!,
+                  ),
+                ),
               ),
             ),
-          ),
-          if (_conditions && newColumnWidgets != null)
-            Column(children: [...newColumnWidgets!]),
         ],
       ),
-      bottomNavigationBar: bottomNavBar,
-      floatingActionButton: floatingButton,
+      bottomNavigationBar: widget.bottomNavBar,
+      floatingActionButton: widget.floatingButton,
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
     );
 
-    return bgImagePath != null
+    return widget.bgImagePath != null
         ? Container(
             constraints: const BoxConstraints.expand(),
             child: DecoratedBox(
               position: DecorationPosition.background,
               decoration: BoxDecoration(
                 image: DecorationImage(
-                  image: AssetImage(bgImagePath!),
+                  image: AssetImage(widget.bgImagePath!),
                   fit: BoxFit.cover,
                 ),
               ),
@@ -99,5 +165,11 @@ class EmptyBrandedPage extends StatelessWidget {
             ),
           )
         : scaffold;
+  }
+
+  @override
+  void dispose() {
+    _scrollTimer?.cancel();
+    super.dispose();
   }
 }
