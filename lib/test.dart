@@ -1,42 +1,59 @@
-import 'package:fantavacanze_official/features/auth/presentation/widgets/google_loader.dart';
 import 'package:flutter/material.dart';
 
-class Test extends StatefulWidget {
-  const Test({super.key});
+class TestPage extends StatefulWidget {
+  const TestPage({super.key});
 
   @override
-  State<Test> createState() => _TestState();
+  State<TestPage> createState() => _TestPageState();
 }
 
-class _TestState extends State<Test> {
-  bool showLoader = false;
+class _TestPageState extends State<TestPage> {
+  final PageController _pageController = PageController();
+  int _currentPage = 0;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          ElevatedButton(
-            onPressed: () {
-              setState(() {
-                showLoader = false;
-              });
-            },
-            child: Text("Stop Animation"),
+          Expanded(
+            child: PageView(
+              controller: _pageController,
+              onPageChanged: (index) {
+                setState(() {
+                  _currentPage = index;
+                });
+              },
+              children: [
+                Container(color: Colors.red),
+                Container(color: Colors.green),
+                Container(color: Colors.blue),
+              ],
+            ),
           ),
           SizedBox(height: 20),
-          ElevatedButton(
-            onPressed: () {
-              setState(() {
-                showLoader = true;
-              });
-            },
-            child: Text("Show Animation"),
-          ),
-          showLoader ? GoogleLoader() : SizedBox(),
+          _buildPageIndicator(),
+          SizedBox(height: 20),
         ],
       ),
+    );
+  }
+
+  Widget _buildPageIndicator() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: List.generate(3, (index) {
+        return AnimatedContainer(
+          duration: Duration(milliseconds: 300),
+          margin: EdgeInsets.symmetric(horizontal: 5),
+          width: _currentPage == index ? 16 : 10,
+          height: 10,
+          decoration: BoxDecoration(
+            color: _currentPage == index ? Colors.black : Colors.grey,
+            borderRadius: BorderRadius.circular(5),
+          ),
+        );
+      }),
     );
   }
 }
