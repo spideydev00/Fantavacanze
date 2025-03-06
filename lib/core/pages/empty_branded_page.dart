@@ -1,7 +1,5 @@
-import 'dart:async';
 import 'package:fantavacanze_official/core/constants/constants.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
-import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:flutter/material.dart';
 
 class EmptyBrandedPage extends StatefulWidget {
@@ -12,11 +10,6 @@ class EmptyBrandedPage extends StatefulWidget {
   final bool isBackNavigationActive;
   final List<Widget> widgets;
   final List<Widget>? newColumnWidgets;
-  final Widget? leading;
-  final double leadingTop;
-  final double leadingLeft;
-  final Widget? bottomNavBar;
-  final Widget? floatingButton;
 
   const EmptyBrandedPage({
     super.key,
@@ -27,11 +20,6 @@ class EmptyBrandedPage extends StatefulWidget {
     required this.widgets,
     this.newColumnWidgets,
     this.logoTopMargin = 30,
-    this.leading,
-    this.leadingTop = 85,
-    this.leadingLeft = 30,
-    this.bottomNavBar,
-    this.floatingButton,
   });
 
   // Versione senza immagine di sfondo
@@ -43,11 +31,6 @@ class EmptyBrandedPage extends StatefulWidget {
     required this.widgets,
     this.newColumnWidgets,
     this.logoTopMargin = 30,
-    this.leading,
-    this.leadingTop = 85,
-    this.leadingLeft = 30,
-    this.bottomNavBar,
-    this.floatingButton,
   }) : bgImagePath = null;
 
   @override
@@ -55,10 +38,6 @@ class EmptyBrandedPage extends StatefulWidget {
 }
 
 class _EmptyBrandedPageState extends State<EmptyBrandedPage> {
-  bool _isLeadingVisible = true;
-  bool _isScrolling = false;
-  Timer? _scrollTimer;
-
   @override
   Widget build(BuildContext context) {
     Widget scaffold = Scaffold(
@@ -76,37 +55,17 @@ class _EmptyBrandedPageState extends State<EmptyBrandedPage> {
             mainAxisAlignment: widget.mainColumnAlignment,
             children: [
               Expanded(
-                child: NotificationListener<ScrollNotification>(
-                  onNotification: (scrollNotification) {
-                    if (scrollNotification is ScrollUpdateNotification) {
-                      setState(() {
-                        _isLeadingVisible = false;
-                        _isScrolling = true;
-                      });
-
-                      _scrollTimer?.cancel();
-                      _scrollTimer =
-                          Timer(const Duration(milliseconds: 500), () {
-                        setState(() {
-                          _isLeadingVisible = true;
-                          _isScrolling = false;
-                        });
-                      });
-                    }
-                    return false;
-                  },
-                  child: SingleChildScrollView(
-                    child: Column(
-                      children: [
-                        SizedBox(height: widget.logoTopMargin),
-                        Image.asset(
-                          widget.logoImagePath,
-                          width: Constants.getWidth(context) * 0.5,
-                        ),
-                        const SizedBox(height: 5),
-                        ...widget.widgets,
-                      ],
-                    ),
+                child: SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      SizedBox(height: widget.logoTopMargin),
+                      Image.asset(
+                        widget.logoImagePath,
+                        width: Constants.getWidth(context) * 0.5,
+                      ),
+                      const SizedBox(height: 5),
+                      ...widget.widgets,
+                    ],
                   ),
                 ),
               ),
@@ -120,34 +79,8 @@ class _EmptyBrandedPageState extends State<EmptyBrandedPage> {
                 Column(children: [...widget.newColumnWidgets!]),
             ],
           ),
-
-          // Il leading animato quando si scorre
-          if (widget.leading != null)
-            Positioned(
-              top: widget.leadingTop,
-              left: widget.leadingLeft,
-              child: AnimatedOpacity(
-                duration: const Duration(milliseconds: 200),
-                opacity: _isLeadingVisible ? 1.0 : 0.0,
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 100),
-                  decoration: BoxDecoration(
-                    color: _isScrolling
-                        ? Colors.transparent
-                        : ColorPalette.secondaryBg,
-                    borderRadius: BorderRadius.circular(ThemeSizes.xl),
-                  ),
-                  child: GestureDetector(
-                    child: widget.leading!,
-                  ),
-                ),
-              ),
-            ),
         ],
       ),
-      bottomNavigationBar: widget.bottomNavBar,
-      floatingActionButton: widget.floatingButton,
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
     );
 
     return widget.bgImagePath != null
@@ -165,11 +98,5 @@ class _EmptyBrandedPageState extends State<EmptyBrandedPage> {
             ),
           )
         : scaffold;
-  }
-
-  @override
-  void dispose() {
-    _scrollTimer?.cancel();
-    super.dispose();
   }
 }

@@ -1,99 +1,53 @@
-import 'package:fantavacanze_official/core/pages/empty_branded_page.dart';
-import 'package:fantavacanze_official/core/theme/sizes.dart';
-import 'package:fantavacanze_official/features/dashboard/presentation/pages/home.dart';
-import 'package:fantavacanze_official/features/dashboard/presentation/pages/become_premium_preview.dart';
-import 'package:fantavacanze_official/features/dashboard/presentation/pages/rankings.dart';
-import 'package:fantavacanze_official/features/dashboard/presentation/widgets/custom_leading.dart';
-import 'package:fantavacanze_official/features/dashboard/presentation/widgets/rive_asset.dart';
+import 'package:fantavacanze_official/core/constants/navigation_items.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:fantavacanze_official/core/constants/constants.dart';
+import 'package:fantavacanze_official/core/cubits/app_navigation/app_navigation_cubit.dart';
+import 'package:fantavacanze_official/core/theme/colors.dart';
+import 'package:fantavacanze_official/core/theme/sizes.dart';
+import 'package:fantavacanze_official/features/dashboard/presentation/widgets/bottom_navigation_bar.dart';
 
-class DashboardScreen extends StatefulWidget {
-  static get route =>
-      MaterialPageRoute(builder: (context) => const DashboardScreen());
+class DashboardScreen extends StatelessWidget {
+  static get route => MaterialPageRoute(
+        builder: (context) => const DashboardScreen(),
+      );
+
   const DashboardScreen({super.key});
 
   @override
-  State<DashboardScreen> createState() => _DashboardScreenState();
-}
-
-class _DashboardScreenState extends State<DashboardScreen> {
-  int _selectedIndex = 0;
-
-  final List<Widget> _pages = [
-    HomePage(),
-    RankingsPage(),
-    BecomePremiumPreview(),
-  ];
-
-  @override
   Widget build(BuildContext context) {
-    return EmptyBrandedPage.withoutImage(
-      logoImagePath: "assets/images/logo-high-padding.png",
-      logoTopMargin: 10,
-      isBackNavigationActive: false,
-      mainColumnAlignment: MainAxisAlignment.start,
-      leading: CustomLeading(
-        onTap: () {},
-      ),
-      bottomNavBar: SafeArea(
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: ThemeSizes.sm),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: List.generate(bottomNavIcons.length, (index) {
-              return RiveAsset(
-                path: bottomNavIcons[index].path,
-                artboard: bottomNavIcons[index].artboard,
-                stateMachineName: bottomNavIcons[index].stateMachineName,
-                triggerValue: bottomNavIcons[index].triggerValue,
-                title: bottomNavIcons[index].title,
-                additionalPadding: bottomNavIcons[index].additionalPadding,
-                isActive: _selectedIndex == index,
-                onTap: () {
-                  setState(() {
-                    _selectedIndex = index;
-                  });
-                },
-              );
-            }),
-          ),
+    return Scaffold(
+      extendBodyBehindAppBar: false,
+      appBar: AppBar(
+        forceMaterialTransparency: true,
+        toolbarHeight: ThemeSizes.appBarHeight,
+        title: _buildLogo(context),
+        leading: const Padding(
+          padding: EdgeInsets.only(left: ThemeSizes.xl),
+          child: Icon(Icons.menu_rounded),
         ),
       ),
-      widgets: [
-        AnimatedSwitcher(
-          duration: const Duration(milliseconds: 600),
-          transitionBuilder: (child, animation) {
-            return FadeTransition(
-              opacity: animation,
-              child: child,
-            );
-          },
-          child: _pages[_selectedIndex],
-        ),
-      ],
+      resizeToAvoidBottomInset: false,
+      backgroundColor: ColorPalette.darkBg,
+      body: BlocBuilder<AppNavigationCubit, int>(
+        builder: (context, selectedIndex) {
+          return IndexedStack(
+            index: selectedIndex,
+            children:
+                nonParticipantNavbarItems.map((item) => item.screen).toList(),
+          );
+        },
+      ),
+      bottomNavigationBar: CustomBottomNavigationBar(
+        navItems: nonParticipantNavbarItems,
+      ),
     );
   }
 
-  List<RiveAsset> get bottomNavIcons => [
-        RiveAsset(
-          path: "assets/animations/rive/icons.riv",
-          artboard: "HOME",
-          stateMachineName: "HOME_interactivity",
-          title: "Home",
-        ),
-        RiveAsset(
-          path: "assets/animations/rive/icons.riv",
-          artboard: "SCORE",
-          stateMachineName: "State Machine 1",
-          triggerValue: "showingStar",
-          title: "Classifica",
-          additionalPadding: 10.0,
-        ),
-        RiveAsset(
-          path: "assets/animations/rive/icons.riv",
-          artboard: "LIKE/STAR",
-          stateMachineName: "STAR_Interactivity",
-          title: "Premium",
-        ),
-      ];
+  Widget _buildLogo(BuildContext context) {
+    return Image.asset(
+      "assets/images/logo-high-padding.png",
+      width: Constants.getWidth(context) * 0.40,
+    );
+  }
 }
