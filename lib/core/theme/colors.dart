@@ -60,4 +60,5 @@ class ColorPalette {
 
   // Extra
   static const Color darkerGreen = Color.fromARGB(255, 28, 60, 49);
+  static const Color premiumUser = Color.fromARGB(255, 197, 127, 6);
 }
