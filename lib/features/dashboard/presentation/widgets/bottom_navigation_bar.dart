@@ -22,7 +22,7 @@ class CustomBottomNavigationBar extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.end,
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: List.generate(
-                navItems.length,
+                3,
                 (index) {
                   return BottomNavigationAsset(
                     svgIcon: navItems[index].svgIcon,

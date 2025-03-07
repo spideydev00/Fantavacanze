@@ -18,32 +18,41 @@ class SideMenuNavigationAsset extends NavigationAsset {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(
-        horizontal: ThemeSizes.md,
-        vertical: ThemeSizes.sm,
-      ),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 300),
-        decoration: BoxDecoration(
-          color: isActive
-              ? ColorPalette.darkerGrey.withOpacity(0.15)
-              : Colors.transparent,
-          borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusMd),
-        ),
+    return GestureDetector(
+      onTap: onTap,
+      child: Padding(
         padding: const EdgeInsets.symmetric(
+          horizontal: ThemeSizes.sm,
           vertical: ThemeSizes.sm,
-          horizontal: ThemeSizes.md,
         ),
-        child: Row(
-          children: [
-            const SizedBox(width: ThemeSizes.sm),
-            super.build(context),
-            const SizedBox(width: ThemeSizes.lg),
-            Text(title),
-          ],
+        child: _buildAnimatedContainer(
+          child: Row(
+            children: [
+              const SizedBox(width: ThemeSizes.sm),
+              super.build(context),
+              const SizedBox(width: ThemeSizes.lg),
+              Text(title),
+            ],
+          ),
         ),
       ),
+    );
+  }
+
+  Widget _buildAnimatedContainer({required Widget child}) {
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 300),
+      decoration: BoxDecoration(
+        color: isActive
+            ? ColorPalette.darkerGrey.withOpacity(0.15)
+            : Colors.transparent,
+        borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusMd),
+      ),
+      padding: const EdgeInsets.symmetric(
+        vertical: ThemeSizes.sm,
+        horizontal: ThemeSizes.md,
+      ),
+      child: child,
     );
   }
 

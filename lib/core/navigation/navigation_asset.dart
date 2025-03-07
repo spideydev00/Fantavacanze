@@ -6,7 +6,7 @@ abstract class NavigationAsset extends StatelessWidget {
   final String title;
   final bool isActive;
   final bool effectsEnabled;
-  final VoidCallback? onTap;
+  final VoidCallback? onTap; //implementato nelle sottoclassi
   final double height, width;
 
   const NavigationAsset({
@@ -24,20 +24,17 @@ abstract class NavigationAsset extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Opacity(
-        opacity: (isActive && !effectsEnabled) ? 1 : 0.7,
-        child: SizedBox(
-          height: height,
-          width: width,
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              if (isActive && effectsEnabled) _buildGlowEffect(),
-              buildIcon(),
-            ],
-          ),
+    return Opacity(
+      opacity: (isActive && !effectsEnabled) ? 1 : 0.7,
+      child: SizedBox(
+        height: height,
+        width: width,
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            if (isActive && effectsEnabled) _buildGlowEffect(),
+            buildIcon(),
+          ],
         ),
       ),
     );
