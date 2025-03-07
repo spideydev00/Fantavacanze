@@ -18,18 +18,21 @@ class BottomNavigationAsset extends NavigationAsset {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        _buildAnimatedIndicator(),
-        const SizedBox(height: ThemeSizes.sm),
-        super.build(context),
-        const SizedBox(height: ThemeSizes.sm),
-        Text(
-          title,
-          style: context.textTheme.labelSmall,
-        ),
-      ],
+    return GestureDetector(
+      onTap: onTap,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _buildAnimatedIndicator(),
+          const SizedBox(height: ThemeSizes.sm),
+          super.build(context),
+          const SizedBox(height: ThemeSizes.sm),
+          Text(
+            title,
+            style: context.textTheme.labelSmall,
+          ),
+        ],
+      ),
     );
   }
 

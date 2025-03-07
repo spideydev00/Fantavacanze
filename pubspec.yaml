@@ -103,6 +103,7 @@ flutter:
   - assets/animations/rive/material_loader.riv
   - assets/animations/rive/icons.riv
   - assets/animations/rive/rive_game_icon.riv
+  - assets/animations/rive/menu_button.riv
   - assets/images/icons/homepage_icons/home-icon.svg
   - assets/images/icons/homepage_icons/thunder-icon.svg
   - assets/images/icons/homepage_icons/drink-games-icon.svg
