@@ -9,8 +9,8 @@ class CustomMenuIcon extends RiveAsset {
     required super.artboard,
     required super.stateMachineName,
     super.triggerValue = "active",
-    super.height = ThemeSizes.icon,
-    super.width = ThemeSizes.icon,
+    super.height = ThemeSizes.iconSm,
+    super.width = ThemeSizes.iconSm,
     required super.onTap,
   });
 

@@ -57,6 +57,8 @@ class ThemeSizes {
   static const double loadingIndicatorSize = 36.0;
 
   // Rive Icon size
-  static const double icon = 28.0;
-  static const double iconSm = 24.0;
+  static const double iconSm = 28.0;
+  static const double iconMd = 32.0;
+  static const double iconLg = 40.0;
+  static const double iconXl = 38.0;
 }

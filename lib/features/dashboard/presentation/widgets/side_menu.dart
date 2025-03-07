@@ -1,4 +1,5 @@
 import 'package:fantavacanze_official/core/constants/navigation_items.dart';
+import 'package:fantavacanze_official/features/dashboard/presentation/widgets/helpers/become_premium_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fantavacanze_official/core/constants/constants.dart';
@@ -22,41 +23,119 @@ class SideMenu extends StatelessWidget {
         width: Constants.getWidth(context) * 0.7,
         color: ColorPalette.secondaryBg,
         child: SafeArea(
-          child: Column(
-            children: [
-              const SizedBox(height: 20),
-              _buildUserInfo(context),
-              Padding(
-                padding: const EdgeInsets.only(top: ThemeSizes.md),
-                child: const CustomDivider(text: "Naviga"),
+            child: Column(
+          children: [
+            const SizedBox(height: 20),
+            _buildUserInfo(context),
+            Padding(
+              padding: const EdgeInsets.only(top: ThemeSizes.md),
+              child: CustomDivider(
+                text: nonParticipantNavbarItems[0].subsection ?? "Menù",
               ),
-              const SizedBox(height: 10),
-              // BlocBuilder listens to state changes
-              BlocBuilder<AppNavigationCubit, int>(
-                builder: (context, selectedIndex) {
-                  return Column(
-                    children: nonParticipantNavbarItems.map(
-                      (item) {
-                        int itemIndex = nonParticipantNavbarItems.indexOf(item);
-                        bool isActive = selectedIndex == itemIndex;
+            ),
+            const SizedBox(height: 10),
 
-                        return SideMenuNavigationAsset(
-                          title: item.title!,
-                          svgIcon: item.svgIcon,
-                          isActive: isActive,
-                          onTap: () =>
-                              _handleNavigation(context, item, itemIndex),
-                        );
-                      },
-                    ).toList(),
-                  );
-                },
-              ),
-            ],
-          ),
-        ),
+            // BlocBuilder listens to state changes
+            BlocBuilder<AppNavigationCubit, int>(
+              builder: (context, selectedIndex) {
+                return Column(
+                  children: buildNavigationMenu(
+                    context: context,
+                    selectedIndex: selectedIndex,
+                  ),
+                );
+              },
+            ),
+
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: ThemeSizes.sm),
+              child: CustomDivider(text: "Sostienici"),
+            ),
+
+            BecomePremiumButton(onPressed: () {}),
+
+            // Push everything above up dynamically
+            const Spacer(),
+
+            // Footer Section
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  "© Fantavacanze - 2024",
+                  style: context.textTheme.bodyMedium!.copyWith(
+                    color: ColorPalette.darkGrey,
+                  ),
+                ),
+                const SizedBox(height: 5),
+                GestureDetector(
+                    onTap: () {
+                      // Open privacy policy link
+                    },
+                    child: RichText(
+                      text: TextSpan(
+                        style: context.textTheme.bodyMedium,
+                        children: [
+                          TextSpan(
+                            text: "Leggi la ",
+                            style: context.textTheme.bodySmall!.copyWith(
+                              color: ColorPalette.darkGrey,
+                            ),
+                          ),
+                          TextSpan(
+                            text: "policy",
+                            style: context.textTheme.bodySmall!.copyWith(
+                              color: ColorPalette.primary,
+                            ),
+                          ),
+                        ],
+                      ),
+                    )),
+                const SizedBox(height: 10),
+              ],
+            ),
+          ],
+        )),
       ),
     );
+  }
+
+  List<Widget> buildNavigationMenu({
+    required BuildContext context,
+    required int selectedIndex,
+    int? maxItems,
+  }) {
+    final itemsToShow = nonParticipantNavbarItems
+        .take(maxItems ?? nonParticipantNavbarItems.length)
+        .toList();
+
+    List<Widget> menuItems = [];
+    String? lastSubsection;
+
+    for (int index = 0; index < itemsToShow.length; index++) {
+      final item = itemsToShow[index];
+
+      // If subsection changes, add a divider
+      if (lastSubsection != null && lastSubsection != item.subsection) {
+        menuItems.add(
+          CustomDivider(text: item.subsection ?? "Menù"),
+        );
+      }
+
+      // Add the navigation item
+      menuItems.add(
+        SideMenuNavigationAsset(
+          title: item.title!,
+          svgIcon: item.svgIcon,
+          isActive: selectedIndex == index,
+          onTap: () => _handleNavigation(context, item, index),
+        ),
+      );
+
+      lastSubsection = item.subsection;
+    }
+
+    return menuItems;
   }
 
   // Handle Navigation Logic using Cubit

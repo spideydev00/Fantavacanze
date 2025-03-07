@@ -15,7 +15,7 @@ class PlanLabel extends StatelessWidget {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: isPremium ? ColorPalette.premiumUser : ColorPalette.darkerGreen,
+        color: ColorPalette.primary.withOpacity(0.8),
         borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusLg),
       ),
       child: Row(
