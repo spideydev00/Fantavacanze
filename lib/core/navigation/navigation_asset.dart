@@ -25,7 +25,7 @@ abstract class NavigationAsset extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Opacity(
-      opacity: (isActive && !effectsEnabled) ? 1 : 0.7,
+      opacity: effectsEnabled ? ((isActive) ? 1 : 0.7) : 1,
       child: SizedBox(
         height: height,
         width: width,
@@ -42,8 +42,8 @@ abstract class NavigationAsset extends StatelessWidget {
 
   Widget _buildGlowEffect() {
     return Container(
-      height: height * 0.4,
-      width: height * 0.4,
+      height: height * 0.3,
+      width: height * 0.3,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         boxShadow: [

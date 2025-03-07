@@ -106,6 +106,7 @@ flutter:
   - assets/animations/rive/menu_button.riv
   - assets/images/icons/homepage_icons/home-icon.svg
   - assets/images/icons/homepage_icons/thunder-icon.svg
+  - assets/images/icons/homepage_icons/thunder-icon-red.svg
   - assets/images/icons/homepage_icons/drink-games-icon.svg
   - assets/images/icons/homepage_icons/create-league-icon.svg
   - assets/images/icons/homepage_icons/search-league-icon.svg

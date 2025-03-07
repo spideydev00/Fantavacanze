@@ -95,6 +95,23 @@ class _DashboardScreenState extends State<DashboardScreen>
                       forceMaterialTransparency: true,
                       toolbarHeight: ThemeSizes.appBarHeight,
                       title: _buildLogo(context),
+                      actions: [
+                        Padding(
+                          padding: const EdgeInsets.only(right: ThemeSizes.xl),
+                          child: Container(
+                            width: ThemeSizes.iconLg,
+                            height: ThemeSizes.iconLg,
+                            decoration: BoxDecoration(
+                              color: ColorPalette.secondaryBg,
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(
+                              Icons.person,
+                              size: ThemeSizes.iconLg * 0.6,
+                            ),
+                          ),
+                        )
+                      ],
                       leading: CustomMenuIcon(
                         path: "assets/animations/rive/menu_button.riv",
                         artboard: "Artboard",
@@ -120,9 +137,12 @@ class _DashboardScreenState extends State<DashboardScreen>
                       builder: (context, selectedIndex) {
                         return IndexedStack(
                           index: selectedIndex,
-                          children: nonParticipantNavbarItems
-                              .map((item) => item.screen)
-                              .toList(),
+                          children: List.generate(
+                            (3),
+                            (index) {
+                              return nonParticipantNavbarItems[index].screen;
+                            },
+                          ),
                         );
                       },
                     ),
