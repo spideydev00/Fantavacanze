@@ -52,7 +52,7 @@ class PhoneInputField extends StatelessWidget {
       inputDecoration: InputDecoration(
         hintText: "Numero di telefono...",
         hintStyle: context.textTheme.bodyLarge!.copyWith(
-          color: ColorPalette.black.withOpacity(0.5),
+          color: ColorPalette.black.withValues(alpha: 0.5),
           fontSize: 16,
         ),
         // fillColor: ColorPalette.white,

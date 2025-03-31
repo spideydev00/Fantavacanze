@@ -38,7 +38,7 @@ class PageRedirectionCard extends StatelessWidget {
           onTap: () {
             onPressed;
           },
-          splashColor: ColorPalette.primary.withOpacity(0.1),
+          splashColor: ColorPalette.primary.withValues(alpha: 0.1),
           highlightColor: Colors.transparent,
           child: Container(
             padding: EdgeInsets.all(ThemeSizes.lg),
@@ -48,8 +48,8 @@ class PageRedirectionCard extends StatelessWidget {
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: [
-                  color.withOpacity(0.9),
-                  color.withOpacity(0.7),
+                  color.withValues(alpha: 0.9),
+                  color.withValues(alpha: 0.7),
                 ],
               ),
             ),
@@ -63,7 +63,7 @@ class PageRedirectionCard extends StatelessWidget {
                     duration: const Duration(milliseconds: 200),
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: iconColor.withOpacity(0.1),
+                      color: iconColor.withValues(alpha: 0.1),
                       shape: BoxShape.circle,
                     ),
                     child: Icon(

@@ -29,7 +29,7 @@
                 },
                 socialName: "Telefono",
                 isGradient: false,
-                bgColor: ColorPalette.primary.withOpacity(0.92),
+                bgColor: ColorPalette.primary.withValues(alpha:0.92),
                 foregroundColor: ColorPalette.white,
                 width: Constants.getWidth(context) * 0.80,
                 isIconOnly: false,

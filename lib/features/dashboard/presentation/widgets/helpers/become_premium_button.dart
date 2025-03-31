@@ -22,7 +22,7 @@ class BecomePremiumButton extends StatelessWidget {
         ),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFFf9af48).withOpacity(0.5),
+            color: const Color(0xFFf9af48).withValues(alpha: 0.5),
             blurRadius: 2,
             spreadRadius: 1,
           ),
@@ -40,7 +40,7 @@ class BecomePremiumButton extends StatelessWidget {
                 fontWeight: FontWeight.w700,
                 shadows: [
                   Shadow(
-                    color: Colors.black.withOpacity(0.2),
+                    color: Colors.black.withValues(alpha: 0.2),
                     blurRadius: 4,
                     offset: const Offset(0, 2),
                   ),
@@ -54,7 +54,7 @@ class BecomePremiumButton extends StatelessWidget {
             onPressed: onPressed,
             style: context.elevatedButtonThemeData.style!.copyWith(
               backgroundColor: WidgetStatePropertyAll(
-                const Color(0xFFf9af48).withOpacity(0.8),
+                const Color(0xFFf9af48).withValues(alpha: 0.8),
               ),
               fixedSize: WidgetStatePropertyAll(
                 Size.fromWidth(MediaQuery.of(context).size.width * 0.54),
@@ -64,7 +64,7 @@ class BecomePremiumButton extends StatelessWidget {
                   borderRadius:
                       BorderRadius.circular(ThemeSizes.borderRadiusXlg),
                   side: BorderSide(
-                    color: Colors.white.withOpacity(0.5),
+                    color: Colors.white.withValues(alpha: 0.5),
                     width: 1.5,
                   ),
                 ),

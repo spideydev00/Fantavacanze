@@ -100,14 +100,14 @@ class _OtpPageState extends State<OtpPage> {
                     "Inserisci il codice di verifica inviato a",
                     textAlign: TextAlign.center,
                     style: context.textTheme.bodyLarge!.copyWith(
-                      color: ColorPalette.darkGrey.withOpacity(0.8),
+                      color: ColorPalette.darkGrey.withValues(alpha: 0.8),
                     ),
                   ),
                   Text(
                     "+39 349 233 5705",
                     textAlign: TextAlign.center,
                     style: context.textTheme.bodyLarge!.copyWith(
-                      color: ColorPalette.darkGrey.withOpacity(0.9),
+                      color: ColorPalette.darkGrey.withValues(alpha: 0.9),
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -142,7 +142,7 @@ class _OtpPageState extends State<OtpPage> {
                   Text(
                     "Non hai ricevuto il codice?",
                     style: context.textTheme.bodyMedium!.copyWith(
-                      color: ColorPalette.darkGrey.withOpacity(0.8),
+                      color: ColorPalette.darkGrey.withValues(alpha: 0.8),
                     ),
                   ),
                   TextButton(

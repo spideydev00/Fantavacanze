@@ -49,7 +49,7 @@ class BottomNavigationAsset extends NavigationAsset {
           borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusSm),
           boxShadow: [
             BoxShadow(
-              color: ColorPalette.primary.withOpacity(0.6),
+              color: ColorPalette.primary.withValues(alpha: 0.6),
               blurRadius: 8,
               spreadRadius: 2,
             ),
