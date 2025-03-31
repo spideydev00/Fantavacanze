@@ -74,7 +74,9 @@ class AppTheme {
             ),
           ),
         ),
-        dialogBackgroundColor: ColorPalette.secondaryBg,
+        dialogTheme: DialogTheme(
+          backgroundColor: ColorPalette.secondaryBg,
+        ),
         /* ---------------------------------------------------------------- */
         //FLOATING BUTTON
         floatingActionButtonTheme: FloatingActionButtonThemeData(

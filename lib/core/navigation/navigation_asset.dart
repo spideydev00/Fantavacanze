@@ -48,7 +48,7 @@ abstract class NavigationAsset extends StatelessWidget {
         shape: BoxShape.circle,
         boxShadow: [
           BoxShadow(
-            color: Colors.white.withOpacity(0.4),
+            color: Colors.white.withValues(alpha: 0.4),
             blurRadius: 8,
             spreadRadius: 2,
           ),

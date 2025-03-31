@@ -44,7 +44,7 @@ class SideMenuNavigationAsset extends NavigationAsset {
       duration: const Duration(milliseconds: 300),
       decoration: BoxDecoration(
         color: isActive
-            ? ColorPalette.darkerGrey.withOpacity(0.15)
+            ? ColorPalette.darkerGrey.withValues(alpha: 0.15)
             : Colors.transparent,
         borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusMd),
       ),

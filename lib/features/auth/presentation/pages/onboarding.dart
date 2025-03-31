@@ -124,7 +124,7 @@ class _OnBoardingScreenState extends State<OnBoardingScreen> {
                     decoration: BoxDecoration(
                       borderRadius:
                           BorderRadius.circular(ThemeSizes.borderRadiusLg),
-                      color: ColorPalette.accent.withOpacity(0.8),
+                      color: ColorPalette.accent.withValues(alpha: 0.8),
                     ),
                     child: const Text("Salta"),
                   ),
@@ -136,7 +136,7 @@ class _OnBoardingScreenState extends State<OnBoardingScreen> {
                   count: 3,
                   effect: WormEffect(
                       activeDotColor: ColorPalette.primary,
-                      dotColor: ColorPalette.white.withOpacity(0.8)),
+                      dotColor: ColorPalette.white.withValues(alpha: 0.8)),
                 ),
 
                 onLastPage
@@ -151,7 +151,7 @@ class _OnBoardingScreenState extends State<OnBoardingScreen> {
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(
                                 ThemeSizes.borderRadiusLg),
-                            color: ColorPalette.success.withOpacity(0.7),
+                            color: ColorPalette.success.withValues(alpha: 0.7),
                           ),
                           child: const Text("Fatto"),
                         ),
@@ -169,7 +169,7 @@ class _OnBoardingScreenState extends State<OnBoardingScreen> {
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(
                                 ThemeSizes.borderRadiusLg),
-                            color: ColorPalette.accent.withOpacity(0.8),
+                            color: ColorPalette.accent.withValues(alpha: 0.8),
                           ),
                           child: const Text("Avanti"),
                         ),
