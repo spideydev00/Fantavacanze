@@ -1,6 +1,6 @@
+import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/navigation/navigation_asset.dart';
 import 'package:flutter/material.dart';
-import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:fantavacanze_official/core/extensions/context_extension.dart';
 import 'package:flutter_svg/svg.dart';
@@ -23,7 +23,7 @@ class BottomNavigationAsset extends NavigationAsset {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          _buildAnimatedIndicator(),
+          _buildAnimatedIndicator(context),
           const SizedBox(height: ThemeSizes.sm),
           super.build(context),
           const SizedBox(height: ThemeSizes.sm),
@@ -36,7 +36,7 @@ class BottomNavigationAsset extends NavigationAsset {
     );
   }
 
-  Widget _buildAnimatedIndicator() {
+  Widget _buildAnimatedIndicator(BuildContext context) {
     return AnimatedOpacity(
       duration: const Duration(milliseconds: 600),
       opacity: isActive ? 1 : 0,
@@ -45,11 +45,11 @@ class BottomNavigationAsset extends NavigationAsset {
         height: isActive ? 5 : 2,
         width: width * 0.6,
         decoration: BoxDecoration(
-          color: ColorPalette.primary,
+          color: context.primaryColor,
           borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusSm),
           boxShadow: [
             BoxShadow(
-              color: ColorPalette.primary.withValues(alpha: 0.6),
+              color: context.primaryColor.withValues(alpha: 0.6),
               blurRadius: 8,
               spreadRadius: 2,
             ),

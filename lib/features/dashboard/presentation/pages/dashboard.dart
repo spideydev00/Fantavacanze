@@ -1,13 +1,14 @@
 import 'dart:math';
 
 import 'package:fantavacanze_official/core/constants/navigation_items.dart';
+import 'package:fantavacanze_official/core/cubits/app_theme/app_theme_cubit.dart';
+import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/features/dashboard/presentation/widgets/helpers/custom_menu_icon.dart';
 import 'package:fantavacanze_official/features/dashboard/presentation/widgets/side_menu.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fantavacanze_official/core/constants/constants.dart';
 import 'package:fantavacanze_official/core/cubits/app_navigation/app_navigation_cubit.dart';
-import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:fantavacanze_official/features/dashboard/presentation/widgets/bottom_navigation_bar.dart';
 
@@ -64,7 +65,7 @@ class _DashboardScreenState extends State<DashboardScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       // Use a background color matching the SideMenu
-      backgroundColor: ColorPalette.secondaryBg,
+      backgroundColor: context.secondaryBgColor,
       body: Stack(
         children: [
           AnimatedPositioned(
@@ -102,18 +103,22 @@ class _DashboardScreenState extends State<DashboardScreen>
                             width: ThemeSizes.iconLg,
                             height: ThemeSizes.iconLg,
                             decoration: BoxDecoration(
-                              color: ColorPalette.secondaryBg,
+                              color: context.secondaryBgColor,
                               shape: BoxShape.circle,
                             ),
                             child: Icon(
-                              Icons.person,
+                              Icons.settings,
                               size: ThemeSizes.iconLg * 0.6,
+                              color: context.textPrimaryColor
+                                  .withValues(alpha: 0.9),
                             ),
                           ),
                         )
                       ],
                       leading: CustomMenuIcon(
-                        path: "assets/animations/rive/menu_button.riv",
+                        path: context.read<AppThemeCubit>().isDarkMode(context)
+                            ? "assets/animations/rive/menu_button.riv"
+                            : "assets/animations/rive/menu_button_black.riv",
                         artboard: "Artboard",
                         stateMachineName: "switch",
                         triggerValue: "toggleX",
@@ -135,19 +140,11 @@ class _DashboardScreenState extends State<DashboardScreen>
                     resizeToAvoidBottomInset: false,
                     body: BlocBuilder<AppNavigationCubit, int>(
                       builder: (context, selectedIndex) {
-                        return Navigator(
-                          onGenerateRoute: (settings) {
-                            return MaterialPageRoute(
-                              builder: (context) =>
-                                  nonParticipantNavbarItems[selectedIndex]
-                                      .screen,
-                            );
-                          },
-                        );
+                        return nonParticipantNavbarItems[selectedIndex].screen;
                       },
                     ),
                     bottomNavigationBar: CustomBottomNavigationBar(
-                      navItems: nonParticipantNavbarItems,
+                      navItems: nonParticipantNavbarItems.sublist(0, 3),
                     ),
                   ),
                 ),

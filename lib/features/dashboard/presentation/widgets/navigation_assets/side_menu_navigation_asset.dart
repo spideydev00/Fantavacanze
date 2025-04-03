@@ -22,8 +22,8 @@ class SideMenuNavigationAsset extends NavigationAsset {
       onTap: onTap,
       child: Padding(
         padding: const EdgeInsets.symmetric(
-          horizontal: ThemeSizes.sm,
-          vertical: ThemeSizes.sm,
+          horizontal: ThemeSizes.xs,
+          vertical: ThemeSizes.xs,
         ),
         child: _buildAnimatedContainer(
           child: Row(
@@ -58,10 +58,13 @@ class SideMenuNavigationAsset extends NavigationAsset {
 
   @override
   Widget buildIcon() {
-    return SvgPicture.asset(
-      svgIcon,
-      width: width,
-      height: height,
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 300),
+      child: SvgPicture.asset(
+        svgIcon,
+        width: width,
+        height: height,
+      ),
     );
   }
 }

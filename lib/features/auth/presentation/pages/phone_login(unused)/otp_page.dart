@@ -1,3 +1,4 @@
+import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/widgets/loader.dart';
 import 'package:fantavacanze_official/core/constants/constants.dart';
 import 'package:fantavacanze_official/core/extensions/context_extension.dart';
@@ -74,7 +75,7 @@ class _OtpPageState extends State<OtpPage> {
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(),
-      backgroundColor: ColorPalette.darkBg,
+      backgroundColor: ColorPalette.bgColor(ThemeMode.dark),
       body: SingleChildScrollView(
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: ThemeSizes.lg),
@@ -124,7 +125,7 @@ class _OtpPageState extends State<OtpPage> {
                 fullBorder: true,
                 underlineWidth: 2.5,
                 //when clicked
-                underlineColor: ColorPalette.primary,
+                underlineColor: context.primaryColor,
                 //when unclicked
                 underlineUnfocusedColor: ColorPalette.darkerGrey,
                 onCompleted: (value) {
@@ -142,7 +143,7 @@ class _OtpPageState extends State<OtpPage> {
                   Text(
                     "Non hai ricevuto il codice?",
                     style: context.textTheme.bodyMedium!.copyWith(
-                      color: ColorPalette.darkGrey.withValues(alpha: 0.8),
+                      color: ColorPalette.darkerGrey.withValues(alpha: 0.8),
                     ),
                   ),
                   TextButton(

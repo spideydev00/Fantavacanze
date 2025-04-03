@@ -1,5 +1,5 @@
 import 'package:fantavacanze_official/core/constants/constants.dart';
-import 'package:fantavacanze_official/core/theme/colors.dart';
+import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:flutter/material.dart';
 
 class EmptyBrandedPage extends StatefulWidget {
@@ -43,12 +43,14 @@ class _EmptyBrandedPageState extends State<EmptyBrandedPage> {
     Widget scaffold = Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
-        automaticallyImplyLeading: widget.isBackNavigationActive,
+        leading: widget.isBackNavigationActive
+            ? const BackButton(color: Colors.white)
+            : null,
         forceMaterialTransparency: true,
       ),
       resizeToAvoidBottomInset: false,
       backgroundColor:
-          widget.bgImagePath != null ? Colors.transparent : ColorPalette.darkBg,
+          widget.bgImagePath != null ? Colors.transparent : context.bgColor,
       body: Stack(
         children: [
           Column(

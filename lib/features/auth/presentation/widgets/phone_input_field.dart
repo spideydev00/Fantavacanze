@@ -55,7 +55,7 @@ class PhoneInputField extends StatelessWidget {
           color: ColorPalette.black.withValues(alpha: 0.5),
           fontSize: 16,
         ),
-        // fillColor: ColorPalette.white,
+        // fillColor: contextwhite,
         border:
             AppTheme.border(Colors.transparent, 0, ThemeSizes.borderRadiusLg),
         enabledBorder:
@@ -65,10 +65,10 @@ class PhoneInputField extends StatelessWidget {
         //icona di chiusura
         suffixIcon: GestureDetector(
           onTap: onTrashIconTap,
-          child: const Icon(
+          child: Icon(
             Icons.delete_rounded,
             size: 28,
-            color: ColorPalette.primary,
+            color: ColorPalette.primary(ThemeMode.dark),
           ),
         ),
       ),

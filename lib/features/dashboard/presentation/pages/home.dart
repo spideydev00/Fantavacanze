@@ -18,7 +18,7 @@ class HomePage extends StatelessWidget {
             child: CustomDivider(text: "Per Iniziare"),
           ),
           const SizedBox(height: 25),
-          _buildActionButtons(),
+          _buildActionButtons(context),
           const SizedBox(height: 25),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: ThemeSizes.xl),
@@ -31,7 +31,7 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  Widget _buildActionButtons() {
+  Widget _buildActionButtons(BuildContext context) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
