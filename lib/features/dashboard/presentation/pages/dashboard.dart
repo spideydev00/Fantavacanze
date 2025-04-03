@@ -135,14 +135,14 @@ class _DashboardScreenState extends State<DashboardScreen>
                     resizeToAvoidBottomInset: false,
                     body: BlocBuilder<AppNavigationCubit, int>(
                       builder: (context, selectedIndex) {
-                        return IndexedStack(
-                          index: selectedIndex,
-                          children: List.generate(
-                            (3),
-                            (index) {
-                              return nonParticipantNavbarItems[index].screen;
-                            },
-                          ),
+                        return Navigator(
+                          onGenerateRoute: (settings) {
+                            return MaterialPageRoute(
+                              builder: (context) =>
+                                  nonParticipantNavbarItems[selectedIndex]
+                                      .screen,
+                            );
+                          },
                         );
                       },
                     ),
