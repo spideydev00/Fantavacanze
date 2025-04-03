@@ -84,6 +84,8 @@ flutter:
   - assets/images/emotions-bg.jpg
   - assets/images/social-enhance-bg.jpg
   - assets/images/logo-neon.png
+  - assets/images/logo.png
+  - assets/images/logo-dark.png
   - assets/images/logo-high-padding.png
   - assets/images/otp-verification-icon.png
   - assets/images/icons/auth_icons/google.svg
