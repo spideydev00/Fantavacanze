@@ -1,3 +1,4 @@
+import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:flutter/material.dart';
@@ -22,7 +23,7 @@ class SideMenuTile extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: ThemeSizes.sm),
       child: Container(
         decoration: BoxDecoration(
-          color: isSelected ? ColorPalette.primary : Colors.transparent,
+          color: isSelected ? context.primaryColor : Colors.transparent,
           borderRadius: BorderRadius.circular(ThemeSizes.md),
         ),
         child: ListTile(

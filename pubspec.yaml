@@ -51,6 +51,7 @@ dependencies:
   crypto: ^3.0.6
   flutter_native_splash: ^2.4.4
   rive: ^0.13.20
+  shared_preferences: ^2.5.3
   
 dev_dependencies:
   flutter_test:
@@ -104,6 +105,7 @@ flutter:
   - assets/animations/rive/icons.riv
   - assets/animations/rive/rive_game_icon.riv
   - assets/animations/rive/menu_button.riv
+  - assets/animations/rive/menu_button_black.riv
   - assets/images/icons/homepage_icons/home-icon.svg
   - assets/images/icons/homepage_icons/thunder-icon.svg
   - assets/images/icons/homepage_icons/thunder-icon-red.svg
@@ -111,6 +113,10 @@ flutter:
   - assets/images/icons/homepage_icons/create-league-icon.svg
   - assets/images/icons/homepage_icons/search-league-icon.svg
   - assets/images/icons/homepage_icons/premium-icon.svg
+  - assets/images/icons/homepage_icons/create-league-icon-dark.svg
+  - assets/images/icons/homepage_icons/drink-games-icon-dark.svg
+  - assets/images/icons/homepage_icons/search-league-icon-dark.svg
+  - assets/images/icons/homepage_icons/home-icon-dark.svg
   
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-assets/images

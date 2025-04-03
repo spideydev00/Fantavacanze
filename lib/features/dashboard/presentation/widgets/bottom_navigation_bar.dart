@@ -1,3 +1,4 @@
+import 'package:fantavacanze_official/core/cubits/app_theme/app_theme_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fantavacanze_official/core/cubits/app_navigation/app_navigation_cubit.dart';
@@ -25,7 +26,9 @@ class CustomBottomNavigationBar extends StatelessWidget {
                 3,
                 (index) {
                   return BottomNavigationAsset(
-                    svgIcon: navItems[index].svgIcon,
+                    svgIcon: context.read<AppThemeCubit>().isDarkMode(context)
+                        ? navItems[index].darkSvgIcon
+                        : navItems[index].lightSvgIcon,
                     title: navItems[index].title!,
                     isActive: selectedIndex == index,
                     onTap: () {

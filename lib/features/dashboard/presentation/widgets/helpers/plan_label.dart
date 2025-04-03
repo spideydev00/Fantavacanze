@@ -1,5 +1,5 @@
+import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/extensions/context_extension.dart';
-import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:flutter/material.dart';
 
@@ -15,7 +15,7 @@ class PlanLabel extends StatelessWidget {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: ColorPalette.primary.withValues(alpha: 0.8),
+        color: context.primaryColor.withValues(alpha: 0.8),
         borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusLg),
       ),
       child: Row(
@@ -29,7 +29,9 @@ class PlanLabel extends StatelessWidget {
           const SizedBox(width: 6),
           Text(
             isPremium ? 'Premium' : 'Gratis',
-            style: context.textTheme.labelMedium,
+            style: context.textTheme.labelMedium!.copyWith(
+              color: Colors.white,
+            ),
           ),
         ],
       ),

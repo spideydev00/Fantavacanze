@@ -1,3 +1,4 @@
+import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/extensions/context_extension.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
@@ -37,8 +38,15 @@ class ArticleCard extends StatelessWidget {
         ),
         clipBehavior: Clip.antiAlias,
         decoration: BoxDecoration(
-          color: ColorPalette.secondaryBg,
+          color: context.secondaryBgColor,
           borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusLg),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.1),
+              blurRadius: 10,
+              offset: const Offset(0, 5),
+            ),
+          ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

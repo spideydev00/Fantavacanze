@@ -41,7 +41,8 @@ abstract class NavigationAsset extends StatelessWidget {
   }
 
   Widget _buildGlowEffect() {
-    return Container(
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 300),
       height: height * 0.3,
       width: height * 0.3,
       decoration: BoxDecoration(

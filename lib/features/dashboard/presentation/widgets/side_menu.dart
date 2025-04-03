@@ -1,12 +1,14 @@
 import 'package:fantavacanze_official/core/constants/navigation_items.dart';
+import 'package:fantavacanze_official/core/cubits/app_theme/app_theme_cubit.dart';
+import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/features/dashboard/presentation/widgets/helpers/become_premium_button.dart';
+import 'package:fantavacanze_official/features/dashboard/presentation/widgets/helpers/theme_switch.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fantavacanze_official/core/constants/constants.dart';
 import 'package:fantavacanze_official/core/cubits/app_navigation/app_navigation_cubit.dart';
 import 'package:fantavacanze_official/core/extensions/context_extension.dart';
 import 'package:fantavacanze_official/core/navigation/navigation_item.dart';
-import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:fantavacanze_official/features/dashboard/presentation/widgets/helpers/divider.dart';
 import 'package:fantavacanze_official/features/dashboard/presentation/widgets/helpers/plan_label.dart';
@@ -21,81 +23,104 @@ class SideMenu extends StatelessWidget {
       body: Container(
         height: double.infinity,
         width: Constants.getWidth(context) * 0.7,
-        color: ColorPalette.secondaryBg,
+        color: context.secondaryBgColor,
         child: SafeArea(
-            child: Column(
-          children: [
-            const SizedBox(height: 20),
-            _buildUserInfo(context),
-            Padding(
-              padding: const EdgeInsets.only(top: ThemeSizes.md),
-              child: CustomDivider(
-                text: nonParticipantNavbarItems[0].subsection ?? "Menù",
-              ),
-            ),
-            const SizedBox(height: 10),
+          child: Column(
+            children: [
+              Expanded(
+                child: SingleChildScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  child: Column(
+                    children: [
+                      const SizedBox(height: 20),
+                      _buildUserInfo(context),
+                      Padding(
+                        padding: const EdgeInsets.only(top: ThemeSizes.sm),
+                        child: CustomDivider(
+                          text:
+                              nonParticipantNavbarItems[0].subsection ?? "Menù",
+                        ),
+                      ),
+                      const SizedBox(height: 5),
 
-            // BlocBuilder listens to state changes
-            BlocBuilder<AppNavigationCubit, int>(
-              builder: (context, selectedIndex) {
-                return Column(
-                  children: buildNavigationMenu(
-                    context: context,
-                    selectedIndex: selectedIndex,
-                  ),
-                );
-              },
-            ),
+                      // BlocBuilder listens to state changes
+                      BlocBuilder<AppNavigationCubit, int>(
+                        builder: (context, selectedIndex) {
+                          return Column(
+                            children: buildNavigationMenu(
+                              context: context,
+                              selectedIndex: selectedIndex,
+                            ),
+                          );
+                        },
+                      ),
 
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: ThemeSizes.sm),
-              child: CustomDivider(text: "Sostienici"),
-            ),
+                      Padding(
+                        padding:
+                            const EdgeInsets.symmetric(vertical: ThemeSizes.md),
+                        child: CustomDivider(text: "Sostienici"),
+                      ),
 
-            BecomePremiumButton(onPressed: () {}),
+                      BecomePremiumButton(onPressed: () {}),
 
-            // Push everything above up dynamically
-            const Spacer(),
+                      // Add theme switch section
+                      Padding(
+                        padding:
+                            const EdgeInsets.symmetric(vertical: ThemeSizes.md),
+                        child: CustomDivider(text: "Impostazioni"),
+                      ),
 
-            // Footer Section
-            Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  "© Fantavacanze - 2024",
-                  style: context.textTheme.bodyMedium!.copyWith(
-                    color: ColorPalette.darkGrey,
+                      ThemeSwitch(),
+
+                      const SizedBox(height: 20),
+                    ],
                   ),
                 ),
-                const SizedBox(height: 5),
-                GestureDetector(
+              ),
+
+              // Footer Section - fixed at bottom
+              Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  SizedBox(height: 30),
+                  Text(
+                    "© Fantavacanze - 2024",
+                    style: context.textTheme.bodySmall!.copyWith(
+                      color: context.textSecondaryColor.withValues(alpha: 0.6),
+                    ),
+                  ),
+                  const SizedBox(height: 5),
+                  GestureDetector(
                     onTap: () {
                       // Open privacy policy link
                     },
                     child: RichText(
                       text: TextSpan(
-                        style: context.textTheme.bodyMedium,
+                        style: context.textTheme.labelSmall,
                         children: [
                           TextSpan(
                             text: "Leggi la ",
                             style: context.textTheme.bodySmall!.copyWith(
-                              color: ColorPalette.darkGrey,
+                              color: context.textSecondaryColor
+                                  .withValues(alpha: 0.6),
                             ),
                           ),
                           TextSpan(
                             text: "policy",
                             style: context.textTheme.bodySmall!.copyWith(
-                              color: ColorPalette.primary,
+                              color: context.primaryColor,
                             ),
                           ),
                         ],
                       ),
-                    )),
-                const SizedBox(height: 10),
-              ],
-            ),
-          ],
-        )),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                ],
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -126,7 +151,9 @@ class SideMenu extends StatelessWidget {
       menuItems.add(
         SideMenuNavigationAsset(
           title: item.title!,
-          svgIcon: item.svgIcon,
+          svgIcon: context.read<AppThemeCubit>().isDarkMode(context)
+              ? item.darkSvgIcon
+              : item.lightSvgIcon,
           isActive: selectedIndex == index,
           onTap: () => _handleNavigation(context, item, index),
         ),
@@ -141,15 +168,12 @@ class SideMenu extends StatelessWidget {
   // Handle Navigation Logic using Cubit
   void _handleNavigation(
       BuildContext context, NavigationItem item, int itemIndex) {
-    if (nonParticipantNavbarItems.contains(item)) {
-      // If item is in bottom navigation, update the state in Dashboard
+    if (itemIndex < 3) {
+      // Se l'elemento è nei primi 3, aggiorna l'indice della bottom navigation
       context.read<AppNavigationCubit>().setIndex(itemIndex);
     } else {
-      // Otherwise, navigate to the new page
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => item.screen),
-      );
+      // Altrimenti, naviga direttamente alla pagina
+      context.read<AppNavigationCubit>().setIndex(itemIndex);
     }
   }
 }
@@ -177,7 +201,7 @@ Widget _buildUserInfo(BuildContext context) {
           Text(
             "Membro dal: 07/2025",
             style: context.textTheme.labelMedium!.copyWith(
-              color: ColorPalette.darkGrey,
+              color: context.textSecondaryColor.withValues(alpha: 0.8),
             ),
           ),
           const SizedBox(height: 10),

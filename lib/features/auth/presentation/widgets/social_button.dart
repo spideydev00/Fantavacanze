@@ -65,7 +65,7 @@ class SocialButton extends StatelessWidget {
               onPressed: onPressed,
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.transparent,
-                foregroundColor: ColorPalette.textPrimary,
+                foregroundColor: ColorPalette.textPrimary(ThemeMode.dark),
                 elevation: 0,
               ),
               child: SvgPicture.asset(
@@ -77,7 +77,7 @@ class SocialButton extends StatelessWidget {
               onPressed: onPressed,
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.transparent,
-                foregroundColor: ColorPalette.textPrimary,
+                foregroundColor: ColorPalette.textPrimary(ThemeMode.dark),
                 elevation: 0,
               ),
               label: Text(

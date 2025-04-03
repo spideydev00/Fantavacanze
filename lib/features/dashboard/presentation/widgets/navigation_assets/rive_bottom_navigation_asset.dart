@@ -1,5 +1,5 @@
+import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/extensions/context_extension.dart';
-import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:fantavacanze_official/core/widgets/rive_asset.dart';
 import 'package:flutter/material.dart';
@@ -39,7 +39,7 @@ class _RiveBottomNavigationAssetState
           height: widget.isActive ? 5 : 2,
           width: widget.width * 0.6,
           decoration: BoxDecoration(
-            color: widget.isActive ? ColorPalette.primary : Colors.transparent,
+            color: widget.isActive ? context.primaryColor : Colors.transparent,
             borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusSm),
           ),
         ),
