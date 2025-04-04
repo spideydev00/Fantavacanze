@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
+import 'package:fantavacanze_official/core/extensions/context_extension.dart';
+import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_event.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_state.dart';
@@ -28,7 +31,8 @@ class _JoinLeaguePageState extends State<JoinLeaguePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Join a League'),
+        title: const Text('Unisciti a una Lega'),
+        elevation: 0,
       ),
       body: BlocConsumer<LeagueBloc, LeagueState>(
         listener: (context, state) {
@@ -45,7 +49,7 @@ class _JoinLeaguePageState extends State<JoinLeaguePage> {
           } else if (state is LeagueJoined) {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
-                content: Text('Successfully joined the league!'),
+                content: Text('Ti sei unito alla lega con successo!'),
                 backgroundColor: Colors.green,
               ),
             );
@@ -59,114 +63,204 @@ class _JoinLeaguePageState extends State<JoinLeaguePage> {
           }
         },
         builder: (context, state) {
-          return SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Enter the 10-character invite code',
-                    style: Theme.of(context).textTheme.titleLarge,
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Ask the league creator for the invite code to join their league.',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: Colors.grey[600],
-                        ),
-                  ),
-                  const SizedBox(height: 24),
-                  TextFormField(
-                    controller: _inviteCodeController,
-                    decoration: InputDecoration(
-                      labelText: 'Invite Code',
-                      hintText: 'Enter the 10-character code',
-                      prefixIcon: const Icon(Icons.code),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter an invite code';
-                      }
-                      return null;
-                    },
-                    textCapitalization: TextCapitalization.characters,
-                    onChanged: (value) {
-                      // Auto uppercase
-                      if (value != value.toUpperCase()) {
-                        _inviteCodeController.value = TextEditingValue(
-                          text: value.toUpperCase(),
-                          selection: _inviteCodeController.selection,
-                        );
-                      }
-                    },
-                  ),
-                  const SizedBox(height: 24),
-                  Text(
-                    'Your Team (Optional)',
-                    style: Theme.of(context).textTheme.titleLarge,
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'If this is a team-based league, you can specify your team name.',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: Colors.grey[600],
-                        ),
-                  ),
-                  const SizedBox(height: 16),
-                  TextFormField(
-                    controller: _teamNameController,
-                    decoration: InputDecoration(
-                      labelText: 'Team Name (Optional)',
-                      hintText: 'Enter your team name if applicable',
-                      prefixIcon: const Icon(Icons.group),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 32),
-                  SizedBox(
-                    width: double.infinity,
-                    height: 50,
-                    child: ElevatedButton(
-                      onPressed: _isJoining
-                          ? null
-                          : () {
-                              if (_formKey.currentState!.validate()) {
-                                setState(() {
-                                  _isJoining = true;
-                                });
-                                final inviteCode =
-                                    _inviteCodeController.text.trim();
-                                final teamName =
-                                    _teamNameController.text.trim();
-
-                                context.read<LeagueBloc>().add(
-                                      JoinLeagueEvent(
-                                        inviteCode: inviteCode,
-                                        teamName: teamName.isNotEmpty
-                                            ? teamName
-                                            : null,
-                                      ),
-                                    );
-                              }
-                            },
-                      style: ElevatedButton.styleFrom(
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      child: _isJoining
-                          ? const CircularProgressIndicator()
-                          : const Text('Join League'),
-                    ),
-                  ),
+          return Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  context.bgColor,
+                  context.bgColor.withValues(alpha: 0.8),
                 ],
+              ),
+            ),
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(ThemeSizes.lg),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Header illustration
+                    Center(
+                      child: Container(
+                        height: 180,
+                        width: 180,
+                        decoration: BoxDecoration(
+                          color: context.primaryColor.withValues(alpha: 0.1),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          Icons.group_add_rounded,
+                          size: 80,
+                          color: context.primaryColor,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: ThemeSizes.xl),
+
+                    Text(
+                      'Inserisci il codice di invito',
+                      style: context.textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: ThemeSizes.sm),
+                    Text(
+                      'Chiedi al creatore della lega il codice di invito per unirti alla sua lega.',
+                      style: context.textTheme.bodyMedium?.copyWith(
+                        color: context.textSecondaryColor,
+                      ),
+                    ),
+                    const SizedBox(height: ThemeSizes.lg),
+
+                    // Invite code field with modern design
+                    Container(
+                      decoration: BoxDecoration(
+                        color: context.secondaryBgColor,
+                        borderRadius:
+                            BorderRadius.circular(ThemeSizes.borderRadiusLg),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.05),
+                            blurRadius: 10,
+                            offset: const Offset(0, 5),
+                          ),
+                        ],
+                      ),
+                      child: TextFormField(
+                        controller: _inviteCodeController,
+                        decoration: InputDecoration(
+                          hintText: 'Inserisci il codice di 10 caratteri',
+                          labelText: 'Codice Invito',
+                          prefixIcon:
+                              Icon(Icons.vpn_key, color: context.primaryColor),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(
+                                ThemeSizes.borderRadiusLg),
+                            borderSide: BorderSide.none,
+                          ),
+                          filled: true,
+                          fillColor: context.secondaryBgColor,
+                        ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Inserisci un codice di invito';
+                          }
+                          return null;
+                        },
+                        textCapitalization: TextCapitalization.characters,
+                        onChanged: (value) {
+                          // Auto uppercase
+                          if (value != value.toUpperCase()) {
+                            _inviteCodeController.value = TextEditingValue(
+                              text: value.toUpperCase(),
+                              selection: _inviteCodeController.selection,
+                            );
+                          }
+                        },
+                      ),
+                    ),
+
+                    const SizedBox(height: ThemeSizes.xl),
+
+                    Text(
+                      'La tua Squadra (Opzionale)',
+                      style: context.textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: ThemeSizes.sm),
+                    Text(
+                      'Se questa è una lega a squadre, puoi specificare il nome della tua squadra.',
+                      style: context.textTheme.bodyMedium?.copyWith(
+                        color: context.textSecondaryColor,
+                      ),
+                    ),
+                    const SizedBox(height: ThemeSizes.lg),
+
+                    // Team name field
+                    Container(
+                      decoration: BoxDecoration(
+                        color: context.secondaryBgColor,
+                        borderRadius:
+                            BorderRadius.circular(ThemeSizes.borderRadiusLg),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.05),
+                            blurRadius: 10,
+                            offset: const Offset(0, 5),
+                          ),
+                        ],
+                      ),
+                      child: TextFormField(
+                        controller: _teamNameController,
+                        decoration: InputDecoration(
+                          hintText: 'Inserisci il nome della tua squadra',
+                          labelText: 'Nome Squadra (Opzionale)',
+                          prefixIcon:
+                              Icon(Icons.people, color: context.primaryColor),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(
+                                ThemeSizes.borderRadiusLg),
+                            borderSide: BorderSide.none,
+                          ),
+                          filled: true,
+                          fillColor: context.secondaryBgColor,
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: ThemeSizes.xxl),
+
+                    // Join button
+                    SizedBox(
+                      width: double.infinity,
+                      height: 56,
+                      child: ElevatedButton.icon(
+                        onPressed: _isJoining
+                            ? null
+                            : () {
+                                if (_formKey.currentState!.validate()) {
+                                  setState(() {
+                                    _isJoining = true;
+                                  });
+                                  final inviteCode =
+                                      _inviteCodeController.text.trim();
+                                  final teamName =
+                                      _teamNameController.text.trim();
+
+                                  context.read<LeagueBloc>().add(
+                                        JoinLeagueEvent(
+                                          inviteCode: inviteCode,
+                                          teamName: teamName.isNotEmpty
+                                              ? teamName
+                                              : null,
+                                        ),
+                                      );
+                                }
+                              },
+                        icon: _isJoining
+                            ? Container(
+                                width: 24,
+                                height: 24,
+                                padding: const EdgeInsets.all(8),
+                                child: const CircularProgressIndicator(
+                                    color: Colors.white, strokeWidth: 2))
+                            : const Icon(Icons.login_rounded),
+                        label: Text(
+                            _isJoining ? 'Attendere...' : 'Unisciti alla Lega'),
+                        style: ElevatedButton.styleFrom(
+                          elevation: 3,
+                          shape: RoundedRectangleBorder(
+                            borderRadius:
+                                BorderRadius.circular(ThemeSizes.buttonRadius),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           );
@@ -181,7 +275,7 @@ class _JoinLeaguePageState extends State<JoinLeaguePage> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text('Select League'),
+          title: const Text('Seleziona Lega'),
           content: SizedBox(
             width: double.maxFinite,
             child: Column(
@@ -189,10 +283,10 @@ class _JoinLeaguePageState extends State<JoinLeaguePage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Multiple leagues found with this invite code. Please select which one you want to join:',
-                  style: TextStyle(color: Colors.grey[700]),
+                  'Sono state trovate più leghe con questo codice di invito. Seleziona quella a cui vuoi unirti:',
+                  style: TextStyle(color: context.textSecondaryColor),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: ThemeSizes.md),
                 Flexible(
                   child: ListView.separated(
                     shrinkWrap: true,
@@ -238,7 +332,7 @@ class _JoinLeaguePageState extends State<JoinLeaguePage> {
               onPressed: () {
                 Navigator.pop(context);
               },
-              child: const Text('Cancel'),
+              child: const Text('Annulla'),
             ),
           ],
         );

@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/league.dart';
 import 'package:fantavacanze_official/features/league/data/models/league_model.dart';
+import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
+import 'package:fantavacanze_official/core/extensions/context_extension.dart';
+import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:intl/intl.dart';
 
 class LeagueCard extends StatelessWidget {
@@ -27,13 +30,13 @@ class LeagueCard extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 16),
       elevation: 4,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusLg),
       ),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusLg),
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(ThemeSizes.md),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -43,8 +46,7 @@ class LeagueCard extends StatelessWidget {
                   Expanded(
                     child: Text(
                       league.name,
-                      style: const TextStyle(
-                        fontSize: 18,
+                      style: context.textTheme.titleLarge?.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
                       maxLines: 1,
@@ -53,63 +55,62 @@ class LeagueCard extends StatelessWidget {
                   ),
                   Container(
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
+                      horizontal: ThemeSizes.sm,
                       vertical: 4,
                     ),
                     decoration: BoxDecoration(
                       color: league.isTeamBased
-                          ? Colors.blue.withOpacity(0.2)
-                          : Colors.green.withOpacity(0.2),
-                      borderRadius: BorderRadius.circular(12),
+                          ? Colors.blue.withValues(alpha: 0.2)
+                          : Colors.green.withValues(alpha: 0.2),
+                      borderRadius:
+                          BorderRadius.circular(ThemeSizes.borderRadiusMd),
                     ),
                     child: Text(
-                      league.isTeamBased ? 'Teams' : 'Individual',
+                      league.isTeamBased ? 'Squadre' : 'Individuale',
                       style: TextStyle(
                         color: league.isTeamBased ? Colors.blue : Colors.green,
                         fontWeight: FontWeight.bold,
-                        fontSize: 12,
+                        fontSize: ThemeSizes.labelMd,
                       ),
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: ThemeSizes.sm),
               Text(
                 league.description,
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.grey[600],
+                style: context.textTheme.bodyMedium?.copyWith(
+                  color: context.textSecondaryColor,
                 ),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: ThemeSizes.md),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Row(
                     children: [
-                      const Icon(Icons.people, size: 16, color: Colors.grey),
+                      Icon(Icons.people,
+                          size: 16, color: context.textSecondaryColor),
                       const SizedBox(width: 4),
                       Text(
-                        '$participantsCount ${participantsCount == 1 ? 'participant' : 'participants'}',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.grey[600],
+                        '$participantsCount ${participantsCount == 1 ? 'partecipante' : 'partecipanti'}',
+                        style: context.textTheme.bodySmall?.copyWith(
+                          color: context.textSecondaryColor,
                         ),
                       ),
                     ],
                   ),
                   Row(
                     children: [
-                      const Icon(Icons.calendar_today,
-                          size: 14, color: Colors.grey),
+                      Icon(Icons.calendar_today,
+                          size: 14, color: context.textSecondaryColor),
                       const SizedBox(width: 4),
                       Text(
-                        formattedDate,
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.grey[600],
+                        'Creato il: $formattedDate',
+                        style: context.textTheme.bodySmall?.copyWith(
+                          color: context.textSecondaryColor,
                         ),
                       ),
                     ],
@@ -120,13 +121,13 @@ class LeagueCard extends StatelessWidget {
               // Show invite code if available
               if (inviteCode != null)
                 Padding(
-                  padding: const EdgeInsets.only(top: 12),
+                  padding: const EdgeInsets.only(top: ThemeSizes.md),
                   child: InkWell(
                     onTap: () {
                       Clipboard.setData(ClipboardData(text: inviteCode));
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
-                          content: Text('Invite code copied to clipboard'),
+                          content: Text('Codice invito copiato negli appunti'),
                           backgroundColor: Colors.green,
                           duration: Duration(seconds: 2),
                         ),
@@ -134,13 +135,14 @@ class LeagueCard extends StatelessWidget {
                     },
                     child: Container(
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 8,
+                        horizontal: ThemeSizes.sm,
+                        vertical: ThemeSizes.sm,
                       ),
                       decoration: BoxDecoration(
-                        color: Colors.grey[100],
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: Colors.grey[300]!),
+                        color: context.secondaryBgColor,
+                        borderRadius:
+                            BorderRadius.circular(ThemeSizes.borderRadiusMd),
+                        border: Border.all(color: context.borderColor),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
@@ -148,14 +150,12 @@ class LeagueCard extends StatelessWidget {
                           Icon(
                             Icons.share,
                             size: 16,
-                            color: Colors.blue[700],
+                            color: context.primaryColor,
                           ),
                           const SizedBox(width: 6),
                           Text(
-                            'Invite Code:',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.grey[800],
+                            'Codice Invito:',
+                            style: context.textTheme.bodySmall?.copyWith(
                               fontWeight: FontWeight.w500,
                             ),
                           ),
@@ -166,15 +166,18 @@ class LeagueCard extends StatelessWidget {
                               vertical: 2,
                             ),
                             decoration: BoxDecoration(
-                              color: Colors.blue[50],
-                              borderRadius: BorderRadius.circular(4),
-                              border: Border.all(color: Colors.blue[100]!),
+                              color:
+                                  context.primaryColor.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(
+                                  ThemeSizes.borderRadiusSm),
+                              border: Border.all(
+                                  color: context.primaryColor
+                                      .withValues(alpha: 0.2)),
                             ),
                             child: Text(
                               inviteCode,
-                              style: TextStyle(
-                                fontSize: 13,
-                                color: Colors.blue[800],
+                              style: context.textTheme.bodySmall?.copyWith(
+                                color: context.primaryColor,
                                 fontWeight: FontWeight.bold,
                                 letterSpacing: 0.5,
                               ),
@@ -184,7 +187,7 @@ class LeagueCard extends StatelessWidget {
                           Icon(
                             Icons.copy,
                             size: 14,
-                            color: Colors.grey[600],
+                            color: context.textSecondaryColor,
                           ),
                         ],
                       ),
