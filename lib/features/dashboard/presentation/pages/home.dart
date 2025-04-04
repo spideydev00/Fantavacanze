@@ -1,7 +1,7 @@
 import 'package:fantavacanze_official/core/theme/sizes.dart';
-import 'package:fantavacanze_official/features/dashboard/presentation/widgets/helpers/article_card.dart';
+import 'package:fantavacanze_official/features/dashboard/presentation/widgets/helpers/homepage/article_card.dart';
 import 'package:fantavacanze_official/features/dashboard/presentation/widgets/helpers/divider.dart';
-import 'package:fantavacanze_official/features/dashboard/presentation/widgets/helpers/page_redirection_card.dart';
+import 'package:fantavacanze_official/features/dashboard/presentation/widgets/helpers/homepage/page_redirection_card.dart';
 import 'package:flutter/material.dart';
 
 class HomePage extends StatelessWidget {
