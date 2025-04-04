@@ -3,7 +3,8 @@ import 'dart:math';
 import 'package:fantavacanze_official/core/constants/navigation_items.dart';
 import 'package:fantavacanze_official/core/cubits/app_theme/app_theme_cubit.dart';
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
-import 'package:fantavacanze_official/features/dashboard/presentation/widgets/helpers/custom_menu_icon.dart';
+import 'package:fantavacanze_official/features/dashboard/presentation/pages/settings.dart';
+import 'package:fantavacanze_official/features/dashboard/presentation/widgets/helpers/side_menu/custom_menu_icon.dart';
 import 'package:fantavacanze_official/features/dashboard/presentation/widgets/side_menu.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -97,20 +98,26 @@ class _DashboardScreenState extends State<DashboardScreen>
                       toolbarHeight: ThemeSizes.appBarHeight,
                       title: _buildLogo(context),
                       actions: [
-                        Padding(
-                          padding: const EdgeInsets.only(right: ThemeSizes.xl),
-                          child: Container(
-                            width: ThemeSizes.iconLg,
-                            height: ThemeSizes.iconLg,
-                            decoration: BoxDecoration(
-                              color: context.secondaryBgColor,
-                              shape: BoxShape.circle,
-                            ),
-                            child: Icon(
-                              Icons.settings,
-                              size: ThemeSizes.iconLg * 0.6,
-                              color: context.textPrimaryColor
-                                  .withValues(alpha: 0.9),
+                        GestureDetector(
+                          onTap: () {
+                            Navigator.push(context, SettingsPage.route);
+                          },
+                          child: Padding(
+                            padding:
+                                const EdgeInsets.only(right: ThemeSizes.xl),
+                            child: Container(
+                              width: ThemeSizes.iconLg,
+                              height: ThemeSizes.iconLg,
+                              decoration: BoxDecoration(
+                                color: context.secondaryBgColor,
+                                shape: BoxShape.circle,
+                              ),
+                              child: Icon(
+                                Icons.settings,
+                                size: ThemeSizes.iconLg * 0.6,
+                                color: context.textPrimaryColor
+                                    .withValues(alpha: 0.9),
+                              ),
                             ),
                           ),
                         )

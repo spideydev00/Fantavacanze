@@ -2,7 +2,6 @@ import 'package:fantavacanze_official/core/constants/navigation_items.dart';
 import 'package:fantavacanze_official/core/cubits/app_theme/app_theme_cubit.dart';
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/features/dashboard/presentation/widgets/helpers/become_premium_button.dart';
-import 'package:fantavacanze_official/features/dashboard/presentation/widgets/helpers/theme_switch.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fantavacanze_official/core/constants/constants.dart';
@@ -62,15 +61,6 @@ class SideMenu extends StatelessWidget {
                       ),
 
                       BecomePremiumButton(onPressed: () {}),
-
-                      // Add theme switch section
-                      Padding(
-                        padding:
-                            const EdgeInsets.symmetric(vertical: ThemeSizes.md),
-                        child: CustomDivider(text: "Impostazioni"),
-                      ),
-
-                      ThemeSwitch(),
 
                       const SizedBox(height: 20),
                     ],
@@ -197,16 +187,16 @@ Widget _buildUserInfo(BuildContext context) {
               fontWeight: FontWeight.bold,
             ),
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: ThemeSizes.xs),
           Text(
             "Membro dal: 07/2025",
             style: context.textTheme.labelMedium!.copyWith(
               color: context.textSecondaryColor.withValues(alpha: 0.8),
             ),
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: ThemeSizes.sm + 2),
           const PlanLabel(plan: "free"),
-          const SizedBox(height: 10),
+          const SizedBox(height: ThemeSizes.sm + 2),
         ],
       ),
     ],
