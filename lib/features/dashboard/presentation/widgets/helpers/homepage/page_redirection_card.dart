@@ -31,9 +31,7 @@ class PageRedirectionCard extends StatelessWidget {
         ),
         child: InkWell(
           borderRadius: BorderRadius.circular(20),
-          onTap: () {
-            onPressed;
-          },
+          onTap: onPressed,
           splashColor: context.primaryColor.withValues(alpha: 0.1),
           highlightColor: Colors.transparent,
           child: Container(

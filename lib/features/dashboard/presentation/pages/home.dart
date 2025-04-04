@@ -2,6 +2,8 @@ import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:fantavacanze_official/features/dashboard/presentation/widgets/helpers/homepage/article_card.dart';
 import 'package:fantavacanze_official/features/dashboard/presentation/widgets/helpers/divider.dart';
 import 'package:fantavacanze_official/features/dashboard/presentation/widgets/helpers/homepage/page_redirection_card.dart';
+import 'package:fantavacanze_official/features/league/presentation/pages/create_league_page.dart';
+import 'package:fantavacanze_official/features/league/presentation/pages/join_league_page.dart';
 import 'package:flutter/material.dart';
 
 class HomePage extends StatelessWidget {
@@ -38,13 +40,19 @@ class HomePage extends StatelessWidget {
         PageRedirectionCard(
           title: "Crea Lega",
           icon: Icons.add_circle_outline_sharp,
-          onPressed: () {},
+          onPressed: () {
+            Navigator.push(context,
+                MaterialPageRoute(builder: (context) => CreateLeaguePage()));
+          },
         ),
         const SizedBox(width: 20),
         PageRedirectionCard(
           title: "Cerca Lega",
           icon: Icons.search_rounded,
-          onPressed: () {},
+          onPressed: () {
+            Navigator.push(context,
+                MaterialPageRoute(builder: (context) => JoinLeaguePage()));
+          },
         ),
       ],
     );

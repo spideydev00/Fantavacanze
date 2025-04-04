@@ -1,5 +1,9 @@
-class ServerException {
+class ServerException implements Exception {
   final String message;
+  final dynamic data;
 
-  ServerException(this.message);
+  const ServerException(this.message, {this.data});
+
+  @override
+  String toString() => 'ServerException: $message';
 }
