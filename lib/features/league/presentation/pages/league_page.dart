@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
+import 'package:fantavacanze_official/core/extensions/context_extension.dart';
+import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_event.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_state.dart';
 import 'package:fantavacanze_official/features/league/presentation/widgets/league_card.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/create_league_page.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/league_details_page.dart';
+import 'package:fantavacanze_official/features/league/presentation/pages/join_league_page.dart';
 
 class LeaguePage extends StatefulWidget {
   const LeaguePage({super.key});
@@ -25,7 +29,8 @@ class _LeaguePageState extends State<LeaguePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('My Leagues'),
+        title: const Text('Le Mie Leghe'),
+        elevation: 0,
       ),
       body: BlocConsumer<LeagueBloc, LeagueState>(
         listener: (context, state) {
@@ -39,7 +44,7 @@ class _LeaguePageState extends State<LeaguePage> {
           } else if (state is LeagueJoined) {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
-                content: Text('Successfully joined the league!'),
+                content: Text('Lega unita con successo!'),
                 backgroundColor: Colors.green,
               ),
             );
@@ -48,7 +53,7 @@ class _LeaguePageState extends State<LeaguePage> {
           } else if (state is LeagueCreated) {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
-                content: Text('League created successfully!'),
+                content: Text('Lega creata con successo!'),
                 backgroundColor: Colors.green,
               ),
             );
@@ -76,12 +81,27 @@ class _LeaguePageState extends State<LeaguePage> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Text(
-                      'You are not part of any leagues yet',
-                      style: TextStyle(fontSize: 18),
+                    Icon(
+                      Icons.groups_outlined,
+                      size: 70,
+                      color: context.textSecondaryColor.withValues(alpha: 0.3),
                     ),
-                    const SizedBox(height: 20),
-                    ElevatedButton(
+                    const SizedBox(height: ThemeSizes.md),
+                    Text(
+                      'Non fai ancora parte di nessuna lega',
+                      style: context.textTheme.titleLarge,
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: ThemeSizes.sm),
+                    Text(
+                      'Crea la tua lega o unisciti ad una esistente',
+                      style: context.textTheme.bodyMedium?.copyWith(
+                        color: context.textSecondaryColor,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: ThemeSizes.xl),
+                    ElevatedButton.icon(
                       onPressed: () {
                         Navigator.push(
                           context,
@@ -90,14 +110,27 @@ class _LeaguePageState extends State<LeaguePage> {
                           ),
                         );
                       },
-                      child: const Text('Create a League'),
+                      icon: const Icon(Icons.add_circle_outline),
+                      label: const Text('Crea una Lega'),
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: ThemeSizes.lg,
+                          vertical: ThemeSizes.md,
+                        ),
+                      ),
                     ),
-                    const SizedBox(height: 10),
-                    TextButton(
+                    const SizedBox(height: ThemeSizes.md),
+                    TextButton.icon(
                       onPressed: () {
-                        _showJoinLeagueDialog(context);
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const JoinLeaguePage(),
+                          ),
+                        );
                       },
-                      child: const Text('Join a League'),
+                      icon: const Icon(Icons.group_add),
+                      label: const Text('Unisciti ad una Lega'),
                     ),
                   ],
                 ),
@@ -105,7 +138,7 @@ class _LeaguePageState extends State<LeaguePage> {
             }
 
             return ListView.builder(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(ThemeSizes.md),
               itemCount: leagues.length,
               itemBuilder: (context, index) {
                 final league = leagues[index];
@@ -131,9 +164,18 @@ class _LeaguePageState extends State<LeaguePage> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Text('Welcome to your Leagues'),
-                const SizedBox(height: 20),
-                ElevatedButton(
+                Icon(
+                  Icons.groups_outlined,
+                  size: 70,
+                  color: context.textSecondaryColor.withValues(alpha: 0.3),
+                ),
+                const SizedBox(height: ThemeSizes.md),
+                Text(
+                  'Benvenuto nelle tue Leghe',
+                  style: context.textTheme.headlineSmall,
+                ),
+                const SizedBox(height: ThemeSizes.xl),
+                ElevatedButton.icon(
                   onPressed: () {
                     Navigator.push(
                       context,
@@ -142,21 +184,34 @@ class _LeaguePageState extends State<LeaguePage> {
                       ),
                     );
                   },
-                  child: const Text('Create a League'),
+                  icon: const Icon(Icons.add_circle_outline),
+                  label: const Text('Crea una Lega'),
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: ThemeSizes.lg,
+                      vertical: ThemeSizes.md,
+                    ),
+                  ),
                 ),
-                const SizedBox(height: 10),
-                TextButton(
+                const SizedBox(height: ThemeSizes.md),
+                TextButton.icon(
                   onPressed: () {
-                    _showJoinLeagueDialog(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const JoinLeaguePage(),
+                      ),
+                    );
                   },
-                  child: const Text('Join a League'),
+                  icon: const Icon(Icons.group_add),
+                  label: const Text('Unisciti ad una Lega'),
                 ),
               ],
             ),
           );
         },
       ),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
           Navigator.push(
             context,
@@ -165,7 +220,8 @@ class _LeaguePageState extends State<LeaguePage> {
             ),
           );
         },
-        child: const Icon(Icons.add),
+        icon: const Icon(Icons.add),
+        label: const Text('Nuova Lega'),
       ),
     );
   }
@@ -177,7 +233,7 @@ class _LeaguePageState extends State<LeaguePage> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text('Join a League'),
+          title: const Text('Unisciti ad una Lega'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -185,16 +241,16 @@ class _LeaguePageState extends State<LeaguePage> {
               TextField(
                 controller: controller,
                 decoration: const InputDecoration(
-                  hintText: 'Enter invite code',
-                  labelText: 'Invite Code',
+                  hintText: 'Inserisci il codice di invito',
+                  labelText: 'Codice Invito',
                   prefixIcon: Icon(Icons.group_add),
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: ThemeSizes.md),
               const Text(
-                'Ask the league creator for the 10-character invite code.',
+                'Chiedi al creatore della lega il codice di invito di 10 caratteri.',
                 style: TextStyle(
-                  fontSize: 12,
+                  fontSize: ThemeSizes.labelMd,
                   color: Colors.grey,
                 ),
               ),
@@ -205,7 +261,7 @@ class _LeaguePageState extends State<LeaguePage> {
               onPressed: () {
                 Navigator.pop(context);
               },
-              child: const Text('Cancel'),
+              child: const Text('Annulla'),
             ),
             ElevatedButton(
               onPressed: () {
@@ -219,7 +275,7 @@ class _LeaguePageState extends State<LeaguePage> {
                   Navigator.pop(context);
                 }
               },
-              child: const Text('Join'),
+              child: const Text('Unisciti'),
             ),
           ],
         );
@@ -233,16 +289,16 @@ class _LeaguePageState extends State<LeaguePage> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text('Multiple Leagues Found'),
+          title: const Text('Leghe Multiple Trovate'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Text(
-                'Multiple leagues were found with this invite code. Please select which one you would like to join:',
+                'Sono state trovate più leghe con questo codice di invito. Seleziona quale vuoi unirti:',
                 style: TextStyle(fontSize: 14),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: ThemeSizes.md),
               Container(
                 constraints: BoxConstraints(
                   maxHeight: MediaQuery.of(context).size.height * 0.4,
@@ -279,7 +335,7 @@ class _LeaguePageState extends State<LeaguePage> {
               onPressed: () {
                 Navigator.pop(context);
               },
-              child: const Text('Cancel'),
+              child: const Text('Annulla'),
             ),
           ],
         );
