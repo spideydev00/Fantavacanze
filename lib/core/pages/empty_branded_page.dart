@@ -61,11 +61,14 @@ class _EmptyBrandedPageState extends State<EmptyBrandedPage> {
                   child: Column(
                     children: [
                       SizedBox(height: widget.logoTopMargin),
-                      Image.asset(
-                        widget.logoImagePath,
-                        width: Constants.getWidth(context) * 0.5,
+                      Padding(
+                        padding: EdgeInsets.symmetric(vertical: 40),
+                        child: Image.asset(
+                          widget.logoImagePath,
+                          width: Constants.getWidth(context) * 0.20,
+                        ),
                       ),
-                      const SizedBox(height: 5),
+                      const SizedBox(height: 10),
                       ...widget.widgets,
                     ],
                   ),

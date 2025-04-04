@@ -49,7 +49,10 @@ class _OnBoardingScreenState extends State<OnBoardingScreen> {
         title: Padding(
           padding: const EdgeInsets.all(ThemeSizes.lg),
           child: Image.asset(
-            "assets/images/logo-high-padding.png",
+            pageIndex == 2
+                ? "assets/images/logo-dark.png"
+                : "assets/images/logo.png",
+            width: Constants.getWidth(context) * 0.30,
           ),
         ),
         toolbarHeight: 150,
@@ -127,7 +130,14 @@ class _OnBoardingScreenState extends State<OnBoardingScreen> {
                       color: ColorPalette.accent(ThemeMode.dark)
                           .withValues(alpha: 0.8),
                     ),
-                    child: const Text("Salta"),
+                    child: Text(
+                      "Salta",
+                      style: TextStyle(
+                        color: ColorPalette.textPrimary(
+                          ThemeMode.dark,
+                        ).withValues(alpha: 0.75),
+                      ),
+                    ),
                   ),
                 ),
 
@@ -154,7 +164,14 @@ class _OnBoardingScreenState extends State<OnBoardingScreen> {
                                 ThemeSizes.borderRadiusLg),
                             color: ColorPalette.success.withValues(alpha: 0.7),
                           ),
-                          child: const Text("Fatto"),
+                          child: Text(
+                            "Fatto",
+                            style: TextStyle(
+                              color: ColorPalette.textPrimary(
+                                ThemeMode.dark,
+                              ).withValues(alpha: 0.75),
+                            ),
+                          ),
                         ),
                       )
                     //next
@@ -173,7 +190,14 @@ class _OnBoardingScreenState extends State<OnBoardingScreen> {
                             color: ColorPalette.accent(ThemeMode.dark)
                                 .withValues(alpha: 0.8),
                           ),
-                          child: const Text("Avanti"),
+                          child: Text(
+                            "Avanti",
+                            style: TextStyle(
+                              color: ColorPalette.textPrimary(
+                                ThemeMode.dark,
+                              ).withValues(alpha: 0.75),
+                            ),
+                          ),
                         ),
                       ),
               ],
