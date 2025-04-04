@@ -15,6 +15,7 @@ class PostOtpVerification extends StatelessWidget {
     final nameController = TextEditingController();
 
     return EmptyBrandedPage(
+      logoImagePath: "assets/images/logo.png",
       bgImagePath: "assets/images/insert-name.jpg",
       mainColumnAlignment: MainAxisAlignment.start,
       widgets: [

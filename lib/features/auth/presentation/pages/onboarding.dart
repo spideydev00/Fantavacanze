@@ -49,7 +49,10 @@ class _OnBoardingScreenState extends State<OnBoardingScreen> {
         title: Padding(
           padding: const EdgeInsets.all(ThemeSizes.lg),
           child: Image.asset(
-            "assets/images/logo-high-padding.png",
+            pageIndex == 2
+                ? "assets/images/logo-dark.png"
+                : "assets/images/logo.png",
+            width: Constants.getWidth(context) * 0.30,
           ),
         ),
         toolbarHeight: 150,
@@ -124,9 +127,17 @@ class _OnBoardingScreenState extends State<OnBoardingScreen> {
                     decoration: BoxDecoration(
                       borderRadius:
                           BorderRadius.circular(ThemeSizes.borderRadiusLg),
-                      color: ColorPalette.accent.withOpacity(0.8),
+                      color: ColorPalette.accent(ThemeMode.dark)
+                          .withValues(alpha: 0.8),
                     ),
-                    child: const Text("Salta"),
+                    child: Text(
+                      "Salta",
+                      style: TextStyle(
+                        color: ColorPalette.textPrimary(
+                          ThemeMode.dark,
+                        ).withValues(alpha: 0.75),
+                      ),
+                    ),
                   ),
                 ),
 
@@ -135,8 +146,8 @@ class _OnBoardingScreenState extends State<OnBoardingScreen> {
                   controller: controller,
                   count: 3,
                   effect: WormEffect(
-                      activeDotColor: ColorPalette.primary,
-                      dotColor: ColorPalette.white.withOpacity(0.8)),
+                      activeDotColor: ColorPalette.primary(ThemeMode.dark),
+                      dotColor: ColorPalette.white.withValues(alpha: 0.8)),
                 ),
 
                 onLastPage
@@ -151,9 +162,16 @@ class _OnBoardingScreenState extends State<OnBoardingScreen> {
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(
                                 ThemeSizes.borderRadiusLg),
-                            color: ColorPalette.success.withOpacity(0.7),
+                            color: ColorPalette.success.withValues(alpha: 0.7),
                           ),
-                          child: const Text("Fatto"),
+                          child: Text(
+                            "Fatto",
+                            style: TextStyle(
+                              color: ColorPalette.textPrimary(
+                                ThemeMode.dark,
+                              ).withValues(alpha: 0.75),
+                            ),
+                          ),
                         ),
                       )
                     //next
@@ -169,9 +187,17 @@ class _OnBoardingScreenState extends State<OnBoardingScreen> {
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(
                                 ThemeSizes.borderRadiusLg),
-                            color: ColorPalette.accent.withOpacity(0.8),
+                            color: ColorPalette.accent(ThemeMode.dark)
+                                .withValues(alpha: 0.8),
                           ),
-                          child: const Text("Avanti"),
+                          child: Text(
+                            "Avanti",
+                            style: TextStyle(
+                              color: ColorPalette.textPrimary(
+                                ThemeMode.dark,
+                              ).withValues(alpha: 0.75),
+                            ),
+                          ),
                         ),
                       ),
               ],

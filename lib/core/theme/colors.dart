@@ -1,21 +1,56 @@
 import 'package:flutter/material.dart';
 
 class ColorPalette {
+  // Method to get dynamic colors based on theme mode
+  static Color getColor(
+      Color darkModeColor, Color lightModeColor, ThemeMode themeMode) {
+    return themeMode == ThemeMode.dark ? darkModeColor : lightModeColor;
+  }
+
   // App theme colors
-  static const Color primary = Color.fromARGB(255, 196, 67, 67);
-  static const Color secondary = Color.fromARGB(255, 242, 166, 166);
-  static const Color ternary = Color.fromARGB(255, 255, 219, 219);
-  static const Color accent = Color.fromARGB(255, 157, 49, 49);
+  static Color primary(ThemeMode themeMode) => getColor(
+      const Color.fromARGB(255, 196, 67, 67),
+      const Color.fromARGB(255, 196, 67, 67),
+      themeMode);
+
+  static Color secondary(ThemeMode themeMode) => getColor(
+      const Color.fromARGB(255, 242, 166, 166),
+      const Color.fromARGB(255, 222, 146, 146),
+      themeMode);
+
+  static Color ternary(ThemeMode themeMode) => getColor(
+      const Color.fromARGB(255, 255, 219, 219),
+      const Color.fromARGB(255, 235, 199, 199),
+      themeMode);
+
+  static Color accent(ThemeMode themeMode) => getColor(
+      const Color.fromARGB(255, 157, 49, 49),
+      const Color.fromARGB(255, 196, 67, 67),
+      themeMode);
 
   // Text colors
-  static const Color textPrimary = Color(0xFFF6F6F6);
-  static const Color textSecondary = Color.fromARGB(255, 20, 20, 20);
+  static Color textPrimary(ThemeMode themeMode) => getColor(
+      const Color(0xFFF6F6F6),
+      const Color.fromARGB(255, 20, 20, 20),
+      themeMode);
+
+  static Color textSecondary(ThemeMode themeMode) => getColor(
+      const Color.fromARGB(255, 214, 214, 214),
+      const Color.fromARGB(255, 47, 47, 47),
+      themeMode);
 
   // Background colors
-  static const Color lightBg = Color(0xFFF6F6F6);
-  static const Color darkBg = Color.fromARGB(255, 15, 16, 19);
+  static Color bgColor(ThemeMode themeMode) => getColor(
+      const Color.fromARGB(255, 11, 11, 13),
+      const Color.fromARGB(255, 236, 229, 229),
+      themeMode);
 
-  //social buttons colors
+  static Color secondaryBgColor(ThemeMode themeMode) => getColor(
+      const Color.fromARGB(255, 24, 26, 33),
+      const Color.fromARGB(255, 243, 243, 243),
+      themeMode);
+
+  //social buttons colors - these don't change with theme
   static const List<Color> googleGradientsBg = [
     Color.fromARGB(255, 187, 57, 57),
     Color.fromARGB(255, 226, 225, 119),
@@ -26,20 +61,21 @@ class ColorPalette {
   static const Color apple = Colors.black;
   static const Color facebook = Color.fromARGB(255, 32, 71, 134);
 
-  // Background Container colors
-  static const Color lightContainer = Color(0xFFF6F6F6);
-  static const Color darkContainer = Color.fromARGB(255, 20, 20, 20);
-  static const Color blueContainer = Color.fromARGB(255, 46, 74, 144);
-  static const Color greenContainer = Color.fromARGB(255, 64, 138, 115);
-  static const Color dialogBg = Color.fromARGB(255, 24, 26, 33);
-
   // Button colors
-  static const Color buttonPrimary = Color.fromARGB(255, 194, 34, 34);
-  static const Color buttonSecondary = Color(0xFF6C757D);
+  static Color buttonPrimary(ThemeMode themeMode) => getColor(
+      const Color.fromARGB(255, 194, 34, 34),
+      const Color.fromARGB(255, 214, 54, 54),
+      themeMode);
+
+  static Color buttonSecondary(ThemeMode themeMode) =>
+      getColor(const Color(0xFF6C757D), const Color(0xFF8C959D), themeMode);
+
   static const Color buttonDisabled = Color(0xFFC4C4C4);
 
   // Border colors
-  static const Color borderColor = Color(0xFFD9D9D9);
+  static Color borderColor(ThemeMode themeMode) =>
+      getColor(const Color(0xFFD9D9D9), const Color(0xFFB9B9B9), themeMode);
+
   static const Color focusedBorder = Color.fromARGB(255, 196, 67, 67);
 
   // Error and validation colors
@@ -60,4 +96,5 @@ class ColorPalette {
 
   // Extra
   static const Color darkerGreen = Color.fromARGB(255, 28, 60, 49);
+  static const Color premiumUser = Color.fromARGB(255, 197, 127, 6);
 }

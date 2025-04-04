@@ -1,4 +1,5 @@
-import 'package:fantavacanze_official/core/common/widgets/loader.dart';
+import 'package:fantavacanze_official/core/extensions/context_extension.dart';
+import 'package:fantavacanze_official/core/widgets/loader.dart';
 import 'package:fantavacanze_official/core/pages/empty_branded_page.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
@@ -39,6 +40,7 @@ class _StandardLoginPageState extends State<StandardLoginPage> {
   @override
   Widget build(BuildContext context) {
     return EmptyBrandedPage(
+      logoImagePath: "assets/images/logo.png",
       bgImagePath: "assets/images/bg.png",
       mainColumnAlignment: MainAxisAlignment.spaceBetween,
       isBackNavigationActive: true,
@@ -113,7 +115,7 @@ class _StandardLoginPageState extends State<StandardLoginPage> {
                     if (state is AuthLoading) {
                       return Center(
                         child: Loader(
-                          color: ColorPalette.primary,
+                          color: ColorPalette.primary(ThemeMode.dark),
                         ),
                       );
                     }
@@ -140,6 +142,14 @@ class _StandardLoginPageState extends State<StandardLoginPage> {
                               );
                         }
                       },
+                      style: context.elevatedButtonThemeData.style!.copyWith(
+                        backgroundColor: WidgetStatePropertyAll(
+                          ColorPalette.primary(ThemeMode.dark),
+                        ),
+                        foregroundColor: WidgetStatePropertyAll(
+                          ColorPalette.textPrimary(ThemeMode.dark),
+                        ),
+                      ),
                       label: const Text("Accedi"),
                     );
                   },
@@ -160,7 +170,7 @@ class _StandardLoginPageState extends State<StandardLoginPage> {
             },
             initialText: "Non hai un account?",
             richText: "Crealo ora.",
-            richTxtColor: ColorPalette.secondary,
+            richTxtColor: ColorPalette.secondary(ThemeMode.dark),
           ),
         ),
       ],
