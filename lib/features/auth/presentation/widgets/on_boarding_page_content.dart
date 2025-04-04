@@ -1,3 +1,4 @@
+import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:fantavacanze_official/features/auth/presentation/widgets/promo_text.dart';
 import 'package:flutter/material.dart';
@@ -29,6 +30,11 @@ class OnBoardingPageContent extends StatelessWidget {
           Text(
             description,
             textAlign: TextAlign.center,
+            style: TextStyle(
+              color: ColorPalette.textPrimary(
+                ThemeMode.dark,
+              ).withValues(alpha: 0.9),
+            ),
           ),
         ],
       ),

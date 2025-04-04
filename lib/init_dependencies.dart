@@ -1,3 +1,4 @@
+import 'package:fantavacanze_official/core/cubits/app_navigation/app_navigation_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit.dart';
 import 'package:fantavacanze_official/core/secrets/app_secrets.dart';
 import 'package:fantavacanze_official/features/auth/data/remote_data_source/auth_remote_data_source.dart';
@@ -11,6 +12,8 @@ import 'package:fantavacanze_official/features/auth/domain/use-cases/google_sign
 import 'package:fantavacanze_official/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:fantavacanze_official/core/cubits/app_theme/app_theme_cubit.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 final serviceLocator = GetIt.instance;
 
@@ -21,6 +24,10 @@ Future<void> initDependencies() async {
   );
 
   serviceLocator.registerLazySingleton(() => supabase.client);
+
+  // Initialize SharedPreferences
+  final sharedPreferences = await SharedPreferences.getInstance();
+  serviceLocator.registerSingleton<SharedPreferences>(sharedPreferences);
 
   _initAuth();
 }
@@ -51,9 +58,16 @@ void _initAuth() {
     ..registerFactory(
       () => GetCurrentUser(authRepository: serviceLocator()),
     )
-    //app-wide cubits
+    //app-wide cubits:
+    //1. user cubit
     ..registerLazySingleton(
         () => AppUserCubit(getCurrentUser: serviceLocator()))
+    //2. navigation cubit
+    ..registerLazySingleton(() => AppNavigationCubit())
+    //3. theme cubit
+    ..registerLazySingleton<AppThemeCubit>(
+      () => AppThemeCubit(prefs: serviceLocator<SharedPreferences>()),
+    )
     //bloc
     ..registerLazySingleton(
       () => AuthBloc(

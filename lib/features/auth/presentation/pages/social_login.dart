@@ -50,6 +50,7 @@ class _SocialLoginPageState extends State<SocialLoginPage> {
         bool isGoogleLoading = state is AuthGoogleLoading;
 
         return EmptyBrandedPage(
+          logoImagePath: "assets/images/logo.png",
           bgImagePath: "assets/images/bg.png",
           mainColumnAlignment: MainAxisAlignment.spaceBetween,
           widgets: [
@@ -84,7 +85,7 @@ class _SocialLoginPageState extends State<SocialLoginPage> {
               bgGradient: ColorPalette.googleGradientsBg,
               width: Constants.getWidth(context) * 0.53,
               isIconOnly: true,
-              loaderColor: ColorPalette.primary,
+              loaderColor: ColorPalette.primary(ThemeMode.dark),
               isLoading: isGoogleLoading,
             ),
           ],
@@ -97,7 +98,7 @@ class _SocialLoginPageState extends State<SocialLoginPage> {
                     Navigator.of(context).push(StandardLoginPage.route),
                 initialText: "Oppure accedi",
                 richText: "con le tue credenziali",
-                richTxtColor: ColorPalette.secondary,
+                richTxtColor: ColorPalette.secondary(ThemeMode.dark),
               ),
             ),
           ],

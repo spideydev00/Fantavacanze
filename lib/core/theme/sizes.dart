@@ -1,6 +1,6 @@
 class ThemeSizes {
   // Padding and margin sizes
-  static const double xs = 4.0;
+  static const double xs = 6.0;
   static const double sm = 8.0;
   static const double md = 16.0;
   static const double lg = 24.0;
@@ -22,10 +22,12 @@ class ThemeSizes {
   static const double buttonElevation = 4.0;
 
   // AppBar height
-  static const double appBarHeight = 56.0;
+  static const double appBarHeight = 100.0;
 
   // Image sizes
   static const double imageThumbSize = 80.0;
+  static const double imageThumbSizeLg = 120.0;
+  static const double avatarSize = 100.0;
 
   // Default spacing between sections
   static const double defaultSpace = 24.0;
@@ -53,4 +55,10 @@ class ThemeSizes {
 
   // Loading indicator size
   static const double loadingIndicatorSize = 36.0;
+
+  // Rive Icon size
+  static const double iconSm = 28.0;
+  static const double iconMd = 32.0;
+  static const double iconLg = 40.0;
+  static const double iconXl = 38.0;
 }

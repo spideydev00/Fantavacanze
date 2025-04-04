@@ -29,8 +29,8 @@
                 },
                 socialName: "Telefono",
                 isGradient: false,
-                bgColor: ColorPalette.primary.withOpacity(0.92),
-                foregroundColor: ColorPalette.white,
+                bgColor: contextprimary.withValues(alpha:0.92),
+                foregroundColor: contextwhite,
                 width: Constants.getWidth(context) * 0.80,
                 isIconOnly: false,
               )
@@ -101,7 +101,7 @@
                       child: Text(
                         "Inserisci un numero valido.",
                         style: context.textTheme.bodyLarge!.copyWith(
-                          color: ColorPalette.error,
+                          color: contexterror,
                           fontSize: 14,
                         ),
                       ),
@@ -112,7 +112,7 @@
                       child: Text(
                         "Completa la verifica Captcha.",
                         style: context.textTheme.bodyLarge!.copyWith(
-                          color: ColorPalette.warning,
+                          color: contextwarning,
                           fontSize: 14,
                         ),
                       ),

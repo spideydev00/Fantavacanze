@@ -51,6 +51,7 @@ dependencies:
   crypto: ^3.0.6
   flutter_native_splash: ^2.4.4
   rive: ^0.13.20
+  shared_preferences: ^2.5.3
   
 dev_dependencies:
   flutter_test:
@@ -77,11 +78,14 @@ flutter:
   # To add assets to your application, add an assets section, like this:
   assets:
   - assets/images/bg.png
+  - assets/images/avatar.png
   - assets/images/insert-name.jpg
   - assets/images/baddie-bg.jpg
   - assets/images/emotions-bg.jpg
   - assets/images/social-enhance-bg.jpg
-  - assets/images/logo-neon.png
+  - assets/images/logo.png
+  - assets/images/logo.png
+  - assets/images/logo-dark.png
   - assets/images/logo-high-padding.png
   - assets/images/otp-verification-icon.png
   - assets/images/icons/auth_icons/google.svg
@@ -98,8 +102,24 @@ flutter:
   - assets/images/icons/auth_field_icons/add-email-icon.svg
   - assets/images/icons/auth_field_icons/lock-icon.svg
   - assets/images/icons/auth_field_icons/user-icon.svg
+  - assets/images/icons/other/trophy-icon.svg
   - assets/animations/rive/material_loader.riv
-
+  - assets/animations/rive/icons.riv
+  - assets/animations/rive/rive_game_icon.riv
+  - assets/animations/rive/menu_button.riv
+  - assets/animations/rive/menu_button_black.riv
+  - assets/images/icons/homepage_icons/home-icon.svg
+  - assets/images/icons/homepage_icons/thunder-icon.svg
+  - assets/images/icons/homepage_icons/thunder-icon-red.svg
+  - assets/images/icons/homepage_icons/drink-games-icon.svg
+  - assets/images/icons/homepage_icons/create-league-icon.svg
+  - assets/images/icons/homepage_icons/search-league-icon.svg
+  - assets/images/icons/homepage_icons/premium-icon.svg
+  - assets/images/icons/homepage_icons/create-league-icon-dark.svg
+  - assets/images/icons/homepage_icons/drink-games-icon-dark.svg
+  - assets/images/icons/homepage_icons/search-league-icon-dark.svg
+  - assets/images/icons/homepage_icons/home-icon-dark.svg
+  
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-assets/images
 

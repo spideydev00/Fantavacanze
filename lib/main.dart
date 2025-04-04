@@ -1,3 +1,5 @@
+import 'package:fantavacanze_official/core/cubits/app_navigation/app_navigation_cubit.dart';
+import 'package:fantavacanze_official/core/cubits/app_theme/app_theme_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit.dart';
 import 'package:fantavacanze_official/core/theme/theme.dart';
 import 'package:fantavacanze_official/features/auth/presentation/bloc/auth_bloc.dart';
@@ -26,6 +28,12 @@ void main() async {
           ),
           BlocProvider(
             create: (_) => serviceLocator<AppUserCubit>(),
+          ),
+          BlocProvider(
+            create: (_) => serviceLocator<AppNavigationCubit>(),
+          ),
+          BlocProvider(
+            create: (_) => serviceLocator<AppThemeCubit>()..loadTheme(),
           ),
         ],
         child: const MyApp(),
@@ -60,11 +68,17 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Fantavacanze',
-      home: const InitialPage(),
-      theme: AppTheme.getDarkTheme(context),
-      debugShowCheckedModeBanner: false,
+    return BlocBuilder<AppThemeCubit, AppThemeState>(
+      builder: (context, themeState) {
+        return MaterialApp(
+          title: 'Fantavacanze',
+          home: InitialPage(),
+          themeMode: themeState.themeMode,
+          theme: AppTheme.getLightTheme(context),
+          darkTheme: AppTheme.getDarkTheme(context),
+          debugShowCheckedModeBanner: false,
+        );
+      },
     );
   }
 }
