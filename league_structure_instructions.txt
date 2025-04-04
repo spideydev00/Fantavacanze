@@ -1,0 +1,129 @@
+/*
+Progetto: Fantavacanze
+Struttura attuale (riassunta):
+- lib/
+  ├── core/
+  │    ├── constants/
+  │    ├── cubits/
+  │    ├── database_table_examples/
+  │    ├── errors/
+  │    ├── extensions/
+  │    ├── navigation/
+  │    ├── pages/
+  │    ├── providers/
+  │    ├── secrets/
+  │    ├── theme/
+  │    ├── use-case/
+  │    ├── utils/
+  ├── features/
+  │    ├── auth/   // Già completato: autenticazione utente con Supabase
+  │    │    ├── data/
+  │    │    ├── domain/
+  │    │    └── presentation/
+  │    └── league/ // Da creare
+  │         // Qui creeremo la struttura per la funzionalità di gestione leghe
+  ├── init_dependencies.dart
+  └── initial_page.dart
+  └── main.dart
+
+Obiettivo:
+----------
+Aggiungere la feature "league" per gestire:
+- Creazione e gestione di leghe (individuali o di squadra).
+- Set di regole (bonus/malus).
+- Partecipanti (in base al tipo di lega).
+- Eventi (fino a max 10).
+- Memories (foto + testo + eventuale relatedEvent).
+- Collegamento con Supabase per salvataggio e policy di sicurezza.
+
+Struttura richiesta in "features/league":
+-----------------------------------------
+1) domain/
+   ├── entities/
+   │    - league.dart            // Entità League con campi: id, admins, name, description, createdAt, rules, participants, events, memories
+   │    - rule.dart              // Entità Rule (name, type, points)
+   │    - participant.dart       // Classe/Interfaccia base per i partecipanti
+   │    - individual_participant.dart
+   │    - team_participant.dart
+   │    - event.dart             // (name, points, type, userId)
+   │    - memory.dart            // (imageUrl, text, relatedEvent)
+   ├── repository/
+   │    - league_repository.dart // Interfaccia con metodi: createLeague, addEvent, updateLeague, ecc.
+   └── use-cases/
+        - create_league.dart     // Caso d'uso per creare una nuova lega
+        - add_event.dart         // Caso d'uso per aggiungere un evento (con logica max 10)
+        - update_team_name.dart  // Esempio: caso d'uso per permettere a un utente di aggiornare il nome della propria squadra
+        - exit_league.dart       // Esempio: caso d'uso per uscire dalla lega
+        ... // eventuali altri
+
+2) data/
+   ├── models/
+   │    - league_model.dart
+   │    - rule_model.dart
+   │    - participant_model.dart
+   │    - event_model.dart
+   │    - memory_model.dart
+   ├── remote_data_source/
+   │    - league_remote_data_source.dart // Metodi CRUD con Supabase (create, update, delete, etc.)
+   └── repository/
+        - league_repository_impl.dart     // Implementazione di league_repository.dart
+
+3) presentation/
+   ├── bloc/                // (o cubit) per la gestione dello stato
+   │    - league_bloc.dart
+   │    - league_event.dart
+   │    - league_state.dart
+   ├── pages/
+   │    - league_page.dart       // Schermata principale di una lega
+   │    - create_league_page.dart
+   │    - league_details_page.dart
+   └── widgets/
+        - league_card.dart       // Widget di presentazione di una lega
+        - participant_item.dart  // Widget per singolo partecipante
+        - event_list_item.dart   // Widget per singolo evento
+
+Istruzioni per Copilot:
+-----------------------
+1) Crea le cartelle e i file elencati in "features/league/" seguendo lo schema a tre livelli (domain, data, presentation).
+2) Nella cartella "domain/entities", definisci le entità basandoti sui requisiti:
+   - League con campi:
+     id (uuid), admins (lista di uuid), name (String), description (String), createdAt (DateTime), rules (List<Rule>), participants (List<Participant>), events (List<Event>), memories (List<Memory>).
+   - Rule con { name, type, points }.
+   - Participant come interfaccia/abstract class, con implementazioni "IndividualParticipant" e "TeamParticipant".
+   - Event con { name, points, type, userId }.
+   - Memory con { imageUrl, text, relatedEvent } (relatedEvent può essere null).
+3) Crea i modelli in "data/models" per gestire il mapping JSON (o i campi Supabase) per League, Rule, Participant, Event e Memory. Includi i metodi "fromJson" e "toJson".
+4) In "data/remote_data_source/league_remote_data_source.dart", implementa i metodi per interagire con la tabella "leagues" di Supabase (creazione, lettura, aggiornamento, cancellazione, aggiunta/rimozione di eventi, ecc.). Integra la logica per:
+   - Verificare il limite di 10 eventi e rimuovere il più vecchio se necessario.
+   - Gestire i campi JSON (participants, rules, events, memories).
+   - Controllare i reference ID (auth.users.id) dove necessario.
+5) In "data/repository/league_repository_impl.dart", implementa i metodi dell'interfaccia "league_repository.dart", utilizzando la "league_remote_data_source" per le chiamate effettive a Supabase.
+6) In "domain/use-cases/", crea i casi d'uso con la logica di business, richiamando i metodi del repository. Esempi:
+   - create_league.dart
+   - add_event.dart (gestione max 10)
+   - update_team_name.dart
+   - exit_league.dart
+7) In "presentation/bloc/", implementa un LeagueBloc (o Cubit) che utilizza i vari use case per gestire lo stato. Creare file separati per Event/State se usi il pacchetto bloc:
+   - league_event.dart
+   - league_state.dart
+   - league_bloc.dart
+8) In "presentation/pages/", crea le pagine Flutter che consentono la visualizzazione e la modifica delle leghe (create_league_page.dart, league_page.dart, league_details_page.dart, ecc.).
+9) In "presentation/widgets/", aggiungi widget dedicati a presentare i dati di una lega (league_card.dart), dei partecipanti (participant_item.dart), degli eventi (event_list_item.dart) e così via.
+10) Integra la nuova feature "league" in "init_dependencies.dart" per l'iniezione delle dipendenze (registrazione dei repository, data source, bloc, ecc.).
+11) Eventuali script SQL (creazione tabella leagues, triggers, policy) puoi collocarli in "core/database_table_examples/" o in una cartella dedicata, per poi gestirli separatamente.
+
+Nota bene:
+----------
+- Abbiamo già una tabella "profiles" che referenzia auth.users.id (primary key). 
+- Nella tabella "leagues" (vedi SQL creato in precedenza) i campi "admins", "events", "participants" e "memories" sono JSONB, con eventuali trigger e policy (in "core/database_table_examples") per garantire la referential integrity e la sicurezza (e.g. "with check" e "using" statements per permettere modifiche solo a chi è admin o partecipa alla lega).
+- Assicurati di gestire correttamente la distinzione tra lega individuale e di squadra (campi "id" vs "ids" per i partecipanti).
+- Verifica la compatibilità con l’architettura esistente di "auth".
+
+Copilot dovrà quindi:
+- Generare cartelle e file come da schema.
+- Inizializzare le classi base e i modelli con i campi corretti.
+- Integrare la logica di mapping da/verso JSON.
+- Inserire i metodi di base per la creazione, aggiornamento e gestione delle leghe, eventi e memories.
+
+Grazie!
+*/

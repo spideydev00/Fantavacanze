@@ -10,10 +10,22 @@ import 'package:fantavacanze_official/features/auth/domain/use-cases/email_sign_
 import 'package:fantavacanze_official/features/auth/domain/use-cases/get_current_user.dart';
 import 'package:fantavacanze_official/features/auth/domain/use-cases/google_sign_in.dart';
 import 'package:fantavacanze_official/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:fantavacanze_official/features/league/data/remote_data_source/league_remote_data_source.dart';
+import 'package:fantavacanze_official/features/league/data/repository/league_repository_impl.dart';
+import 'package:fantavacanze_official/features/league/domain/repository/league_repository.dart';
+import 'package:fantavacanze_official/features/league/domain/use_cases/add_event.dart';
+import 'package:fantavacanze_official/features/league/domain/use_cases/add_memory.dart';
+import 'package:fantavacanze_official/features/league/domain/use_cases/create_league.dart';
+import 'package:fantavacanze_official/features/league/domain/use_cases/exit_league.dart';
+import 'package:fantavacanze_official/features/league/domain/use_cases/get_league.dart';
+import 'package:fantavacanze_official/features/league/domain/use_cases/join_league.dart';
+import 'package:fantavacanze_official/features/league/domain/use_cases/update_team_name.dart';
+import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:fantavacanze_official/core/cubits/app_theme/app_theme_cubit.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:uuid/uuid.dart';
 
 final serviceLocator = GetIt.instance;
 
@@ -29,7 +41,11 @@ Future<void> initDependencies() async {
   final sharedPreferences = await SharedPreferences.getInstance();
   serviceLocator.registerSingleton<SharedPreferences>(sharedPreferences);
 
+  // Register UUID generator
+  serviceLocator.registerLazySingleton(() => const Uuid());
+
   _initAuth();
+  _initLeague();
 }
 
 void _initAuth() {
@@ -76,6 +92,46 @@ void _initAuth() {
         appUserCubit: serviceLocator(),
         emailSignIn: serviceLocator(),
         emailSignUp: serviceLocator(),
+      ),
+    );
+}
+
+void _initLeague() {
+  serviceLocator
+    // data sources
+    ..registerFactory<LeagueRemoteDataSource>(
+      () => LeagueRemoteDataSourceImpl(
+        supabaseClient: serviceLocator(),
+        appUserCubit: serviceLocator(),
+        uuid: serviceLocator(),
+      ),
+    )
+
+    // repository
+    ..registerFactory<LeagueRepository>(
+      () => LeagueRepositoryImpl(remoteDataSource: serviceLocator()),
+    )
+
+    // use cases
+    ..registerFactory(() => CreateLeague(leagueRepository: serviceLocator()))
+    ..registerFactory(() => GetLeague(leagueRepository: serviceLocator()))
+    ..registerFactory(() => JoinLeague(leagueRepository: serviceLocator()))
+    ..registerFactory(() => ExitLeague(leagueRepository: serviceLocator()))
+    ..registerFactory(() => UpdateTeamName(leagueRepository: serviceLocator()))
+    ..registerFactory(() => AddEvent(leagueRepository: serviceLocator()))
+    ..registerFactory(() => AddMemory(leagueRepository: serviceLocator()))
+
+    // bloc
+    ..registerFactory(
+      () => LeagueBloc(
+        createLeague: serviceLocator(),
+        getLeague: serviceLocator(),
+        joinLeague: serviceLocator(),
+        exitLeague: serviceLocator(),
+        updateTeamName: serviceLocator(),
+        addEvent: serviceLocator(),
+        addMemory: serviceLocator(),
+        supabaseClient: serviceLocator(),
       ),
     );
 }

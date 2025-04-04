@@ -1,9 +1,9 @@
 import 'package:fantavacanze_official/core/navigation/navigation_item.dart';
 import 'package:fantavacanze_official/features/dashboard/presentation/pages/previews/create_league.dart';
 import 'package:fantavacanze_official/features/dashboard/presentation/pages/home.dart';
-import 'package:fantavacanze_official/features/dashboard/presentation/pages/previews/join_league.dart';
 import 'package:fantavacanze_official/features/dashboard/presentation/pages/previews/drink_games_preview.dart';
 import 'package:fantavacanze_official/features/dashboard/presentation/pages/previews/quick_challenge_preview.dart';
+import 'package:fantavacanze_official/features/league/presentation/pages/join_league_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 

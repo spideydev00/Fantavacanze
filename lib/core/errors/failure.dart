@@ -1,5 +1,11 @@
-class Failure {
-  final String message;
+import 'package:equatable/equatable.dart';
 
-  Failure(this.message);
+class Failure extends Equatable {
+  final String message;
+  final dynamic data;
+
+  const Failure(this.message, {this.data});
+
+  @override
+  List<Object?> get props => [message, data];
 }
