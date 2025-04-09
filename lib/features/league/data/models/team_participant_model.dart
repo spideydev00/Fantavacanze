@@ -12,13 +12,25 @@ class TeamParticipantModel extends TeamParticipant implements ParticipantModel {
   });
 
   factory TeamParticipantModel.fromJson(Map<String, dynamic> json) {
+    // Safely convert score to double
+    final double scoreValue = json['score'] is int
+        ? (json['score'] as int).toDouble()
+        : (json['score'] as num?)?.toDouble() ?? 0.0;
+
+    // Safely handle malusTotal and bonusTotal which might be null
+    final int malusTotalValue =
+        json['malusTotal'] != null ? json['malusTotal'] as int : 0;
+
+    final int bonusTotalValue =
+        json['bonusTotal'] != null ? json['bonusTotal'] as int : 0;
+
     return TeamParticipantModel(
       userIds: List<String>.from(json['userIds']),
       name: json['name'] as String,
-      points: json['points'] as double,
+      points: scoreValue,
       teamLogoUrl: json['teamLogoUrl'] as String?,
-      malusTotal: json['malusTotal'] as int,
-      bonusTotal: json['bonusTotal'] as int,
+      malusTotal: malusTotalValue,
+      bonusTotal: bonusTotalValue,
     );
   }
 

@@ -18,6 +18,7 @@ import 'package:fantavacanze_official/features/league/domain/use_cases/add_memor
 import 'package:fantavacanze_official/features/league/domain/use_cases/create_league.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/exit_league.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/get_league.dart';
+import 'package:fantavacanze_official/features/league/domain/use_cases/get_rules.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/join_league.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/update_team_name.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc.dart';
@@ -120,6 +121,7 @@ void _initLeague() {
     ..registerFactory(() => UpdateTeamName(leagueRepository: serviceLocator()))
     ..registerFactory(() => AddEvent(leagueRepository: serviceLocator()))
     ..registerFactory(() => AddMemory(leagueRepository: serviceLocator()))
+    ..registerFactory(() => GetRules(leagueRepository: serviceLocator()))
 
     // bloc
     ..registerFactory(
@@ -131,6 +133,7 @@ void _initLeague() {
         updateTeamName: serviceLocator(),
         addEvent: serviceLocator(),
         addMemory: serviceLocator(),
+        getRules: serviceLocator(),
         supabaseClient: serviceLocator(),
       ),
     );

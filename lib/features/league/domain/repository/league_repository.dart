@@ -1,5 +1,6 @@
 import 'package:fantavacanze_official/core/errors/failure.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/league.dart';
+import 'package:fantavacanze_official/features/league/domain/entities/rule.dart';
 import 'package:fpdart/fpdart.dart';
 
 abstract class LeagueRepository {
@@ -71,4 +72,7 @@ abstract class LeagueRepository {
     required String leagueId,
     required String memoryId,
   });
+
+  // Rules operations
+  Future<Either<Failure, List<Rule>>> getRules(String mode);
 }

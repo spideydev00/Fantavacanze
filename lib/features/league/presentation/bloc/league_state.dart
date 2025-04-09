@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/league.dart';
+import 'package:fantavacanze_official/features/league/domain/entities/rule.dart';
 
 abstract class LeagueState extends Equatable {
   const LeagueState();
@@ -108,4 +109,17 @@ class MultiplePossibleLeagues extends LeagueState {
 
   @override
   List<Object?> get props => [inviteCode, possibleLeagues];
+}
+
+class RulesLoaded extends LeagueState {
+  final List<Rule> rules;
+  final String mode;
+
+  const RulesLoaded({
+    required this.rules,
+    required this.mode,
+  });
+
+  @override
+  List<Object?> get props => [rules, mode];
 }

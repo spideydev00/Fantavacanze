@@ -2,6 +2,7 @@ import 'package:fantavacanze_official/core/errors/failure.dart';
 import 'package:fantavacanze_official/core/errors/server_exception.dart';
 import 'package:fantavacanze_official/features/league/data/remote_data_source/league_remote_data_source.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/league.dart';
+import 'package:fantavacanze_official/features/league/domain/entities/rule.dart';
 import 'package:fantavacanze_official/features/league/domain/repository/league_repository.dart';
 import 'package:fpdart/fpdart.dart';
 
@@ -209,6 +210,18 @@ class LeagueRepositoryImpl implements LeagueRepository {
       return Right(league);
     } on ServerException catch (e) {
       return Left(Failure(e.message));
+    }
+  }
+
+  @override
+  Future<Either<Failure, List<Rule>>> getRules(String mode) async {
+    try {
+      final rules = await remoteDataSource.getRules(mode: mode);
+      return Right(rules);
+    } on ServerException catch (e) {
+      return Left(Failure(e.message));
+    } catch (e) {
+      return Left(Failure(e.toString()));
     }
   }
 }

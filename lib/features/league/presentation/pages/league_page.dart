@@ -226,63 +226,6 @@ class _LeaguePageState extends State<LeaguePage> {
     );
   }
 
-  void _showJoinLeagueDialog(BuildContext context) {
-    final TextEditingController controller = TextEditingController();
-
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Unisciti ad una Lega'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              TextField(
-                controller: controller,
-                decoration: const InputDecoration(
-                  hintText: 'Inserisci il codice di invito',
-                  labelText: 'Codice Invito',
-                  prefixIcon: Icon(Icons.group_add),
-                ),
-              ),
-              const SizedBox(height: ThemeSizes.md),
-              const Text(
-                'Chiedi al creatore della lega il codice di invito di 10 caratteri.',
-                style: TextStyle(
-                  fontSize: ThemeSizes.labelMd,
-                  color: Colors.grey,
-                ),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: const Text('Annulla'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                final code = controller.text.trim();
-                if (code.isNotEmpty) {
-                  context.read<LeagueBloc>().add(
-                        JoinLeagueEvent(
-                          inviteCode: code,
-                        ),
-                      );
-                  Navigator.pop(context);
-                }
-              },
-              child: const Text('Unisciti'),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
   void _showLeagueSelectionDialog(
       BuildContext context, String inviteCode, List<dynamic> leagues) {
     showDialog(
