@@ -112,3 +112,12 @@ class AddMemoryEvent extends LeagueEvent {
   @override
   List<Object?> get props => [leagueId, imageUrl, text, relatedEventId];
 }
+
+class GetRulesEvent extends LeagueEvent {
+  final String mode;
+
+  const GetRulesEvent({required this.mode});
+
+  @override
+  List<Object?> get props => [mode];
+}

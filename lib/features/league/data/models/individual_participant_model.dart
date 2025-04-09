@@ -12,12 +12,29 @@ class IndividualParticipantModel extends IndividualParticipant
   });
 
   factory IndividualParticipantModel.fromJson(Map<String, dynamic> json) {
+    // Handle numeric conversion with null-safety
+    double pointsValue;
+    if (json['score'] != null) {
+      pointsValue = json['score'] is int
+          ? (json['score'] as int).toDouble()
+          : (json['score'] as num).toDouble();
+    } else {
+      pointsValue = 0.0;
+    }
+
+    // Safely handle malusTotal and bonusTotal which might be null
+    final int malusTotalValue =
+        json['malusTotal'] != null ? json['malusTotal'] as int : 0;
+
+    final int bonusTotalValue =
+        json['bonusTotal'] != null ? json['bonusTotal'] as int : 0;
+
     return IndividualParticipantModel(
       userId: json['userId'] as String,
-      name: json['name'] as String,
-      points: json['score'] as double,
-      malusTotal: json['malusTotal'] as int,
-      bonusTotal: json['bonusTotal'] as int,
+      name: json['name'] as String? ?? "Utente senza nome",
+      points: pointsValue,
+      malusTotal: malusTotalValue,
+      bonusTotal: bonusTotalValue,
     );
   }
 

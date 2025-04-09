@@ -1,0 +1,39 @@
+lib/
+└── features/
+    └── league/
+        ├── data/
+        │   ├── models/
+        │   │   ├── event_model.dart
+        │   │   ├── memory_model.dart
+        │   │   ├── individual_participant_model.dart
+        │   │   ├── team_participant_model.dart
+        │   │   ├── rule_model.dart
+        │   │   └── league_model.dart
+        │   ├── remote_data_source/
+        │   │   └── league_remote_data_source.dart
+        │   └── repository/
+        │       └── league_repository_impl.dart
+        ├── domain/
+        │   ├── entities/
+        │   │   ├── event.dart
+        │   │   ├── memory.dart
+        │   │   ├── individual_participant.dart
+        │   │   ├── team_participant.dart
+        │   │   ├── rule.dart
+        │   │   └── league.dart
+        │   ├── repository/
+        │   │   └── league_repository.dart
+        │   └── use_cases/
+        │       ├── add_event.dart
+        │       ├── add_memory.dart
+        │       ├── create_league.dart
+        │       ├── exit_league.dart
+        │       ├── get_league.dart
+        │       ├── join_league.dart
+        │       └── update_team_name.dart
+        ├── presentation/
+        │   ├── bloc/
+        │   │   ├── league_bloc.dart
+        │   │   ├── league_event.dart
+        │   │   └── league_state.dart
+        │   └── (widgets, pages, ecc. – non visibili ma ipotizzabili)

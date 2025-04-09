@@ -1,9 +1,9 @@
-import 'package:fantavacanze_official/features/league/domain/entities/rule.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/add_event.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/add_memory.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/create_league.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/exit_league.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/get_league.dart';
+import 'package:fantavacanze_official/features/league/domain/use_cases/get_rules.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/join_league.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/update_team_name.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_event.dart';
@@ -14,6 +14,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
   final CreateLeague createLeague;
   final GetLeague getLeague;
+  final GetRules getRules;
   final JoinLeague joinLeague;
   final ExitLeague exitLeague;
   final UpdateTeamName updateTeamName;
@@ -24,6 +25,7 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
   LeagueBloc({
     required this.createLeague,
     required this.getLeague,
+    required this.getRules,
     required this.joinLeague,
     required this.exitLeague,
     required this.updateTeamName,
@@ -33,6 +35,7 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
   }) : super(LeagueInitial()) {
     on<CreateLeagueEvent>(_onCreateLeague);
     on<GetLeagueEvent>(_onGetLeague);
+    on<GetRulesEvent>(_onGetRules);
     on<JoinLeagueEvent>(_onJoinLeague);
     on<ExitLeagueEvent>(_onExitLeague);
     on<UpdateTeamNameEvent>(_onUpdateTeamName);
@@ -55,7 +58,6 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
 
       // Create rules from provided data
       final rules = event.rules.map((rule) {
-        final type = rule['type'] == 'bonus' ? RuleType.bonus : RuleType.malus;
         return {
           'name': rule['name'],
           'type': rule['type'],
@@ -99,6 +101,30 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
       result.fold(
         (failure) => emit(LeagueError(message: failure.message)),
         (league) => emit(LeagueLoaded(league: league)),
+      );
+    } catch (e) {
+      emit(LeagueError(message: e.toString()));
+    }
+  }
+
+  Future<void> _onGetRules(
+    GetRulesEvent event,
+    Emitter<LeagueState> emit,
+  ) async {
+    try {
+      emit(LeagueLoading());
+
+      // Validate mode parameter
+      if (event.mode != "hard" && event.mode != "soft") {
+        emit(const LeagueError(message: "Invalid mode. Use 'hard' or 'soft'"));
+        return;
+      }
+
+      final result = await getRules(event.mode);
+
+      result.fold(
+        (failure) => emit(LeagueError(message: failure.message)),
+        (rules) => emit(RulesLoaded(rules: rules, mode: event.mode)),
       );
     } catch (e) {
       emit(LeagueError(message: e.toString()));

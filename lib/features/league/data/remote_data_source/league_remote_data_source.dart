@@ -4,6 +4,7 @@ import 'package:fantavacanze_official/features/league/data/models/event_model.da
 import 'package:fantavacanze_official/features/league/data/models/league_model.dart';
 import 'package:fantavacanze_official/features/league/data/models/memory_model.dart';
 import 'package:fantavacanze_official/features/league/data/models/participant_model.dart';
+import 'package:fantavacanze_official/features/league/data/models/rule_model.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:uuid/uuid.dart';
 
@@ -69,6 +70,12 @@ abstract class LeagueRemoteDataSource {
     required String leagueId,
     required String memoryId,
   });
+
+  /// Fetches rules from Supabase based on mode
+  /// [mode] can be either "hard" or "soft"
+  /// Returns a list of [RuleModel]
+  /// Throws [ServerException] if there's a problem with the server
+  Future<List<RuleModel>> getRules({required String mode});
 }
 
 class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
@@ -112,6 +119,36 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
       // Generate a secure 10-character invite code
       final String inviteCode = uuid.v4().substring(0, 10);
 
+      // Get creator info
+      final creatorId = _getCurrentUserId();
+      final creatorName = _getCurrentUserName();
+
+      if (creatorId == null || creatorName == null) {
+        throw ServerException('Utente non autenticato');
+      }
+
+      // Create initial participant based on league type
+      final Map<String, dynamic> initialParticipant;
+      if (isTeamBased) {
+        initialParticipant = {
+          'type': 'team',
+          'userIds': [creatorId],
+          'name': '$creatorName Team', // Default team name
+          'score': 0,
+          'malusTotal': 0,
+          'bonusTotal': 0,
+        };
+      } else {
+        initialParticipant = {
+          'type': 'individual',
+          'userId': creatorId,
+          'name': creatorName,
+          'score': 0,
+          'malusTotal': 0,
+          'bonusTotal': 0,
+        };
+      }
+
       final leagueData = {
         'id': leagueId,
         'invite_code': inviteCode,
@@ -120,7 +157,7 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
         'description': description,
         'created_at': DateTime.now().toIso8601String(),
         'rules': rules,
-        'participants': [],
+        'participants': [initialParticipant],
         'events': [],
         'memories': [],
         'is_team_based': isTeamBased,
@@ -1011,6 +1048,27 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
       throw ServerException('Errore: ${e.message}');
     } catch (e) {
       throw ServerException('Si è verificato un errore: ${e.toString()}');
+    }
+  }
+
+  @override
+  Future<List<RuleModel>> getRules({required String mode}) async {
+    try {
+      // Determine which table to query based on mode
+      final tableName = mode == "hard" ? "hard_rules" : "soft_rules";
+
+      // Execute the query
+      final response = await supabaseClient
+          .from(tableName)
+          .select()
+          .order('id', ascending: true);
+
+      // Parse the response into a list of RuleModel objects
+      return (response as List)
+          .map((ruleJson) => RuleModel.fromJson(ruleJson))
+          .toList();
+    } catch (e) {
+      throw ServerException('Failed to fetch rules: ${e.toString()}');
     }
   }
 }
