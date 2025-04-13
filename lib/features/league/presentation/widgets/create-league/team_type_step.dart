@@ -1,3 +1,5 @@
+import 'package:fantavacanze_official/core/theme/colors.dart';
+import 'package:fantavacanze_official/core/widgets/info_container.dart';
 import 'package:flutter/material.dart';
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/extensions/context_extension.dart';
@@ -27,7 +29,21 @@ class TeamTypeStep extends StatelessWidget {
         const SizedBox(height: ThemeSizes.md),
         _buildTeamTypeSelector(context),
         const SizedBox(height: ThemeSizes.lg),
-        _buildInfoBox(context),
+        isTeamBased
+            ? InfoContainer(
+                title: "A squadre",
+                message:
+                    "In una lega a squadre, i partecipanti formano delle squadre per competere insieme.",
+                icon: Icons.info_outline,
+                color: ColorPalette.warning,
+              )
+            : InfoContainer(
+                title: "Individuale",
+                message:
+                    "In una lega individuale, ogni partecipante compete per sé stesso.",
+                icon: Icons.info_outline,
+                color: ColorPalette.warning,
+              )
       ],
     );
   }
@@ -87,35 +103,6 @@ class TeamTypeStep extends StatelessWidget {
             ],
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildInfoBox(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(ThemeSizes.md),
-      decoration: BoxDecoration(
-        color: context.primaryColor.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusLg),
-      ),
-      child: Row(
-        children: [
-          Icon(
-            Icons.info_outline,
-            color: context.primaryColor,
-          ),
-          const SizedBox(width: ThemeSizes.sm),
-          Expanded(
-            child: Text(
-              isTeamBased
-                  ? 'In una lega a squadre, i partecipanti possono unirsi a squadre e competere insieme.'
-                  : 'In una lega individuale, ogni partecipante compete per sé stesso.',
-              style: TextStyle(
-                color: context.textSecondaryColor,
-              ),
-            ),
-          ),
-        ],
       ),
     );
   }

@@ -28,7 +28,7 @@ class BasicInfoStep extends StatelessWidget {
               fontWeight: FontWeight.bold,
             ),
           ),
-          const SizedBox(height: ThemeSizes.md),
+          const SizedBox(height: ThemeSizes.xl),
           _buildNameField(context),
           const SizedBox(height: ThemeSizes.md),
           _buildDescriptionField(context),
@@ -62,7 +62,7 @@ class BasicInfoStep extends StatelessWidget {
           keyboardType: TextInputType.text,
           decoration: InputDecoration(
             labelText: 'Nome Lega',
-            hintText: 'es. Vacanza Estate 2023',
+            hintText: 'es. Fanta Marbella',
             prefixIcon: Icon(Icons.title, color: context.primaryColor),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusLg),
@@ -71,12 +71,6 @@ class BasicInfoStep extends StatelessWidget {
             filled: true,
             fillColor: context.secondaryBgColor,
           ),
-          validator: (value) {
-            if (value == null || value.isEmpty) {
-              return 'Inserisci un nome per la tua lega';
-            }
-            return null;
-          },
         ),
       ),
     );

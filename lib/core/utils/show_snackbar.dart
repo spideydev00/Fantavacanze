@@ -1,3 +1,4 @@
+import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:flutter/material.dart';
 
 void showSnackBar(BuildContext context, String content) {
@@ -5,7 +6,14 @@ void showSnackBar(BuildContext context, String content) {
     ..hideCurrentSnackBar()
     ..showSnackBar(
       SnackBar(
-        content: Text(content),
+        backgroundColor: ColorPalette.error,
+        content: Text(
+          content,
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
       ),
     );
 }

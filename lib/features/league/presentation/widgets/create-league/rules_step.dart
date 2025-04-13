@@ -15,7 +15,7 @@ class RulesStep extends StatelessWidget {
   final VoidCallback onAddRule;
   final Function(int) onEditRule;
   final Function(int) onRemoveRule;
-  final ScrollController? scrollController; // New parameter
+  final ScrollController? scrollController;
 
   const RulesStep({
     super.key,
@@ -27,7 +27,7 @@ class RulesStep extends StatelessWidget {
     required this.onAddRule,
     required this.onEditRule,
     required this.onRemoveRule,
-    this.scrollController, // Optional to maintain backward compatibility
+    this.scrollController,
   });
 
   @override
@@ -54,8 +54,6 @@ class RulesStep extends StatelessWidget {
             _buildLoadingIndicator(context)
           else if (rulesLoaded)
             _buildRulesList(context),
-          const SizedBox(
-              height: 80), // Matches the height of the buttons container
         ],
       ),
     );
@@ -104,7 +102,6 @@ class RulesStep extends StatelessWidget {
           _buildEmptyRulesMessage(context)
         else
           _buildRulesListView(),
-        const SizedBox(height: ThemeSizes.md),
       ],
     );
   }
