@@ -1,5 +1,6 @@
 import 'package:fantavacanze_official/core/extensions/context_extension.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
+import 'package:fantavacanze_official/core/utils/show_snackbar.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/rule.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -275,12 +276,7 @@ class _CreateLeaguePageState extends State<CreateLeaguePage> {
               _isCreating = false;
               _isLoadingRules = false;
             });
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.message),
-                backgroundColor: ColorPalette.error,
-              ),
-            );
+            showSnackBar(context, state.message);
           } else if (state is RulesLoaded) {
             setState(() {
               _isLoadingRules = false;
@@ -302,142 +298,133 @@ class _CreateLeaguePageState extends State<CreateLeaguePage> {
         child: Column(
           children: [
             Expanded(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: ThemeSizes.sm),
-                child: Stepper(
-                  margin: EdgeInsets.zero,
-                  type: StepperType.horizontal,
-                  connectorThickness: 0,
-                  currentStep: _currentStep,
-                  onStepTapped: _onStepTapped,
-                  onStepContinue: () {
-                    if (_currentStep < 2) {
-                      if (_currentStep == 0) {
-                        if (_nameController.text.trim().isEmpty) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content:
-                                  Text('Compila tutti i campi obbligatori'),
-                              backgroundColor: ColorPalette.warning,
-                            ),
-                          );
-                          return;
-                        }
+              child: Stepper(
+                margin: EdgeInsets.zero,
+                type: StepperType.horizontal,
+                connectorThickness: 0,
+                currentStep: _currentStep,
+                onStepTapped: _onStepTapped,
+                onStepContinue: () {
+                  if (_currentStep < 2) {
+                    if (_currentStep == 0) {
+                      if (_nameController.text.trim().isEmpty) {
+                        showSnackBar(
+                            context, "Compila tutti i campi obbligatori!");
+                        return;
                       }
-                      setState(() {
-                        _currentStep++;
-                      });
-                    } else {
-                      _submitForm();
                     }
-                  },
-                  onStepCancel: () {
-                    if (_currentStep > 0) {
-                      setState(() {
-                        _currentStep--;
-                      });
-                    }
-                  },
-                  steps: [
-                    Step(
-                      title: Text(
-                        'Informazioni',
-                        style: context.textTheme.labelLarge,
-                      ),
-                      content: BasicInfoStep(
-                        nameController: _nameController,
-                        descriptionController: _descriptionController,
-                        formKey: _formKey,
-                      ),
-                      isActive: _currentStep >= 0,
-                      state: _currentStep > 0
-                          ? StepState.complete
-                          : (_currentStep == 0
-                              ? StepState.editing
-                              : StepState.indexed),
+                    setState(() {
+                      _currentStep++;
+                    });
+                  } else {
+                    _submitForm();
+                  }
+                },
+                onStepCancel: () {
+                  if (_currentStep > 0) {
+                    setState(() {
+                      _currentStep--;
+                    });
+                  }
+                },
+                steps: [
+                  Step(
+                    title: Text(
+                      'Informazioni',
+                      style: context.textTheme.labelLarge,
                     ),
-                    Step(
-                      title: Text('Tipo', style: context.textTheme.labelLarge),
-                      content: TeamTypeStep(
-                        isTeamBased: _isTeamBased,
-                        onTeamTypeChanged: (value) {
-                          setState(() {
-                            _isTeamBased = value;
-                          });
-                        },
-                      ),
-                      isActive: _currentStep >= 1,
-                      state: _currentStep > 1
-                          ? StepState.complete
-                          : (_currentStep == 1
-                              ? StepState.editing
-                              : StepState.indexed),
+                    content: BasicInfoStep(
+                      nameController: _nameController,
+                      descriptionController: _descriptionController,
+                      formKey: _formKey,
                     ),
-                    Step(
-                      title:
-                          Text('Regole', style: context.textTheme.labelLarge),
-                      content: RulesStep(
-                        scrollController: _scrollController,
-                        selectedRuleMode: _selectedRuleMode,
-                        isLoadingRules: _isLoadingRules,
-                        rulesLoaded: _rulesLoaded,
-                        rules: _rules,
-                        onRuleModeChanged: _handleRuleModeChanged,
-                        onAddRule: _addRule,
-                        onEditRule: _editRule,
-                        onRemoveRule: _removeRule,
-                      ),
-                      isActive: _currentStep >= 2,
-                      state: _currentStep == 2
-                          ? StepState.editing
-                          : StepState.indexed,
+                    isActive: _currentStep >= 0,
+                    state: _currentStep > 0
+                        ? StepState.complete
+                        : (_currentStep == 0
+                            ? StepState.editing
+                            : StepState.indexed),
+                  ),
+                  Step(
+                    title: Text('Tipo', style: context.textTheme.labelLarge),
+                    content: TeamTypeStep(
+                      isTeamBased: _isTeamBased,
+                      onTeamTypeChanged: (value) {
+                        setState(() {
+                          _isTeamBased = value;
+                        });
+                      },
                     ),
-                  ],
-                  controlsBuilder: (context, details) {
-                    if (_currentStep == 2) {
-                      return const SizedBox.shrink();
-                    }
+                    isActive: _currentStep >= 1,
+                    state: _currentStep > 1
+                        ? StepState.complete
+                        : (_currentStep == 1
+                            ? StepState.editing
+                            : StepState.indexed),
+                  ),
+                  Step(
+                    title: Text('Regole', style: context.textTheme.labelLarge),
+                    content: RulesStep(
+                      scrollController: _scrollController,
+                      selectedRuleMode: _selectedRuleMode,
+                      isLoadingRules: _isLoadingRules,
+                      rulesLoaded: _rulesLoaded,
+                      rules: _rules,
+                      onRuleModeChanged: _handleRuleModeChanged,
+                      onAddRule: _addRule,
+                      onEditRule: _editRule,
+                      onRemoveRule: _removeRule,
+                    ),
+                    isActive: _currentStep >= 2,
+                    state: _currentStep == 2
+                        ? StepState.editing
+                        : StepState.indexed,
+                  ),
+                ],
+                controlsBuilder: (context, details) {
+                  if (_currentStep == 2) {
+                    return const SizedBox.shrink();
+                  }
 
-                    return Padding(
-                      padding: const EdgeInsets.only(top: ThemeSizes.lg),
-                      child: Row(
-                        children: [
-                          if (_currentStep > 0)
-                            Expanded(
-                              flex: 3,
-                              child: OutlinedButton(
-                                onPressed: details.onStepCancel,
-                                child: const Text('Indietro'),
-                              ),
-                            ),
-                          if (_currentStep > 0)
-                            const SizedBox(width: ThemeSizes.sm),
+                  return Padding(
+                    padding: const EdgeInsets.only(top: ThemeSizes.lg),
+                    child: Row(
+                      children: [
+                        if (_currentStep > 0)
                           Expanded(
-                            flex: 4,
-                            child: ElevatedButton(
-                              onPressed:
-                                  _isCreating ? null : details.onStepContinue,
-                              style: ElevatedButton.styleFrom(
-                                fixedSize: null,
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: ThemeSizes.md,
-                                  horizontal: ThemeSizes.sm,
-                                ),
-                              ),
-                              child: Text(
-                                _isCreating
-                                    ? 'Creazione in corso...'
-                                    : _currentStep < 2
-                                        ? 'Continua'
-                                        : 'Crea Lega',
-                              ),
+                            flex: 3,
+                            child: OutlinedButton(
+                              onPressed: details.onStepCancel,
+                              child: const Text('Indietro'),
                             ),
                           ),
-                        ],
-                      ),
-                    );
-                  },
-                ),
+                        if (_currentStep > 0)
+                          const SizedBox(width: ThemeSizes.sm),
+                        Expanded(
+                          flex: 4,
+                          child: ElevatedButton(
+                            onPressed:
+                                _isCreating ? null : details.onStepContinue,
+                            style: ElevatedButton.styleFrom(
+                              fixedSize: null,
+                              padding: const EdgeInsets.symmetric(
+                                vertical: ThemeSizes.md,
+                                horizontal: ThemeSizes.sm,
+                              ),
+                            ),
+                            child: Text(
+                              _isCreating
+                                  ? 'Creazione in corso...'
+                                  : _currentStep < 2
+                                      ? 'Continua'
+                                      : 'Crea Lega',
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                },
               ),
             ),
             if (_currentStep == 2)

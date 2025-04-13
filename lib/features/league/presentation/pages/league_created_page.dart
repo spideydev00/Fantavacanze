@@ -1,3 +1,4 @@
+import 'package:fantavacanze_official/core/widgets/modern_icon_button.dart';
 import 'package:flutter/material.dart';
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/extensions/context_extension.dart';
@@ -146,33 +147,12 @@ class _LeagueCreatedPageState extends State<LeagueCreatedPage>
                 const SizedBox(height: ThemeSizes.xl),
 
                 // Home navigation icon button at the bottom
-                Container(
-                  alignment: Alignment.center,
-                  child: Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                      onTap: () {
-                        Navigator.of(context)
-                            .popUntil((route) => route.isFirst);
-                      },
-                      borderRadius: BorderRadius.circular(50),
-                      child: Ink(
-                        decoration: BoxDecoration(
-                          color: context.textPrimaryColor.withAlpha(5),
-                          shape: BoxShape.circle,
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(20.0),
-                          child: Icon(
-                            Icons.home_rounded,
-                            color: context.textPrimaryColor,
-                            size: 30,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
+                ModernIconButton(
+                  icon: Icons.home,
+                  onTap: () {
+                    Navigator.of(context).popUntil((route) => route.isFirst);
+                  },
+                )
               ],
             ),
           ),
