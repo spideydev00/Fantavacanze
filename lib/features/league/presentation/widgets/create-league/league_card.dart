@@ -78,7 +78,7 @@ class LeagueCard extends StatelessWidget {
               ),
               const SizedBox(height: ThemeSizes.sm),
               Text(
-                league.description,
+                league.description!,
                 style: context.textTheme.bodyMedium?.copyWith(
                   color: context.textSecondaryColor,
                 ),

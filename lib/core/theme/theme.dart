@@ -57,7 +57,7 @@ class AppTheme {
           padding: const EdgeInsets.all(ThemeSizes.md),
           //button text
           textStyle: fontFamily(
-            fontSize: ThemeSizes.fontSizeLg,
+            fontSize: ThemeSizes.fontSizeMd,
             fontWeight: FontWeight.w600,
           ),
           //button size
@@ -72,6 +72,29 @@ class AppTheme {
           elevation: 2,
         ),
       ),
+
+      /* ---------------------------------------------------------------- */
+      //OUTLINED BUTTON
+      outlinedButtonTheme: OutlinedButtonThemeData(
+        style: OutlinedButton.styleFrom(
+          foregroundColor: context.primaryColor,
+          side: BorderSide(
+            color: context.primaryColor,
+            width: 1.5,
+          ),
+          padding: const EdgeInsets.all(ThemeSizes.md),
+          textStyle: fontFamily(
+            fontSize: ThemeSizes.fontSizeMd,
+            fontWeight: FontWeight.w600,
+          ),
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(
+              Radius.circular(ThemeSizes.borderRadiusLg),
+            ),
+          ),
+        ),
+      ),
+
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
           foregroundColor: context.primaryColor,
@@ -97,6 +120,7 @@ class AppTheme {
       appBarTheme: AppBarTheme(
         foregroundColor: isDark ? ColorPalette.white : ColorPalette.black,
         backgroundColor: Colors.transparent,
+        scrolledUnderElevation: 0, // Prevent color change when scrolling
       ),
       /* ---------------------------------------------------------------- */
       //TEXT THEME

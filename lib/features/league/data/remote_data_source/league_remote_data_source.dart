@@ -108,7 +108,7 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
   @override
   Future<LeagueModel> createLeague({
     required String name,
-    required String description,
+    String? description,
     required bool isTeamBased,
     required List<String> admins,
     required List<Map<String, dynamic>> rules,
