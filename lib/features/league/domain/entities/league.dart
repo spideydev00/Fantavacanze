@@ -9,7 +9,7 @@ class League {
   final String id;
   final List<String> admins;
   final String name;
-  final String description;
+  final String? description;
   final DateTime createdAt;
   final List<Rule> rules;
   final List<Participant> participants;
@@ -21,7 +21,7 @@ class League {
     required this.id,
     required this.admins,
     required this.name,
-    required this.description,
+    this.description,
     required this.createdAt,
     required this.rules,
     required this.participants,

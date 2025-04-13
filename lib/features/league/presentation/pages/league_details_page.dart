@@ -379,7 +379,7 @@ class _LeagueDetailsPageState extends State<LeagueDetailsPage>
                   ),
                   const Divider(),
                   Text(
-                    league.description,
+                    league.description!,
                     style: Theme.of(context).textTheme.bodyLarge,
                   ),
                   const SizedBox(height: 16),

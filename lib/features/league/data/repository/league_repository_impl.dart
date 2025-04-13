@@ -14,7 +14,7 @@ class LeagueRepositoryImpl implements LeagueRepository {
   @override
   Future<Either<Failure, League>> createLeague({
     required String name,
-    required String description,
+    String? description,
     required bool isTeamBased,
     required List<String> admins,
     required List<Map<String, dynamic>> rules,
@@ -22,7 +22,7 @@ class LeagueRepositoryImpl implements LeagueRepository {
     try {
       final league = await remoteDataSource.createLeague(
         name: name,
-        description: description,
+        description: description ?? "",
         isTeamBased: isTeamBased,
         admins: admins,
         rules: rules,

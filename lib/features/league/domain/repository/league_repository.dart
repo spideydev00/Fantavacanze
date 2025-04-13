@@ -7,7 +7,7 @@ abstract class LeagueRepository {
   // League operations
   Future<Either<Failure, League>> createLeague({
     required String name,
-    required String description,
+    String? description,
     required bool isTeamBased,
     required List<String> admins,
     required List<Map<String, dynamic>> rules,

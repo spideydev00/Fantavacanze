@@ -6,7 +6,7 @@ import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_event.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_state.dart';
-import 'package:fantavacanze_official/features/league/presentation/widgets/league_card.dart';
+import 'package:fantavacanze_official/features/league/presentation/widgets/create-league/league_card.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/create_league_page.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/league_details_page.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/join_league_page.dart';

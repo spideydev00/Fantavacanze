@@ -11,7 +11,7 @@ class LeagueModel extends League {
     required super.id,
     required super.admins,
     required super.name,
-    required super.description,
+    super.description,
     required super.createdAt,
     required super.rules,
     required super.participants,
