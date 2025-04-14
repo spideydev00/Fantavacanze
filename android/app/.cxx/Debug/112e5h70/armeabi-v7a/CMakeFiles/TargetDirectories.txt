@@ -1,0 +1,2 @@
+/Users/alex/coding/flutter_projects/fantavacanze_official/android/app/.cxx/Debug/112e5h70/armeabi-v7a/CMakeFiles/edit_cache.dir
+/Users/alex/coding/flutter_projects/fantavacanze_official/android/app/.cxx/Debug/112e5h70/armeabi-v7a/CMakeFiles/rebuild_cache.dir

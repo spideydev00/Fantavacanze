@@ -1,0 +1,1 @@
+/Users/alex/coding/flutter_projects/fantavacanze_official/build/app/intermediates/cxx/Debug/112e5h70/obj/arm64-v8a
