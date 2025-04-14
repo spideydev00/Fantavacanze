@@ -50,27 +50,19 @@ class BasicInfoStep extends StatelessWidget {
           ),
         ],
       ),
-      child: Theme(
-        data: Theme.of(context).copyWith(
-          inputDecorationTheme: InputDecorationTheme(
-            labelStyle: TextStyle(color: Colors.white),
-            floatingLabelStyle: TextStyle(color: Colors.white),
+      child: TextFormField(
+        controller: nameController,
+        keyboardType: TextInputType.text,
+        decoration: InputDecoration(
+          labelText: 'Nome Lega',
+          hintText: 'es. Fanta Marbella',
+          prefixIcon: Icon(Icons.title, color: context.primaryColor),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusLg),
+            borderSide: BorderSide.none,
           ),
-        ),
-        child: TextFormField(
-          controller: nameController,
-          keyboardType: TextInputType.text,
-          decoration: InputDecoration(
-            labelText: 'Nome Lega',
-            hintText: 'es. Fanta Marbella',
-            prefixIcon: Icon(Icons.title, color: context.primaryColor),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusLg),
-              borderSide: BorderSide.none,
-            ),
-            filled: true,
-            fillColor: context.secondaryBgColor,
-          ),
+          filled: true,
+          fillColor: context.secondaryBgColor,
         ),
       ),
     );
@@ -89,29 +81,21 @@ class BasicInfoStep extends StatelessWidget {
           ),
         ],
       ),
-      child: Theme(
-        data: Theme.of(context).copyWith(
-          inputDecorationTheme: InputDecorationTheme(
-            labelStyle: TextStyle(color: Colors.white),
-            floatingLabelStyle: TextStyle(color: Colors.white),
+      child: TextFormField(
+        controller: descriptionController,
+        keyboardType: TextInputType.text,
+        decoration: InputDecoration(
+          labelText: 'Motto',
+          hintText: 'Hai un motto? Scrivilo qui!',
+          prefixIcon: Icon(Icons.description, color: context.primaryColor),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusLg),
+            borderSide: BorderSide.none,
           ),
+          filled: true,
+          fillColor: context.secondaryBgColor,
         ),
-        child: TextFormField(
-          controller: descriptionController,
-          keyboardType: TextInputType.text,
-          decoration: InputDecoration(
-            labelText: 'Motto',
-            hintText: 'Hai un motto? Scrivilo qui!',
-            prefixIcon: Icon(Icons.description, color: context.primaryColor),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusLg),
-              borderSide: BorderSide.none,
-            ),
-            filled: true,
-            fillColor: context.secondaryBgColor,
-          ),
-          maxLines: 3,
-        ),
+        maxLines: 3,
       ),
     );
   }

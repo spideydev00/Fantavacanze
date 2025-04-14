@@ -31,6 +31,24 @@ class AppTheme {
 
     return baseTheme.copyWith(
       /* ---------------------------------------------------------------- */
+      // GLOBAL COLOR SCHEME
+      colorScheme: ColorScheme(
+        brightness: isDark ? Brightness.dark : Brightness.light,
+        primary: context.primaryColor,
+        onPrimary: ColorPalette.white,
+        secondary: context.secondaryColor,
+        onSecondary: ColorPalette.white,
+        error: ColorPalette.error,
+        onError: ColorPalette.white,
+        surface: context.bgColor,
+        onSurface: context.textPrimaryColor,
+      ),
+
+      // Additional theming to ensure consistent colors across components
+      indicatorColor: context.primaryColor,
+      primaryColor: context.primaryColor,
+      canvasColor: context.secondaryBgColor, // This affects Stepper background
+      /* ---------------------------------------------------------------- */
       //TEXT FORM
       //form fields theming
       inputDecorationTheme: InputDecorationTheme(
@@ -52,7 +70,7 @@ class AppTheme {
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: context.buttonPrimaryColor,
-          foregroundColor: context.textPrimaryColor,
+          foregroundColor: ColorPalette.textPrimary(ThemeMode.dark),
           //button padding
           padding: const EdgeInsets.all(ThemeSizes.md),
           //button text

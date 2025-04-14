@@ -1,12 +1,12 @@
+import 'package:fantavacanze_official/core/constants/game_mode.dart';
 import 'package:flutter/material.dart';
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
-import 'package:fantavacanze_official/features/league/presentation/pages/create_league_page.dart';
 
 class RuleModeSelector extends StatelessWidget {
-  final RuleMode selectedMode;
+  final GameMode selectedMode;
   final bool isLoading;
-  final Function(RuleMode) onModeChanged;
+  final Function(GameMode) onModeChanged;
 
   const RuleModeSelector({
     super.key,
@@ -47,9 +47,9 @@ class RuleModeSelector extends StatelessWidget {
               ListTile(
                 title: const Text('Hot Mode'),
                 subtitle:
-                    const Text('Regole predefinite per vacanze intensive'),
-                leading: Radio<RuleMode>(
-                  value: RuleMode.hot,
+                    const Text('Regole predefinite per vacanze da sballo'),
+                leading: Radio<GameMode>(
+                  value: GameMode.hot,
                   groupValue: selectedMode,
                   onChanged: isLoading
                       ? null
@@ -58,13 +58,15 @@ class RuleModeSelector extends StatelessWidget {
                         },
                 ),
               ),
-              const Divider(),
+              const Divider(
+                thickness: 0.2,
+              ),
               ListTile(
                 title: const Text('Soft Mode'),
                 subtitle:
-                    const Text('Regole predefinite per vacanze tranquille'),
-                leading: Radio<RuleMode>(
-                  value: RuleMode.soft,
+                    const Text('Regole predefinite per vacanze dove chillare'),
+                leading: Radio<GameMode>(
+                  value: GameMode.soft,
                   groupValue: selectedMode,
                   onChanged: isLoading
                       ? null
@@ -73,12 +75,14 @@ class RuleModeSelector extends StatelessWidget {
                         },
                 ),
               ),
-              const Divider(),
+              const Divider(
+                thickness: 0.2,
+              ),
               ListTile(
                 title: const Text('Completamente Personalizzata'),
                 subtitle: const Text('Crea tutte le regole da zero'),
-                leading: Radio<RuleMode>(
-                  value: RuleMode.custom,
+                leading: Radio<GameMode>(
+                  value: GameMode.custom,
                   groupValue: selectedMode,
                   onChanged: isLoading
                       ? null

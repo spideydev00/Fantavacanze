@@ -1,3 +1,4 @@
+import 'package:fantavacanze_official/core/constants/game_mode.dart';
 import 'package:fantavacanze_official/core/extensions/context_extension.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/utils/show_snackbar.dart';
@@ -15,12 +16,6 @@ import 'package:fantavacanze_official/features/league/presentation/widgets/creat
 import 'package:fantavacanze_official/features/league/presentation/widgets/rule_dialog.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/league_created_page.dart';
 
-enum RuleMode {
-  hot,
-  soft,
-  custom,
-}
-
 class CreateLeaguePage extends StatefulWidget {
   const CreateLeaguePage({super.key});
 
@@ -36,7 +31,7 @@ class _CreateLeaguePageState extends State<CreateLeaguePage> {
   List<Map<String, dynamic>> _rules = [];
   bool _isCreating = false;
   int _currentStep = 0;
-  RuleMode _selectedRuleMode = RuleMode.hot;
+  GameMode _selectedRuleMode = GameMode.hot;
   bool _isLoadingRules = false;
   bool _rulesLoaded = false;
 
@@ -210,16 +205,16 @@ class _CreateLeaguePageState extends State<CreateLeaguePage> {
     }
   }
 
-  void _handleRuleModeChanged(RuleMode mode) {
+  void _handleRuleModeChanged(GameMode mode) {
     setState(() {
       _selectedRuleMode = mode;
       _rules = [];
       _rulesLoaded = false;
     });
 
-    if (mode == RuleMode.hot) {
+    if (mode == GameMode.hot) {
       _loadPredefinedRules("hard");
-    } else if (mode == RuleMode.soft) {
+    } else if (mode == GameMode.soft) {
       _loadPredefinedRules("soft");
     } else {
       setState(() {
@@ -298,133 +293,143 @@ class _CreateLeaguePageState extends State<CreateLeaguePage> {
         child: Column(
           children: [
             Expanded(
-              child: Stepper(
-                margin: EdgeInsets.zero,
-                type: StepperType.horizontal,
-                connectorThickness: 0,
-                currentStep: _currentStep,
-                onStepTapped: _onStepTapped,
-                onStepContinue: () {
-                  if (_currentStep < 2) {
-                    if (_currentStep == 0) {
-                      if (_nameController.text.trim().isEmpty) {
-                        showSnackBar(
-                            context, "Compila tutti i campi obbligatori!");
-                        return;
+              child: Theme(
+                data: Theme.of(context).copyWith(
+                  canvasColor: context.secondaryBgColor,
+                  colorScheme: Theme.of(context).colorScheme.copyWith(
+                        surface: context.secondaryBgColor,
+                      ),
+                ),
+                child: Stepper(
+                  margin: EdgeInsets.zero,
+                  type: StepperType.horizontal,
+                  connectorThickness: 0,
+                  elevation: 0,
+                  currentStep: _currentStep,
+                  onStepTapped: _onStepTapped,
+                  onStepContinue: () {
+                    if (_currentStep < 2) {
+                      if (_currentStep == 0) {
+                        if (_nameController.text.trim().isEmpty) {
+                          showSnackBar(
+                              context, "Compila tutti i campi obbligatori!");
+                          return;
+                        }
                       }
+                      setState(() {
+                        _currentStep++;
+                      });
+                    } else {
+                      _submitForm();
                     }
-                    setState(() {
-                      _currentStep++;
-                    });
-                  } else {
-                    _submitForm();
-                  }
-                },
-                onStepCancel: () {
-                  if (_currentStep > 0) {
-                    setState(() {
-                      _currentStep--;
-                    });
-                  }
-                },
-                steps: [
-                  Step(
-                    title: Text(
-                      'Informazioni',
-                      style: context.textTheme.labelLarge,
+                  },
+                  onStepCancel: () {
+                    if (_currentStep > 0) {
+                      setState(() {
+                        _currentStep--;
+                      });
+                    }
+                  },
+                  steps: [
+                    Step(
+                      title: Text(
+                        'Informazioni',
+                        style: context.textTheme.labelLarge,
+                      ),
+                      content: BasicInfoStep(
+                        nameController: _nameController,
+                        descriptionController: _descriptionController,
+                        formKey: _formKey,
+                      ),
+                      isActive: _currentStep >= 0,
+                      state: _currentStep > 0
+                          ? StepState.complete
+                          : (_currentStep == 0
+                              ? StepState.editing
+                              : StepState.indexed),
                     ),
-                    content: BasicInfoStep(
-                      nameController: _nameController,
-                      descriptionController: _descriptionController,
-                      formKey: _formKey,
+                    Step(
+                      title: Text('Tipo', style: context.textTheme.labelLarge),
+                      content: TeamTypeStep(
+                        isTeamBased: _isTeamBased,
+                        onTeamTypeChanged: (value) {
+                          setState(() {
+                            _isTeamBased = value;
+                          });
+                        },
+                      ),
+                      isActive: _currentStep >= 1,
+                      state: _currentStep > 1
+                          ? StepState.complete
+                          : (_currentStep == 1
+                              ? StepState.editing
+                              : StepState.indexed),
                     ),
-                    isActive: _currentStep >= 0,
-                    state: _currentStep > 0
-                        ? StepState.complete
-                        : (_currentStep == 0
-                            ? StepState.editing
-                            : StepState.indexed),
-                  ),
-                  Step(
-                    title: Text('Tipo', style: context.textTheme.labelLarge),
-                    content: TeamTypeStep(
-                      isTeamBased: _isTeamBased,
-                      onTeamTypeChanged: (value) {
-                        setState(() {
-                          _isTeamBased = value;
-                        });
-                      },
+                    Step(
+                      title:
+                          Text('Regole', style: context.textTheme.labelLarge),
+                      content: RulesStep(
+                        scrollController: _scrollController,
+                        selectedRuleMode: _selectedRuleMode,
+                        isLoadingRules: _isLoadingRules,
+                        rulesLoaded: _rulesLoaded,
+                        rules: _rules,
+                        onRuleModeChanged: _handleRuleModeChanged,
+                        onAddRule: _addRule,
+                        onEditRule: _editRule,
+                        onRemoveRule: _removeRule,
+                      ),
+                      isActive: _currentStep >= 2,
+                      state: _currentStep == 2
+                          ? StepState.editing
+                          : StepState.indexed,
                     ),
-                    isActive: _currentStep >= 1,
-                    state: _currentStep > 1
-                        ? StepState.complete
-                        : (_currentStep == 1
-                            ? StepState.editing
-                            : StepState.indexed),
-                  ),
-                  Step(
-                    title: Text('Regole', style: context.textTheme.labelLarge),
-                    content: RulesStep(
-                      scrollController: _scrollController,
-                      selectedRuleMode: _selectedRuleMode,
-                      isLoadingRules: _isLoadingRules,
-                      rulesLoaded: _rulesLoaded,
-                      rules: _rules,
-                      onRuleModeChanged: _handleRuleModeChanged,
-                      onAddRule: _addRule,
-                      onEditRule: _editRule,
-                      onRemoveRule: _removeRule,
-                    ),
-                    isActive: _currentStep >= 2,
-                    state: _currentStep == 2
-                        ? StepState.editing
-                        : StepState.indexed,
-                  ),
-                ],
-                controlsBuilder: (context, details) {
-                  if (_currentStep == 2) {
-                    return const SizedBox.shrink();
-                  }
+                  ],
+                  controlsBuilder: (context, details) {
+                    if (_currentStep == 2) {
+                      return const SizedBox.shrink();
+                    }
 
-                  return Padding(
-                    padding: const EdgeInsets.only(top: ThemeSizes.lg),
-                    child: Row(
-                      children: [
-                        if (_currentStep > 0)
-                          Expanded(
-                            flex: 3,
-                            child: OutlinedButton(
-                              onPressed: details.onStepCancel,
-                              child: const Text('Indietro'),
-                            ),
-                          ),
-                        if (_currentStep > 0)
-                          const SizedBox(width: ThemeSizes.sm),
-                        Expanded(
-                          flex: 4,
-                          child: ElevatedButton(
-                            onPressed:
-                                _isCreating ? null : details.onStepContinue,
-                            style: ElevatedButton.styleFrom(
-                              fixedSize: null,
-                              padding: const EdgeInsets.symmetric(
-                                vertical: ThemeSizes.md,
-                                horizontal: ThemeSizes.sm,
+                    return Padding(
+                      padding: const EdgeInsets.only(top: ThemeSizes.lg),
+                      child: Row(
+                        children: [
+                          if (_currentStep > 0)
+                            Expanded(
+                              flex: 3,
+                              child: OutlinedButton(
+                                onPressed: details.onStepCancel,
+                                child: const Text('Indietro'),
                               ),
                             ),
-                            child: Text(
-                              _isCreating
-                                  ? 'Creazione in corso...'
-                                  : _currentStep < 2
-                                      ? 'Continua'
-                                      : 'Crea Lega',
+                          if (_currentStep > 0)
+                            const SizedBox(width: ThemeSizes.sm),
+                          Expanded(
+                            flex: 4,
+                            child: ElevatedButton(
+                              onPressed:
+                                  _isCreating ? null : details.onStepContinue,
+                              style: ElevatedButton.styleFrom(
+                                fixedSize: null,
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: ThemeSizes.md,
+                                  horizontal: ThemeSizes.sm,
+                                ),
+                              ),
+                              child: Text(
+                                _isCreating
+                                    ? 'Creazione in corso...'
+                                    : _currentStep < 2
+                                        ? 'Continua'
+                                        : 'Crea Lega',
+                              ),
                             ),
                           ),
-                        ),
-                      ],
-                    ),
-                  );
-                },
+                        ],
+                      ),
+                    );
+                  },
+                ),
               ),
             ),
             if (_currentStep == 2)

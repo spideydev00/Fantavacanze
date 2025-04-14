@@ -1,9 +1,11 @@
+import 'package:fantavacanze_official/core/use-case/usecase.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/add_event.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/add_memory.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/create_league.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/exit_league.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/get_league.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/get_rules.dart';
+import 'package:fantavacanze_official/features/league/domain/use_cases/get_user_leagues.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/join_league.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/update_team_name.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_event.dart';
@@ -14,6 +16,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
   final CreateLeague createLeague;
   final GetLeague getLeague;
+  final GetUserLeagues getUserLeagues;
   final GetRules getRules;
   final JoinLeague joinLeague;
   final ExitLeague exitLeague;
@@ -32,9 +35,11 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
     required this.addEvent,
     required this.addMemory,
     required this.supabaseClient,
+    required this.getUserLeagues,
   }) : super(LeagueInitial()) {
     on<CreateLeagueEvent>(_onCreateLeague);
     on<GetLeagueEvent>(_onGetLeague);
+    on<GetUserLeaguesEvent>(_onGetUserLeagues);
     on<GetRulesEvent>(_onGetRules);
     on<JoinLeagueEvent>(_onJoinLeague);
     on<ExitLeagueEvent>(_onExitLeague);
@@ -101,6 +106,24 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
       result.fold(
         (failure) => emit(LeagueError(message: failure.message)),
         (league) => emit(LeagueLoaded(league: league)),
+      );
+    } catch (e) {
+      emit(LeagueError(message: e.toString()));
+    }
+  }
+
+  Future<void> _onGetUserLeagues(
+    GetUserLeaguesEvent event,
+    Emitter<LeagueState> emit,
+  ) async {
+    try {
+      emit(LeagueLoading());
+
+      final result = await getUserLeagues(NoParams());
+
+      result.fold(
+        (failure) => emit(LeagueError(message: failure.message)),
+        (leagues) => emit(UserLeaguesLoaded(leagues: leagues)),
       );
     } catch (e) {
       emit(LeagueError(message: e.toString()));

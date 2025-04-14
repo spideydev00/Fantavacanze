@@ -1,3 +1,4 @@
+import 'package:fantavacanze_official/core/cubits/app_league/app_league_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/app_navigation/app_navigation_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit.dart';
 import 'package:fantavacanze_official/core/secrets/app_secrets.dart';
@@ -19,6 +20,7 @@ import 'package:fantavacanze_official/features/league/domain/use_cases/create_le
 import 'package:fantavacanze_official/features/league/domain/use_cases/exit_league.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/get_league.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/get_rules.dart';
+import 'package:fantavacanze_official/features/league/domain/use_cases/get_user_leagues.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/join_league.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/update_team_name.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc.dart';
@@ -116,6 +118,7 @@ void _initLeague() {
     // use cases
     ..registerFactory(() => CreateLeague(leagueRepository: serviceLocator()))
     ..registerFactory(() => GetLeague(leagueRepository: serviceLocator()))
+    ..registerFactory(() => GetUserLeagues(leagueRepository: serviceLocator()))
     ..registerFactory(() => JoinLeague(leagueRepository: serviceLocator()))
     ..registerFactory(() => ExitLeague(leagueRepository: serviceLocator()))
     ..registerFactory(() => UpdateTeamName(leagueRepository: serviceLocator()))
@@ -123,11 +126,16 @@ void _initLeague() {
     ..registerFactory(() => AddMemory(leagueRepository: serviceLocator()))
     ..registerFactory(() => GetRules(leagueRepository: serviceLocator()))
 
+    //app-wide league cubit
+    ..registerLazySingleton(
+        () => AppLeagueCubit(getUserLeagues: serviceLocator()))
+
     // bloc
     ..registerFactory(
       () => LeagueBloc(
         createLeague: serviceLocator(),
         getLeague: serviceLocator(),
+        getUserLeagues: serviceLocator(),
         joinLeague: serviceLocator(),
         exitLeague: serviceLocator(),
         updateTeamName: serviceLocator(),
