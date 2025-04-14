@@ -1,20 +1,30 @@
+import 'package:fantavacanze_official/core/errors/exceptions.dart';
 import 'package:fantavacanze_official/core/errors/failure.dart';
-import 'package:fantavacanze_official/core/errors/server_exception.dart';
-import 'package:fantavacanze_official/features/auth/data/remote_data_source/auth_remote_data_source.dart';
+import 'package:fantavacanze_official/core/network/connection_checker.dart';
+import 'package:fantavacanze_official/features/auth/data/datasources/auth_remote_data_source.dart';
 import 'package:fantavacanze_official/features/auth/domain/entities/user.dart';
 import 'package:fantavacanze_official/features/auth/domain/repository/auth_repository.dart';
 import 'package:fpdart/fpdart.dart';
 
 class AuthRepositoryImpl implements AuthRepository {
   final AuthRemoteDataSource authRemoteDataSource;
-  AuthRepositoryImpl({required this.authRemoteDataSource});
+  final ConnectionChecker connectionChecker;
+
+  AuthRepositoryImpl({
+    required this.authRemoteDataSource,
+    required this.connectionChecker,
+  });
 
   //Google
   @override
   Future<Either<Failure, User>> googleSignIn() async {
     try {
-      final user = await authRemoteDataSource.signInWithGoogle();
+      if (!await connectionChecker.isConnected) {
+        return left(
+            Failure("Connessione a internet assente. Riprova più tardi."));
+      }
 
+      final user = await authRemoteDataSource.signInWithGoogle();
       return right(user);
     } on ServerException catch (e) {
       return left(Failure(e.message));
@@ -25,8 +35,12 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<Either<Failure, User>> appleSignIn() async {
     try {
-      final user = await authRemoteDataSource.signInWithApple();
+      if (!await connectionChecker.isConnected) {
+        return left(
+            Failure("Connessione a internet assente. Riprova più tardi."));
+      }
 
+      final user = await authRemoteDataSource.signInWithApple();
       return right(user);
     } on ServerException catch (e) {
       return left(Failure(e.message));
@@ -40,9 +54,13 @@ class AuthRepositoryImpl implements AuthRepository {
       required String password,
       required String hCaptcha}) async {
     try {
+      if (!await connectionChecker.isConnected) {
+        return left(
+            Failure("Connessione a internet assente. Riprova più tardi."));
+      }
+
       final user = await authRemoteDataSource.loginWithEmailPassword(
           email: email, password: password, hCaptcha: hCaptcha);
-
       return right(user);
     } on ServerException catch (e) {
       return left(Failure(e.message));
@@ -56,9 +74,13 @@ class AuthRepositoryImpl implements AuthRepository {
       required String password,
       required String hCaptcha}) async {
     try {
+      if (!await connectionChecker.isConnected) {
+        return left(
+            Failure("Connessione a internet assente. Riprova più tardi."));
+      }
+
       final user = await authRemoteDataSource.signUpWithEmailPassword(
           name: name, email: email, password: password, hCaptcha: hCaptcha);
-
       return right(user);
     } on ServerException catch (e) {
       return left(Failure(e.message));
@@ -69,8 +91,23 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<Either<Failure, User>> currentUser() async {
     try {
-      final user = await authRemoteDataSource.getCurrentUserData();
+      if (!await connectionChecker.isConnected) {
+        final session = authRemoteDataSource.currentSession;
 
+        if (session == null) {
+          return left(Failure("Nessun utente autenticato."));
+        }
+
+        return right(
+          User(
+            id: session.user.id,
+            email: session.user.email ?? 'No email found.',
+            name: 'No name found.',
+          ),
+        );
+      }
+
+      final user = await authRemoteDataSource.getCurrentUserData();
       if (user == null) {
         return left(Failure("Nessun utente autenticato."));
       }

@@ -164,11 +164,13 @@ class _DashboardScreenState extends State<DashboardScreen>
   }
 
   Widget _buildLogo(BuildContext context) {
-    return Image.asset(
-      context.read<AppThemeCubit>().isDarkMode(context)
-          ? "assets/images/logo.png"
-          : "assets/images/logo-dark.png",
-      width: Constants.getWidth(context) * 0.18,
+    return Center(
+      child: Image.asset(
+        context.read<AppThemeCubit>().isDarkMode(context)
+            ? "assets/images/logo.png"
+            : "assets/images/logo-dark.png",
+        width: Constants.getWidth(context) * 0.18,
+      ),
     );
   }
 }

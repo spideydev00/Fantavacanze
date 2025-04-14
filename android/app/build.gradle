@@ -19,13 +19,16 @@ android {
         jvmTarget = JavaVersion.VERSION_1_8
     }
 
+    // Add lint options to handle warnings
+    lintOptions {
+        abortOnError false
+        checkReleaseBuilds false
+    }
+
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId = "com.spideyDev.fantavacanze"
-        // You can update the following values to match your application needs.
-        // For more information, see: https://flutter.dev/to/review-gradle-config.
-        minSdk = flutter.minSdkVersion
-        targetSdk = flutter.targetSdkVersion
+        minSdkVersion = 23
+        targetSdkVersion = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
     }
@@ -37,6 +40,13 @@ android {
             signingConfig = signingConfigs.debug
         }
     }
+}
+
+// Optional: Add this task to get more details about deprecation warnings
+tasks.withType(JavaCompile) {
+    options.compilerArgs << "-Xlint:deprecation" << "-Xlint:unchecked"
+    // Alternatively, to suppress these warnings:
+    // options.compilerArgs << "-Xlint:none"
 }
 
 flutter {
