@@ -64,12 +64,14 @@ class TeamTypeStep extends StatelessWidget {
       child: Theme(
         data: Theme.of(context).copyWith(
           radioTheme: RadioThemeData(
-            fillColor: WidgetStateProperty.resolveWith<Color>((states) {
-              if (states.contains(WidgetState.selected)) {
-                return context.primaryColor;
-              }
-              return Colors.grey;
-            }),
+            fillColor: WidgetStateProperty.resolveWith<Color>(
+              (states) {
+                if (states.contains(WidgetState.selected)) {
+                  return context.primaryColor;
+                }
+                return ColorPalette.darkGrey;
+              },
+            ),
           ),
         ),
         child: Padding(
@@ -88,7 +90,9 @@ class TeamTypeStep extends StatelessWidget {
                   },
                 ),
               ),
-              const Divider(),
+              const Divider(
+                thickness: 0.2,
+              ),
               ListTile(
                 title: const Text('Lega a Squadre'),
                 subtitle: const Text('I partecipanti competono in squadre'),

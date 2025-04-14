@@ -1,3 +1,4 @@
+import 'package:fantavacanze_official/core/cubits/app_league/app_league_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/app_navigation/app_navigation_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/app_theme/app_theme_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit.dart';
@@ -34,6 +35,9 @@ void main() async {
             create: (_) => serviceLocator<AppUserCubit>(),
           ),
           BlocProvider(
+            create: (_) => serviceLocator<AppLeagueCubit>(),
+          ),
+          BlocProvider(
             create: (_) => serviceLocator<AppNavigationCubit>(),
           ),
           BlocProvider(
@@ -61,11 +65,14 @@ class _MyAppState extends State<MyApp> {
     //check if session exists and update state
     final futureUser = context.read<AppUserCubit>().getCurrentUser();
 
+    //check if user participates in a league
+    final futureLeague = context.read<AppLeagueCubit>().getUserLeagues();
+
     //splash screen 3 seconds duration
     final delayedSplash = Future.delayed(Duration(seconds: 3));
 
     //remove splash screen when both conditions are met
-    Future.wait([futureUser, delayedSplash]).then(
+    Future.wait([futureUser, futureLeague, delayedSplash]).then(
       (_) => {FlutterNativeSplash.remove()},
     );
   }

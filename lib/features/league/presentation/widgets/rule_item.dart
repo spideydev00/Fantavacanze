@@ -1,3 +1,4 @@
+import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/extensions/context_extension.dart';
@@ -18,7 +19,7 @@ class RuleItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isBonus = rule['type'] == 'bonus';
-    final mainColor = isBonus ? Colors.green : Colors.red;
+    final mainColor = isBonus ? ColorPalette.success : ColorPalette.error;
 
     return Card(
       margin: const EdgeInsets.only(bottom: ThemeSizes.xs),
@@ -37,7 +38,9 @@ class RuleItem extends StatelessWidget {
             begin: Alignment.centerLeft,
             end: Alignment.centerRight,
             colors: [
-              mainColor.withValues(alpha: 0.05),
+              mainColor.withValues(alpha: 0.2),
+              mainColor.withValues(alpha: 0.15),
+              mainColor.withValues(alpha: 0.1),
               Colors.transparent,
             ],
           ),

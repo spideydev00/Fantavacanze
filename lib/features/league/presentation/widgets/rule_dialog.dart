@@ -80,7 +80,7 @@ class _RuleDialogState extends State<RuleDialog> {
               maxHeight: availableHeight,
             ),
             decoration: BoxDecoration(
-              color: context.secondaryBgColor,
+              color: context.bgColor,
               borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusLg),
               boxShadow: [
                 BoxShadow(
@@ -151,7 +151,8 @@ class _RuleDialogState extends State<RuleDialog> {
                               decoration: BoxDecoration(
                                 color: selectedType == RuleType.bonus
                                     ? bonusColor.withValues(alpha: 0.1)
-                                    : context.bgColor.withValues(alpha: 0.5),
+                                    : context.secondaryBgColor
+                                        .withValues(alpha: 0.5),
                                 borderRadius: BorderRadius.circular(
                                     ThemeSizes.borderRadiusLg),
                               ),
@@ -194,9 +195,11 @@ class _RuleDialogState extends State<RuleDialog> {
                               decoration: BoxDecoration(
                                 color: selectedType == RuleType.malus
                                     ? malusColor.withValues(alpha: 0.1)
-                                    : context.bgColor.withValues(alpha: 0.5),
+                                    : context.secondaryBgColor
+                                        .withValues(alpha: 0.5),
                                 borderRadius: BorderRadius.circular(
-                                    ThemeSizes.borderRadiusLg),
+                                  ThemeSizes.borderRadiusLg,
+                                ),
                               ),
                               child: Column(
                                 children: [
@@ -234,16 +237,10 @@ class _RuleDialogState extends State<RuleDialog> {
                     const SizedBox(height: ThemeSizes.sm),
                     Container(
                       decoration: BoxDecoration(
-                        color: context.bgColor,
-                        borderRadius:
-                            BorderRadius.circular(ThemeSizes.borderRadiusLg),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.05),
-                            blurRadius: 10,
-                            offset: const Offset(0, 5),
-                          ),
-                        ],
+                        color: context.secondaryBgColor,
+                        borderRadius: BorderRadius.circular(
+                          ThemeSizes.borderRadiusLg,
+                        ),
                       ),
                       child: TextField(
                         controller: nameController,
@@ -257,11 +254,12 @@ class _RuleDialogState extends State<RuleDialog> {
                           ),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(
-                                ThemeSizes.borderRadiusLg),
+                              ThemeSizes.borderRadiusLg,
+                            ),
                             borderSide: BorderSide.none,
                           ),
                           filled: true,
-                          fillColor: context.bgColor,
+                          fillColor: context.secondaryBgColor,
                         ),
                       ),
                     ),
@@ -277,16 +275,10 @@ class _RuleDialogState extends State<RuleDialog> {
                     const SizedBox(height: ThemeSizes.sm),
                     Container(
                       decoration: BoxDecoration(
-                        color: context.bgColor,
-                        borderRadius:
-                            BorderRadius.circular(ThemeSizes.borderRadiusLg),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.05),
-                            blurRadius: 10,
-                            offset: const Offset(0, 5),
-                          ),
-                        ],
+                        color: context.secondaryBgColor,
+                        borderRadius: BorderRadius.circular(
+                          ThemeSizes.borderRadiusLg,
+                        ),
                       ),
                       child: TextField(
                         controller: pointsController,
@@ -302,11 +294,12 @@ class _RuleDialogState extends State<RuleDialog> {
                           suffixText: 'pt',
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(
-                                ThemeSizes.borderRadiusLg),
+                              ThemeSizes.borderRadiusLg,
+                            ),
                             borderSide: BorderSide.none,
                           ),
                           filled: true,
-                          fillColor: context.bgColor,
+                          fillColor: context.secondaryBgColor,
                         ),
                       ),
                     ),
