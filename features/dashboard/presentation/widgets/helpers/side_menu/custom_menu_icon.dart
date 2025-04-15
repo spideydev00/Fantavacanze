@@ -8,11 +8,11 @@ class CustomMenuIcon extends RiveAsset {
     required super.path,
     required super.artboard,
     required super.stateMachineName,
-    super.triggerValue = "active",
+    required super.triggerValue, // Keep triggerValue from parent
     super.height = ThemeSizes.iconSm,
     super.width = ThemeSizes.iconSm,
     required super.onTap,
-    super.isActive = false,
+    super.isActive = false, // Define isActive parameter here
   });
 
   @override
@@ -26,9 +26,11 @@ class _CustomMenuIconState extends RiveAssetState<CustomMenuIcon> {
       padding: const EdgeInsets.only(left: ThemeSizes.lg + 6),
       child: GestureDetector(
         onTap: () {
+          // Directly call the onTap passed from the parent.
+          // The parent (DashboardScreen) handles the state change.
           widget.onTap.call();
         },
-        child: buildRiveAnimation(),
+        child: buildRiveAnimation(), // buildRiveAnimation uses widget.isActive
       ),
     );
   }

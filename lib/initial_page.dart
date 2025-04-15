@@ -12,9 +12,9 @@ class InitialPage extends StatelessWidget {
     return BlocBuilder<AppUserCubit, AppUserState>(
       builder: (context, state) {
         if (state is AppUserIsLoggedIn) {
-          return DashboardScreen();
+          return const DashboardScreen();
         }
-        return SocialLoginPage();
+        return const SocialLoginPage();
       },
     );
   }

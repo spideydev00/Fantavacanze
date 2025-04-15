@@ -26,20 +26,36 @@ abstract class RiveAsset extends StatefulWidget {
 
 abstract class RiveAssetState<T extends RiveAsset> extends State<T> {
   SMIBool? input;
-  List<StateMachineController> controllers = [];
+  StateMachineController? _controller;
 
-  void _findInput(StateMachineController controller) {
-    setState(() {
-      controllers.add(controller);
-      input = controller.findSMI(widget.triggerValue) as SMIBool?;
-    });
+  void _initializeArtboard(Artboard artboard) {
+    _controller = getRiveController(
+      artboard,
+      stateMachineName: widget.stateMachineName,
+    );
+    input = _controller?.findSMI(widget.triggerValue) as SMIBool?;
+    input?.value = widget.isActive;
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
+  void didUpdateWidget(covariant T oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.isActive != oldWidget.isActive) {
+      input?.value = widget.isActive;
+    }
   }
 
   @override
   void dispose() {
-    for (var controller in controllers) {
-      controller.dispose();
-    }
+    _controller?.dispose();
     super.dispose();
   }
 
@@ -50,13 +66,7 @@ abstract class RiveAssetState<T extends RiveAsset> extends State<T> {
       child: RiveAnimation.asset(
         widget.path,
         artboard: widget.artboard,
-        onInit: (artboard) {
-          final controller = getRiveController(
-            artboard,
-            stateMachineName: widget.stateMachineName,
-          );
-          _findInput(controller);
-        },
+        onInit: _initializeArtboard,
       ),
     );
   }

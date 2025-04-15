@@ -1,0 +1,54 @@
+league/
+├── data/
+│   ├── datasources/
+│   │   ├── league_local_data_source.dart
+│   │   └── league_remote_data_source.dart
+│   ├── models/
+│   │   ├── event_model.dart
+│   │   ├── individual_participant_model.dart
+│   │   ├── league_model.dart
+│   │   ├── memory_model.dart
+│   │   ├── participant_model.dart
+│   │   ├── rule_model.dart
+│   │   └── team_participant_model.dart
+│   └── repositories/
+│       └── league_repository_impl.dart
+├── domain/
+│   ├── entities/
+│   │   ├── event.dart
+│   │   ├── individual_participant.dart
+│   │   ├── league.dart
+│   │   ├── memory.dart
+│   │   ├── participant.dart
+│   │   ├── rule.dart
+│   │   └── team_participant.dart
+│   ├── repositories/
+│   │   └── league_repository.dart
+│   └── usecases/
+│       ├── add_event.dart
+│       ├── add_memory.dart
+│       ├── create_league.dart
+│       ├── exit_league.dart
+│       ├── get_league.dart
+│       ├── get_rules.dart
+│       ├── get_user_leagues.dart
+│       ├── joi_league.dart
+│       └── update_team_name.dart
+└── presentation/
+    ├── bloc/
+    │   ├── league_bloc.dart
+    │   ├── league_event.dart
+    │   └── league_state.dart
+    ├── pages/
+    │   ├── create_league_page.dart
+    │   ├── join_league_page.dart
+    │   ├── journal_page.dart
+    │   ├── leaderboard_page.dart
+    │   ├── league_created_page.dart
+    │   ├── memories_page.dart
+    │   ├── notes_page.dart
+    │   ├── rules_page.dart
+    │   ├── shop_page.dart
+    │   └── team_info_page.dart
+    └── widgets/
+        └── //widgets...

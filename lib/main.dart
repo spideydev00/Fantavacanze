@@ -4,6 +4,7 @@ import 'package:fantavacanze_official/core/cubits/app_theme/app_theme_cubit.dart
 import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit.dart';
 import 'package:fantavacanze_official/core/theme/theme.dart';
 import 'package:fantavacanze_official/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:fantavacanze_official/features/dashboard/presentation/bloc/dashboard_bloc.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc.dart';
 import 'package:fantavacanze_official/init_dependencies/init_dependencies.dart';
 import 'package:fantavacanze_official/initial_page.dart';
@@ -28,6 +29,9 @@ void main() async {
         providers: [
           BlocProvider(
             create: (_) => serviceLocator<AuthBloc>(),
+          ),
+          BlocProvider(
+            create: (_) => serviceLocator<DashboardBloc>(),
           ),
           BlocProvider(
             create: (_) => serviceLocator<LeagueBloc>(),
@@ -62,20 +66,46 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
+    _initializeApp();
+  }
 
-    //check if session exists and update state
-    final futureUser = context.read<AppUserCubit>().getCurrentUser();
-
-    //check if user participates in a league
-    final futureLeague = context.read<AppLeagueCubit>().getUserLeagues();
-
-    //splash screen 3 seconds duration
-    final delayedSplash = Future.delayed(Duration(seconds: 3));
-
-    //remove splash screen when both conditions are met
-    Future.wait([futureUser, futureLeague, delayedSplash]).then(
-      (_) => {FlutterNativeSplash.remove()},
+  Future<void> _initializeApp() async {
+    await Future.wait([
+      _initializeUserAndLeagues(),
+      // Attendi almeno 3 secondi per permettere di mostrare lo splash screen
+      Future.delayed(
+        const Duration(seconds: 3),
+      ),
+    ]).timeout(
+      const Duration(seconds: 10),
+      onTimeout: () {
+        debugPrint("Initialization timed out!");
+        return <void>[];
+      },
     );
+
+    debugPrint("User and leagues initialized successfully.");
+  }
+
+  Future<void> _initializeUserAndLeagues() async {
+    try {
+      // Get current user
+      await context.read<AppUserCubit>().getCurrentUser();
+
+      if (mounted) {
+        final userState = context.read<AppUserCubit>().state;
+
+        if (userState is AppUserIsLoggedIn) {
+          // Fetch user leagues
+          await context.read<AppLeagueCubit>().getUserLeagues();
+        }
+      }
+    } catch (e) {
+      debugPrint("Error in user/league initialization: $e");
+    } finally {
+      // Hide the splash screen
+      FlutterNativeSplash.remove();
+    }
   }
 
   @override

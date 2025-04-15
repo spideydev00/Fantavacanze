@@ -5,6 +5,7 @@ import 'package:fantavacanze_official/features/league/data/models/league_model.d
 import 'package:fantavacanze_official/features/league/data/models/memory_model.dart';
 import 'package:fantavacanze_official/features/league/data/models/participant_model.dart';
 import 'package:fantavacanze_official/features/league/data/models/rule_model.dart';
+import 'package:fantavacanze_official/features/league/domain/entities/rule.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:uuid/uuid.dart';
 
@@ -18,7 +19,9 @@ abstract class LeagueRemoteDataSource {
   });
 
   Future<LeagueModel> getLeague(String leagueId);
+
   Future<List<LeagueModel>> getUserLeagues();
+
   Future<LeagueModel> updateLeague({
     required String leagueId,
     String? name,
@@ -49,7 +52,9 @@ abstract class LeagueRemoteDataSource {
     required String leagueId,
     required String name,
     required int points,
-    required String userId,
+    required String creatorId,
+    required String targetUserId,
+    required RuleType eventType,
     String? description,
   });
 
@@ -91,18 +96,22 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
 
   String? _getCurrentUserId() {
     final state = appUserCubit.state;
+
     if (state is AppUserIsLoggedIn) {
       return state.user.id;
+    } else {
+      return null;
     }
-    return null;
   }
 
   String? _getCurrentUserName() {
     final state = appUserCubit.state;
+
     if (state is AppUserIsLoggedIn) {
       return state.user.name;
+    } else {
+      return null;
     }
-    return null;
   }
 
   @override
@@ -219,7 +228,7 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
       }
 
       // Use the RPC function to get all leagues where user is admin or participant
-      final leaguesResponse = await supabaseClient.rpc(
+      List<Map<String, dynamic>> leaguesResponse = await supabaseClient.rpc(
         'get_user_leagues',
         params: {'p_user_id': currentUserId},
       );
@@ -236,10 +245,9 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
         };
 
         leagues.add(
-          LeagueModel.fromJson(jsonData as Map<String, dynamic>),
+          LeagueModel.fromJson(jsonData),
         );
       }
-
       return leagues;
     } on PostgrestException catch (e) {
       throw ServerException('Errore: ${e.message}');
@@ -391,7 +399,9 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
     required String leagueId,
     required String name,
     required int points,
-    required String userId,
+    required String creatorId,
+    required String targetUserId,
+    required RuleType eventType,
     String? description,
   }) async {
     try {
@@ -411,84 +421,109 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
 
       final league = LeagueModel.fromJson(jsonData);
 
-      // Check if user is admin or participant
-      final bool isAdmin = league.admins.contains(userId);
-      final bool isParticipant = league.participants.any((p) =>
-          (p is ParticipantModel &&
-              p.toJson()['type'] == 'individual' &&
-              p.toJson()['userId'] == userId) ||
-          (p is ParticipantModel &&
-              p.toJson()['type'] == 'team' &&
-              (p.toJson()['userIds'] as List<dynamic>).contains(userId)));
-
-      if (!isAdmin && !isParticipant) {
+      // Check if creator is admin
+      final bool isAdmin = league.admins.contains(creatorId);
+      if (!isAdmin) {
         throw ServerException(
-            'L\'utente non è autorizzato ad aggiungere eventi a questa lega');
+            'Solo gli amministratori possono aggiungere eventi alla lega');
       }
 
+      // Find the target participant
+      bool targetExists = false;
+      ParticipantModel? targetParticipant;
+
+      for (final p in league.participants) {
+        if (p is! ParticipantModel) continue;
+
+        final participant = p;
+        final json = participant.toJson();
+
+        if (league.isTeamBased) {
+          // For team-based leagues, targetUserId is the team name
+          if (json['type'] == 'team' && json['name'] == targetUserId) {
+            targetExists = true;
+            targetParticipant = participant;
+            break;
+          }
+        } else {
+          // For individual leagues, targetUserId is the user ID
+          if (json['type'] == 'individual' && json['userId'] == targetUserId) {
+            targetExists = true;
+            targetParticipant = participant;
+            break;
+          }
+        }
+      }
+
+      if (!targetExists || targetParticipant == null) {
+        throw ServerException('Destinatario non trovato nella lega');
+      }
+
+      // Create event
       final eventId = uuid.v4();
       final eventData = {
         'id': eventId,
         'name': name,
         'points': points,
-        'userId': userId,
+        'creatorId': creatorId,
+        'targetUserId': targetUserId,
         'createdAt': DateTime.now().toIso8601String(),
+        'type': eventType.toString().split('.').last, // Convert enum to string
         'description': description,
       };
 
-      // Check if we have 10 events already, and remove the oldest one if so
-      List<dynamic> updatedEvents = [
+      // Add new event to events list
+      List<Map<String, dynamic>> updatedEvents = [
         ...league.events.map((e) => (e as EventModel).toJson()),
         eventData,
       ];
 
+      // If more than 10 events, remove oldest
       if (updatedEvents.length > 10) {
-        // Sort by created date (oldest first)
         updatedEvents.sort((a, b) => DateTime.parse(a['createdAt'])
             .compareTo(DateTime.parse(b['createdAt'])));
-
-        // Remove the oldest event
         updatedEvents.removeAt(0);
       }
 
-      // Also update the participant's score
+      // Update participant score
+      final participantJson = targetParticipant.toJson();
+      final updatedScore = targetParticipant.points + points;
+
+      // Update bonus or malus totals
+      int updatedBonusTotal = participantJson['bonusTotal'] ?? 0;
+      int updatedMalusTotal = participantJson['malusTotal'] ?? 0;
+
+      if (points > 0) {
+        updatedBonusTotal += points;
+      } else if (points < 0) {
+        updatedMalusTotal += points.abs();
+      }
+
+      // Create updated participant data
+      final updatedParticipantData = {
+        ...participantJson,
+        'score': updatedScore,
+        'bonusTotal': updatedBonusTotal,
+        'malusTotal': updatedMalusTotal,
+      };
+
+      // Replace the participant in the list
       final updatedParticipants = league.participants.map((p) {
-        final participantJson = (p as ParticipantModel).toJson();
+        if (p is ParticipantModel) {
+          final pJson = p.toJson();
 
-        if ((participantJson['type'] == 'individual' &&
-                participantJson['userId'] == userId) ||
-            (participantJson['type'] == 'team' &&
-                (participantJson['userIds'] as List<dynamic>)
-                    .contains(userId))) {
-          final updatedScore = p.points + points;
-
-          // Update bonus or malus totals
-          int updatedBonusTotal = participantJson['bonusTotal'] ?? 0;
-          int updatedMalusTotal = participantJson['malusTotal'] ?? 0;
-
-          if (points > 0) {
-            updatedBonusTotal += points;
-          } else if (points < 0) {
-            updatedMalusTotal += points.abs();
-          }
-
-          if (participantJson['type'] == 'individual') {
-            return {
-              ...participantJson,
-              'score': updatedScore,
-              'bonusTotal': updatedBonusTotal,
-              'malusTotal': updatedMalusTotal,
-            };
+          if (league.isTeamBased) {
+            if (pJson['type'] == 'team' && pJson['name'] == targetUserId) {
+              return updatedParticipantData;
+            }
           } else {
-            return {
-              ...participantJson,
-              'score': updatedScore,
-              'bonusTotal': updatedBonusTotal,
-              'malusTotal': updatedMalusTotal,
-            };
+            if (pJson['type'] == 'individual' &&
+                pJson['userId'] == targetUserId) {
+              return updatedParticipantData;
+            }
           }
         }
-        return participantJson;
+        return p is ParticipantModel ? p.toJson() : p;
       }).toList();
 
       // Update in Supabase
@@ -840,10 +875,10 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
         final participantJson = (p as ParticipantModel).toJson();
 
         if ((participantJson['type'] == 'individual' &&
-                participantJson['userId'] == eventToRemove.userId) ||
+                participantJson['userId'] == eventToRemove.targetUserId) ||
             (participantJson['type'] == 'team' &&
                 (participantJson['userIds'] as List<dynamic>)
-                    .contains(eventToRemove.userId))) {
+                    .contains(eventToRemove.targetUserId))) {
           final updatedScore = p.points - eventToRemove.points;
 
           // Update bonus or malus totals

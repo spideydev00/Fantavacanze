@@ -50,7 +50,9 @@ abstract class LeagueRepository {
     required String leagueId,
     required String name,
     required int points,
-    required String userId,
+    required String creatorId,
+    required String targetUserId,
+    required RuleType eventType,
     String? description,
   });
 

@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 
 class ModernIconButton extends StatelessWidget {
   final IconData icon;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
   final double iconSize;
   final Color? iconColor;
   final Color? backgroundColor;
@@ -12,7 +12,7 @@ class ModernIconButton extends StatelessWidget {
   const ModernIconButton({
     super.key,
     required this.icon,
-    required this.onTap,
+    this.onTap,
     this.iconSize = 30.0,
     this.iconColor,
     this.backgroundColor,
@@ -25,24 +25,27 @@ class ModernIconButton extends StatelessWidget {
     final Color effectiveBackgroundColor =
         backgroundColor ?? effectiveIconColor.withAlpha(20);
 
-    return Container(
-      alignment: Alignment.center,
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(50),
-          child: Ink(
-            decoration: BoxDecoration(
-              color: effectiveBackgroundColor,
-              shape: BoxShape.circle,
-            ),
-            child: Padding(
-              padding: padding,
-              child: Icon(
-                icon,
-                color: effectiveIconColor,
-                size: iconSize,
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        alignment: Alignment.center,
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: onTap,
+            borderRadius: BorderRadius.circular(50),
+            child: Ink(
+              decoration: BoxDecoration(
+                color: effectiveBackgroundColor,
+                shape: BoxShape.circle,
+              ),
+              child: Padding(
+                padding: padding,
+                child: Icon(
+                  icon,
+                  color: effectiveIconColor,
+                  size: iconSize,
+                ),
               ),
             ),
           ),
