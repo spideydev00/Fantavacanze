@@ -3,70 +3,79 @@ part of 'init_dependencies.dart';
 final serviceLocator = GetIt.instance;
 
 Future<void> initDependencies() async {
-  final supabase = await Supabase.initialize(
-    anonKey: AppSecrets.supabaseKey,
-    url: AppSecrets.supabaseUrl,
-  );
-
-  serviceLocator.registerLazySingleton(() => supabase.client);
-
-  _initAuth();
-  _initLeague();
-  _initDashboard();
-
-  // Initialize Hive
-  final dir = await getApplicationDocumentsDirectory();
-  Hive.defaultDirectory = dir.path;
-
-  // Initialize SharedPreferences
-  final sharedPreferences = await SharedPreferences.getInstance();
-  serviceLocator.registerSingleton<SharedPreferences>(sharedPreferences);
-
-  // Register UUID generator
-  serviceLocator.registerLazySingleton(() => const Uuid());
-
-  //hive boxes
-  serviceLocator
-    ..registerLazySingleton<Box<Map<dynamic, dynamic>>>(
-      () => Hive.box<Map<dynamic, dynamic>>(),
-      instanceName: 'leagues_box',
-    )
-    ..registerLazySingleton<Box<Map<dynamic, dynamic>>>(
-      () => Hive.box<Map<dynamic, dynamic>>(),
-      instanceName: 'rules_box',
+  try {
+    final supabase = await Supabase.initialize(
+      anonKey: AppSecrets.supabaseKey,
+      url: AppSecrets.supabaseUrl,
     );
 
-  serviceLocator.registerFactory(
-    () => InternetConnection(),
-  );
+    serviceLocator.registerLazySingleton(() => supabase.client);
 
-  // core cubits
-  serviceLocator
-    //1. user cubit
-    ..registerLazySingleton(
-        () => AppUserCubit(getCurrentUser: serviceLocator()))
-    //2. navigation cubit
-    ..registerLazySingleton(
-      () => AppNavigationCubit(),
-    )
-    //3. theme cubit
-    ..registerLazySingleton<AppThemeCubit>(
-      () => AppThemeCubit(
-        prefs: serviceLocator<SharedPreferences>(),
-      ),
-    )
-    //4. league cubit
-    ..registerLazySingleton(
-      () => AppLeagueCubit(
-        getUserLeagues: serviceLocator(),
-      ),
-    )
-    //5. connection checker
-    ..registerFactory<ConnectionChecker>(
-      () => ConnectionCheckerImpl(
-        serviceLocator(),
-      ),
+    _initAuth();
+    _initLeague();
+    _initDashboard();
+
+    // Initialize Hive
+    final dir = await getApplicationDocumentsDirectory();
+    Hive.defaultDirectory = dir.path;
+
+    // Initialize SharedPreferences
+    final sharedPreferences = await SharedPreferences.getInstance();
+    serviceLocator.registerSingleton<SharedPreferences>(sharedPreferences);
+
+    // Register UUID generator
+    serviceLocator.registerLazySingleton(() => const Uuid());
+
+    //hive boxes
+    serviceLocator
+      ..registerLazySingleton<Box<Map<dynamic, dynamic>>>(
+        () => Hive.box<Map<dynamic, dynamic>>(),
+        instanceName: 'leagues_box',
+      )
+      ..registerLazySingleton<Box<Map<dynamic, dynamic>>>(
+        () => Hive.box<Map<dynamic, dynamic>>(),
+        instanceName: 'rules_box',
+      );
+
+    serviceLocator.registerFactory(
+      () => InternetConnection(),
     );
+
+    // core cubits
+    serviceLocator
+      //1. user cubit
+      ..registerLazySingleton(
+          () => AppUserCubit(getCurrentUser: serviceLocator()))
+      //2. navigation cubit
+      ..registerLazySingleton(
+        () => AppNavigationCubit(),
+      )
+      //3. theme cubit
+      ..registerLazySingleton<AppThemeCubit>(
+        () => AppThemeCubit(
+          prefs: serviceLocator<SharedPreferences>(),
+        ),
+      )
+      //4. league cubit
+      ..registerLazySingleton(
+        () => AppLeagueCubit(
+          getUserLeagues: serviceLocator(),
+          prefs: serviceLocator<SharedPreferences>(),
+          appUserCubit: serviceLocator(),
+        ),
+      )
+      //5. connection checker
+      ..registerFactory<ConnectionChecker>(
+        () => ConnectionCheckerImpl(
+          serviceLocator(),
+        ),
+      );
+    debugPrint("Dependencies initialized successfully with get_it");
+  } catch (e) {
+    debugPrint("Error initializing dependencies: $e");
+    // Rethrow to be caught by main()
+    rethrow;
+  }
 }
 
 void _initAuth() {
@@ -147,6 +156,7 @@ void _initLeague() {
     ..registerFactory(() => UpdateTeamName(leagueRepository: serviceLocator()))
     ..registerFactory(() => AddEvent(leagueRepository: serviceLocator()))
     ..registerFactory(() => AddMemory(leagueRepository: serviceLocator()))
+    ..registerFactory(() => RemoveMemory(leagueRepository: serviceLocator()))
     ..registerFactory(() => GetRules(leagueRepository: serviceLocator()))
 
     // bloc
@@ -160,8 +170,10 @@ void _initLeague() {
         updateTeamName: serviceLocator(),
         addEvent: serviceLocator(),
         addMemory: serviceLocator(),
+        removeMemory: serviceLocator(),
         getRules: serviceLocator(),
-        supabaseClient: serviceLocator(),
+        appUserCubit: serviceLocator(),
+        appLeagueCubit: serviceLocator(),
       ),
     );
 }

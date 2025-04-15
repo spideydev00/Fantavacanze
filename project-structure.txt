@@ -1,64 +1,173 @@
 lib/
-├── core/                                 // File e componenti globali
-│   ├── cubits/app_user
-│   │   └── app_user_cubit_cubit.dart      // Gestione stato globale dell’utente
-│   │   └── app_user_cubit_state.dart      
+├── initial_page.dart
+├── main.dart
+├── test.dart
+├── core/
 │   ├── constants/
-│   │   └── constants.dart                 // Costanti dell’app
+│   │   ├── constants.dart
+│   │   ├── game_mode.dart
+│   │   └── navigation_items.dart
+│   ├── cubits/
+│   │   ├── app_league/
+│   │   │   ├── app_league_cubit.dart
+│   │   │   └── app_league_state.dart
+│   │   ├── app_navigation/
+│   │   │   ├── app_navigation_cubit.dart
+│   │   │   └── app_navigation_state.dart
+│   │   ├── app_selected_league/
+│   │   │   ├── app_selected_league_cubit.dart
+│   │   │   └── app_selected_league_state.dart
+│   │   ├── app_theme/
+│   │   │   ├── app_theme_cubit.dart
+│   │   │   └── app_theme_state.dart
+│   │   └── app_user/
+│   │       ├── app_user_cubit.dart
+│   │       └── app_user_state.dart
 │   ├── errors/
-│   │   ├── failure.dart                   // Gestione degli errori
-│   │   └── server_exception.dart
+│   │   ├── exceptions.dart
+│   │   └── failure.dart
+│   ├── extensions/
+│   │   ├── colors_extension.dart
+│   │   └── context_extension.dart
+│   ├── navigation/
+│   │   ├── navigation_asset.dart
+│   │   └── navigation_item.dart
+│   ├── network/
+│   │   └── connection_checker.dart
 │   ├── pages/
-│   │   └── empty_branded_page.dart        // Pagina di base per layout branded
+│   │   └── empty_branded_page.dart
 │   ├── secrets/
-│   │   └── app_secrets.dart               // Credenziali e segreti
+│   │   └── app_secrets.dart
 │   ├── theme/
-│   │   ├── colors.dart                    // Palette dei colori
-│   │   └── sizes.dart                     // Dimensioni e spaziature
-│   │   └── theme.dart                     // Theming
-│   └── use-case/
-│       └── usecase.dart                   // Base per i casi d’uso
-│   └── utils/
-│       └── format_duration.dart           // Formatta tempo
-│       └── show_snackbar.dart             // Metodo per mostrare snackbar
-│
-├── features/                             // Moduli funzionali
-│   └── auth/                             // Modulo di autenticazione
-│       ├── data/                         // Implementazioni concrete
+│   │   ├── colors.dart
+│   │   ├── sizes.dart
+│   │   └── theme.dart
+│   ├── use-case/
+│   │   └── usecase.dart
+│   ├── utils/
+│   │   └── //list of utils...
+│   └── widgets/
+│       └── //app-wide widgets...
+├── features/
+│   ├── auth/
+│   │   ├── data/
+│   │   │   ├── datasources/
+│   │   │   │   ├── auth_local_data_source.dart
+│   │   │   │   └── auth_remote_data_source.dart
+│   │   │   ├── models/
+│   │   │   │   └── user_model.dart
+│   │   │   └── repositories/
+│   │   │       └── auth_repository_impl.dart
+│   │   ├── domain/
+│   │   │   ├── entities/
+│   │   │   │   └── user.dart
+│   │   │   ├── repositories/
+│   │   │   │   └── auth_repository.dart
+│   │   │   └── usecases/
+│   │   │       ├── apple_sign_in.dart
+│   │   │       ├── email_sign_in.dart
+│   │   │       ├── email_sign_up.dart
+│   │   │       ├── get_current_user.dart
+│   │   │       └── google_sign_in.dart
+│   │   └── presentation/
+│   │       ├── bloc/
+│   │       │   ├── auth_bloc.dart
+│   │       │   ├── auth_event.dart
+│   │       │   └── auth_state.dart
+│   │       ├── pages/
+│   │       │   ├── onboarding.dart
+│   │       │   └── signup.dart
+│   │       │   ├── social_login.dart
+│   │       │   └── standard_login.dart
+│   │       └── widgets/
+│   │           └── //widgets...
+│   ├── dashboard/
+│   │   ├── data/
+│   │   │   ├── datasources/
+│   │   │   │   └── dashboard_remote_data_source.dart
+│   │   │   ├── models/
+│   │   │   │   └── dashboard_data_model.dart
+│   │   │   └── repositories/
+│   │   │       └── dashboard_repository_impl.dart
+│   │   ├── domain/
+│   │   │   ├── entities/
+│   │   │   │   └── dashboard_data.dart
+│   │   │   ├── repositories/
+│   │   │   │   └── dashboard_repository.dart
+│   │   │   └── usecases/
+│   │   │       └── get_dashboard_data.dart
+│   │   └── presentation/
+│   │       ├── bloc/
+│   │       │   ├── dashboard_bloc.dart
+│   │       │   ├── dashboard_event.dart
+│   │       │   └── dashboard_state.dart
+│   │       ├── pages/
+│   │       │   ├── dashboard.dart
+│   │       │   ├── home.dart
+│   │       │   ├── settings.dart
+│   │       │   └──  subpages/
+│   │       │        ├── articles_page.dart
+│   │       │        ├── become_premium.dart
+│   │       │        ├── drink_games.dart
+│   │       │        └── quick_challenge.dart
+│   │       └── widgets/
+│   │           └── //widgets...
+│   └── league/
+│       ├── data/
+│       │   ├── datasources/
+│       │   │   ├── league_local_data_source.dart
+│       │   │   └── league_remote_data_source.dart
 │       │   ├── models/
-│       │   │   └── user_model.dart        // Modello dati utente
-│       │   ├── remote_data_source/
-│       │   │   └── auth_remote_data_source.dart
-│       │   └── repository/
-│       │       └── auth_repository_impl.dart
-│       │
-│       ├── domain/                       // Logica di business e astrazioni
+│       │   │   ├── event_model.dart
+│       │   │   ├── individual_participant_model.dart
+│       │   │   ├── league_model.dart
+│       │   │   ├── memory_model.dart
+│       │   │   ├── participant_model.dart
+│       │   │   ├── rule_model.dart
+│       │   │   └── team_participant_model.dart
+│       │   └── repositories/
+│       │       └── league_repository_impl.dart
+│       ├── domain/
 │       │   ├── entities/
-│       │   │   └── user.dart              // Entità utente
-│       │   ├── repository/
-│       │   │   └── auth_repository.dart   // Interfaccia repository
-│       │   └── use-cases/
-│       │       ├── google_sign_in.dart    // Casi d’uso per Google sign in
-│       │       └── apple_sign_in.dart     // Casi d’uso per Apple sign in
-│       │
-│       └── presentation/                 // Interfaccia utente e gestione stati
+│       │   │   ├── event.dart
+│       │   │   ├── individual_participant.dart
+│       │   │   ├── league.dart
+│       │   │   ├── memory.dart
+│       │   │   ├── participant.dart
+│       │   │   ├── rule.dart
+│       │   │   └── team_participant.dart
+│       │   ├── repositories/
+│       │   │   └── league_repository.dart
+│       │   └── usecases/
+│       │       ├── add_event.dart
+│       │       ├── add_memory.dart
+│       │       ├── create_league.dart
+│       │       ├── exit_league.dart
+│       │       ├── get_league.dart
+│       │       ├── get_rules.dart
+│       │       ├── get_user_leagues.dart
+│       │       ├── joi_league.dart
+│       │       └── update_team_name.dart
+│       └── presentation/
 │           ├── bloc/
-│           │   └── auth_bloc.dart         // Bloc per l’autenticazione
-│           │   └── auth_event.dart        // Eventi Bloc 
-│           │   └── auth_state.dart        // Stati Bloc
+│           │   ├── league_bloc.dart
+│           │   ├── league_event.dart
+│           │   └── league_state.dart
 │           ├── pages/
-│           │   ├── signup.dart            // Pagina di registrazione
-│           │   ├── social_login.dart      // Pagina login social
-│           │   ├── standard_login.dart    // Pagina login standard
-│           │   └── onboarding.dart        // Pagina di onboarding
+│           │   ├── create_league_page.dart
+│           │   ├── join_league_page.dart
+│           │   ├── journal_page.dart
+│           │   ├── leaderboard_page.dart
+│           │   ├── league_created_page.dart
+│           │   ├── memories_page.dart
+│           │   ├── notes_page.dart
+│           │   ├── rules_page.dart
+│           │   ├── shop_page.dart
+│           │   └── team_info_page.dart
 │           └── widgets/
-│               ├── auth_field.dart                  // Campo di input per auth
-│               ├── cloudflare_turnstile_widget.dart // Widget per turnstile
-│               ├── promo_text.dart                  // Testi promozionali
-│               ├── rich_text.dart                   // Testo formattato
-│               └── on_boarding_page_content.dart    // Contenuti per l’onboarding
-│               └── social_button.dart               // Pulsante con icona social dinamica e check stato
-│
-├── home.dart                              // Home page principale
-├── init_dependencies.dart                 // Inizializzazione delle dipendenze
-└── main.dart                              // Entry point dell’app
+│               └── //widgets...
+├── init_dependencies/
+│    ├── init_dependencies.dart
+│    └── init_dependencies.main.dart
+├── initial_page.dart
+└── main.dart

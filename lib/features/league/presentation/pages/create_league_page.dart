@@ -253,6 +253,9 @@ class _CreateLeaguePageState extends State<CreateLeaguePage> {
       appBar: AppBar(
         title: const Text('Crea Lega'),
         elevation: 0,
+        leading: BackButton(
+          onPressed: Navigator.of(context).pop,
+        ),
       ),
       body: BlocListener<LeagueBloc, LeagueState>(
         listener: (context, state) {

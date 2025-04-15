@@ -1,4 +1,3 @@
-import 'package:fantavacanze_official/features/auth/domain/entities/user.dart';
 import 'package:fantavacanze_official/features/dashboard/domain/entities/dashboard_data.dart';
 import 'package:fantavacanze_official/features/league/data/models/league_model.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/league.dart';
@@ -6,11 +5,13 @@ import 'package:fantavacanze_official/features/league/domain/entities/league.dar
 class DashboardDataModel extends DashboardData {
   const DashboardDataModel({
     super.leagues,
+    super.selectedLeague,
   });
 
   factory DashboardDataModel.fromEntity(DashboardData data) {
     return DashboardDataModel(
       leagues: data.leagues,
+      selectedLeague: data.selectedLeague,
     );
   }
 
@@ -20,15 +21,19 @@ class DashboardDataModel extends DashboardData {
           ? List<LeagueModel>.from(
               json['leagues'].map((league) => LeagueModel.fromJson(league)))
           : null,
+      selectedLeague: json['selectedLeague'] != null
+          ? LeagueModel.fromJson(json['selectedLeague'])
+          : null,
     );
   }
 
   DashboardDataModel copyWith({
-    User? user,
     List<League>? leagues,
+    League? selectedLeague,
   }) {
     return DashboardDataModel(
       leagues: leagues ?? this.leagues,
+      selectedLeague: selectedLeague ?? this.selectedLeague,
     );
   }
 }

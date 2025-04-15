@@ -1,10 +1,9 @@
-// rankings_page.dart
 import 'package:flutter/material.dart';
 
-class DrinkGamesPreview extends StatelessWidget {
+class DrinkGames extends StatelessWidget {
   static get route =>
-      MaterialPageRoute(builder: (context) => const DrinkGamesPreview());
-  const DrinkGamesPreview({super.key});
+      MaterialPageRoute(builder: (context) => const DrinkGames());
+  const DrinkGames({super.key});
 
   @override
   Widget build(BuildContext context) {

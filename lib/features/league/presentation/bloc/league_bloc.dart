@@ -1,4 +1,8 @@
+import 'package:fantavacanze_official/core/cubits/app_league/app_league_cubit.dart';
+import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit.dart';
+import 'package:fantavacanze_official/core/errors/failure.dart';
 import 'package:fantavacanze_official/core/use-case/usecase.dart';
+import 'package:fantavacanze_official/features/league/domain/entities/league.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/add_event.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/add_memory.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/create_league.dart';
@@ -7,35 +11,40 @@ import 'package:fantavacanze_official/features/league/domain/use_cases/get_leagu
 import 'package:fantavacanze_official/features/league/domain/use_cases/get_rules.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/get_user_leagues.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/join_league.dart';
+import 'package:fantavacanze_official/features/league/domain/use_cases/remove_memory.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/update_team_name.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_event.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:fpdart/fpdart.dart';
 
 class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
   final CreateLeague createLeague;
   final GetLeague getLeague;
   final GetUserLeagues getUserLeagues;
-  final GetRules getRules;
   final JoinLeague joinLeague;
   final ExitLeague exitLeague;
   final UpdateTeamName updateTeamName;
   final AddEvent addEvent;
   final AddMemory addMemory;
-  final SupabaseClient supabaseClient;
+  final RemoveMemory removeMemory;
+  final GetRules getRules;
+  final AppUserCubit appUserCubit;
+  final AppLeagueCubit appLeagueCubit;
 
   LeagueBloc({
     required this.createLeague,
     required this.getLeague,
-    required this.getRules,
+    required this.getUserLeagues,
     required this.joinLeague,
     required this.exitLeague,
     required this.updateTeamName,
     required this.addEvent,
     required this.addMemory,
-    required this.supabaseClient,
-    required this.getUserLeagues,
+    required this.removeMemory,
+    required this.getRules,
+    required this.appUserCubit,
+    required this.appLeagueCubit,
   }) : super(LeagueInitial()) {
     on<CreateLeagueEvent>(_onCreateLeague);
     on<GetLeagueEvent>(_onGetLeague);
@@ -55,10 +64,11 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
     try {
       emit(LeagueLoading());
 
-      final currentUser = supabaseClient.auth.currentUser;
-      if (currentUser == null) {
-        emit(const LeagueError(message: 'User not authenticated'));
-        return;
+      late String userId;
+      final state = appUserCubit.state;
+
+      if (state is AppUserIsLoggedIn) {
+        userId = state.user.id;
       }
 
       // Create rules from provided data
@@ -76,7 +86,7 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
           name: event.name,
           description: event.description,
           isTeamBased: event.isTeamBased,
-          admins: [currentUser.id],
+          admins: [userId],
           rules: rules,
         ),
       );
@@ -123,11 +133,18 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
 
       result.fold(
         (failure) => emit(LeagueError(message: failure.message)),
-        (leagues) => emit(UserLeaguesLoaded(leagues: leagues)),
+        (leagues) => _emitLeagueSuccess(leagues, emit),
       );
     } catch (e) {
       emit(LeagueError(message: e.toString()));
     }
+  }
+
+  // E M I T    L E A G U E    S U C C E S S
+  void _emitLeagueSuccess(List<League> leagues, Emitter<LeagueState> emit) {
+    appLeagueCubit.loadSelectedLeague(leagues);
+
+    emit(UserLeaguesLoaded(leagues: leagues));
   }
 
   Future<void> _onGetRules(
@@ -161,16 +178,17 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
     try {
       emit(LeagueLoading());
 
-      final currentUser = supabaseClient.auth.currentUser;
-      if (currentUser == null) {
-        emit(const LeagueError(message: 'User not authenticated'));
-        return;
+      late String userId;
+      final state = appUserCubit.state;
+
+      if (state is AppUserIsLoggedIn) {
+        userId = state.user.id;
       }
 
       final result = await joinLeague(
         JoinLeagueParams(
           inviteCode: event.inviteCode,
-          userId: currentUser.id,
+          userId: userId,
           teamName: event.teamName,
           teamMembers: event.teamMembers,
           specificLeagueId: event.specificLeagueId,
@@ -203,16 +221,17 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
     try {
       emit(LeagueLoading());
 
-      final currentUser = supabaseClient.auth.currentUser;
-      if (currentUser == null) {
-        emit(const LeagueError(message: 'User not authenticated'));
-        return;
+      late String userId;
+      final state = appUserCubit.state;
+
+      if (state is AppUserIsLoggedIn) {
+        userId = state.user.id;
       }
 
       final result = await exitLeague(
         ExitLeagueParams(
           leagueId: event.leagueId,
-          userId: currentUser.id,
+          userId: userId,
         ),
       );
 
@@ -232,16 +251,17 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
     try {
       emit(LeagueLoading());
 
-      final currentUser = supabaseClient.auth.currentUser;
-      if (currentUser == null) {
-        emit(const LeagueError(message: 'User not authenticated'));
-        return;
+      late String userId;
+      final state = appUserCubit.state;
+
+      if (state is AppUserIsLoggedIn) {
+        userId = state.user.id;
       }
 
       final result = await updateTeamName(
         UpdateTeamNameParams(
           leagueId: event.leagueId,
-          userId: currentUser.id,
+          userId: userId,
           newName: event.newName,
         ),
       );
@@ -262,23 +282,21 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
     try {
       emit(LeagueLoading());
 
-      final currentUser = supabaseClient.auth.currentUser;
-      if (currentUser == null) {
-        emit(const LeagueError(message: 'User not authenticated'));
-        return;
-      }
-
-      final result = await addEvent(AddEventParams(
-        leagueId: event.leagueId,
-        name: event.name,
-        points: event.points,
-        userId: currentUser.id,
-        description: event.description,
-      ));
+      final result = await addEvent(
+        AddEventParams(
+          leagueId: event.leagueId,
+          name: event.name,
+          points: event.points,
+          creatorId: event.creatorId,
+          targetUserId: event.targetUserId,
+          eventType: event.eventType,
+          description: event.description,
+        ),
+      );
 
       result.fold(
         (failure) => emit(LeagueError(message: failure.message)),
-        (league) => emit(EventAdded(league: league)),
+        (league) => emit(LeagueLoaded(league: league)),
       );
     } catch (e) {
       emit(LeagueError(message: e.toString()));
@@ -292,17 +310,18 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
     try {
       emit(LeagueLoading());
 
-      final currentUser = supabaseClient.auth.currentUser;
-      if (currentUser == null) {
-        emit(const LeagueError(message: 'User not authenticated'));
-        return;
+      late String userId;
+      final state = appUserCubit.state;
+
+      if (state is AppUserIsLoggedIn) {
+        userId = state.user.id;
       }
 
       final result = await addMemory(AddMemoryParams(
         leagueId: event.leagueId,
         imageUrl: event.imageUrl,
         text: event.text,
-        userId: currentUser.id,
+        userId: userId,
         relatedEventId: event.relatedEventId,
       ));
 
@@ -313,5 +332,108 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
     } catch (e) {
       emit(LeagueError(message: e.toString()));
     }
+  }
+
+  Stream<LeagueState> mapEventToState(LeagueEvent event) async* {
+    if (event is AddMemoryEvent) {
+      yield* _mapAddMemoryEventToState(event);
+    } else if (event is RemoveMemoryEvent) {
+      yield* _mapRemoveMemoryEventToState(event);
+    } else if (event is UpdateTeamNameEvent) {
+      yield* _mapUpdateTeamNameEventToState(event);
+    } else if (event is ExitLeagueEvent) {
+      yield* _mapExitLeagueEventToState(event);
+    }
+  }
+
+  Stream<LeagueState> _mapAddMemoryEventToState(AddMemoryEvent event) async* {
+    yield LeagueLoading();
+
+    try {
+      final result = await addMemory(
+        AddMemoryParams(
+          leagueId: event.leagueId,
+          imageUrl: event.imageUrl,
+          text: event.text,
+          userId: event.userId,
+          relatedEventId: event.relatedEventId, // Pass relatedEventId
+        ),
+      );
+
+      yield* _handleLeagueResult(result);
+    } catch (e) {
+      yield LeagueError(message: e.toString());
+    }
+  }
+
+  Stream<LeagueState> _mapRemoveMemoryEventToState(
+      RemoveMemoryEvent event) async* {
+    yield LeagueLoading();
+
+    try {
+      final result = await removeMemory(
+        RemoveMemoryParams(
+          leagueId: event.leagueId,
+          memoryId: event.memoryId,
+        ),
+      );
+
+      yield* _handleLeagueResult(result);
+    } catch (e) {
+      yield LeagueError(message: e.toString());
+    }
+  }
+
+  Stream<LeagueState> _mapUpdateTeamNameEventToState(
+      UpdateTeamNameEvent event) async* {
+    yield LeagueLoading();
+
+    try {
+      final result = await updateTeamName(
+        UpdateTeamNameParams(
+          leagueId: event.leagueId,
+          userId: event.userId,
+          newName: event.newName,
+        ),
+      );
+
+      yield* _handleLeagueResult(result);
+    } catch (e) {
+      yield LeagueError(message: e.toString());
+    }
+  }
+
+  Stream<LeagueState> _mapExitLeagueEventToState(ExitLeagueEvent event) async* {
+    yield LeagueLoading();
+
+    try {
+      final result = await exitLeague(
+        ExitLeagueParams(
+          leagueId: event.leagueId,
+          userId: event.userId,
+        ),
+      );
+
+      yield* _handleLeagueResult(result);
+    } catch (e) {
+      yield LeagueError(message: e.toString());
+    }
+  }
+
+  Stream<LeagueState> _handleLeagueResult(
+      Either<Failure, League> result) async* {
+    yield result.fold(
+      (failure) => LeagueError(message: failure.message),
+      (league) {
+        if (appLeagueCubit.state is AppLeagueExists) {
+          final leagues = (appLeagueCubit.state as AppLeagueExists).leagues;
+          final updatedLeagues =
+              leagues.map((l) => l.id == league.id ? league : l).toList();
+          appLeagueCubit.loadSelectedLeague(updatedLeagues);
+        }
+
+        return LeagueLoaded(league: league);
+      },
+    );
   }
 }

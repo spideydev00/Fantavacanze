@@ -1,0 +1,31 @@
+dashboard/
+├── data/
+│   ├── datasources/
+│   │   └── dashboard_remote_data_source.dart
+│   ├── models/
+│   │   └── dashboard_data_model.dart
+│   └── repositories/
+│       └── dashboard_repository_impl.dart
+├── domain/
+│   ├── entities/
+│   │   └── dashboard_data.dart
+│   ├── repositories/
+│   │   └── dashboard_repository.dart
+│   └── usecases/
+│       └── get_dashboard_data.dart
+└── presentation/
+    ├── bloc/
+    │   ├── dashboard_bloc.dart
+    │   ├── dashboard_event.dart
+    │   └── dashboard_state.dart
+    ├── pages/
+    │   ├── dashboard.dart
+    │   ├── home.dart
+    │   ├── settings.dart
+    │   └──  subpages/
+    │        ├── articles_page.dart
+    │        ├── become_premium.dart
+    │        ├── drink_games.dart
+    │        └── quick_challenge.dart
+    └── widgets/
+        └── //widgets...

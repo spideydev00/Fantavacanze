@@ -5,7 +5,7 @@ class Memory {
   final String id;
   final String imageUrl;
   final String text;
-  final String? relatedEventId;
+  final String? relatedEventId; // This field is already present and correct
   final DateTime createdAt;
   final String userId;
 
@@ -15,6 +15,6 @@ class Memory {
     required this.text,
     required this.createdAt,
     required this.userId,
-    this.relatedEventId,
+    this.relatedEventId, // It's also included in the constructor correctly
   });
 }

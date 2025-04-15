@@ -69,6 +69,7 @@ class LeagueRepositoryImpl implements LeagueRepository {
       // Get from remote and cache
       final league = await remoteDataSource.getLeague(leagueId);
       await localDataSource.cacheLeague(league);
+
       return Right(league);
     } on ServerException catch (e) {
       // If server error, try to get from cache
@@ -94,6 +95,7 @@ class LeagueRepositoryImpl implements LeagueRepository {
       // Get from remote and cache
       final leagues = await remoteDataSource.getUserLeagues();
       await localDataSource.cacheLeagues(leagues);
+
       return Right(leagues);
     } on ServerException catch (e) {
       // If server error, try to get from cache
@@ -254,7 +256,9 @@ class LeagueRepositoryImpl implements LeagueRepository {
     required String leagueId,
     required String name,
     required int points,
-    required String userId,
+    required String creatorId,
+    required String targetUserId,
+    required RuleType eventType,
     String? description,
   }) async {
     try {
@@ -269,7 +273,9 @@ class LeagueRepositoryImpl implements LeagueRepository {
         leagueId: leagueId,
         name: name,
         points: points,
-        userId: userId,
+        creatorId: creatorId,
+        targetUserId: targetUserId,
+        eventType: eventType,
         description: description,
       );
 

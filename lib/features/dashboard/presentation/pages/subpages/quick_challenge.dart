@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
-class QuickChallengePreview extends StatelessWidget {
+class QuickChallenge extends StatelessWidget {
   static get route =>
-      MaterialPageRoute(builder: (context) => const QuickChallengePreview());
-  const QuickChallengePreview({super.key});
+      MaterialPageRoute(builder: (context) => const QuickChallenge());
+  const QuickChallenge({super.key});
 
   @override
   Widget build(BuildContext context) {

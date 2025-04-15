@@ -1,21 +1,41 @@
 import 'package:fantavacanze_official/features/league/domain/entities/event.dart';
+import 'package:fantavacanze_official/features/league/domain/entities/rule.dart';
 
 class EventModel extends Event {
   const EventModel({
     required super.id,
     required super.name,
     required super.points,
-    required super.userId,
+    required super.creatorId,
+    required super.targetUserId,
     required super.createdAt,
+    required super.type,
+    super.description,
   });
 
   factory EventModel.fromJson(Map<String, dynamic> json) {
+    // Determine type based on points or explicitly from JSON
+    RuleType eventType;
+    if (json['type'] != null) {
+      // If type is explicitly provided in JSON
+      eventType = json['type'].toString().toLowerCase() == 'bonus'
+          ? RuleType.bonus
+          : RuleType.malus;
+    } else {
+      // Default behavior: determine by points
+      eventType =
+          (json['points'] as int) >= 0 ? RuleType.bonus : RuleType.malus;
+    }
+
     return EventModel(
       id: json['id'] as String,
       name: json['name'] as String,
       points: json['points'] as int,
-      userId: json['userId'] as String,
+      creatorId: json['creatorId'] as String,
+      targetUserId: json['targetUserId'] as String,
       createdAt: DateTime.parse(json['createdAt'] as String),
+      type: eventType,
+      description: json['description'] as String?,
     );
   }
 
@@ -24,8 +44,11 @@ class EventModel extends Event {
       'id': id,
       'name': name,
       'points': points,
-      'userId': userId,
+      'creatorId': creatorId,
+      'targetUserId': targetUserId,
       'createdAt': createdAt.toIso8601String(),
+      'type': type.toString().split('.').last,
+      'description': description,
     };
   }
 }

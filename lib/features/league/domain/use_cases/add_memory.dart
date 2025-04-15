@@ -3,7 +3,6 @@ import 'package:fantavacanze_official/core/use-case/usecase.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/league.dart';
 import 'package:fantavacanze_official/features/league/domain/repository/league_repository.dart';
 import 'package:fpdart/fpdart.dart';
-import 'package:flutter/foundation.dart';
 
 class AddMemory implements Usecase<League, AddMemoryParams> {
   final LeagueRepository leagueRepository;
@@ -22,7 +21,6 @@ class AddMemory implements Usecase<League, AddMemoryParams> {
   }
 }
 
-@immutable
 class AddMemoryParams {
   final String leagueId;
   final String imageUrl;
@@ -30,7 +28,7 @@ class AddMemoryParams {
   final String userId;
   final String? relatedEventId;
 
-  const AddMemoryParams({
+  AddMemoryParams({
     required this.leagueId,
     required this.imageUrl,
     required this.text,

@@ -1,0 +1,31 @@
+auth/
+├── data/
+│   ├── datasources/
+│   │   └── auth_remote_data_source.dart
+│   ├── models/
+│   │   └── user_model.dart
+│   └── repositories/
+│       └── auth_repository_impl.dart
+├── domain/
+│   ├── entities/
+│   │   └── user.dart
+│   ├── repositories/
+│   │   └── auth_repository.dart
+│   └── usecases/
+│       ├── apple_sign_in.dart
+│       ├── email_sign_in.dart
+│       ├── email_sign_up.dart
+│       ├── get_current_user.dart
+│       └── google_sign_in.dart
+└── presentation/
+    ├── bloc/
+    │   ├── auth_bloc.dart
+    │   ├── auth_event.dart
+    │   └── auth_state.dart
+    ├── pages/
+    │   ├── onboarding.dart
+    │   └── signup.dart
+    │   ├── social_login.dart
+    │   └── standard_login.dart
+    └── widgets/
+        └── //widgets...
