@@ -2,9 +2,9 @@ import 'package:fantavacanze_official/core/cubits/app_theme/app_theme_cubit.dart
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/extensions/context_extension.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
-import 'package:fantavacanze_official/features/dashboard/presentation/pages/dashboard.dart';
-import 'package:fantavacanze_official/features/dashboard/presentation/widgets/helpers/divider.dart';
-import 'package:fantavacanze_official/features/dashboard/presentation/widgets/settings/settings_widgets.dart';
+import 'package:fantavacanze_official/features/league/presentation/pages/dashboard.dart';
+import 'package:fantavacanze_official/features/league/presentation/widgets/core/divider.dart';
+import 'package:fantavacanze_official/features/league/presentation/widgets/settings/settings_widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 

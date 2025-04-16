@@ -2,7 +2,7 @@ import 'package:fantavacanze_official/core/cubits/app_league/app_league_cubit.da
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/extensions/context_extension.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
-import 'package:fantavacanze_official/features/dashboard/presentation/widgets/helpers/divider.dart';
+import 'package:fantavacanze_official/features/league/presentation/widgets/core/divider.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/league.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -12,16 +12,13 @@ class LeagueDropdown extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<AppLeagueCubit, AppLeagueState>(
+    return BlocConsumer<AppLeagueCubit, AppLeagueState>(
+      listener: (context, state) {},
       builder: (context, leagueState) {
         if (leagueState is AppLeagueExists) {
           if (leagueState.leagues.isEmpty) {
             return const SizedBox.shrink();
           }
-
-          // Sort leagues by creation date (newest first)
-          final sortedLeagues = List<League>.from(leagueState.leagues)
-            ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
           return Padding(
             padding: const EdgeInsets.symmetric(
@@ -33,7 +30,11 @@ class LeagueDropdown extends StatelessWidget {
               children: [
                 CustomDivider(text: "Le Mie Leghe"),
                 const SizedBox(height: ThemeSizes.xs),
-                _buildLeagueSelector(context, sortedLeagues, leagueState),
+                _buildLeagueSelector(
+                  context,
+                  leagueState.leagues,
+                  leagueState.selectedLeague!,
+                ),
               ],
             ),
           );
@@ -45,8 +46,10 @@ class LeagueDropdown extends StatelessWidget {
   }
 
   Widget _buildLeagueSelector(
-      BuildContext context, List<League> leagues, AppLeagueExists leagueState) {
-    final selectedLeague = leagueState.selectedLeague ?? leagues.first;
+      BuildContext context, List<League> leagues, League selectedLeague) {
+    // Check if the selected league exists in the leagues list
+    final leagueIds = leagues.map((l) => l.id).toSet();
+    final validSelection = leagueIds.contains(selectedLeague.id);
 
     return Container(
       padding: const EdgeInsets.symmetric(
@@ -61,16 +64,19 @@ class LeagueDropdown extends StatelessWidget {
           width: 1,
         ),
       ),
-      child: DropdownButton<League>(
-        value: selectedLeague,
-        onChanged: (League? newValue) {
-          if (newValue != null) {
-            context.read<AppLeagueCubit>().selectLeague(newValue);
+      child: DropdownButton<String>(
+        value: validSelection
+            ? selectedLeague.id
+            : (leagues.isNotEmpty ? leagues.first.id : null),
+        onChanged: (String? newLeagueId) {
+          if (newLeagueId != null) {
+            final newLeague = leagues.firstWhere((l) => l.id == newLeagueId);
+            context.read<AppLeagueCubit>().selectLeague(newLeague);
           }
         },
-        items: leagues.map<DropdownMenuItem<League>>((League league) {
-          return DropdownMenuItem<League>(
-            value: league,
+        items: leagues.map<DropdownMenuItem<String>>((League league) {
+          return DropdownMenuItem<String>(
+            value: league.id,
             child: Text(
               league.name,
               style: context.textTheme.bodyMedium!.copyWith(

@@ -1,11 +1,11 @@
 // ignore: depend_on_referenced_packages
-import 'package:collection/collection.dart'; // Importa il package collection
+import 'package:collection/collection.dart';
 import 'package:fantavacanze_official/core/constants/navigation_items.dart';
 import 'package:fantavacanze_official/core/cubits/app_league/app_league_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/app_theme/app_theme_cubit.dart';
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
-import 'package:fantavacanze_official/features/dashboard/presentation/widgets/helpers/become_premium_button.dart';
-import 'package:fantavacanze_official/features/dashboard/presentation/widgets/helpers/side_menu/league_dropdown.dart';
+import 'package:fantavacanze_official/features/league/presentation/widgets/core/become_premium_button.dart';
+import 'package:fantavacanze_official/features/league/presentation/widgets/navigation/side_menu/league_dropdown.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fantavacanze_official/core/constants/constants.dart';
@@ -13,17 +13,16 @@ import 'package:fantavacanze_official/core/cubits/app_navigation/app_navigation_
 import 'package:fantavacanze_official/core/extensions/context_extension.dart';
 import 'package:fantavacanze_official/core/navigation/navigation_item.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
-import 'package:fantavacanze_official/features/dashboard/presentation/widgets/helpers/divider.dart';
-import 'package:fantavacanze_official/features/dashboard/presentation/widgets/helpers/plan_label.dart';
-import 'package:fantavacanze_official/features/dashboard/presentation/widgets/navigation_assets/side_menu_navigation_asset.dart';
+import 'package:fantavacanze_official/features/league/presentation/widgets/core/divider.dart';
+import 'package:fantavacanze_official/features/league/presentation/widgets/core/plan_label.dart';
+import 'package:fantavacanze_official/features/league/presentation/widgets/navigation/side_menu/side_menu_navigation_asset.dart';
 
 class SideMenu extends StatelessWidget {
-  // Add the callback parameter
   final VoidCallback? closeMenuCallback;
 
   const SideMenu({
     super.key,
-    this.closeMenuCallback, // Initialize in constructor
+    this.closeMenuCallback,
   });
 
   @override

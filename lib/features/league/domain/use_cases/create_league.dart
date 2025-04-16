@@ -16,7 +16,6 @@ class CreateLeague implements Usecase<League, CreateLeagueParams> {
       name: params.name,
       description: params.description,
       isTeamBased: params.isTeamBased,
-      admins: params.admins,
       rules: params.rules,
     );
   }
@@ -25,16 +24,14 @@ class CreateLeague implements Usecase<League, CreateLeagueParams> {
 @immutable
 class CreateLeagueParams {
   final String name;
-  final String description;
+  final String? description;
   final bool isTeamBased;
-  final List<String> admins;
   final List<Map<String, dynamic>> rules;
 
   const CreateLeagueParams({
     required this.name,
-    required this.description,
+    this.description,
     required this.isTeamBased,
-    required this.admins,
     required this.rules,
   });
 }

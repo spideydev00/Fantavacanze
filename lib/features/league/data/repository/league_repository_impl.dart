@@ -24,7 +24,6 @@ class LeagueRepositoryImpl implements LeagueRepository {
     required String name,
     String? description,
     required bool isTeamBased,
-    required List<String> admins,
     required List<Map<String, dynamic>> rules,
   }) async {
     try {
@@ -39,7 +38,6 @@ class LeagueRepositoryImpl implements LeagueRepository {
         name: name,
         description: description ?? "",
         isTeamBased: isTeamBased,
-        admins: admins,
         rules: rules,
       );
 

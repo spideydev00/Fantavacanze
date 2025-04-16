@@ -7,7 +7,7 @@ import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/features/league/data/models/league_model.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/league.dart';
 import 'package:fantavacanze_official/core/widgets/info_container.dart';
-import 'package:fantavacanze_official/features/league/presentation/widgets/invite_code_card.dart';
+import 'package:fantavacanze_official/features/league/presentation/widgets/create_league/invite_code_card.dart';
 
 class LeagueCreatedPage extends StatefulWidget {
   final League league;
@@ -82,12 +82,11 @@ class _LeagueCreatedPageState extends State<LeagueCreatedPage>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                // Success icon - LARGER now
                 Transform.scale(
                   scale: _scaleAnimation.value,
                   child: Container(
-                    width: 200,
-                    height: 200,
+                    width: 110,
+                    height: 110,
                     decoration: BoxDecoration(
                       color: ColorPalette.success.withValues(alpha: 0.1),
                       shape: BoxShape.circle,
@@ -98,7 +97,7 @@ class _LeagueCreatedPageState extends State<LeagueCreatedPage>
                         children: [
                           Icon(
                             Icons.check_circle,
-                            size: 120,
+                            size: 60,
                             color: ColorPalette.success,
                           ),
                         ],
@@ -139,7 +138,7 @@ class _LeagueCreatedPageState extends State<LeagueCreatedPage>
                 InfoContainer(
                   title: 'Come invitare amici',
                   message:
-                      'Condividi questo codice invito con i tuoi amici. Potranno usarlo nella sezione "Unisciti a una Lega" per partecipare.',
+                      'Condividi questo codice invito con i tuoi amici. Potranno usarlo per partecipare.',
                   icon: Icons.info_outline,
                   color: ColorPalette.warning,
                 ),

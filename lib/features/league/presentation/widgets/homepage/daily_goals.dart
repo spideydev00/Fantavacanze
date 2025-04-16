@@ -1,7 +1,7 @@
 import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
-import 'package:fantavacanze_official/features/dashboard/presentation/widgets/helpers/divider.dart';
-import 'package:fantavacanze_official/features/dashboard/presentation/widgets/helpers/homepage/daily_goal_card.dart';
+import 'package:fantavacanze_official/features/league/presentation/widgets/core/divider.dart';
+import 'package:fantavacanze_official/features/league/presentation/widgets/homepage/daily_goal_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 

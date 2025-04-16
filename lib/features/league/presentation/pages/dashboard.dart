@@ -4,15 +4,15 @@ import 'package:fantavacanze_official/core/constants/navigation_items.dart';
 import 'package:fantavacanze_official/core/cubits/app_league/app_league_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/app_theme/app_theme_cubit.dart';
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
-import 'package:fantavacanze_official/features/dashboard/presentation/pages/settings.dart';
-import 'package:fantavacanze_official/features/dashboard/presentation/widgets/helpers/side_menu/custom_menu_icon.dart';
-import 'package:fantavacanze_official/features/dashboard/presentation/widgets/side_menu.dart';
+import 'package:fantavacanze_official/features/league/presentation/pages/navigation/settings/settings.dart';
+import 'package:fantavacanze_official/features/league/presentation/widgets/navigation/side_menu/custom_menu_icon.dart';
+import 'package:fantavacanze_official/features/league/presentation/widgets/navigation/side_menu/side_menu.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fantavacanze_official/core/constants/constants.dart';
 import 'package:fantavacanze_official/core/cubits/app_navigation/app_navigation_cubit.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
-import 'package:fantavacanze_official/features/dashboard/presentation/widgets/bottom_navigation_bar.dart';
+import 'package:fantavacanze_official/features/league/presentation/widgets/navigation/bottom_navbar/bottom_navigation_bar.dart';
 
 class DashboardScreen extends StatefulWidget {
   static get route => MaterialPageRoute(

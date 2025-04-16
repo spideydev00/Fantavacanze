@@ -9,7 +9,7 @@ import 'package:fantavacanze_official/features/auth/presentation/pages/signup.da
 import 'package:fantavacanze_official/features/auth/presentation/widgets/auth_field.dart';
 import 'package:fantavacanze_official/features/auth/presentation/widgets/cloudflare_turnstile_widget.dart';
 import 'package:fantavacanze_official/features/auth/presentation/widgets/rich_text.dart';
-import 'package:fantavacanze_official/features/dashboard/presentation/pages/dashboard.dart';
+import 'package:fantavacanze_official/features/league/presentation/pages/dashboard.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
