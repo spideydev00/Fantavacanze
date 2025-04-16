@@ -12,9 +12,6 @@ import 'package:fantavacanze_official/features/auth/domain/use-cases/email_sign_
 import 'package:fantavacanze_official/features/auth/domain/use-cases/get_current_user.dart';
 import 'package:fantavacanze_official/features/auth/domain/use-cases/google_sign_in.dart';
 import 'package:fantavacanze_official/features/auth/presentation/bloc/auth_bloc.dart';
-import 'package:fantavacanze_official/features/dashboard/data/datasources/dashboard_remote_data_source.dart';
-import 'package:fantavacanze_official/features/dashboard/data/repositories/dashboard_repository_impl.dart';
-import 'package:fantavacanze_official/features/dashboard/domain/repositories/dashboard_repository.dart';
 import 'package:fantavacanze_official/features/league/data/datasources/league_local_data_source.dart';
 import 'package:fantavacanze_official/features/league/data/datasources/league_remote_data_source.dart';
 import 'package:fantavacanze_official/features/league/data/repository/league_repository_impl.dart';
@@ -22,12 +19,14 @@ import 'package:fantavacanze_official/features/league/domain/repository/league_r
 import 'package:fantavacanze_official/features/league/domain/use_cases/add_event.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/add_memory.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/create_league.dart';
+import 'package:fantavacanze_official/features/league/domain/use_cases/delete_rule.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/exit_league.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/get_league.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/get_rules.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/get_user_leagues.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/join_league.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/remove_memory.dart';
+import 'package:fantavacanze_official/features/league/domain/use_cases/update_rule.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/update_team_name.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc.dart';
 import 'package:flutter/material.dart';
@@ -39,7 +38,5 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:fantavacanze_official/core/cubits/app_theme/app_theme_cubit.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
-import 'package:fantavacanze_official/features/dashboard/domain/use_cases/get_dashboard_data.dart';
-import 'package:fantavacanze_official/features/dashboard/presentation/bloc/dashboard_bloc.dart';
 
 part 'init_dependencies.main.dart';

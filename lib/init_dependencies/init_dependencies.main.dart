@@ -13,7 +13,6 @@ Future<void> initDependencies() async {
 
     _initAuth();
     _initLeague();
-    _initDashboard();
 
     // Initialize Hive
     final dir = await getApplicationDocumentsDirectory();
@@ -158,6 +157,8 @@ void _initLeague() {
     ..registerFactory(() => AddMemory(leagueRepository: serviceLocator()))
     ..registerFactory(() => RemoveMemory(leagueRepository: serviceLocator()))
     ..registerFactory(() => GetRules(leagueRepository: serviceLocator()))
+    ..registerFactory(() => UpdateRule(leagueRepository: serviceLocator()))
+    ..registerFactory(() => DeleteRule(leagueRepository: serviceLocator()))
 
     // bloc
     ..registerFactory(
@@ -172,36 +173,10 @@ void _initLeague() {
         addMemory: serviceLocator(),
         removeMemory: serviceLocator(),
         getRules: serviceLocator(),
+        updateRule: serviceLocator(),
+        deleteRule: serviceLocator(),
         appUserCubit: serviceLocator(),
         appLeagueCubit: serviceLocator(),
-      ),
-    );
-}
-
-void _initDashboard() {
-  serviceLocator
-    // data sources
-    ..registerFactory<DashboardRemoteDataSource>(
-      () => DashboardRemoteDataSourceImpl(
-        appLeagueCubit: serviceLocator(),
-      ),
-    )
-    // repository
-    ..registerFactory<DashboardRepository>(
-      () => DashboardRepositoryImpl(
-        dashboardRemoteDataSource: serviceLocator(),
-      ),
-    )
-
-    // use case
-    ..registerFactory<GetDashboardData>(
-      () => GetDashboardData(serviceLocator<DashboardRepository>()),
-    )
-
-    // bloc
-    ..registerFactory<DashboardBloc>(
-      () => DashboardBloc(
-        getDashboardData: serviceLocator<GetDashboardData>(),
       ),
     );
 }

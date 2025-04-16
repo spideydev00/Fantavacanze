@@ -92,8 +92,8 @@ class AppLeagueCubit extends Cubit<AppLeagueState> {
     _prefs.setString(_selectedLeagueIdKey, leagueId);
   }
 
-  /// Checks if the current user is an admin of the given league
-  /// Returns true if the user is an admin, false otherwise
+  // Checks if the current user is an admin of the given league
+  // Returns true if the user is an admin, false otherwise
   bool isAdmin({String? leagueId}) {
     // Get current user ID
     final userState = _appUserCubit.state;
@@ -116,10 +116,14 @@ class AppLeagueCubit extends Cubit<AppLeagueState> {
     // If leagueId is provided, find that specific league
     final currentState = state;
     if (currentState is AppLeagueExists) {
-      final league = currentState.leagues.firstWhere(
-        (l) => l.id == leagueId,
-        orElse: () => throw Exception('League not found'),
-      );
+      // Safely find the league without throwing an exception
+      final league =
+          currentState.leagues.where((l) => l.id == leagueId).firstOrNull;
+
+      // If league is not found, return false instead of throwing an exception
+      if (league == null) {
+        return false;
+      }
 
       return league.admins.contains(userId);
     }

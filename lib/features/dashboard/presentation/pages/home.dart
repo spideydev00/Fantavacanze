@@ -328,7 +328,7 @@ class _EventCard extends StatelessWidget {
     final bool isBonus = event.type == RuleType.bonus;
     final DateTime createdAt = event.createdAt;
     final String targetName =
-        event.targetUserId; // This might need to be fetched from participants
+        event.targetUser; // This might need to be fetched from participants
     final formattedDate = DateFormat('dd/MM/yyyy').format(createdAt);
 
     return Card(

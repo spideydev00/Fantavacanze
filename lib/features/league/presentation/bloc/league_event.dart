@@ -89,8 +89,8 @@ class AddEventEvent extends LeagueEvent {
   final String name;
   final int points;
   final String creatorId;
-  final String targetUserId;
-  final RuleType eventType;
+  final String targetUser;
+  final RuleType type;
   final String? description;
 
   AddEventEvent({
@@ -98,14 +98,14 @@ class AddEventEvent extends LeagueEvent {
     required this.name,
     required this.points,
     required this.creatorId,
-    required this.targetUserId,
-    required this.eventType,
+    required this.targetUser,
+    required this.type,
     this.description,
   });
 
   @override
   List<Object?> get props =>
-      [leagueId, name, points, creatorId, targetUserId, eventType, description];
+      [leagueId, name, points, creatorId, targetUser, RuleType, description];
 }
 
 class AddMemoryEvent extends LeagueEvent {
@@ -147,4 +147,31 @@ class GetRulesEvent extends LeagueEvent {
 
   @override
   List<Object?> get props => [mode];
+}
+
+// Add new event for updating a rule
+class UpdateRuleEvent extends LeagueEvent {
+  final String leagueId;
+  final Map<String, dynamic> rule;
+
+  const UpdateRuleEvent({
+    required this.leagueId,
+    required this.rule,
+  });
+
+  @override
+  List<Object?> get props => [leagueId, rule];
+}
+
+class DeleteRuleEvent extends LeagueEvent {
+  final String leagueId;
+  final int ruleId;
+
+  const DeleteRuleEvent({
+    required this.leagueId,
+    required this.ruleId,
+  });
+
+  @override
+  List<Object?> get props => [leagueId, ruleId];
 }

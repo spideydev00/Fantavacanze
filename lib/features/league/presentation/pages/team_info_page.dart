@@ -112,19 +112,33 @@ class _TeamBasedInfo extends StatefulWidget {
   State<_TeamBasedInfo> createState() => _TeamBasedInfoState();
 }
 
-class _TeamBasedInfoState extends State<_TeamBasedInfo> {
+class _TeamBasedInfoState extends State<_TeamBasedInfo>
+    with SingleTickerProviderStateMixin {
   final _teamNameController = TextEditingController();
   bool _isEditing = false;
+  late AnimationController _animationController;
+  late Animation<double> _scaleAnimation;
 
   @override
   void initState() {
     super.initState();
     _teamNameController.text = widget.team.name;
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 300),
+    );
+    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.95).animate(
+      CurvedAnimation(
+        parent: _animationController,
+        curve: Curves.easeInOut,
+      ),
+    );
   }
 
   @override
   void dispose() {
     _teamNameController.dispose();
+    _animationController.dispose();
     super.dispose();
   }
 
@@ -162,180 +176,687 @@ class _TeamBasedInfoState extends State<_TeamBasedInfo> {
     final members = widget.team.userIds.length;
 
     return Scaffold(
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
-        title: const Text('Info Squadra'),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
         actions: [
           if (canEdit && !_isEditing)
             IconButton(
-              icon: const Icon(Icons.edit),
+              icon: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: context.bgColor.withOpacity(0.7),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.edit,
+                  color: context.primaryColor,
+                  size: 18,
+                ),
+              ),
               onPressed: _toggleEdit,
             ),
           if (_isEditing)
             IconButton(
-              icon: const Icon(Icons.check),
+              icon: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: context.bgColor.withOpacity(0.7),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.check,
+                  color: Colors.green,
+                  size: 18,
+                ),
+              ),
               onPressed: _updateTeamName,
             ),
           if (_isEditing)
             IconButton(
-              icon: const Icon(Icons.close),
+              icon: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: context.bgColor.withOpacity(0.7),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.close,
+                  color: Colors.red,
+                  size: 18,
+                ),
+              ),
               onPressed: _toggleEdit,
             ),
+          const SizedBox(width: ThemeSizes.sm),
         ],
       ),
-      body: SingleChildScrollView(
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              context.bgColor,
+              context.secondaryColor.withOpacity(0.5),
+            ],
+            stops: const [0.0, 0.3],
+          ),
+        ),
+        child: SafeArea(
+          child: SingleChildScrollView(
+            physics: const BouncingScrollPhysics(),
+            child: Column(
+              children: [
+                // Header Section with Team Avatar
+                Container(
+                  padding: const EdgeInsets.all(ThemeSizes.lg),
+                  child: Column(
+                    children: [
+                      Hero(
+                        tag: 'team_avatar_${widget.team.name}',
+                        child: Container(
+                          width: 120,
+                          height: 120,
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [
+                                context.primaryColor,
+                                context.secondaryColor,
+                              ],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                            shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(
+                                color: context.primaryColor.withOpacity(0.3),
+                                blurRadius: 15,
+                                spreadRadius: 2,
+                              ),
+                            ],
+                          ),
+                          child: Center(
+                            child: Icon(
+                              Icons.group,
+                              size: 64,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: ThemeSizes.lg),
+                      if (_isEditing) ...[
+                        Container(
+                          decoration: BoxDecoration(
+                            color: context.secondaryBgColor,
+                            borderRadius: BorderRadius.circular(
+                                ThemeSizes.borderRadiusLg),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.05),
+                                blurRadius: 10,
+                                spreadRadius: 1,
+                              ),
+                            ],
+                          ),
+                          child: TextField(
+                            controller: _teamNameController,
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                              color: context.textPrimaryColor,
+                            ),
+                            decoration: InputDecoration(
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: ThemeSizes.md,
+                                vertical: ThemeSizes.sm,
+                              ),
+                              border: InputBorder.none,
+                              hintText: 'Nome della squadra',
+                              hintStyle: TextStyle(
+                                color:
+                                    context.textSecondaryColor.withOpacity(0.5),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ] else ...[
+                        Text(
+                          widget.team.name,
+                          style: const TextStyle(
+                            fontSize: 28,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                      const SizedBox(height: ThemeSizes.sm),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: ThemeSizes.md,
+                          vertical: ThemeSizes.xs,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.2),
+                          borderRadius:
+                              BorderRadius.circular(ThemeSizes.borderRadiusLg),
+                        ),
+                        child: Text(
+                          '$members membri',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                // Statistics section
+                Container(
+                  margin: const EdgeInsets.fromLTRB(
+                    ThemeSizes.lg,
+                    ThemeSizes.lg,
+                    ThemeSizes.lg,
+                    ThemeSizes.md,
+                  ),
+                  decoration: BoxDecoration(
+                    color: context.secondaryBgColor,
+                    borderRadius:
+                        BorderRadius.circular(ThemeSizes.borderRadiusLg),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.05),
+                        blurRadius: 10,
+                        spreadRadius: 1,
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    children: [
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(ThemeSizes.md),
+                        decoration: BoxDecoration(
+                          color: context.secondaryBgColor,
+                          borderRadius: BorderRadius.vertical(
+                            top: Radius.circular(ThemeSizes.borderRadiusLg),
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.bar_chart_rounded,
+                              color: context.primaryColor,
+                              size: 22,
+                            ),
+                            const SizedBox(width: ThemeSizes.sm),
+                            Text(
+                              'Statistiche',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: context.textPrimaryColor,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Divider(
+                        height: 1,
+                        thickness: 1,
+                        color: context.borderColor.withOpacity(0.1),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(ThemeSizes.md),
+                        child: Column(
+                          children: [
+                            _ModernScoreCard(
+                              score: widget.team.points.toInt(),
+                              color: context.primaryColor,
+                            ),
+                            const SizedBox(height: ThemeSizes.md),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: _ModernStatCard(
+                                    icon: Icons.arrow_upward_rounded,
+                                    label: 'Bonus',
+                                    value: '+${widget.team.bonusTotal}',
+                                    color: Colors.green,
+                                  ),
+                                ),
+                                const SizedBox(width: ThemeSizes.md),
+                                Expanded(
+                                  child: _ModernStatCard(
+                                    icon: Icons.arrow_downward_rounded,
+                                    label: 'Malus',
+                                    value: '-${widget.team.malusTotal}',
+                                    color: Colors.red,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                // Team Members Section
+                Container(
+                  margin: const EdgeInsets.fromLTRB(
+                    ThemeSizes.lg,
+                    ThemeSizes.md,
+                    ThemeSizes.lg,
+                    ThemeSizes.md,
+                  ),
+                  decoration: BoxDecoration(
+                    color: context.secondaryBgColor,
+                    borderRadius:
+                        BorderRadius.circular(ThemeSizes.borderRadiusLg),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.05),
+                        blurRadius: 10,
+                        spreadRadius: 1,
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    children: [
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(ThemeSizes.md),
+                        decoration: BoxDecoration(
+                          color: context.secondaryBgColor,
+                          borderRadius: BorderRadius.vertical(
+                            top: Radius.circular(ThemeSizes.borderRadiusLg),
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.people_alt_rounded,
+                              color: context.primaryColor,
+                              size: 22,
+                            ),
+                            const SizedBox(width: ThemeSizes.sm),
+                            Text(
+                              'Membri del Team',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: context.textPrimaryColor,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Divider(
+                        height: 1,
+                        thickness: 1,
+                        color: context.borderColor.withOpacity(0.1),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.all(ThemeSizes.md),
+                        child: Text(
+                          'Da implementare: Lista dei membri del team con avatar e nome',
+                          style: TextStyle(
+                            color: context.textSecondaryColor,
+                            fontStyle: FontStyle.italic,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                // Leave League Button
+                AnimatedBuilder(
+                  animation: _animationController,
+                  builder: (context, child) {
+                    return GestureDetector(
+                      onTapDown: (_) => _animationController.forward(),
+                      onTapUp: (_) => _animationController.reverse(),
+                      onTapCancel: () => _animationController.reverse(),
+                      child: Transform.scale(
+                        scale: _scaleAnimation.value,
+                        child: Container(
+                          margin: const EdgeInsets.symmetric(
+                            vertical: ThemeSizes.xl,
+                            horizontal: ThemeSizes.lg,
+                          ),
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [
+                                Colors.red.shade400,
+                                Colors.red.shade700,
+                              ],
+                            ),
+                            borderRadius: BorderRadius.circular(
+                                ThemeSizes.borderRadiusLg),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.red.withOpacity(0.3),
+                                blurRadius: 8,
+                                spreadRadius: 1,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: Material(
+                            type: MaterialType.transparency,
+                            child: InkWell(
+                              onTap: () {
+                                showDialog(
+                                  context: context,
+                                  builder: (context) =>
+                                      _buildExitConfirmationDialog(context),
+                                );
+                              },
+                              borderRadius: BorderRadius.circular(
+                                  ThemeSizes.borderRadiusLg),
+                              splashColor: Colors.white.withOpacity(0.1),
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: ThemeSizes.lg,
+                                ),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      Icons.exit_to_app,
+                                      color: Colors.white,
+                                    ),
+                                    const SizedBox(width: ThemeSizes.sm),
+                                    Text(
+                                      'Lascia la Lega',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 16,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildExitConfirmationDialog(BuildContext context) {
+    return Dialog(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusLg),
+      ),
+      elevation: 0,
+      backgroundColor: Colors.transparent,
+      child: Container(
         padding: const EdgeInsets.all(ThemeSizes.lg),
+        decoration: BoxDecoration(
+          color: context.secondaryBgColor,
+          borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusLg),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 10,
+              spreadRadius: 1,
+            ),
+          ],
+        ),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Center(
-              child: Column(
-                children: [
-                  Container(
-                    decoration: BoxDecoration(
-                      color: context.primaryColor.withValues(alpha: 0.1),
-                      shape: BoxShape.circle,
-                    ),
-                    padding: const EdgeInsets.all(ThemeSizes.lg),
-                    child: Icon(
-                      Icons.group,
-                      size: 64,
-                      color: context.primaryColor,
-                    ),
-                  ),
-                  const SizedBox(height: ThemeSizes.md),
-                  if (_isEditing) ...[
-                    TextField(
-                      controller: _teamNameController,
-                      textAlign: TextAlign.center,
-                      decoration: const InputDecoration(
-                        hintText: 'Nome della squadra',
-                        labelText: 'Nome Squadra',
-                      ),
-                      style: const TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ] else ...[
-                    Text(
-                      widget.team.name,
-                      style: const TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
-                  const SizedBox(height: ThemeSizes.sm),
-                  Text(
-                    '$members membri',
-                    style: TextStyle(
-                      color: context.textSecondaryColor,
-                      fontSize: 16,
-                    ),
-                  ),
-                ],
+            Container(
+              padding: const EdgeInsets.all(ThemeSizes.md),
+              decoration: BoxDecoration(
+                color: Colors.red.withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.warning_amber_rounded,
+                color: Colors.red,
+                size: 40,
               ),
             ),
-            const SizedBox(height: ThemeSizes.xl),
-            const Text(
-              'Statistiche',
+            const SizedBox(height: ThemeSizes.md),
+            Text(
+              'Lascia la Lega',
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
+                color: context.textPrimaryColor,
               ),
             ),
-            const SizedBox(height: ThemeSizes.md),
-            _StatisticCard(
-              label: 'Punteggio Totale',
-              value: widget.team.points.toInt().toString(),
-              icon: Icons.leaderboard,
-              color: context.primaryColor,
+            const SizedBox(height: ThemeSizes.sm),
+            Text(
+              'Sei sicuro di voler uscire da questa lega? Questa azione non può essere annullata.',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: context.textSecondaryColor,
+              ),
             ),
-            const SizedBox(height: ThemeSizes.md),
+            const SizedBox(height: ThemeSizes.lg),
             Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Expanded(
-                  child: _StatisticCard(
-                    label: 'Bonus Totali',
-                    value: '+${widget.team.bonusTotal}',
-                    icon: Icons.arrow_upward,
-                    color: Colors.green,
+                  child: TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    style: TextButton.styleFrom(
+                      padding:
+                          const EdgeInsets.symmetric(vertical: ThemeSizes.md),
+                      shape: RoundedRectangleBorder(
+                        borderRadius:
+                            BorderRadius.circular(ThemeSizes.borderRadiusMd),
+                        side: BorderSide(color: context.borderColor),
+                      ),
+                    ),
+                    child: Text(
+                      'Annulla',
+                      style: TextStyle(
+                        color: context.textSecondaryColor,
+                      ),
+                    ),
                   ),
                 ),
                 const SizedBox(width: ThemeSizes.md),
                 Expanded(
-                  child: _StatisticCard(
-                    label: 'Malus Totali',
-                    value: '-${widget.team.malusTotal}',
-                    icon: Icons.arrow_downward,
-                    color: Colors.red,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      context.read<LeagueBloc>().add(
+                            ExitLeagueEvent(
+                              leagueId: widget.league.id,
+                              userId: widget.userId,
+                            ),
+                          );
+                      Navigator.of(context).pop();
+                      Navigator.of(context)
+                          .pop(); // Return to previous screen after exiting
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red,
+                      foregroundColor: Colors.white,
+                      padding:
+                          const EdgeInsets.symmetric(vertical: ThemeSizes.md),
+                      shape: RoundedRectangleBorder(
+                        borderRadius:
+                            BorderRadius.circular(ThemeSizes.borderRadiusMd),
+                      ),
+                    ),
+                    child: const Text('Esci'),
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: ThemeSizes.xl),
-            const Text(
-              'Membri del Team',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: ThemeSizes.md),
-            const Text(
-              'Da implementare: Lista dei membri del team con avatar e nome',
-              style: TextStyle(
-                color: Colors.grey,
-                fontStyle: FontStyle.italic,
-              ),
-            ),
-            // In a real implementation, you would fetch and display team members here
-            const SizedBox(height: ThemeSizes.xxl),
-            Center(
-              child: ElevatedButton.icon(
-                onPressed: () {
-                  // Logic to leave team/league
-                  showDialog(
-                    context: context,
-                    builder: (context) => AlertDialog(
-                      title: const Text('Lascia la Lega'),
-                      content: const Text(
-                        'Sei sicuro di voler uscire da questa lega? Questa azione non può essere annullata.',
-                      ),
-                      actions: [
-                        TextButton(
-                          onPressed: () => Navigator.pop(context),
-                          child: const Text('Annulla'),
-                        ),
-                        ElevatedButton(
-                          onPressed: () {
-                            context.read<LeagueBloc>().add(
-                                  ExitLeagueEvent(
-                                    leagueId: widget.league.id,
-                                    userId: widget.userId,
-                                  ),
-                                );
-                            Navigator.pop(context);
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.red,
-                          ),
-                          child: const Text('Esci dalla Lega'),
-                        ),
-                      ],
-                    ),
-                  );
-                },
-                icon: const Icon(Icons.exit_to_app),
-                label: const Text('Lascia la Lega'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.red,
-                ),
-              ),
-            ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _ModernScoreCard extends StatelessWidget {
+  final int score;
+  final Color color;
+
+  const _ModernScoreCard({
+    required this.score,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(
+        vertical: ThemeSizes.lg,
+        horizontal: ThemeSizes.lg,
+      ),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            color.withOpacity(0.8),
+            color,
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusLg),
+        boxShadow: [
+          BoxShadow(
+            color: color.withOpacity(0.3),
+            blurRadius: 8,
+            spreadRadius: 1,
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Punteggio Totale',
+                style: TextStyle(
+                  color: Colors.white.withOpacity(0.9),
+                  fontSize: 14,
+                ),
+              ),
+              Text(
+                '$score',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 32,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+          Container(
+            padding: const EdgeInsets.all(ThemeSizes.sm),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.2),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.leaderboard_rounded,
+              color: Colors.white,
+              size: 30,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ModernStatCard extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final String value;
+  final Color color;
+
+  const _ModernStatCard({
+    required this.icon,
+    required this.label,
+    required this.value,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(ThemeSizes.md),
+      decoration: BoxDecoration(
+        color: context.bgColor,
+        borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusMd),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.03),
+            blurRadius: 6,
+            spreadRadius: 1,
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(ThemeSizes.sm),
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusSm),
+            ),
+            child: Icon(
+              icon,
+              color: color,
+              size: 20,
+            ),
+          ),
+          const SizedBox(width: ThemeSizes.sm),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: TextStyle(
+                    color: context.textSecondaryColor,
+                    fontSize: 12,
+                  ),
+                ),
+                Text(
+                  value,
+                  style: TextStyle(
+                    color: color,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -456,7 +977,6 @@ class _IndividualInfo extends StatelessWidget {
                 fontStyle: FontStyle.italic,
               ),
             ),
-            // In a real implementation, you would fetch and display player events here
             if (userId == participant.userId) ...[
               const SizedBox(height: ThemeSizes.xxl),
               Center(

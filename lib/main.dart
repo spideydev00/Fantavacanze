@@ -4,7 +4,6 @@ import 'package:fantavacanze_official/core/cubits/app_theme/app_theme_cubit.dart
 import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit.dart';
 import 'package:fantavacanze_official/core/theme/theme.dart';
 import 'package:fantavacanze_official/features/auth/presentation/bloc/auth_bloc.dart';
-import 'package:fantavacanze_official/features/dashboard/presentation/bloc/dashboard_bloc.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc.dart';
 import 'package:fantavacanze_official/init_dependencies/init_dependencies.dart';
 import 'package:fantavacanze_official/initial_page.dart';
@@ -29,9 +28,6 @@ void main() async {
         providers: [
           BlocProvider(
             create: (_) => serviceLocator<AuthBloc>(),
-          ),
-          BlocProvider(
-            create: (_) => serviceLocator<DashboardBloc>(),
           ),
           BlocProvider(
             create: (_) => serviceLocator<LeagueBloc>(),
