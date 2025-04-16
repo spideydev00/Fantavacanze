@@ -186,7 +186,7 @@ class _TeamBasedInfoState extends State<_TeamBasedInfo>
               icon: Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: context.bgColor.withOpacity(0.7),
+                  color: context.bgColor.withValues(alpha: 0.7),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
@@ -202,7 +202,7 @@ class _TeamBasedInfoState extends State<_TeamBasedInfo>
               icon: Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: context.bgColor.withOpacity(0.7),
+                  color: context.bgColor.withValues(alpha: 0.7),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
@@ -218,7 +218,7 @@ class _TeamBasedInfoState extends State<_TeamBasedInfo>
               icon: Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: context.bgColor.withOpacity(0.7),
+                  color: context.bgColor.withValues(alpha: 0.7),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
@@ -239,7 +239,7 @@ class _TeamBasedInfoState extends State<_TeamBasedInfo>
             end: Alignment.bottomCenter,
             colors: [
               context.bgColor,
-              context.secondaryColor.withOpacity(0.5),
+              context.secondaryColor.withValues(alpha: 0.5),
             ],
             stops: const [0.0, 0.3],
           ),
@@ -271,7 +271,8 @@ class _TeamBasedInfoState extends State<_TeamBasedInfo>
                             shape: BoxShape.circle,
                             boxShadow: [
                               BoxShadow(
-                                color: context.primaryColor.withOpacity(0.3),
+                                color:
+                                    context.primaryColor.withValues(alpha: 0.3),
                                 blurRadius: 15,
                                 spreadRadius: 2,
                               ),
@@ -295,7 +296,7 @@ class _TeamBasedInfoState extends State<_TeamBasedInfo>
                                 ThemeSizes.borderRadiusLg),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withOpacity(0.05),
+                                color: Colors.black.withValues(alpha: 0.05),
                                 blurRadius: 10,
                                 spreadRadius: 1,
                               ),
@@ -317,8 +318,8 @@ class _TeamBasedInfoState extends State<_TeamBasedInfo>
                               border: InputBorder.none,
                               hintText: 'Nome della squadra',
                               hintStyle: TextStyle(
-                                color:
-                                    context.textSecondaryColor.withOpacity(0.5),
+                                color: context.textSecondaryColor
+                                    .withValues(alpha: 0.5),
                               ),
                             ),
                           ),
@@ -341,7 +342,7 @@ class _TeamBasedInfoState extends State<_TeamBasedInfo>
                           vertical: ThemeSizes.xs,
                         ),
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.2),
+                          color: Colors.white.withValues(alpha: 0.2),
                           borderRadius:
                               BorderRadius.circular(ThemeSizes.borderRadiusLg),
                         ),
@@ -372,7 +373,7 @@ class _TeamBasedInfoState extends State<_TeamBasedInfo>
                         BorderRadius.circular(ThemeSizes.borderRadiusLg),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
+                        color: Colors.black.withValues(alpha: 0.05),
                         blurRadius: 10,
                         spreadRadius: 1,
                       ),
@@ -411,7 +412,7 @@ class _TeamBasedInfoState extends State<_TeamBasedInfo>
                       Divider(
                         height: 1,
                         thickness: 1,
-                        color: context.borderColor.withOpacity(0.1),
+                        color: context.borderColor.withValues(alpha: 0.1),
                       ),
                       Padding(
                         padding: const EdgeInsets.all(ThemeSizes.md),
@@ -464,7 +465,7 @@ class _TeamBasedInfoState extends State<_TeamBasedInfo>
                         BorderRadius.circular(ThemeSizes.borderRadiusLg),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
+                        color: Colors.black.withValues(alpha: 0.05),
                         blurRadius: 10,
                         spreadRadius: 1,
                       ),
@@ -503,7 +504,7 @@ class _TeamBasedInfoState extends State<_TeamBasedInfo>
                       Divider(
                         height: 1,
                         thickness: 1,
-                        color: context.borderColor.withOpacity(0.1),
+                        color: context.borderColor.withValues(alpha: 0.1),
                       ),
                       Container(
                         padding: const EdgeInsets.all(ThemeSizes.md),
@@ -545,7 +546,7 @@ class _TeamBasedInfoState extends State<_TeamBasedInfo>
                                 ThemeSizes.borderRadiusLg),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.red.withOpacity(0.3),
+                                color: Colors.red.withValues(alpha: 0.3),
                                 blurRadius: 8,
                                 spreadRadius: 1,
                                 offset: const Offset(0, 4),
@@ -564,7 +565,7 @@ class _TeamBasedInfoState extends State<_TeamBasedInfo>
                               },
                               borderRadius: BorderRadius.circular(
                                   ThemeSizes.borderRadiusLg),
-                              splashColor: Colors.white.withOpacity(0.1),
+                              splashColor: Colors.white.withValues(alpha: 0.1),
                               child: Padding(
                                 padding: const EdgeInsets.symmetric(
                                   vertical: ThemeSizes.lg,
@@ -617,7 +618,7 @@ class _TeamBasedInfoState extends State<_TeamBasedInfo>
           borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusLg),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.1),
+              color: Colors.black.withValues(alpha: 0.1),
               blurRadius: 10,
               spreadRadius: 1,
             ),
@@ -629,7 +630,7 @@ class _TeamBasedInfoState extends State<_TeamBasedInfo>
             Container(
               padding: const EdgeInsets.all(ThemeSizes.md),
               decoration: BoxDecoration(
-                color: Colors.red.withOpacity(0.1),
+                color: Colors.red.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: Icon(
@@ -735,7 +736,7 @@ class _ModernScoreCard extends StatelessWidget {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            color.withOpacity(0.8),
+            color.withValues(alpha: 0.8),
             color,
           ],
           begin: Alignment.topLeft,
@@ -744,7 +745,7 @@ class _ModernScoreCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusLg),
         boxShadow: [
           BoxShadow(
-            color: color.withOpacity(0.3),
+            color: color.withValues(alpha: 0.3),
             blurRadius: 8,
             spreadRadius: 1,
           ),
@@ -759,7 +760,7 @@ class _ModernScoreCard extends StatelessWidget {
               Text(
                 'Punteggio Totale',
                 style: TextStyle(
-                  color: Colors.white.withOpacity(0.9),
+                  color: Colors.white.withValues(alpha: 0.9),
                   fontSize: 14,
                 ),
               ),
@@ -776,7 +777,7 @@ class _ModernScoreCard extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(ThemeSizes.sm),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
+              color: Colors.white.withValues(alpha: 0.2),
               shape: BoxShape.circle,
             ),
             child: const Icon(
@@ -813,7 +814,7 @@ class _ModernStatCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusMd),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.03),
+            color: Colors.black.withValues(alpha: 0.03),
             blurRadius: 6,
             spreadRadius: 1,
           ),
@@ -824,7 +825,7 @@ class _ModernStatCard extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(ThemeSizes.sm),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
+              color: color.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusSm),
             ),
             child: Icon(

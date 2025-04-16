@@ -264,12 +264,12 @@ class MemoriesPage extends StatelessWidget {
                           value: null,
                           child: Text('Nessun evento'),
                         ),
-                        ...recentEvents
-                            .map((event) => DropdownMenuItem<String?>(
-                                  value: event.id,
-                                  child: Text(event.name),
-                                ))
-                            .toList(),
+                        ...recentEvents.map(
+                          (event) => DropdownMenuItem<String?>(
+                            value: event.id,
+                            child: Text(event.name),
+                          ),
+                        )
                       ],
                       onChanged: (value) {
                         setState(() {

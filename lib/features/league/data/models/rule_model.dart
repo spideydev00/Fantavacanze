@@ -60,11 +60,6 @@ class RuleModel extends Rule {
       }
     }
 
-    // If ID is 0 or null, this is an error condition - rules should always have IDs
-    if (idValue == 0) {
-      print('Warning: Rule has invalid ID: ${json['name']}');
-    }
-
     //----------------------------------------
     // C R E A T E   R U L E   M O D E L
     return RuleModel(

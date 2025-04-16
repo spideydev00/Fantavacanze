@@ -97,34 +97,6 @@ class _CreateLeaguePageState extends State<CreateLeaguePage> {
     }
   }
 
-  void _addRulesFromTemplate(List<dynamic> templateRules) {
-    setState(() {
-      for (final rule in templateRules) {
-        final Map<String, dynamic> ruleMap = {
-          'id': rule['id'], // Preserve the original ID
-          'name': rule['name'],
-          'points': rule['points'],
-          'type': rule['rule_type'] ?? rule['type'],
-        };
-
-        _rules.add(ruleMap);
-      }
-    });
-  }
-
-  void _addCustomRule(String name, double points, bool isBonus) {
-    setState(() {
-      // For custom rules, don't set ID - the createLeague function will assign IDs
-      final Map<String, dynamic> rule = {
-        'name': name,
-        'points': isBonus ? points.abs() : -points.abs(),
-        'type': isBonus ? 'bonus' : 'malus',
-      };
-
-      _rules.add(rule);
-    });
-  }
-
   void _addRule() {
     showGeneralDialog(
       context: context,

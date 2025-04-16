@@ -160,7 +160,7 @@ class _RulesPageState extends State<RulesPage>
               borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusLg),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.2),
+                  color: Colors.black.withValues(alpha: 0.2),
                   blurRadius: 10,
                   spreadRadius: 2,
                 ),
@@ -179,7 +179,7 @@ class _RulesPageState extends State<RulesPage>
                         color: (ruleType == RuleType.bonus
                                 ? Colors.green
                                 : Colors.red)
-                            .withOpacity(0.1),
+                            .withValues(alpha: 0.1),
                         shape: BoxShape.circle,
                       ),
                       child: Icon(
@@ -264,11 +264,11 @@ class _RulesPageState extends State<RulesPage>
                       Container(
                         padding: const EdgeInsets.all(ThemeSizes.sm),
                         decoration: BoxDecoration(
-                          color: context.primaryColor.withOpacity(0.05),
+                          color: context.primaryColor.withValues(alpha: 0.05),
                           borderRadius:
                               BorderRadius.circular(ThemeSizes.borderRadiusLg),
                           border: Border.all(
-                            color: context.primaryColor.withOpacity(0.2),
+                            color: context.primaryColor.withValues(alpha: 0.2),
                           ),
                         ),
                         child: Row(
@@ -357,297 +357,6 @@ class _RulesPageState extends State<RulesPage>
                 ),
               ],
             ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  void _confirmDeleteRule(BuildContext context, Rule rule, String leagueId) {
-    showDialog(
-      context: context,
-      builder: (context) => Dialog(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        child: Container(
-          padding: const EdgeInsets.all(ThemeSizes.lg),
-          decoration: BoxDecoration(
-            color: context.secondaryBgColor,
-            borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusLg),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.2),
-                blurRadius: 10,
-                spreadRadius: 2,
-              ),
-            ],
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(ThemeSizes.lg),
-                decoration: BoxDecoration(
-                  color: Colors.red.withOpacity(0.1),
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  Icons.delete_outline,
-                  color: Colors.red,
-                  size: 32,
-                ),
-              ),
-              const SizedBox(height: ThemeSizes.md),
-              Text(
-                'Eliminare questa regola?',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: context.textPrimaryColor,
-                ),
-              ),
-              const SizedBox(height: ThemeSizes.sm),
-              Text(
-                'Sei sicuro di voler eliminare la regola "${rule.name}"?',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: context.textSecondaryColor,
-                ),
-              ),
-              const SizedBox(height: ThemeSizes.lg),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: OutlinedButton(
-                      onPressed: () => Navigator.pop(context),
-                      style: OutlinedButton.styleFrom(
-                        side: BorderSide(color: context.borderColor),
-                        shape: RoundedRectangleBorder(
-                          borderRadius:
-                              BorderRadius.circular(ThemeSizes.borderRadiusMd),
-                        ),
-                      ),
-                      child: const Text('Annulla'),
-                    ),
-                  ),
-                  const SizedBox(width: ThemeSizes.md),
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: () {
-                        // Call the delete rule method
-                        context.read<LeagueBloc>().add(
-                              DeleteRuleEvent(
-                                leagueId: leagueId,
-                                ruleId: rule.id,
-                              ),
-                            );
-                        Navigator.pop(context);
-
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('Regola "${rule.name}" eliminata'),
-                            behavior: SnackBarBehavior.floating,
-                            backgroundColor: Colors.red,
-                          ),
-                        );
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.red,
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius:
-                              BorderRadius.circular(ThemeSizes.borderRadiusMd),
-                        ),
-                      ),
-                      child: const Text('Elimina'),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  void _editRule(BuildContext context, Rule rule, String leagueId) {
-    final nameController = TextEditingController(text: rule.name);
-    final pointsController =
-        TextEditingController(text: rule.points.abs().toString());
-    final formKey = GlobalKey<FormState>();
-    final ruleType = rule.type;
-
-    showDialog(
-      context: context,
-      builder: (context) => Dialog(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        child: Container(
-          padding: const EdgeInsets.all(ThemeSizes.lg),
-          decoration: BoxDecoration(
-            color: context.secondaryBgColor,
-            borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusLg),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.2),
-                blurRadius: 10,
-                spreadRadius: 2,
-              ),
-            ],
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(ThemeSizes.sm),
-                    decoration: BoxDecoration(
-                      color: (ruleType == RuleType.bonus
-                              ? Colors.green
-                              : Colors.red)
-                          .withOpacity(0.1),
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(
-                      ruleType == RuleType.bonus
-                          ? Icons.add_circle
-                          : Icons.remove_circle,
-                      color: ruleType == RuleType.bonus
-                          ? Colors.green
-                          : Colors.red,
-                      size: 22,
-                    ),
-                  ),
-                  const SizedBox(width: ThemeSizes.sm),
-                  Text(
-                    'Modifica Regola',
-                    style: TextStyle(
-                      color: context.textPrimaryColor,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 20,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: ThemeSizes.lg),
-              Form(
-                key: formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    TextFormField(
-                      controller: nameController,
-                      decoration: InputDecoration(
-                        labelText: 'Nome',
-                        hintText: 'Inserisci il nome della regola',
-                        border: OutlineInputBorder(
-                          borderRadius:
-                              BorderRadius.circular(ThemeSizes.borderRadiusLg),
-                        ),
-                      ),
-                      validator: (value) {
-                        if (value == null || value.trim().isEmpty) {
-                          return 'Inserisci un nome per la regola';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: ThemeSizes.md),
-                    TextFormField(
-                      controller: pointsController,
-                      decoration: InputDecoration(
-                        labelText: 'Punti',
-                        hintText: 'Inserisci il valore dei punti',
-                        border: OutlineInputBorder(
-                          borderRadius:
-                              BorderRadius.circular(ThemeSizes.borderRadiusLg),
-                        ),
-                      ),
-                      keyboardType: TextInputType.number,
-                      validator: (value) {
-                        if (value == null || value.trim().isEmpty) {
-                          return 'Inserisci un valore';
-                        }
-                        try {
-                          double.parse(value);
-                          return null;
-                        } catch (e) {
-                          return 'Inserisci un numero valido';
-                        }
-                      },
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: ThemeSizes.lg),
-              Row(
-                children: [
-                  // Use Expanded for buttons to prevent overflow
-                  Expanded(
-                    child: OutlinedButton(
-                      onPressed: () => Navigator.pop(context),
-                      style: OutlinedButton.styleFrom(
-                        padding:
-                            const EdgeInsets.symmetric(vertical: ThemeSizes.sm),
-                      ),
-                      child: const Text('Annulla'),
-                    ),
-                  ),
-                  const SizedBox(width: ThemeSizes.md),
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: () {
-                        if (formKey.currentState!.validate()) {
-                          final name = nameController.text.trim();
-                          final pointsValue =
-                              double.parse(pointsController.text.trim());
-
-                          // Create updated rule object with proper sign based on type
-                          final updatedRule = {
-                            'id': rule.id,
-                            'name': name,
-                            'points': pointsValue.abs(),
-                            'type': ruleType.toString().split('.').last,
-                          };
-
-                          // Call method to update rule in database
-                          context.read<LeagueBloc>().add(
-                                UpdateRuleEvent(
-                                  leagueId: leagueId,
-                                  rule: updatedRule,
-                                ),
-                              );
-
-                          Navigator.pop(context);
-
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('Regola aggiornata con successo'),
-                              backgroundColor: ruleType == RuleType.bonus
-                                  ? Colors.green
-                                  : Colors.red,
-                            ),
-                          );
-                        }
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: ruleType == RuleType.bonus
-                            ? Colors.green
-                            : Colors.red,
-                        foregroundColor: Colors.white,
-                        padding:
-                            const EdgeInsets.symmetric(vertical: ThemeSizes.sm),
-                      ),
-                      child: const Text('Salva'),
-                    ),
-                  ),
-                ],
-              ),
-            ],
           ),
         ),
       ),
@@ -751,7 +460,6 @@ class _CustomIndicatorPainter extends BoxPainter {
 
   @override
   void paint(Canvas canvas, Offset offset, ImageConfiguration configuration) {
-    final double currentIndex = controller.index.toDouble();
     final Color indicatorColor = colors[controller.index];
 
     final Paint paint = Paint()
@@ -794,7 +502,8 @@ class _RulesList extends StatelessWidget {
               width: 120,
               height: 120,
               decoration: BoxDecoration(
-                color: (isBonus ? Colors.green : Colors.red).withOpacity(0.1),
+                color: (isBonus ? Colors.green : Colors.red)
+                    .withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: Icon(
@@ -855,13 +564,13 @@ class _RulesList extends StatelessWidget {
             margin: const EdgeInsets.only(bottom: ThemeSizes.md),
             decoration: BoxDecoration(
               color: isBonus
-                  ? Colors.green.withOpacity(0.1)
-                  : Colors.red.withOpacity(0.1),
+                  ? Colors.green.withValues(alpha: 0.1)
+                  : Colors.red.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusLg),
               border: Border.all(
                 color: isBonus
-                    ? Colors.green.withOpacity(0.3)
-                    : Colors.red.withOpacity(0.3),
+                    ? Colors.green.withValues(alpha: 0.3)
+                    : Colors.red.withValues(alpha: 0.3),
               ),
             ),
             child: Row(
@@ -947,7 +656,7 @@ class _RulesList extends StatelessWidget {
             borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusLg),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.2),
+                color: Colors.black.withValues(alpha: 0.2),
                 blurRadius: 10,
                 spreadRadius: 2,
               ),
@@ -965,7 +674,7 @@ class _RulesList extends StatelessWidget {
                       color: (ruleType == RuleType.bonus
                               ? Colors.green
                               : Colors.red)
-                          .withOpacity(0.1),
+                          .withValues(alpha: 0.1),
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
@@ -1123,7 +832,7 @@ class _RulesList extends StatelessWidget {
             borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusLg),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.2),
+                color: Colors.black.withValues(alpha: 0.2),
                 blurRadius: 10,
                 spreadRadius: 2,
               ),
@@ -1135,7 +844,7 @@ class _RulesList extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(ThemeSizes.lg),
                 decoration: BoxDecoration(
-                  color: Colors.red.withOpacity(0.1),
+                  color: Colors.red.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(

@@ -93,7 +93,7 @@ class AddEventEvent extends LeagueEvent {
   final RuleType type;
   final String? description;
 
-  AddEventEvent({
+  const AddEventEvent({
     required this.leagueId,
     required this.name,
     required this.points,
