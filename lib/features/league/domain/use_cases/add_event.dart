@@ -18,8 +18,8 @@ class AddEvent implements Usecase<League, AddEventParams> {
       name: params.name,
       points: params.points,
       creatorId: params.creatorId,
-      targetUserId: params.targetUserId,
-      eventType: params.eventType,
+      targetUser: params.targetUser,
+      type: params.type,
       description: params.description,
     );
   }
@@ -31,8 +31,8 @@ class AddEventParams {
   final String name;
   final int points;
   final String creatorId;
-  final String targetUserId;
-  final RuleType eventType;
+  final String targetUser;
+  final RuleType type;
   final String? description;
 
   const AddEventParams({
@@ -40,8 +40,8 @@ class AddEventParams {
     required this.name,
     required this.points,
     required this.creatorId,
-    required this.targetUserId,
-    required this.eventType,
+    required this.targetUser,
+    required this.type,
     this.description,
   });
 }

@@ -118,8 +118,8 @@ class _AddEventPageState extends State<AddEventPage> {
             name: name,
             points: points,
             creatorId: creatorId,
-            targetUserId: targetUserId,
-            eventType: eventType,
+            targetUser: targetUserId,
+            type: eventType,
             description: description,
           ),
         );

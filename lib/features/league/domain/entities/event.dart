@@ -7,7 +7,7 @@ class Event {
   final String name;
   final int points;
   final String creatorId; // ID of the admin who created the event
-  final String targetUserId; // ID of the user receiving the points
+  final String targetUser; // The user receiving the points
   final DateTime createdAt;
   final RuleType type;
   final String? description;
@@ -17,7 +17,7 @@ class Event {
     required this.name,
     required this.points,
     required this.creatorId,
-    required this.targetUserId,
+    required this.targetUser,
     required this.createdAt,
     required this.type,
     this.description,

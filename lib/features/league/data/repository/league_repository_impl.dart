@@ -257,8 +257,8 @@ class LeagueRepositoryImpl implements LeagueRepository {
     required String name,
     required int points,
     required String creatorId,
-    required String targetUserId,
-    required RuleType eventType,
+    required String targetUser,
+    required RuleType type,
     String? description,
   }) async {
     try {
@@ -274,8 +274,8 @@ class LeagueRepositoryImpl implements LeagueRepository {
         name: name,
         points: points,
         creatorId: creatorId,
-        targetUserId: targetUserId,
-        eventType: eventType,
+        targetUser: targetUser,
+        type: type,
         description: description,
       );
 
@@ -404,6 +404,60 @@ class LeagueRepositoryImpl implements LeagueRepository {
       return Left(Failure(e.message));
     } catch (e) {
       return Left(Failure(e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, League>> updateRule({
+    required String leagueId,
+    required Map<String, dynamic> rule,
+  }) async {
+    try {
+      if (!await connectionChecker.isConnected) {
+        return Left(
+          Failure(
+              "Nessuna connessione ad internet, riprova appena sarai connesso."),
+        );
+      }
+
+      final league = await remoteDataSource.updateRule(
+        leagueId: leagueId,
+        rule: rule,
+      );
+
+      // Update cache
+      await localDataSource.cacheLeague(league);
+
+      return Right(league);
+    } on ServerException catch (e) {
+      return Left(Failure(e.message));
+    }
+  }
+
+  @override
+  Future<Either<Failure, League>> deleteRule({
+    required String leagueId,
+    required int ruleId,
+  }) async {
+    try {
+      if (!await connectionChecker.isConnected) {
+        return Left(
+          Failure(
+              "Nessuna connessione ad internet, riprova appena sarai connesso."),
+        );
+      }
+
+      final league = await remoteDataSource.deleteRule(
+        leagueId: leagueId,
+        ruleId: ruleId,
+      );
+
+      // Update cache
+      await localDataSource.cacheLeague(league);
+
+      return Right(league);
+    } on ServerException catch (e) {
+      return Left(Failure(e.message));
     }
   }
 }

@@ -51,8 +51,8 @@ abstract class LeagueRepository {
     required String name,
     required int points,
     required String creatorId,
-    required String targetUserId,
-    required RuleType eventType,
+    required String targetUser,
+    required RuleType type,
     String? description,
   });
 
@@ -77,4 +77,16 @@ abstract class LeagueRepository {
 
   // Rules operations
   Future<Either<Failure, List<Rule>>> getRules(String mode);
+
+  // Add new method to update rule
+  Future<Either<Failure, League>> updateRule({
+    required String leagueId,
+    required Map<String, dynamic> rule,
+  });
+
+  // Add new method to delete rule
+  Future<Either<Failure, League>> deleteRule({
+    required String leagueId,
+    required int ruleId,
+  });
 }

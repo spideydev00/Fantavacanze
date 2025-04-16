@@ -13,6 +13,8 @@ import 'package:fantavacanze_official/features/league/domain/use_cases/get_user_
 import 'package:fantavacanze_official/features/league/domain/use_cases/join_league.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/remove_memory.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/update_team_name.dart';
+import 'package:fantavacanze_official/features/league/domain/use_cases/update_rule.dart';
+import 'package:fantavacanze_official/features/league/domain/use_cases/delete_rule.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_event.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -29,6 +31,8 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
   final AddMemory addMemory;
   final RemoveMemory removeMemory;
   final GetRules getRules;
+  final UpdateRule updateRule;
+  final DeleteRule deleteRule;
   final AppUserCubit appUserCubit;
   final AppLeagueCubit appLeagueCubit;
 
@@ -43,6 +47,8 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
     required this.addMemory,
     required this.removeMemory,
     required this.getRules,
+    required this.updateRule,
+    required this.deleteRule,
     required this.appUserCubit,
     required this.appLeagueCubit,
   }) : super(LeagueInitial()) {
@@ -55,6 +61,8 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
     on<UpdateTeamNameEvent>(_onUpdateTeamName);
     on<AddEventEvent>(_onAddEvent);
     on<AddMemoryEvent>(_onAddMemory);
+    on<UpdateRuleEvent>(_onUpdateRule);
+    on<DeleteRuleEvent>(_onDeleteRule);
   }
 
   Future<void> _onCreateLeague(
@@ -288,8 +296,8 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
           name: event.name,
           points: event.points,
           creatorId: event.creatorId,
-          targetUserId: event.targetUserId,
-          eventType: event.eventType,
+          targetUser: event.targetUser,
+          type: event.type,
           description: event.description,
         ),
       );
@@ -332,6 +340,60 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
     } catch (e) {
       emit(LeagueError(message: e.toString()));
     }
+  }
+
+  Future<void> _onUpdateRule(
+      UpdateRuleEvent event, Emitter<LeagueState> emit) async {
+    emit(LeagueLoading());
+
+    // Ensure we're working with integer IDs
+    final Map<String, dynamic> ruleWithIntId = Map.from(event.rule);
+    if (ruleWithIntId['id'] is String) {
+      ruleWithIntId['id'] = int.tryParse(ruleWithIntId['id']) ?? 0;
+    }
+
+    final result = await updateRule(
+      UpdateRuleParams(
+        leagueId: event.leagueId,
+        rule: ruleWithIntId,
+      ),
+    );
+
+    emit(result.fold(
+      (failure) => LeagueError(message: failure.message),
+      (league) {
+        // If we have a selected league, update it
+        if (appLeagueCubit.state is AppLeagueExists) {
+          appLeagueCubit.selectLeague(league);
+        }
+
+        return LeagueLoaded(league: league);
+      },
+    ));
+  }
+
+  Future<void> _onDeleteRule(
+      DeleteRuleEvent event, Emitter<LeagueState> emit) async {
+    emit(LeagueLoading());
+
+    final result = await deleteRule(
+      DeleteRuleParams(
+        leagueId: event.leagueId,
+        ruleId: event.ruleId,
+      ),
+    );
+
+    emit(result.fold(
+      (failure) => LeagueError(message: failure.message),
+      (league) {
+        // If we have a selected league, update it
+        if (appLeagueCubit.state is AppLeagueExists) {
+          appLeagueCubit.selectLeague(league);
+        }
+
+        return LeagueLoaded(league: league);
+      },
+    ));
   }
 
   Stream<LeagueState> mapEventToState(LeagueEvent event) async* {

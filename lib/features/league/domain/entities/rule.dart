@@ -1,9 +1,8 @@
-import 'package:flutter/foundation.dart';
+import 'package:equatable/equatable.dart';
 
 enum RuleType { bonus, malus }
 
-@immutable
-class Rule {
+class Rule extends Equatable {
   final int id;
   final String name;
   final RuleType type;
@@ -15,4 +14,7 @@ class Rule {
     required this.type,
     required this.points,
   });
+
+  @override
+  List<Object?> get props => [id, name, type, points];
 }

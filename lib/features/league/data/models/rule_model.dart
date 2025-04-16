@@ -25,25 +25,44 @@ class RuleModel extends Rule {
     // H A N D L E   R U L E   T Y P E
     RuleType ruleType = RuleType.bonus; // Default value
 
-    final typeValue = json['rule_type'];
+    // Check rule_type field first
+    final typeValue = json['rule_type'] ?? json['type'];
 
-    // Gestisci diversi formati possibili
-    if (typeValue.toString().toLowerCase() == 'bonus') {
-      ruleType = RuleType.bonus;
-    } else if (typeValue.toString().toLowerCase() == 'malus') {
+    if (typeValue != null) {
+      final typeStr = typeValue.toString().toLowerCase();
+
+      // Ensure malus is properly detected
+      if (typeStr == 'malus') {
+        ruleType = RuleType.malus;
+      } else if (typeStr == 'bonus') {
+        ruleType = RuleType.bonus;
+      } else if (pointsValue < 0) {
+        // Fallback: negative points means malus
+        ruleType = RuleType.malus;
+      }
+    } else if (pointsValue < 0) {
+      // If no type specified but points are negative, it's a malus
       ruleType = RuleType.malus;
     }
 
     //----------------------------------------
-    // H A N D L E   I D   C O N V E R S I O N
-    int idValue = 1; // Default value
+    // H A N D L E   I D   C O N V E R S I O N - IMPROVED
+    int idValue = 0; // Default to 0
 
-    if (json['id'] == null) {
-      idValue = 0; // Default ID if null
-    } else if (json['id'] is int) {
-      idValue = json['id'] as int;
-    } else if (json['id'] is double) {
-      idValue = (json['id'] as double).toInt();
+    if (json['id'] != null) {
+      if (json['id'] is int) {
+        idValue = json['id'] as int;
+      } else if (json['id'] is double) {
+        idValue = (json['id'] as double).toInt();
+      } else if (json['id'] is String && (json['id'] as String).isNotEmpty) {
+        // Try to parse string to int
+        idValue = int.tryParse((json['id'] as String)) ?? 0;
+      }
+    }
+
+    // If ID is 0 or null, this is an error condition - rules should always have IDs
+    if (idValue == 0) {
+      print('Warning: Rule has invalid ID: ${json['name']}');
     }
 
     //----------------------------------------
@@ -60,8 +79,9 @@ class RuleModel extends Rule {
     return {
       'id': id,
       'name': name,
-      'rule_type': type.toString().split('.').last,
-      'points': points,
+      'rule_type':
+          type.toString().split('.').last, // Use rule_type consistently
+      'points': points, // Points already has the correct sign
     };
   }
 }
