@@ -3,11 +3,11 @@ import 'package:fantavacanze_official/core/extensions/context_extension.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:fantavacanze_official/core/utils/fade_route.dart';
-import 'package:fantavacanze_official/features/dashboard/presentation/pages/subpages/quick_challenge.dart';
+import 'package:fantavacanze_official/features/games/presentation/pages/quick_challenge.dart';
 import 'package:flutter/material.dart';
 
-class ArticleCard extends StatelessWidget {
-  const ArticleCard({
+class HomeArticleCard extends StatelessWidget {
+  const HomeArticleCard({
     super.key,
     required this.imagePath,
     required this.title,

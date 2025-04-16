@@ -9,7 +9,6 @@ abstract class LeagueRepository {
     required String name,
     String? description,
     required bool isTeamBased,
-    required List<String> admins,
     required List<Map<String, dynamic>> rules,
   });
 

@@ -1,15 +1,15 @@
 import 'package:fantavacanze_official/core/navigation/navigation_item.dart';
-import 'package:fantavacanze_official/features/dashboard/presentation/pages/home.dart';
-import 'package:fantavacanze_official/features/dashboard/presentation/pages/subpages/articles_page.dart';
-import 'package:fantavacanze_official/features/dashboard/presentation/pages/subpages/drink_games.dart';
-import 'package:fantavacanze_official/features/dashboard/presentation/pages/subpages/quick_challenge.dart';
-import 'package:fantavacanze_official/features/league/presentation/pages/create_league_page.dart';
-import 'package:fantavacanze_official/features/league/presentation/pages/join_league_page.dart';
-import 'package:fantavacanze_official/features/league/presentation/pages/leaderboard_page.dart';
-import 'package:fantavacanze_official/features/league/presentation/pages/memories_page.dart';
-import 'package:fantavacanze_official/features/league/presentation/pages/notes_page.dart';
-import 'package:fantavacanze_official/features/league/presentation/pages/rules_page.dart';
-import 'package:fantavacanze_official/features/league/presentation/pages/team_info_page.dart';
+import 'package:fantavacanze_official/features/league/presentation/pages/home.dart';
+import 'package:fantavacanze_official/features/blog/presentation/pages/articles_page.dart';
+import 'package:fantavacanze_official/features/games/presentation/pages/drink_games.dart';
+import 'package:fantavacanze_official/features/games/presentation/pages/quick_challenge.dart';
+import 'package:fantavacanze_official/features/league/presentation/pages/navigation/create_league/create_league_page.dart';
+import 'package:fantavacanze_official/features/league/presentation/pages/navigation/join_league/join_league_page.dart';
+import 'package:fantavacanze_official/features/league/presentation/pages/navigation/leaderboard/leaderboard_page.dart';
+import 'package:fantavacanze_official/features/league/presentation/pages/navigation/memories/memories_page.dart';
+import 'package:fantavacanze_official/features/league/presentation/pages/navigation/notes/notes_page.dart';
+import 'package:fantavacanze_official/features/league/presentation/pages/navigation/rules/rules_page.dart';
+import 'package:fantavacanze_official/features/league/presentation/pages/navigation/team_info/team_info_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 

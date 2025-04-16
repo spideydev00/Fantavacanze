@@ -12,9 +12,8 @@ import 'package:uuid/uuid.dart';
 abstract class LeagueRemoteDataSource {
   Future<LeagueModel> createLeague({
     required String name,
-    required String description,
+    required String? description,
     required bool isTeamBased,
-    required List<String> admins,
     required List<Map<String, dynamic>> rules,
   });
 
@@ -105,9 +104,8 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
   @override
   Future<LeagueModel> createLeague({
     required String name,
-    required String description,
+    required String? description,
     required bool isTeamBased,
-    required List<String> admins,
     required List<Map<String, dynamic>> rules,
   }) async {
     try {
@@ -149,7 +147,7 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
       final leagueData = {
         'id': leagueId,
         'invite_code': inviteCode,
-        'admins': admins,
+        'admins': [creatorId],
         'name': name,
         'description': description,
         'created_at': DateTime.now().toIso8601String(),

@@ -4,7 +4,7 @@ import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/rule.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_event.dart';
-import 'package:fantavacanze_official/features/league/presentation/widgets/rule_item.dart';
+import 'package:fantavacanze_official/features/league/presentation/widgets/rules/rule_item.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -160,7 +160,7 @@ class _RulesPageState extends State<RulesPage>
               borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusLg),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.2),
+                  color: Colors.black.withOpacity(0.2),
                   blurRadius: 10,
                   spreadRadius: 2,
                 ),
@@ -318,13 +318,22 @@ class _RulesPageState extends State<RulesPage>
                           final pointsValue =
                               double.parse(pointsController.text.trim());
 
-                          // Convert points based on rule type (malus should be negative)
-                          ruleType == RuleType.bonus
-                              ? pointsValue.abs()
-                              : -pointsValue.abs();
+                          // Actually add the rule to the league via the bloc
+                          final rule = {
+                            'name': name,
+                            'points': ruleType == RuleType.bonus
+                                ? pointsValue.abs()
+                                : -pointsValue.abs(),
+                            'type': ruleType.toString().split('.').last,
+                          };
 
-                          // Here you would add the rule to the league
-                          // For now, we'll just close the dialog and show a success message
+                          context.read<LeagueBloc>().add(
+                                UpdateRuleEvent(
+                                  leagueId: leagueId,
+                                  rule: rule,
+                                ),
+                              );
+
                           Navigator.pop(context);
 
                           ScaffoldMessenger.of(context).showSnackBar(
@@ -351,6 +360,8 @@ class _RulesPageState extends State<RulesPage>
                           horizontal: ThemeSizes.md,
                           vertical: ThemeSizes.sm,
                         ),
+                        fixedSize:
+                            null, // Override fixed size to prevent overflow
                       ),
                     ),
                   ],

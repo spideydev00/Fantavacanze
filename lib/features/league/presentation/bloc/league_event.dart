@@ -10,13 +10,13 @@ abstract class LeagueEvent extends Equatable {
 
 class CreateLeagueEvent extends LeagueEvent {
   final String name;
-  final String description;
+  final String? description;
   final bool isTeamBased;
   final List<Map<String, dynamic>> rules;
 
   const CreateLeagueEvent({
     required this.name,
-    required this.description,
+    this.description,
     required this.isTeamBased,
     required this.rules,
   });

@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fantavacanze_official/core/cubits/app_navigation/app_navigation_cubit.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
-import 'package:fantavacanze_official/features/dashboard/presentation/widgets/navigation_assets/bottom_navigation_asset.dart';
+import 'package:fantavacanze_official/features/league/presentation/widgets/navigation/bottom_navbar/bottom_navigation_asset.dart';
 
 class CustomBottomNavigationBar extends StatelessWidget {
   const CustomBottomNavigationBar({super.key});

@@ -69,43 +69,24 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
     CreateLeagueEvent event,
     Emitter<LeagueState> emit,
   ) async {
-    try {
-      emit(LeagueLoading());
+    emit(LeagueLoading());
 
-      late String userId;
-      final state = appUserCubit.state;
+    final result = await createLeague(
+      CreateLeagueParams(
+        name: event.name,
+        description: event.description ?? "",
+        isTeamBased: event.isTeamBased,
+        rules: event.rules,
+      ),
+    );
 
-      if (state is AppUserIsLoggedIn) {
-        userId = state.user.id;
-      }
-
-      // Create rules from provided data
-      final rules = event.rules.map((rule) {
-        return {
-          'name': rule['name'],
-          'type': rule['type'],
-          'points': rule['points'],
-        };
-      }).toList();
-
-      // Create league
-      final result = await createLeague(
-        CreateLeagueParams(
-          name: event.name,
-          description: event.description,
-          isTeamBased: event.isTeamBased,
-          admins: [userId],
-          rules: rules,
-        ),
-      );
-
-      result.fold(
-        (failure) => emit(LeagueError(message: failure.message)),
-        (league) => emit(LeagueCreated(league: league)),
-      );
-    } catch (e) {
-      emit(LeagueError(message: e.toString()));
-    }
+    result.fold(
+      (failure) => emit(LeagueError(message: failure.message)),
+      (league) {
+        emit(LeagueCreated(league: league));
+        emit(LeagueLoaded(league: league));
+      },
+    );
   }
 
   Future<void> _onGetLeague(
@@ -215,7 +196,10 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
             emit(LeagueError(message: failure.message));
           }
         },
-        (league) => emit(LeagueJoined(league: league)),
+        (league) {
+          emit(LeagueJoined(league: league));
+          _refreshSelectedLeague(league);
+        },
       );
     } catch (e) {
       emit(LeagueError(message: e.toString()));
@@ -245,7 +229,10 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
 
       result.fold(
         (failure) => emit(LeagueError(message: failure.message)),
-        (league) => emit(LeagueExited(league: league)),
+        (league) {
+          emit(LeagueExited(league: league));
+          _refreshSelectedLeague(league);
+        },
       );
     } catch (e) {
       emit(LeagueError(message: e.toString()));
@@ -276,7 +263,10 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
 
       result.fold(
         (failure) => emit(LeagueError(message: failure.message)),
-        (league) => emit(TeamNameUpdated(league: league)),
+        (league) {
+          emit(TeamNameUpdated(league: league));
+          _refreshSelectedLeague(league);
+        },
       );
     } catch (e) {
       emit(LeagueError(message: e.toString()));
@@ -304,7 +294,10 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
 
       result.fold(
         (failure) => emit(LeagueError(message: failure.message)),
-        (league) => emit(LeagueLoaded(league: league)),
+        (league) {
+          emit(LeagueLoaded(league: league));
+          _refreshSelectedLeague(league);
+        },
       );
     } catch (e) {
       emit(LeagueError(message: e.toString()));
@@ -335,7 +328,10 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
 
       result.fold(
         (failure) => emit(LeagueError(message: failure.message)),
-        (league) => emit(MemoryAdded(league: league)),
+        (league) {
+          emit(MemoryAdded(league: league));
+          _refreshSelectedLeague(league);
+        },
       );
     } catch (e) {
       emit(LeagueError(message: e.toString()));
@@ -367,6 +363,7 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
           appLeagueCubit.selectLeague(league);
         }
 
+        _refreshSelectedLeague(league);
         return LeagueLoaded(league: league);
       },
     ));
@@ -391,6 +388,7 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
           appLeagueCubit.selectLeague(league);
         }
 
+        _refreshSelectedLeague(league);
         return LeagueLoaded(league: league);
       },
     ));
@@ -494,8 +492,21 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
           appLeagueCubit.loadSelectedLeague(updatedLeagues);
         }
 
+        _refreshSelectedLeague(league);
         return LeagueLoaded(league: league);
       },
     );
+  }
+
+  void _refreshSelectedLeague(League updatedLeague) {
+    if (appLeagueCubit.state is AppLeagueExists) {
+      final leagueState = appLeagueCubit.state as AppLeagueExists;
+
+      if (leagueState.selectedLeague?.id == updatedLeague.id) {
+        appLeagueCubit.selectLeague(updatedLeague);
+      }
+
+      appLeagueCubit.getUserLeagues();
+    }
   }
 }
