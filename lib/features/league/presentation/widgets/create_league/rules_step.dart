@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/extensions/context_extension.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
+import 'package:fantavacanze_official/features/league/domain/entities/rule.dart';
 import 'package:fantavacanze_official/features/league/presentation/widgets/rules/rule_item.dart';
 import 'package:fantavacanze_official/features/league/presentation/widgets/create_league/game_mode_selector.dart';
 
@@ -10,7 +11,7 @@ class RulesStep extends StatelessWidget {
   final GameMode selectedRuleMode;
   final bool isLoadingRules;
   final bool rulesLoaded;
-  final List<Map<String, dynamic>> rules;
+  final List<Rule> rules;
   final Function(GameMode) onRuleModeChanged;
   final VoidCallback onAddRule;
   final Function(int) onEditRule;

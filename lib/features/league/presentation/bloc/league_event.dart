@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/rule.dart';
+import 'package:fantavacanze_official/features/league/domain/entities/league.dart';
 
 abstract class LeagueEvent extends Equatable {
   const LeagueEvent();
@@ -12,7 +13,7 @@ class CreateLeagueEvent extends LeagueEvent {
   final String name;
   final String? description;
   final bool isTeamBased;
-  final List<Map<String, dynamic>> rules;
+  final List<Rule> rules;
 
   const CreateLeagueEvent({
     required this.name,
@@ -34,10 +35,6 @@ class GetLeagueEvent extends LeagueEvent {
   List<Object?> get props => [leagueId];
 }
 
-class GetUserLeaguesEvent extends LeagueEvent {
-  const GetUserLeaguesEvent();
-}
-
 class JoinLeagueEvent extends LeagueEvent {
   final String inviteCode;
   final String? teamName;
@@ -57,35 +54,35 @@ class JoinLeagueEvent extends LeagueEvent {
 }
 
 class ExitLeagueEvent extends LeagueEvent {
-  final String leagueId;
+  final League league;
   final String userId;
 
   const ExitLeagueEvent({
-    required this.leagueId,
+    required this.league,
     required this.userId,
   });
 
   @override
-  List<Object?> get props => [leagueId, userId];
+  List<Object?> get props => [league, userId];
 }
 
 class UpdateTeamNameEvent extends LeagueEvent {
-  final String leagueId;
+  final League league;
   final String userId;
   final String newName;
 
   const UpdateTeamNameEvent({
-    required this.leagueId,
+    required this.league,
     required this.userId,
     required this.newName,
   });
 
   @override
-  List<Object?> get props => [leagueId, userId, newName];
+  List<Object?> get props => [league, userId, newName];
 }
 
 class AddEventEvent extends LeagueEvent {
-  final String leagueId;
+  final League league;
   final String name;
   final int points;
   final String creatorId;
@@ -94,7 +91,7 @@ class AddEventEvent extends LeagueEvent {
   final String? description;
 
   const AddEventEvent({
-    required this.leagueId,
+    required this.league,
     required this.name,
     required this.points,
     required this.creatorId,
@@ -105,39 +102,39 @@ class AddEventEvent extends LeagueEvent {
 
   @override
   List<Object?> get props =>
-      [leagueId, name, points, creatorId, targetUser, RuleType, description];
+      [league, name, points, creatorId, targetUser, RuleType, description];
 }
 
 class AddMemoryEvent extends LeagueEvent {
-  final String leagueId;
+  final League league;
   final String imageUrl;
   final String text;
   final String userId;
-  final String? relatedEventId; // Add relatedEventId
+  final String? relatedEventId;
 
   const AddMemoryEvent({
-    required this.leagueId,
+    required this.league,
     required this.imageUrl,
     required this.text,
     required this.userId,
-    this.relatedEventId, // Optional parameter
+    this.relatedEventId,
   });
 
   @override
-  List<Object?> get props => [leagueId, imageUrl, text, userId, relatedEventId];
+  List<Object?> get props => [league, imageUrl, text, userId, relatedEventId];
 }
 
 class RemoveMemoryEvent extends LeagueEvent {
-  final String leagueId;
+  final League league;
   final String memoryId;
 
   const RemoveMemoryEvent({
-    required this.leagueId,
+    required this.league,
     required this.memoryId,
   });
 
   @override
-  List<Object?> get props => [leagueId, memoryId];
+  List<Object?> get props => [league, memoryId];
 }
 
 class GetRulesEvent extends LeagueEvent {
@@ -149,29 +146,43 @@ class GetRulesEvent extends LeagueEvent {
   List<Object?> get props => [mode];
 }
 
-// Add new event for updating a rule
 class UpdateRuleEvent extends LeagueEvent {
-  final String leagueId;
-  final Map<String, dynamic> rule;
+  final League league;
+  final Rule rule;
+  final String? originalRuleName;
 
   const UpdateRuleEvent({
-    required this.leagueId,
+    required this.league,
+    required this.rule,
+    this.originalRuleName,
+  });
+
+  @override
+  List<Object?> get props => [league, rule, originalRuleName];
+}
+
+class DeleteRuleEvent extends LeagueEvent {
+  final League league;
+  final String ruleName;
+
+  const DeleteRuleEvent({
+    required this.league,
+    required this.ruleName,
+  });
+
+  @override
+  List<Object?> get props => [league, ruleName];
+}
+
+class AddRuleEvent extends LeagueEvent {
+  final League league;
+  final Rule rule;
+
+  const AddRuleEvent({
+    required this.league,
     required this.rule,
   });
 
   @override
-  List<Object?> get props => [leagueId, rule];
-}
-
-class DeleteRuleEvent extends LeagueEvent {
-  final String leagueId;
-  final int ruleId;
-
-  const DeleteRuleEvent({
-    required this.leagueId,
-    required this.ruleId,
-  });
-
-  @override
-  List<Object?> get props => [leagueId, ruleId];
+  List<Object?> get props => [league, rule];
 }

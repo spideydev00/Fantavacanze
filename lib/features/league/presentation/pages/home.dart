@@ -5,6 +5,7 @@ import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:fantavacanze_official/core/widgets/modern_icon_button.dart';
 import 'package:fantavacanze_official/features/blog/presentation/widgets/article_card.dart';
+import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc.dart';
 import 'package:fantavacanze_official/features/league/presentation/widgets/core/divider.dart';
 import 'package:fantavacanze_official/features/league/presentation/widgets/homepage/daily_goals.dart';
 import 'package:fantavacanze_official/features/league/presentation/widgets/core/page_redirection_card.dart';
@@ -23,18 +24,18 @@ class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<AppLeagueCubit, AppLeagueState>(
-      builder: (context, leagueState) {
+      builder: (context, state) {
+        // User has leagues and a selected league
+        if (state is AppLeagueExists) {
+          return SingleChildScrollView(
+            physics: const ClampingScrollPhysics(),
+            child: _buildParticipantContent(context, state.selectedLeague),
+          );
+        }
+
         return SingleChildScrollView(
           physics: const ClampingScrollPhysics(),
-          child: Column(
-            children: [
-              if (leagueState is AppLeagueExists &&
-                  leagueState.leagues.isNotEmpty)
-                _buildParticipantContent(context, leagueState)
-              else
-                _buildNonParticipantContent(context),
-            ],
-          ),
+          child: _buildNonParticipantContent(context),
         );
       },
     );
@@ -60,40 +61,34 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  Widget _buildParticipantContent(
-      BuildContext context, AppLeagueExists leagueState) {
-    if (leagueState.selectedLeague != null) {
-      final league = leagueState.selectedLeague!;
-      final isAdmin = context.read<AppLeagueCubit>().isAdmin();
+  Widget _buildParticipantContent(BuildContext context, League league) {
+    final isAdmin = context.read<LeagueBloc>().isAdmin();
 
-      return Column(
-        children: [
-          DailyGoals(),
+    return Column(
+      children: [
+        DailyGoals(),
 
-          // Admin section for creating events
-          if (isAdmin) ...[
-            const SizedBox(height: 25),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: ThemeSizes.xl),
-              child: CustomDivider(text: 'Nuovo Evento'),
-            ),
-            const SizedBox(height: 15),
-            _buildAdminActions(context),
-          ],
-
-          // Latest events section (visible to everyone)
+        // Admin section for creating events
+        if (isAdmin) ...[
           const SizedBox(height: 25),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: ThemeSizes.xl),
-            child: CustomDivider(text: 'Ultimi Eventi'),
+            child: CustomDivider(text: 'Nuovo Evento'),
           ),
           const SizedBox(height: 15),
-          _buildLatestEvents(context, league),
+          _buildAdminActions(context),
         ],
-      );
-    }
 
-    return _buildNonParticipantContent(context);
+        // Latest events section (visible to everyone)
+        const SizedBox(height: 25),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: ThemeSizes.xl),
+          child: CustomDivider(text: 'Ultimi Eventi'),
+        ),
+        const SizedBox(height: 15),
+        _buildLatestEvents(context, league),
+      ],
+    );
   }
 
   Widget _buildLatestEvents(BuildContext context, League league) {

@@ -125,6 +125,18 @@ flutter:
   - assets/images/icons/homepage_icons/drink-games-icon-dark.svg
   - assets/images/icons/homepage_icons/search-league-icon-dark.svg
   - assets/images/icons/homepage_icons/home-icon-dark.svg
+  - assets/images/icons/homepage_icons/rankings-icon.svg
+  - assets/images/icons/homepage_icons/rankings-icon-dark.svg
+  - assets/images/icons/homepage_icons/rules-icon.svg
+  - assets/images/icons/homepage_icons/rules-icon-dark.svg
+  - assets/images/icons/homepage_icons/team-icon.svg
+  - assets/images/icons/homepage_icons/team-icon-dark.svg
+  - assets/images/icons/homepage_icons/memories-icon.svg
+  - assets/images/icons/homepage_icons/memories-icon-dark.svg
+  - assets/images/icons/homepage_icons/notes-icon.svg
+  - assets/images/icons/homepage_icons/notes-icon-dark.svg
+  - assets/images/icons/homepage_icons/articles-icon.svg
+  - assets/images/icons/homepage_icons/articles-icon-dark.svg
   
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-assets/images

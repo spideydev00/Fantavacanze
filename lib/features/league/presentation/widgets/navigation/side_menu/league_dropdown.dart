@@ -2,8 +2,8 @@ import 'package:fantavacanze_official/core/cubits/app_league/app_league_cubit.da
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/extensions/context_extension.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
-import 'package:fantavacanze_official/features/league/presentation/widgets/core/divider.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/league.dart';
+import 'package:fantavacanze_official/features/league/presentation/widgets/core/divider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -12,45 +12,39 @@ class LeagueDropdown extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocConsumer<AppLeagueCubit, AppLeagueState>(
-      listener: (context, state) {},
-      builder: (context, leagueState) {
-        if (leagueState is AppLeagueExists) {
-          if (leagueState.leagues.isEmpty) {
-            return const SizedBox.shrink();
-          }
-
-          return Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: ThemeSizes.md,
-              vertical: ThemeSizes.sm,
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                CustomDivider(text: "Le Mie Leghe"),
-                const SizedBox(height: ThemeSizes.xs),
-                _buildLeagueSelector(
-                  context,
-                  leagueState.leagues,
-                  leagueState.selectedLeague!,
-                ),
-              ],
-            ),
-          );
-        }
-
+    return BlocBuilder<AppLeagueCubit, AppLeagueState>(
+        builder: (context, appLeagueState) {
+      // Only show dropdown when leagues exist
+      if (appLeagueState is! AppLeagueExists) {
         return const SizedBox.shrink();
-      },
-    );
+      }
+
+      final leagues = appLeagueState.leagues;
+      final selectedLeague = appLeagueState.selectedLeague;
+
+      return Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: ThemeSizes.md,
+          vertical: ThemeSizes.sm,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            CustomDivider(text: "Le Mie Leghe"),
+            const SizedBox(height: ThemeSizes.xs),
+            _buildLeagueSelector(
+              context,
+              leagues,
+              selectedLeague,
+            ),
+          ],
+        ),
+      );
+    });
   }
 
   Widget _buildLeagueSelector(
       BuildContext context, List<League> leagues, League selectedLeague) {
-    // Check if the selected league exists in the leagues list
-    final leagueIds = leagues.map((l) => l.id).toSet();
-    final validSelection = leagueIds.contains(selectedLeague.id);
-
     return Container(
       padding: const EdgeInsets.symmetric(
         horizontal: ThemeSizes.md,
@@ -65,13 +59,19 @@ class LeagueDropdown extends StatelessWidget {
         ),
       ),
       child: DropdownButton<String>(
-        value: validSelection
-            ? selectedLeague.id
-            : (leagues.isNotEmpty ? leagues.first.id : null),
+        value: selectedLeague.id,
         onChanged: (String? newLeagueId) {
           if (newLeagueId != null) {
-            final newLeague = leagues.firstWhere((l) => l.id == newLeagueId);
+            final newLeague = leagues.firstWhere(
+              (league) => league.id == newLeagueId,
+            );
+
             context.read<AppLeagueCubit>().selectLeague(newLeague);
+            debugPrint(
+                "🧊AppLeagueCubit: Changing selected league to: ${newLeague.name}");
+
+            // Force dropdown to close to trigger UI refresh
+            FocusScope.of(context).requestFocus(FocusNode());
           }
         },
         items: leagues.map<DropdownMenuItem<String>>((League league) {

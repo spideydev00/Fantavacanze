@@ -1,6 +1,7 @@
 import 'package:fantavacanze_official/core/errors/failure.dart';
 import 'package:fantavacanze_official/core/use-case/usecase.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/league.dart';
+import 'package:fantavacanze_official/features/league/domain/entities/rule.dart';
 import 'package:fantavacanze_official/features/league/domain/repository/league_repository.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:flutter/foundation.dart';
@@ -13,19 +14,22 @@ class UpdateRule implements Usecase<League, UpdateRuleParams> {
   @override
   Future<Either<Failure, League>> call(UpdateRuleParams params) async {
     return leagueRepository.updateRule(
-      leagueId: params.leagueId,
+      league: params.league,
       rule: params.rule,
+      originalRuleName: params.originalRuleName,
     );
   }
 }
 
 @immutable
 class UpdateRuleParams {
-  final String leagueId;
-  final Map<String, dynamic> rule;
+  final League league;
+  final Rule rule;
+  final String? originalRuleName;
 
   const UpdateRuleParams({
-    required this.leagueId,
+    required this.league,
     required this.rule,
+    this.originalRuleName,
   });
 }

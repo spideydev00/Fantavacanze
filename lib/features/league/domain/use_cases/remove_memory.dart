@@ -3,6 +3,7 @@ import 'package:fantavacanze_official/core/use-case/usecase.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/league.dart';
 import 'package:fantavacanze_official/features/league/domain/repository/league_repository.dart';
 import 'package:fpdart/fpdart.dart';
+import 'package:flutter/foundation.dart';
 
 class RemoveMemory implements Usecase<League, RemoveMemoryParams> {
   final LeagueRepository leagueRepository;
@@ -12,18 +13,19 @@ class RemoveMemory implements Usecase<League, RemoveMemoryParams> {
   @override
   Future<Either<Failure, League>> call(RemoveMemoryParams params) async {
     return leagueRepository.removeMemory(
-      leagueId: params.leagueId,
+      league: params.league,
       memoryId: params.memoryId,
     );
   }
 }
 
+@immutable
 class RemoveMemoryParams {
-  final String leagueId;
+  final League league;
   final String memoryId;
 
-  RemoveMemoryParams({
-    required this.leagueId,
+  const RemoveMemoryParams({
+    required this.league,
     required this.memoryId,
   });
 }

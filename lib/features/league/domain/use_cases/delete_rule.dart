@@ -13,19 +13,19 @@ class DeleteRule implements Usecase<League, DeleteRuleParams> {
   @override
   Future<Either<Failure, League>> call(DeleteRuleParams params) async {
     return leagueRepository.deleteRule(
-      leagueId: params.leagueId,
-      ruleId: params.ruleId,
+      league: params.league,
+      ruleName: params.ruleName,
     );
   }
 }
 
 @immutable
 class DeleteRuleParams {
-  final String leagueId;
-  final int ruleId;
+  final League league;
+  final String ruleName;
 
   const DeleteRuleParams({
-    required this.leagueId,
-    required this.ruleId,
+    required this.league,
+    required this.ruleName,
   });
 }

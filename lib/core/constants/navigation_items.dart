@@ -70,8 +70,8 @@ List<NavigationItem> participantNavbarItems = [
   ),
   NavigationItem(
     title: "Classifica",
-    darkSvgIcon: 'assets/images/icons/homepage_icons/home-icon.svg',
-    lightSvgIcon: 'assets/images/icons/homepage_icons/home-icon-dark.svg',
+    darkSvgIcon: 'assets/images/icons/homepage_icons/rankings-icon.svg',
+    lightSvgIcon: 'assets/images/icons/homepage_icons/rankings-icon-dark.svg',
     screen: LeaderboardPage(),
     subsection: "Naviga",
   ),
@@ -92,33 +92,29 @@ List<NavigationItem> participantNavbarItems = [
   ),
   NavigationItem(
     title: "Regole",
-    darkSvgIcon: 'assets/images/icons/homepage_icons/drink-games-icon.svg',
-    lightSvgIcon:
-        'assets/images/icons/homepage_icons/drink-games-icon-dark.svg',
+    darkSvgIcon: 'assets/images/icons/homepage_icons/rules-icon.svg',
+    lightSvgIcon: 'assets/images/icons/homepage_icons/rules-icon-dark.svg',
     screen: const RulesPage(),
     subsection: "Naviga",
   ),
   NavigationItem(
     title: "La Mia Squadra",
-    darkSvgIcon: 'assets/images/icons/homepage_icons/drink-games-icon.svg',
-    lightSvgIcon:
-        'assets/images/icons/homepage_icons/drink-games-icon-dark.svg',
+    darkSvgIcon: 'assets/images/icons/homepage_icons/team-icon.svg',
+    lightSvgIcon: 'assets/images/icons/homepage_icons/team-icon-dark.svg',
     screen: const TeamInfoPage(),
     subsection: "Naviga",
   ),
   NavigationItem(
     title: "Ricordi",
-    darkSvgIcon: 'assets/images/icons/homepage_icons/drink-games-icon.svg',
-    lightSvgIcon:
-        'assets/images/icons/homepage_icons/drink-games-icon-dark.svg',
+    darkSvgIcon: 'assets/images/icons/homepage_icons/memories-icon.svg',
+    lightSvgIcon: 'assets/images/icons/homepage_icons/memories-icon-dark.svg',
     screen: const MemoriesPage(),
     subsection: "Naviga",
   ),
   NavigationItem(
     title: "Note",
-    darkSvgIcon: 'assets/images/icons/homepage_icons/drink-games-icon.svg',
-    lightSvgIcon:
-        'assets/images/icons/homepage_icons/drink-games-icon-dark.svg',
+    darkSvgIcon: 'assets/images/icons/homepage_icons/notes-icon.svg',
+    lightSvgIcon: 'assets/images/icons/homepage_icons/notes-icon-dark.svg',
     screen: const NotesPage(),
     subsection: "Naviga",
   ),
@@ -140,9 +136,8 @@ List<NavigationItem> participantNavbarItems = [
   ),
   NavigationItem(
     title: "Articoli",
-    darkSvgIcon: 'assets/images/icons/homepage_icons/drink-games-icon.svg',
-    lightSvgIcon:
-        'assets/images/icons/homepage_icons/drink-games-icon-dark.svg',
+    darkSvgIcon: 'assets/images/icons/homepage_icons/articles-icon.svg',
+    lightSvgIcon: 'assets/images/icons/homepage_icons/articles-icon-dark.svg',
     screen: const ArticlesPage(),
     subsection: "Altro",
   ),

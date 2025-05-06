@@ -13,7 +13,7 @@ class ExitLeague implements Usecase<League, ExitLeagueParams> {
   @override
   Future<Either<Failure, League>> call(ExitLeagueParams params) async {
     return leagueRepository.exitLeague(
-      leagueId: params.leagueId,
+      league: params.league,
       userId: params.userId,
     );
   }
@@ -21,11 +21,11 @@ class ExitLeague implements Usecase<League, ExitLeagueParams> {
 
 @immutable
 class ExitLeagueParams {
-  final String leagueId;
+  final League league;
   final String userId;
 
   const ExitLeagueParams({
-    required this.leagueId,
+    required this.league,
     required this.userId,
   });
 }

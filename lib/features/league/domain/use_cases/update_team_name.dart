@@ -13,7 +13,7 @@ class UpdateTeamName implements Usecase<League, UpdateTeamNameParams> {
   @override
   Future<Either<Failure, League>> call(UpdateTeamNameParams params) async {
     return leagueRepository.updateTeamName(
-      leagueId: params.leagueId,
+      league: params.league,
       userId: params.userId,
       newName: params.newName,
     );
@@ -22,12 +22,12 @@ class UpdateTeamName implements Usecase<League, UpdateTeamNameParams> {
 
 @immutable
 class UpdateTeamNameParams {
-  final String leagueId;
+  final League league;
   final String userId;
   final String newName;
 
   const UpdateTeamNameParams({
-    required this.leagueId,
+    required this.league,
     required this.userId,
     required this.newName,
   });

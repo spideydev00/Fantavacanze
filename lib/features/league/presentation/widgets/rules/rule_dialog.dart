@@ -2,12 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/rule.dart';
+import 'package:fantavacanze_official/core/theme/colors.dart';
 
 class RuleDialog extends StatefulWidget {
   final String title;
   final String buttonText;
-  final Map<String, dynamic>? initialRule;
-  final Function(String, RuleType, int) onSave;
+  final Rule? initialRule;
+  final Function(String, RuleType, double) onSave;
 
   const RuleDialog({
     super.key,
@@ -30,10 +31,10 @@ class _RuleDialogState extends State<RuleDialog> {
   void initState() {
     super.initState();
     final rule = widget.initialRule;
-    nameController = TextEditingController(text: rule?['name'] ?? '');
+    nameController = TextEditingController(text: rule?.name ?? '');
     pointsController =
-        TextEditingController(text: rule?['points']?.toString() ?? '');
-    selectedType = rule?['type'] == 'bonus' ? RuleType.bonus : RuleType.malus;
+        TextEditingController(text: rule?.points.abs().toString() ?? '');
+    selectedType = rule?.type ?? RuleType.bonus;
   }
 
   @override
@@ -244,8 +245,19 @@ class _RuleDialogState extends State<RuleDialog> {
                       ),
                       child: TextField(
                         controller: nameController,
+                        cursorColor: context.textPrimaryColor,
+                        style: TextStyle(
+                          color: context.textPrimaryColor,
+                        ),
                         decoration: InputDecoration(
-                          hintText: 'es. Goal Segnato',
+                          hintText: "es. Ottieni l'ig di un/a tipo/a",
+                          hintStyle: TextStyle(
+                            color: context.textSecondaryColor
+                                .withValues(alpha: 0.7),
+                          ),
+                          labelStyle: TextStyle(
+                            color: context.textPrimaryColor,
+                          ),
                           prefixIcon: Icon(
                             Icons.text_fields,
                             color: selectedType == RuleType.bonus
@@ -258,8 +270,17 @@ class _RuleDialogState extends State<RuleDialog> {
                             ),
                             borderSide: BorderSide.none,
                           ),
-                          filled: true,
-                          fillColor: context.secondaryBgColor,
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(
+                              ThemeSizes.borderRadiusLg,
+                            ),
+                            borderSide: BorderSide(
+                              color: selectedType == RuleType.bonus
+                                  ? ColorPalette.success
+                                  : ColorPalette.error,
+                              width: 2.0,
+                            ),
+                          ),
                         ),
                       ),
                     ),
@@ -283,8 +304,19 @@ class _RuleDialogState extends State<RuleDialog> {
                       child: TextField(
                         controller: pointsController,
                         keyboardType: TextInputType.number,
+                        cursorColor: context.textPrimaryColor,
+                        style: TextStyle(
+                          color: context.textPrimaryColor,
+                        ),
                         decoration: InputDecoration(
                           hintText: 'es. 10',
+                          hintStyle: TextStyle(
+                            color: context.textSecondaryColor
+                                .withValues(alpha: 0.7),
+                          ),
+                          labelStyle: TextStyle(
+                            color: context.textPrimaryColor,
+                          ),
                           prefixIcon: Icon(
                             Icons.star,
                             color: selectedType == RuleType.bonus
@@ -292,11 +324,25 @@ class _RuleDialogState extends State<RuleDialog> {
                                 : malusColor,
                           ),
                           suffixText: 'pt',
+                          suffixStyle: TextStyle(
+                            color: context.textPrimaryColor,
+                          ),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(
                               ThemeSizes.borderRadiusLg,
                             ),
                             borderSide: BorderSide.none,
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(
+                              ThemeSizes.borderRadiusLg,
+                            ),
+                            borderSide: BorderSide(
+                              color: selectedType == RuleType.bonus
+                                  ? ColorPalette.success
+                                  : ColorPalette.error,
+                              width: 2.0,
+                            ),
                           ),
                           filled: true,
                           fillColor: context.secondaryBgColor,
@@ -333,7 +379,7 @@ class _RuleDialogState extends State<RuleDialog> {
                               final pointsText = pointsController.text.trim();
 
                               if (name.isNotEmpty && pointsText.isNotEmpty) {
-                                final points = int.tryParse(pointsText) ?? 0;
+                                final points = double.tryParse(pointsText) ?? 0;
                                 widget.onSave(name, selectedType, points);
                                 Navigator.pop(context);
                               }

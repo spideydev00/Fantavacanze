@@ -58,7 +58,7 @@ class AppTheme {
         ),
         contentPadding: const EdgeInsets.all(24),
         filled: true,
-        fillColor: ColorPalette.white,
+        fillColor: context.secondaryBgColor,
         border: border(),
         enabledBorder: border(Colors.transparent, 0),
         focusedBorder: border(ColorPalette.focusedBorder),

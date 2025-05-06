@@ -2,6 +2,7 @@ import 'package:fantavacanze_official/core/cubits/app_league/app_league_cubit.da
 import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit.dart';
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
+import 'package:fantavacanze_official/features/league/domain/entities/league.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/memory.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_event.dart';
@@ -16,14 +17,13 @@ class MemoriesPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<AppLeagueCubit, AppLeagueState>(
       builder: (context, state) {
-        if (state is AppLeagueExists && state.selectedLeague != null) {
-          final league = state.selectedLeague!;
+        if (state is AppLeagueExists) {
+          final league = state.selectedLeague;
           final memories = league.memories;
-          final isAdmin = context.read<AppLeagueCubit>().isAdmin();
+          final isAdmin = context.read<LeagueBloc>().isAdmin();
 
-          final userState = context.read<AppUserCubit>().state;
-          final String? currentUserId =
-              userState is AppUserIsLoggedIn ? userState.user.id : null;
+          final userId =
+              (context.read<AppUserCubit>().state as AppUserIsLoggedIn).user.id;
 
           return Scaffold(
             appBar: AppBar(
@@ -32,7 +32,7 @@ class MemoriesPage extends StatelessWidget {
             floatingActionButton: FloatingActionButton(
               onPressed: () {
                 // Navigate to add memory page or show dialog
-                _showAddMemoryDialog(context, league.id);
+                _showAddMemoryDialog(context, league.id, userId);
               },
               child: const Icon(Icons.add_photo_alternate),
             ),
@@ -58,7 +58,7 @@ class MemoriesPage extends StatelessWidget {
                         const SizedBox(height: ThemeSizes.lg),
                         ElevatedButton.icon(
                           onPressed: () {
-                            _showAddMemoryDialog(context, league.id);
+                            _showAddMemoryDialog(context, league.id, userId);
                           },
                           icon: const Icon(Icons.add),
                           label: const Text('Aggiungi un ricordo'),
@@ -78,15 +78,14 @@ class MemoriesPage extends StatelessWidget {
                     itemCount: memories.length,
                     itemBuilder: (context, index) {
                       final memory = memories[index];
-                      final canDelete =
-                          isAdmin || memory.userId == currentUserId;
+                      final canDelete = isAdmin || memory.userId == userId;
 
                       return _MemoryCard(
                         memory: memory,
                         onTap: () => _showMemoryDetails(context, memory),
                         onDelete: canDelete
-                            ? () => _confirmDeleteMemory(
-                                context, league.id, memory.id)
+                            ? () =>
+                                _confirmDeleteMemory(context, league, memory.id)
                             : null,
                       );
                     },
@@ -180,7 +179,8 @@ class MemoriesPage extends StatelessWidget {
     );
   }
 
-  void _showAddMemoryDialog(BuildContext context, String leagueId) {
+  void _showAddMemoryDialog(
+      BuildContext context, String leagueId, String userId) {
     final textController = TextEditingController();
     final imageUrlController = TextEditingController();
     final formKey = GlobalKey<FormState>();
@@ -188,11 +188,9 @@ class MemoriesPage extends StatelessWidget {
 
     // Get current league to access events
     final state = context.read<AppLeagueCubit>().state;
-    final league = state is AppLeagueExists && state.selectedLeague != null
-        ? state.selectedLeague
-        : null;
+    final league = (state as AppLeagueExists).selectedLeague;
 
-    final recentEvents = league?.events.take(5).toList() ?? [];
+    final recentEvents = league.events.take(5).toList();
 
     showDialog(
       context: context,
@@ -290,28 +288,16 @@ class MemoriesPage extends StatelessWidget {
                       const SizedBox(width: ThemeSizes.md),
                       ElevatedButton(
                         onPressed: () {
-                          if (formKey.currentState!.validate()) {
-                            final userState =
-                                context.read<AppUserCubit>().state;
-                            if (userState is AppUserIsLoggedIn) {
-                              context.read<LeagueBloc>().add(
-                                    AddMemoryEvent(
-                                      leagueId: leagueId,
-                                      imageUrl: imageUrlController.text.trim(),
-                                      text: textController.text.trim(),
-                                      userId: userState.user.id,
-                                      relatedEventId:
-                                          selectedEventId, // Pass the selected event ID
-                                    ),
-                                  );
-                              Navigator.pop(context);
-                            } else {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                    content: Text('Utente non autenticato')),
+                          context.read<LeagueBloc>().add(
+                                AddMemoryEvent(
+                                  league: league,
+                                  imageUrl: imageUrlController.text.trim(),
+                                  text: textController.text.trim(),
+                                  userId: userId,
+                                  relatedEventId: selectedEventId,
+                                ),
                               );
-                            }
-                          }
+                          Navigator.pop(context);
                         },
                         child: const Text('Salva'),
                       ),
@@ -327,7 +313,7 @@ class MemoriesPage extends StatelessWidget {
   }
 
   void _confirmDeleteMemory(
-      BuildContext context, String leagueId, String memoryId) {
+      BuildContext context, League league, String memoryId) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -342,7 +328,7 @@ class MemoriesPage extends StatelessWidget {
             onPressed: () {
               context.read<LeagueBloc>().add(
                     RemoveMemoryEvent(
-                      leagueId: leagueId,
+                      league: league,
                       memoryId: memoryId,
                     ),
                   );

@@ -1,29 +1,24 @@
 import 'package:fantavacanze_official/core/cubits/app_league/app_league_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit.dart';
-import 'package:fantavacanze_official/core/errors/failure.dart';
-import 'package:fantavacanze_official/core/use-case/usecase.dart';
-import 'package:fantavacanze_official/features/league/domain/entities/league.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/add_event.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/add_memory.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/create_league.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/exit_league.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/get_league.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/get_rules.dart';
-import 'package:fantavacanze_official/features/league/domain/use_cases/get_user_leagues.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/join_league.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/remove_memory.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/update_team_name.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/update_rule.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/delete_rule.dart';
+import 'package:fantavacanze_official/features/league/domain/use_cases/add_rule.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_event.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:fpdart/fpdart.dart';
 
 class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
   final CreateLeague createLeague;
   final GetLeague getLeague;
-  final GetUserLeagues getUserLeagues;
   final JoinLeague joinLeague;
   final ExitLeague exitLeague;
   final UpdateTeamName updateTeamName;
@@ -33,13 +28,13 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
   final GetRules getRules;
   final UpdateRule updateRule;
   final DeleteRule deleteRule;
+  final AddRule addRule;
   final AppUserCubit appUserCubit;
   final AppLeagueCubit appLeagueCubit;
 
   LeagueBloc({
     required this.createLeague,
     required this.getLeague,
-    required this.getUserLeagues,
     required this.joinLeague,
     required this.exitLeague,
     required this.updateTeamName,
@@ -49,22 +44,28 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
     required this.getRules,
     required this.updateRule,
     required this.deleteRule,
+    required this.addRule,
     required this.appUserCubit,
     required this.appLeagueCubit,
   }) : super(LeagueInitial()) {
     on<CreateLeagueEvent>(_onCreateLeague);
     on<GetLeagueEvent>(_onGetLeague);
-    on<GetUserLeaguesEvent>(_onGetUserLeagues);
-    on<GetRulesEvent>(_onGetRules);
     on<JoinLeagueEvent>(_onJoinLeague);
     on<ExitLeagueEvent>(_onExitLeague);
     on<UpdateTeamNameEvent>(_onUpdateTeamName);
     on<AddEventEvent>(_onAddEvent);
     on<AddMemoryEvent>(_onAddMemory);
+    on<GetRulesEvent>(_onGetRules);
     on<UpdateRuleEvent>(_onUpdateRule);
     on<DeleteRuleEvent>(_onDeleteRule);
+    on<AddRuleEvent>(_onAddRule);
   }
 
+  // -----------------------------------------------------------
+  // L E A G U E   M A I N   O P E R A T I O N S
+  // -----------------------------------------------------------
+
+  // C R E A T E   L E A G U E
   Future<void> _onCreateLeague(
     CreateLeagueEvent event,
     Emitter<LeagueState> emit,
@@ -83,83 +84,17 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
     result.fold(
       (failure) => emit(LeagueError(message: failure.message)),
       (league) {
-        emit(LeagueCreated(league: league));
-        emit(LeagueLoaded(league: league));
+        emit(LeagueSuccess(league: league, operation: 'create_league'));
+
+        // Refresh app league cubit after creating league
+        appLeagueCubit.getUserLeagues();
+        // Update app-wide shared preferences
+        appLeagueCubit.selectLeague(league);
       },
     );
   }
 
-  Future<void> _onGetLeague(
-    GetLeagueEvent event,
-    Emitter<LeagueState> emit,
-  ) async {
-    try {
-      emit(LeagueLoading());
-
-      final result = await getLeague(
-        GetLeagueParams(
-          leagueId: event.leagueId,
-        ),
-      );
-
-      result.fold(
-        (failure) => emit(LeagueError(message: failure.message)),
-        (league) => emit(LeagueLoaded(league: league)),
-      );
-    } catch (e) {
-      emit(LeagueError(message: e.toString()));
-    }
-  }
-
-  Future<void> _onGetUserLeagues(
-    GetUserLeaguesEvent event,
-    Emitter<LeagueState> emit,
-  ) async {
-    try {
-      emit(LeagueLoading());
-
-      final result = await getUserLeagues(NoParams());
-
-      result.fold(
-        (failure) => emit(LeagueError(message: failure.message)),
-        (leagues) => _emitLeagueSuccess(leagues, emit),
-      );
-    } catch (e) {
-      emit(LeagueError(message: e.toString()));
-    }
-  }
-
-  // E M I T    L E A G U E    S U C C E S S
-  void _emitLeagueSuccess(List<League> leagues, Emitter<LeagueState> emit) {
-    appLeagueCubit.loadSelectedLeague(leagues);
-
-    emit(UserLeaguesLoaded(leagues: leagues));
-  }
-
-  Future<void> _onGetRules(
-    GetRulesEvent event,
-    Emitter<LeagueState> emit,
-  ) async {
-    try {
-      emit(LeagueLoading());
-
-      // Validate mode parameter
-      if (event.mode != "hard" && event.mode != "soft") {
-        emit(const LeagueError(message: "Invalid mode. Use 'hard' or 'soft'"));
-        return;
-      }
-
-      final result = await getRules(event.mode);
-
-      result.fold(
-        (failure) => emit(LeagueError(message: failure.message)),
-        (rules) => emit(RulesLoaded(rules: rules, mode: event.mode)),
-      );
-    } catch (e) {
-      emit(LeagueError(message: e.toString()));
-    }
-  }
-
+  // J O I N   L E A G U E
   Future<void> _onJoinLeague(
     JoinLeagueEvent event,
     Emitter<LeagueState> emit,
@@ -197,8 +132,11 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
           }
         },
         (league) {
-          emit(LeagueJoined(league: league));
-          _refreshSelectedLeague(league);
+          emit(LeagueSuccess(league: league, operation: 'join_league'));
+          // Refresh app league cubit after joining
+          appLeagueCubit.getUserLeagues();
+          // Update app-wide shared preferences
+          appLeagueCubit.selectLeague(league);
         },
       );
     } catch (e) {
@@ -206,6 +144,7 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
     }
   }
 
+  // E X I T   L E A G U E
   Future<void> _onExitLeague(
     ExitLeagueEvent event,
     Emitter<LeagueState> emit,
@@ -222,7 +161,7 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
 
       final result = await exitLeague(
         ExitLeagueParams(
-          leagueId: event.leagueId,
+          league: event.league,
           userId: userId,
         ),
       );
@@ -230,8 +169,10 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
       result.fold(
         (failure) => emit(LeagueError(message: failure.message)),
         (league) {
-          emit(LeagueExited(league: league));
-          _refreshSelectedLeague(league);
+          emit(LeagueSuccess(league: league, operation: 'exit_league'));
+
+          // Refresh app league cubit after exiting
+          appLeagueCubit.getUserLeagues();
         },
       );
     } catch (e) {
@@ -239,6 +180,139 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
     }
   }
 
+  // G E T   L E A G U E
+  Future<void> _onGetLeague(
+    GetLeagueEvent event,
+    Emitter<LeagueState> emit,
+  ) async {
+    try {
+      emit(LeagueLoading());
+
+      final result = await getLeague(
+        GetLeagueParams(
+          leagueId: event.leagueId,
+        ),
+      );
+
+      result.fold(
+        (failure) => emit(LeagueError(message: failure.message)),
+        (league) =>
+            emit(LeagueSuccess(league: league, operation: 'get_league')),
+      );
+    } catch (e) {
+      emit(LeagueError(message: e.toString()));
+    }
+  }
+
+  // -----------------------------------------------------------
+  // R U L E S   M A N A G E M E N T
+  // -----------------------------------------------------------
+
+  // G E T   R U L E S
+  Future<void> _onGetRules(
+    GetRulesEvent event,
+    Emitter<LeagueState> emit,
+  ) async {
+    try {
+      emit(LeagueLoading());
+
+      // Validate mode parameter
+      if (event.mode != "hard" && event.mode != "soft") {
+        emit(const LeagueError(message: "Invalid mode. Use 'hard' or 'soft'"));
+        return;
+      }
+
+      final result = await getRules(event.mode);
+
+      result.fold(
+        (failure) => emit(LeagueError(message: failure.message)),
+        (rules) => emit(RulesLoaded(rules: rules, mode: event.mode)),
+      );
+    } catch (e) {
+      emit(LeagueError(message: e.toString()));
+    }
+  }
+
+  // U P D A T E   R U L E
+  Future<void> _onUpdateRule(
+      UpdateRuleEvent event, Emitter<LeagueState> emit) async {
+    emit(LeagueLoading());
+
+    final result = await updateRule(
+      UpdateRuleParams(
+        league: event.league,
+        rule: event.rule,
+        originalRuleName: event.originalRuleName,
+      ),
+    );
+
+    emit(result.fold(
+      (failure) => LeagueError(message: failure.message),
+      (league) {
+        // Update the app-wide cubit state
+        if (appLeagueCubit.state is AppLeagueExists) {
+          appLeagueCubit.selectLeague(league);
+        }
+
+        return LeagueSuccess(league: league, operation: 'update_rule');
+      },
+    ));
+  }
+
+  // D E L E T E   R U L E
+  Future<void> _onDeleteRule(
+      DeleteRuleEvent event, Emitter<LeagueState> emit) async {
+    emit(LeagueLoading());
+
+    final result = await deleteRule(
+      DeleteRuleParams(
+        league: event.league,
+        ruleName: event.ruleName,
+      ),
+    );
+
+    emit(result.fold(
+      (failure) => LeagueError(message: failure.message),
+      (league) {
+        // Update the app-wide cubit state
+        if (appLeagueCubit.state is AppLeagueExists) {
+          appLeagueCubit.selectLeague(league);
+        }
+
+        return LeagueSuccess(league: league, operation: 'delete_rule');
+      },
+    ));
+  }
+
+  // A D D   R U L E
+  Future<void> _onAddRule(AddRuleEvent event, Emitter<LeagueState> emit) async {
+    emit(LeagueLoading());
+
+    final result = await addRule(
+      AddRuleParams(
+        league: event.league,
+        rule: event.rule,
+      ),
+    );
+
+    emit(result.fold(
+      (failure) => LeagueError(message: failure.message),
+      (league) {
+        // Update the app-wide cubit state
+        if (appLeagueCubit.state is AppLeagueExists) {
+          appLeagueCubit.selectLeague(league);
+        }
+
+        return LeagueSuccess(league: league, operation: 'add_rule');
+      },
+    ));
+  }
+
+  // -----------------------------------------------------------
+  // M E M B E R S H I P   O P E R A T I O N S
+  // -----------------------------------------------------------
+
+  // U P D A T E   T E A M   N A M E
   Future<void> _onUpdateTeamName(
     UpdateTeamNameEvent event,
     Emitter<LeagueState> emit,
@@ -255,7 +329,7 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
 
       final result = await updateTeamName(
         UpdateTeamNameParams(
-          leagueId: event.leagueId,
+          league: event.league,
           userId: userId,
           newName: event.newName,
         ),
@@ -264,8 +338,14 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
       result.fold(
         (failure) => emit(LeagueError(message: failure.message)),
         (league) {
-          emit(TeamNameUpdated(league: league));
-          _refreshSelectedLeague(league);
+          emit(LeagueSuccess(league: league, operation: 'update_team_name'));
+
+          // Update app-wide state if this is the selected league
+          final cubitState = appLeagueCubit.state;
+          if (cubitState is AppLeagueExists &&
+              cubitState.selectedLeague.id == league.id) {
+            appLeagueCubit.selectLeague(league);
+          }
         },
       );
     } catch (e) {
@@ -273,6 +353,11 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
     }
   }
 
+  // -----------------------------------------------------------
+  // C O N T E N T   M A N A G E M E N T
+  // -----------------------------------------------------------
+
+  // A D D   E V E N T
   Future<void> _onAddEvent(
     AddEventEvent event,
     Emitter<LeagueState> emit,
@@ -282,7 +367,7 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
 
       final result = await addEvent(
         AddEventParams(
-          leagueId: event.leagueId,
+          league: event.league,
           name: event.name,
           points: event.points,
           creatorId: event.creatorId,
@@ -295,8 +380,14 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
       result.fold(
         (failure) => emit(LeagueError(message: failure.message)),
         (league) {
-          emit(LeagueLoaded(league: league));
-          _refreshSelectedLeague(league);
+          emit(LeagueSuccess(league: league, operation: 'add_event'));
+
+          // Update app-wide state if this is the selected league
+          final cubitState = appLeagueCubit.state;
+          if (cubitState is AppLeagueExists &&
+              cubitState.selectedLeague.id == league.id) {
+            appLeagueCubit.selectLeague(league);
+          }
         },
       );
     } catch (e) {
@@ -304,6 +395,7 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
     }
   }
 
+  // A D D   M E M O R Y
   Future<void> _onAddMemory(
     AddMemoryEvent event,
     Emitter<LeagueState> emit,
@@ -311,26 +403,25 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
     try {
       emit(LeagueLoading());
 
-      late String userId;
-      final state = appUserCubit.state;
-
-      if (state is AppUserIsLoggedIn) {
-        userId = state.user.id;
-      }
-
       final result = await addMemory(AddMemoryParams(
-        leagueId: event.leagueId,
+        league: event.league,
         imageUrl: event.imageUrl,
         text: event.text,
-        userId: userId,
+        userId: event.userId,
         relatedEventId: event.relatedEventId,
       ));
 
       result.fold(
         (failure) => emit(LeagueError(message: failure.message)),
         (league) {
-          emit(MemoryAdded(league: league));
-          _refreshSelectedLeague(league);
+          emit(LeagueSuccess(league: league, operation: 'add_memory'));
+
+          // Update app-wide state if this is the selected league
+          final cubitState = appLeagueCubit.state;
+          if (cubitState is AppLeagueExists &&
+              cubitState.selectedLeague.id == league.id) {
+            appLeagueCubit.selectLeague(league);
+          }
         },
       );
     } catch (e) {
@@ -338,175 +429,26 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
     }
   }
 
-  Future<void> _onUpdateRule(
-      UpdateRuleEvent event, Emitter<LeagueState> emit) async {
-    emit(LeagueLoading());
+  // -----------------------------------------------------------
+  // U T I L I T Y   M E T H O D S
+  // -----------------------------------------------------------
 
-    // Ensure we're working with integer IDs
-    final Map<String, dynamic> ruleWithIntId = Map.from(event.rule);
-    if (ruleWithIntId['id'] is String) {
-      ruleWithIntId['id'] = int.tryParse(ruleWithIntId['id']) ?? 0;
+  // Helper method to check if current user is admin of the selected league
+  bool isAdmin() {
+    // Get current user ID
+    final userState = appUserCubit.state;
+    if (userState is! AppUserIsLoggedIn) {
+      return false;
     }
 
-    final result = await updateRule(
-      UpdateRuleParams(
-        leagueId: event.leagueId,
-        rule: ruleWithIntId,
-      ),
-    );
+    final String userId = userState.user.id;
 
-    emit(result.fold(
-      (failure) => LeagueError(message: failure.message),
-      (league) {
-        // If we have a selected league, update it
-        if (appLeagueCubit.state is AppLeagueExists) {
-          appLeagueCubit.selectLeague(league);
-        }
-
-        _refreshSelectedLeague(league);
-        return LeagueLoaded(league: league);
-      },
-    ));
-  }
-
-  Future<void> _onDeleteRule(
-      DeleteRuleEvent event, Emitter<LeagueState> emit) async {
-    emit(LeagueLoading());
-
-    final result = await deleteRule(
-      DeleteRuleParams(
-        leagueId: event.leagueId,
-        ruleId: event.ruleId,
-      ),
-    );
-
-    emit(result.fold(
-      (failure) => LeagueError(message: failure.message),
-      (league) {
-        // If we have a selected league, update it
-        if (appLeagueCubit.state is AppLeagueExists) {
-          appLeagueCubit.selectLeague(league);
-        }
-
-        _refreshSelectedLeague(league);
-        return LeagueLoaded(league: league);
-      },
-    ));
-  }
-
-  Stream<LeagueState> mapEventToState(LeagueEvent event) async* {
-    if (event is AddMemoryEvent) {
-      yield* _mapAddMemoryEventToState(event);
-    } else if (event is RemoveMemoryEvent) {
-      yield* _mapRemoveMemoryEventToState(event);
-    } else if (event is UpdateTeamNameEvent) {
-      yield* _mapUpdateTeamNameEventToState(event);
-    } else if (event is ExitLeagueEvent) {
-      yield* _mapExitLeagueEventToState(event);
+    // Check if there is a selected league in the app-wide cubit
+    final leagueState = appLeagueCubit.state;
+    if (leagueState is AppLeagueExists) {
+      return leagueState.selectedLeague.admins.contains(userId);
     }
-  }
 
-  Stream<LeagueState> _mapAddMemoryEventToState(AddMemoryEvent event) async* {
-    yield LeagueLoading();
-
-    try {
-      final result = await addMemory(
-        AddMemoryParams(
-          leagueId: event.leagueId,
-          imageUrl: event.imageUrl,
-          text: event.text,
-          userId: event.userId,
-          relatedEventId: event.relatedEventId, // Pass relatedEventId
-        ),
-      );
-
-      yield* _handleLeagueResult(result);
-    } catch (e) {
-      yield LeagueError(message: e.toString());
-    }
-  }
-
-  Stream<LeagueState> _mapRemoveMemoryEventToState(
-      RemoveMemoryEvent event) async* {
-    yield LeagueLoading();
-
-    try {
-      final result = await removeMemory(
-        RemoveMemoryParams(
-          leagueId: event.leagueId,
-          memoryId: event.memoryId,
-        ),
-      );
-
-      yield* _handleLeagueResult(result);
-    } catch (e) {
-      yield LeagueError(message: e.toString());
-    }
-  }
-
-  Stream<LeagueState> _mapUpdateTeamNameEventToState(
-      UpdateTeamNameEvent event) async* {
-    yield LeagueLoading();
-
-    try {
-      final result = await updateTeamName(
-        UpdateTeamNameParams(
-          leagueId: event.leagueId,
-          userId: event.userId,
-          newName: event.newName,
-        ),
-      );
-
-      yield* _handleLeagueResult(result);
-    } catch (e) {
-      yield LeagueError(message: e.toString());
-    }
-  }
-
-  Stream<LeagueState> _mapExitLeagueEventToState(ExitLeagueEvent event) async* {
-    yield LeagueLoading();
-
-    try {
-      final result = await exitLeague(
-        ExitLeagueParams(
-          leagueId: event.leagueId,
-          userId: event.userId,
-        ),
-      );
-
-      yield* _handleLeagueResult(result);
-    } catch (e) {
-      yield LeagueError(message: e.toString());
-    }
-  }
-
-  Stream<LeagueState> _handleLeagueResult(
-      Either<Failure, League> result) async* {
-    yield result.fold(
-      (failure) => LeagueError(message: failure.message),
-      (league) {
-        if (appLeagueCubit.state is AppLeagueExists) {
-          final leagues = (appLeagueCubit.state as AppLeagueExists).leagues;
-          final updatedLeagues =
-              leagues.map((l) => l.id == league.id ? league : l).toList();
-          appLeagueCubit.loadSelectedLeague(updatedLeagues);
-        }
-
-        _refreshSelectedLeague(league);
-        return LeagueLoaded(league: league);
-      },
-    );
-  }
-
-  void _refreshSelectedLeague(League updatedLeague) {
-    if (appLeagueCubit.state is AppLeagueExists) {
-      final leagueState = appLeagueCubit.state as AppLeagueExists;
-
-      if (leagueState.selectedLeague?.id == updatedLeague.id) {
-        appLeagueCubit.selectLeague(updatedLeague);
-      }
-
-      appLeagueCubit.getUserLeagues();
-    }
+    return false;
   }
 }

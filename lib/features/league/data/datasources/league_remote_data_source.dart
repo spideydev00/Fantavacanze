@@ -1,10 +1,12 @@
 import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit.dart';
 import 'package:fantavacanze_official/core/errors/exceptions.dart';
 import 'package:fantavacanze_official/features/league/data/models/event_model.dart';
+import 'package:fantavacanze_official/features/league/data/models/individual_participant_model.dart';
 import 'package:fantavacanze_official/features/league/data/models/league_model.dart';
 import 'package:fantavacanze_official/features/league/data/models/memory_model.dart';
 import 'package:fantavacanze_official/features/league/data/models/participant_model.dart';
 import 'package:fantavacanze_official/features/league/data/models/rule_model.dart';
+import 'package:fantavacanze_official/features/league/data/models/team_participant_model.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/rule.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:uuid/uuid.dart';
@@ -14,18 +16,19 @@ abstract class LeagueRemoteDataSource {
     required String name,
     required String? description,
     required bool isTeamBased,
-    required List<Map<String, dynamic>> rules,
+    required List<RuleModel> rules,
   });
 
   Future<LeagueModel> getLeague(String leagueId);
 
   Future<List<LeagueModel>> getUserLeagues();
 
-  Future<LeagueModel> updateLeague({
+  Future<LeagueModel> updateLeagueNameOrDescription({
     required String leagueId,
     String? name,
     String? description,
   });
+
   Future<void> deleteLeague(String leagueId);
 
   Future<LeagueModel> joinLeague({
@@ -37,18 +40,18 @@ abstract class LeagueRemoteDataSource {
   });
 
   Future<LeagueModel> exitLeague({
-    required String leagueId,
+    required LeagueModel league,
     required String userId,
   });
 
   Future<LeagueModel> updateTeamName({
-    required String leagueId,
+    required LeagueModel league,
     required String userId,
     required String newName,
   });
 
   Future<LeagueModel> addEvent({
-    required String leagueId,
+    required LeagueModel league,
     required String name,
     required int points,
     required String creatorId,
@@ -58,12 +61,12 @@ abstract class LeagueRemoteDataSource {
   });
 
   Future<LeagueModel> removeEvent({
-    required String leagueId,
+    required LeagueModel league,
     required String eventId,
   });
 
   Future<LeagueModel> addMemory({
-    required String leagueId,
+    required LeagueModel league,
     required String imageUrl,
     required String text,
     required String userId,
@@ -71,20 +74,26 @@ abstract class LeagueRemoteDataSource {
   });
 
   Future<LeagueModel> removeMemory({
-    required String leagueId,
+    required LeagueModel league,
     required String memoryId,
   });
 
   Future<List<RuleModel>> getRules({required String mode});
 
   Future<LeagueModel> updateRule({
-    required String leagueId,
-    required Map<String, dynamic> rule,
+    required LeagueModel league,
+    required RuleModel rule,
+    String? originalRuleName,
   });
 
   Future<LeagueModel> deleteRule({
-    required String leagueId,
-    required int ruleId,
+    required LeagueModel league,
+    required String ruleName,
+  });
+
+  Future<LeagueModel> addRule({
+    required LeagueModel league,
+    required RuleModel rule,
   });
 }
 
@@ -106,7 +115,7 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
     required String name,
     required String? description,
     required bool isTeamBased,
-    required List<Map<String, dynamic>> rules,
+    required List<RuleModel> rules,
   }) async {
     try {
       final String leagueId = uuid.v4();
@@ -116,33 +125,12 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
       final creatorId = _checkAuthentication();
       final creatorName = _getCurrentUserName();
 
-      if (creatorName == null) {
-        throw ServerException('Utente non autenticato');
-      }
-
       // Create initial participant
-      final Map<String, dynamic> initialParticipant = _createInitialParticipant(
+      final initialParticipant = _createInitialParticipant(
         isTeamBased: isTeamBased,
         creatorId: creatorId,
-        creatorName: creatorName,
+        creatorName: creatorName!,
       );
-
-      // FIXED: Assign unique incrementing IDs to each rule
-      final List<Map<String, dynamic>> processedRules = [];
-
-      // Process each rule and assign a unique ID (starting from 1)
-      for (int i = 0; i < rules.length; i++) {
-        final rule = Map<String, dynamic>.from(rules[i]);
-
-        // Assign ID (starting from 1, not 0)
-        rule['id'] = i + 1;
-
-        // Ensure rule_type is consistent (not 'type')
-        rule['rule_type'] = rule['type'] ?? rule['rule_type'];
-        rule.remove('type'); // Remove 'type' if it exists
-
-        processedRules.add(rule);
-      }
 
       final leagueData = {
         'id': leagueId,
@@ -151,8 +139,8 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
         'name': name,
         'description': description,
         'created_at': DateTime.now().toIso8601String(),
-        'rules': processedRules, // Use processed rules with unique IDs
-        'participants': [initialParticipant],
+        'rules': rules.map((rule) => rule.toJson()).toList(),
+        'participants': [initialParticipant.toJson()],
         'events': [],
         'memories': [],
         'is_team_based': isTeamBased,
@@ -209,13 +197,12 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
   // ------------------------------------------------
   // U P D A T E   L E A G U E
   @override
-  Future<LeagueModel> updateLeague({
+  Future<LeagueModel> updateLeagueNameOrDescription({
     required String leagueId,
     String? name,
     String? description,
   }) async {
     try {
-      // Prepare update data
       final Map<String, dynamic> updateData = {};
       if (name != null) updateData['name'] = name;
       if (description != null) updateData['description'] = description;
@@ -240,7 +227,6 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
   @override
   Future<void> deleteLeague(String leagueId) async {
     try {
-      // Admin checks handled by app-wide admin checks
       await supabaseClient.from('leagues').delete().eq('id', leagueId);
     } on PostgrestException catch (e) {
       throw ServerException('Errore: ${e.message}');
@@ -276,6 +262,7 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
         leagueResponse: leagueResponse,
         specificLeagueId: specificLeagueId,
       );
+
       final leagueData = result['leagueData'];
       final leagueId = result['leagueId'];
 
@@ -315,16 +302,13 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
   // E X I T   L E A G U E
   @override
   Future<LeagueModel> exitLeague({
-    required String leagueId,
+    required LeagueModel league,
     required String userId,
   }) async {
     try {
-      // Get the current league data
-      final league = await _getLeagueData(leagueId);
-
       // Check if user is an admin
       if (league.admins.contains(userId)) {
-        await _handleAdminExit(leagueId, userId, league);
+        await _handleAdminExit(league.id, userId, league);
       }
 
       // Remove user from participants
@@ -333,7 +317,7 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
 
       // Update in Supabase
       return await _updateLeagueInDb(
-        leagueId: leagueId,
+        leagueId: league.id,
         updateData: {'participants': updatedParticipants},
       );
     } catch (e) {
@@ -346,14 +330,11 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
   // U P D A T E   T E A M   N A M E
   @override
   Future<LeagueModel> updateTeamName({
-    required String leagueId,
+    required LeagueModel league,
     required String userId,
     required String newName,
   }) async {
     try {
-      // Get the current league data
-      final league = await _getLeagueData(leagueId);
-
       if (!league.isTeamBased) {
         throw ServerException('Questa non è una lega basata su squadre');
       }
@@ -370,7 +351,7 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
 
       // Update in Supabase
       return await _updateLeagueInDb(
-        leagueId: leagueId,
+        leagueId: league.id,
         updateData: {'participants': updatedParticipants},
       );
     } catch (e) {
@@ -383,7 +364,7 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
   // A D D   E V E N T
   @override
   Future<LeagueModel> addEvent({
-    required String leagueId,
+    required LeagueModel league,
     required String name,
     required int points,
     required String creatorId,
@@ -392,9 +373,6 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
     String? description,
   }) async {
     try {
-      // Get the current league data
-      final league = await _getLeagueData(leagueId);
-
       // Find the target participant
       ParticipantModel? targetParticipant =
           _findTargetParticipant(league: league, targetUser: targetUser);
@@ -426,9 +404,9 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
 
       // Update in Supabase
       return await _updateLeagueInDb(
-        leagueId: leagueId,
+        leagueId: league.id,
         updateData: {
-          'events': updatedEvents,
+          'events': updatedEvents.map((e) => e.toJson()).toList(),
           'participants': updatedParticipants,
         },
       );
@@ -443,14 +421,11 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
   // R E M O V E   E V E N T
   @override
   Future<LeagueModel> removeEvent({
-    required String leagueId,
+    required LeagueModel league,
     required String eventId,
   }) async {
     try {
       _checkAuthentication();
-
-      // Get the current league data
-      final league = await _getLeagueData(leagueId);
 
       // Find the event
       final eventIndex =
@@ -469,7 +444,7 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
 
       // Update in Supabase
       return await _updateLeagueInDb(
-        leagueId: leagueId,
+        leagueId: league.id,
         updateData: {
           'events': updatedEvents,
           'participants': updatedParticipants,
@@ -485,16 +460,13 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
   // A D D   M E M O R Y
   @override
   Future<LeagueModel> addMemory({
-    required String leagueId,
+    required LeagueModel league,
     required String imageUrl,
     required String text,
     required String userId,
     String? relatedEventId,
   }) async {
     try {
-      // Get the current league data
-      final league = await _getLeagueData(leagueId);
-
       // Create new memory
       final memoryData = _createMemoryData(
         imageUrl: imageUrl,
@@ -505,14 +477,16 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
 
       // Add new memory to the list
       final updatedMemories = [
-        ...league.memories.map((m) => (m as MemoryModel).toJson()),
+        ...league.memories.map((m) => m as MemoryModel),
         memoryData,
       ];
 
       // Update in Supabase
       return await _updateLeagueInDb(
-        leagueId: leagueId,
-        updateData: {'memories': updatedMemories},
+        leagueId: league.id,
+        updateData: {
+          'memories': updatedMemories.map((m) => m.toJson()).toList()
+        },
       );
     } on PostgrestException catch (e) {
       throw ServerException('Errore: ${e.message}');
@@ -525,14 +499,11 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
   // R E M O V E   M E M O R Y
   @override
   Future<LeagueModel> removeMemory({
-    required String leagueId,
+    required LeagueModel league,
     required String memoryId,
   }) async {
     try {
       final currentUserId = _checkAuthentication();
-
-      // Get the current league data
-      final league = await _getLeagueData(leagueId);
 
       // Find the memory
       final memoryIndex =
@@ -555,7 +526,7 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
 
       // Update in Supabase
       return await _updateLeagueInDb(
-        leagueId: leagueId,
+        leagueId: league.id,
         updateData: {'memories': updatedMemories},
       );
     } catch (e) {
@@ -573,10 +544,7 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
       final tableName = mode == "hard" ? "hard_rules" : "soft_rules";
 
       // Execute the query
-      final response = await supabaseClient
-          .from(tableName)
-          .select()
-          .order('id', ascending: true);
+      final response = await supabaseClient.from(tableName).select();
 
       // Parse the response into a list of RuleModel objects
       return (response as List)
@@ -592,52 +560,29 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
   // U P D A T E   R U L E
   @override
   Future<LeagueModel> updateRule({
-    required String leagueId,
-    required Map<String, dynamic> rule,
+    required LeagueModel league,
+    required RuleModel rule,
+    String? originalRuleName,
   }) async {
     try {
-      // Get current league to access its rules
-      final league = await _getLeagueData(leagueId);
+      // originalRuleName is the name of the rule we want to replace
+      final nameToFind = originalRuleName ?? rule.name;
 
-      // Find the rule to update by ID
-      final ruleId = rule['id'];
-
-      // Create updated rules list
-      final updatedRules = league.rules.map((r) {
-        if (r.id == ruleId) {
-          // Get the proper type
-          final String typeStr = rule['type']?.toString().toLowerCase() ?? '';
-          final RuleType type =
-              typeStr == 'malus' ? RuleType.malus : RuleType.bonus;
-
-          // Get points value and handle sign properly
-          double pointsValue = 0.0;
-          if (rule['points'] is int) {
-            pointsValue = (rule['points'] as int).toDouble();
-          } else if (rule['points'] is double) {
-            pointsValue = rule['points'] as double;
-          } else if (rule['points'] is String) {
-            pointsValue = double.tryParse(rule['points'] as String) ?? 0.0;
-          }
-
-          // Create new RuleModel with updated values
-          return RuleModel(
-            id: ruleId,
-            name: rule['name'],
-            points: pointsValue,
-            type: type,
-          );
+      // Create updated rules list by replacing the rule with matching name
+      final updatedRulesList = league.rules.map((currentRule) {
+        if (currentRule.name == nameToFind) {
+          return rule;
         }
-        return r;
+        return currentRule;
       }).toList();
 
       // Format rules for database update
       final List<Map<String, dynamic>> rulesJson =
-          updatedRules.map((r) => (r as RuleModel).toJson()).toList();
+          updatedRulesList.map((rule) => (rule as RuleModel).toJson()).toList();
 
       // Update in Supabase
       return await _updateLeagueInDb(
-        leagueId: leagueId,
+        leagueId: league.id,
         updateData: {'rules': rulesJson},
       );
     } catch (e) {
@@ -650,29 +595,54 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
   // D E L E T E   R U L E
   @override
   Future<LeagueModel> deleteRule({
-    required String leagueId,
-    required int ruleId,
+    required LeagueModel league,
+    required String ruleName,
   }) async {
     try {
-      // Get current league to access its rules
-      final league = await _getLeagueData(leagueId);
-
       // Filter out the rule to delete
-      final remainingRules = league.rules.where((r) => r.id != ruleId).toList();
-
-      // Reindex the remaining rules to ensure sequential IDs
-      final updatedRules = <Map<String, dynamic>>[];
-      for (int i = 0; i < remainingRules.length; i++) {
-        final rule = (remainingRules[i] as RuleModel).toJson();
-        rule['id'] = i + 1; // Reassign IDs starting from 1
-        updatedRules.add(rule);
-      }
+      final remainingRules = league.rules
+          .where((r) => (r.name != ruleName || !r.name.contains(ruleName)))
+          .toList();
 
       // Update in Supabase
       return await _updateLeagueInDb(
-        leagueId: leagueId,
-        updateData: {'rules': updatedRules},
+        leagueId: league.id,
+        updateData: {'rules': remainingRules},
       );
+    } catch (e) {
+      if (e is ServerException) rethrow;
+      throw ServerException('Si è verificato un errore: ${e.toString()}');
+    }
+  }
+
+  // ------------------------------------------------
+  // A D D   R U L E
+  @override
+  Future<LeagueModel> addRule({
+    required LeagueModel league,
+    required RuleModel rule,
+  }) async {
+    try {
+      // Get all existing rules
+      final List<RuleModel> existingRules =
+          league.rules.map((r) => r as RuleModel).toList();
+
+      // Insert the new rule
+      final List<RuleModel> updatedRules = _insertRule(
+        existingRules: existingRules,
+        newRule: rule,
+        ruleType: rule.type,
+      );
+
+      // Update in Supabase
+      return await _updateLeagueInDb(
+        leagueId: league.id,
+        updateData: {
+          'rules': updatedRules.map((r) => r.toJson()).toList(),
+        },
+      );
+    } on PostgrestException catch (e) {
+      throw ServerException('Errore: ${e.message}');
     } catch (e) {
       if (e is ServerException) rethrow;
       throw ServerException('Si è verificato un errore: ${e.toString()}');
@@ -770,29 +740,27 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
 
   // ------------------------------------------------
   // H E L P E R  -  C R E A T E   I N I T I A L   P A R T I C I P A N T
-  Map<String, dynamic> _createInitialParticipant({
+  ParticipantModel _createInitialParticipant({
     required bool isTeamBased,
     required String creatorId,
     required String creatorName,
   }) {
     if (isTeamBased) {
-      return {
-        'type': 'team',
-        'userIds': [creatorId],
-        'name': '$creatorName Team', // Default team name
-        'score': 0,
-        'malusTotal': 0,
-        'bonusTotal': 0,
-      };
+      return TeamParticipantModel(
+        userIds: [creatorId],
+        name: 'Squadra di $creatorName',
+        points: 0,
+        malusTotal: 0,
+        bonusTotal: 0,
+      );
     } else {
-      return {
-        'type': 'individual',
-        'userId': creatorId,
-        'name': creatorName,
-        'score': 0,
-        'malusTotal': 0,
-        'bonusTotal': 0,
-      };
+      return IndividualParticipantModel(
+        userId: creatorId,
+        name: creatorName,
+        points: 0,
+        malusTotal: 0,
+        bonusTotal: 0,
+      );
     }
   }
 
@@ -917,7 +885,7 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
 
   // ------------------------------------------------
   // H E L P E R  -  C R E A T E   E V E N T   D A T A
-  Map<String, dynamic> _createEventData({
+  EventModel _createEventData({
     required String name,
     required int points,
     required String creatorId,
@@ -927,34 +895,30 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
   }) {
     final eventId = uuid.v4();
 
-    // Convert RuleType enum to string safely
-    final String typeString = type.toString().split('.').last;
-
-    return {
-      'id': eventId,
-      'name': name,
-      'points': points,
-      'creatorId': creatorId,
-      'targetUser': targetUser,
-      'createdAt': DateTime.now().toIso8601String(),
-      'type': typeString,
-      'description': description,
-    };
+    return EventModel(
+      id: eventId,
+      name: name,
+      points: points,
+      creatorId: creatorId,
+      targetUser: targetUser,
+      createdAt: DateTime.now(),
+      type: type,
+      description: description,
+    );
   }
 
   // ------------------------------------------------
   // H E L P E R  -  G E T   U P D A T E D   E V E N T S   L I S T
-  List<Map<String, dynamic>> _getUpdatedEventsList(
-      List<dynamic> currentEvents, Map<String, dynamic> newEvent) {
-    List<Map<String, dynamic>> updatedEvents = [
-      ...currentEvents.map((e) => (e as EventModel).toJson()),
+  List<EventModel> _getUpdatedEventsList(
+      List<dynamic> currentEvents, EventModel newEvent) {
+    List<EventModel> updatedEvents = [
+      ...currentEvents.map((e) => e as EventModel),
       newEvent,
     ];
 
     // If more than 10 events, remove oldest
     if (updatedEvents.length > 10) {
-      updatedEvents.sort((a, b) => DateTime.parse(a['createdAt'])
-          .compareTo(DateTime.parse(b['createdAt'])));
+      updatedEvents.sort((a, b) => a.createdAt.compareTo(b.createdAt));
       updatedEvents.removeAt(0);
     }
 
@@ -1010,21 +974,21 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
 
   // ------------------------------------------------
   // H E L P E R  -  C R E A T E   M E M O R Y   D A T A
-  Map<String, dynamic> _createMemoryData({
+  MemoryModel _createMemoryData({
     required String imageUrl,
     required String text,
     required String userId,
     String? relatedEventId,
   }) {
     final memoryId = uuid.v4();
-    return {
-      'id': memoryId,
-      'imageUrl': imageUrl,
-      'text': text,
-      'createdAt': DateTime.now().toIso8601String(),
-      'userId': userId,
-      'relatedEventId': relatedEventId,
-    };
+    return MemoryModel(
+      id: memoryId,
+      imageUrl: imageUrl,
+      text: text,
+      createdAt: DateTime.now(),
+      userId: userId,
+      relatedEventId: relatedEventId,
+    );
   }
 
   // ------------------------------------------------
@@ -1159,5 +1123,30 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
       }
       return participantJson;
     }).toList();
+  }
+
+  // ------------------------------------------------
+  // H E L P E R  -  I N S E R T   R U L E   A N D   R E I N D E X   I D S
+  List<RuleModel> _insertRule({
+    required List<RuleModel> existingRules,
+    required RuleModel newRule,
+    required RuleType ruleType,
+  }) {
+    // Separate rules by type
+    final List<RuleModel> bonusRules =
+        existingRules.where((r) => r.type == RuleType.bonus).toList();
+
+    final List<RuleModel> malusRules =
+        existingRules.where((r) => r.type == RuleType.malus).toList();
+
+    // Add the new rule to the appropriate list
+    if (ruleType == RuleType.bonus) {
+      bonusRules.add(newRule);
+    } else {
+      malusRules.add(newRule);
+    }
+
+    // Combine the rules in the right order (bonus first, then malus)
+    return [...bonusRules, ...malusRules];
   }
 }

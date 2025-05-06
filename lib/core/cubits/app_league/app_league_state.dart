@@ -11,11 +11,11 @@ final class AppLeagueInitial extends AppLeagueState {}
 
 final class AppLeagueExists extends AppLeagueState {
   final List<League> leagues;
-  final League? selectedLeague;
+  final League selectedLeague;
 
   const AppLeagueExists({
     required this.leagues,
-    this.selectedLeague,
+    required this.selectedLeague,
   });
 
   @override

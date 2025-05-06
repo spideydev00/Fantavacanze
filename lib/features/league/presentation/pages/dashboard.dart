@@ -55,12 +55,6 @@ class _DashboardScreenState extends State<DashboardScreen>
         curve: Curves.fastOutSlowIn,
       ),
     );
-
-    // Initialize user leagues
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      // This will also handle setting the selected league
-      context.read<AppLeagueCubit>().getUserLeagues();
-    });
   }
 
   @override

@@ -1,7 +1,9 @@
 import 'package:fantavacanze_official/core/constants/game_mode.dart';
+import 'package:fantavacanze_official/core/cubits/app_league/app_league_cubit.dart';
 import 'package:fantavacanze_official/core/extensions/context_extension.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/utils/show_snackbar.dart';
+import 'package:fantavacanze_official/features/league/data/models/rule_model.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/rule.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -15,7 +17,6 @@ import 'package:fantavacanze_official/features/league/presentation/widgets/creat
 import 'package:fantavacanze_official/features/league/presentation/widgets/create_league/rules_step.dart';
 import 'package:fantavacanze_official/features/league/presentation/widgets/rules/rule_dialog.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/create_league/league_created_page.dart';
-import 'package:fantavacanze_official/core/cubits/app_league/app_league_cubit.dart';
 
 class CreateLeaguePage extends StatefulWidget {
   const CreateLeaguePage({super.key});
@@ -29,12 +30,19 @@ class _CreateLeaguePageState extends State<CreateLeaguePage> {
   final _nameController = TextEditingController();
   final _descriptionController = TextEditingController();
   bool _isTeamBased = false;
-  List<Map<String, dynamic>> _rules = [];
+  List<Rule> _rules = [];
   bool _isCreating = false;
   int _currentStep = 0;
   GameMode _selectedRuleMode = GameMode.hot;
   bool _isLoadingRules = false;
   bool _rulesLoaded = false;
+
+  // Maps to store rules locally for each mode
+  final Map<String, List<Rule>> _cachedRules = {
+    'hard': [],
+    'soft': [],
+    'custom': [],
+  };
 
   final ScrollController _scrollController = ScrollController();
   bool _areButtonsVisible = true;
@@ -84,6 +92,17 @@ class _CreateLeaguePageState extends State<CreateLeaguePage> {
   }
 
   void _loadPredefinedRules(String mode) {
+    // First check if we have cached rules for this mode
+    if (_cachedRules[mode]!.isNotEmpty) {
+      setState(() {
+        _isLoadingRules = false;
+        _rulesLoaded = true;
+        _rules = List<Rule>.from(_cachedRules[mode]!);
+      });
+      return;
+    }
+
+    // If no cached rules, fetch from server
     setState(() {
       _isLoadingRules = true;
       _rulesLoaded = false;
@@ -92,17 +111,11 @@ class _CreateLeaguePageState extends State<CreateLeaguePage> {
     context.read<LeagueBloc>().add(GetRulesEvent(mode: mode));
   }
 
-  void _updateRuleIds() {
-    for (int i = 0; i < _rules.length; i++) {
-      _rules[i]['id'] = i + 1;
-    }
-  }
-
   void _addRule() {
     showGeneralDialog(
       context: context,
       barrierDismissible: true,
-      barrierLabel: 'Dismiss',
+      barrierLabel: 'Annulla',
       barrierColor: Colors.black.withAlpha(153),
       transitionDuration: const Duration(milliseconds: 200),
       pageBuilder: (context, animation1, animation2) {
@@ -110,33 +123,45 @@ class _CreateLeaguePageState extends State<CreateLeaguePage> {
           title: 'Aggiungi Regola',
           buttonText: 'Aggiungi',
           onSave: (name, type, points) {
-            setState(() {
-              final newRule = {
-                'id': _rules.isEmpty ? 1 : _rules.length + 1,
-                'name': name,
-                'type': type.toString().split('.').last,
-                'points': points,
-              };
+            setState(
+              () {
+                // Create a RuleModel instead of a Rule
+                final newRule = RuleModel(
+                  name: name,
+                  type: type,
+                  points: points,
+                  createdAt: DateTime.now(),
+                );
 
-              if (type == RuleType.bonus) {
-                int lastBonusIndex = -1;
-                for (int i = 0; i < _rules.length; i++) {
-                  if (_rules[i]['type'] == 'bonus') {
-                    lastBonusIndex = i;
+                if (type == RuleType.bonus) {
+                  int lastBonusIndex = -1;
+                  for (int i = 0; i < _rules.length; i++) {
+                    if (_rules[i].type == RuleType.bonus) {
+                      lastBonusIndex = i;
+                    }
                   }
-                }
 
-                if (lastBonusIndex >= 0) {
-                  _rules.insert(lastBonusIndex + 1, newRule);
+                  if (lastBonusIndex >= 0) {
+                    _rules.insert(lastBonusIndex + 1, newRule);
+                  } else {
+                    _rules.insert(0, newRule);
+                  }
                 } else {
-                  _rules.insert(0, newRule);
+                  _rules.add(newRule);
                 }
-              } else {
-                _rules.add(newRule);
-              }
 
-              _updateRuleIds();
-            });
+                // Update the cache for the current mode
+                String currentModeKey;
+                if (_selectedRuleMode == GameMode.hot) {
+                  currentModeKey = 'hard';
+                } else if (_selectedRuleMode == GameMode.soft) {
+                  currentModeKey = 'soft';
+                } else {
+                  currentModeKey = 'custom';
+                }
+                _cachedRules[currentModeKey] = List<Rule>.from(_rules);
+              },
+            );
           },
         );
       },
@@ -149,7 +174,7 @@ class _CreateLeaguePageState extends State<CreateLeaguePage> {
     showGeneralDialog(
       context: context,
       barrierDismissible: true,
-      barrierLabel: 'Dismiss',
+      barrierLabel: 'Annulla',
       barrierColor: Colors.black.withAlpha(153),
       transitionDuration: const Duration(milliseconds: 200),
       pageBuilder: (context, animation1, animation2) {
@@ -159,12 +184,23 @@ class _CreateLeaguePageState extends State<CreateLeaguePage> {
           initialRule: rule,
           onSave: (name, type, points) {
             setState(() {
-              _rules[index] = {
-                'id': rule['id'],
-                'name': name,
-                'type': type.toString().split('.').last,
-                'points': points,
-              };
+              _rules[index] = RuleModel(
+                name: name,
+                type: type,
+                points: points,
+                createdAt: rule.createdAt,
+              );
+
+              // Update the cache for the current mode
+              String currentModeKey;
+              if (_selectedRuleMode == GameMode.hot) {
+                currentModeKey = 'hard';
+              } else if (_selectedRuleMode == GameMode.soft) {
+                currentModeKey = 'soft';
+              } else {
+                currentModeKey = 'custom';
+              }
+              _cachedRules[currentModeKey] = List<Rule>.from(_rules);
             });
           },
         );
@@ -175,7 +211,17 @@ class _CreateLeaguePageState extends State<CreateLeaguePage> {
   void _removeRule(int index) {
     setState(() {
       _rules.removeAt(index);
-      _updateRuleIds();
+
+      // Update the cache for the current mode
+      String currentModeKey;
+      if (_selectedRuleMode == GameMode.hot) {
+        currentModeKey = 'hard';
+      } else if (_selectedRuleMode == GameMode.soft) {
+        currentModeKey = 'soft';
+      } else {
+        currentModeKey = 'custom';
+      }
+      _cachedRules[currentModeKey] = List<Rule>.from(_rules);
     });
   }
 
@@ -195,32 +241,102 @@ class _CreateLeaguePageState extends State<CreateLeaguePage> {
         _isCreating = true;
       });
 
-      context.read<LeagueBloc>().add(
-            CreateLeagueEvent(
-              name: _nameController.text.trim(),
-              description: _descriptionController.text.trim(),
-              isTeamBased: _isTeamBased,
-              rules: _rules,
+      // Show loading dialog while processing
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          return PopScope(
+            canPop: true,
+            child: Dialog(
+              backgroundColor: Colors.transparent,
+              elevation: 0,
+              child: Center(
+                child: Container(
+                  padding: const EdgeInsets.all(24),
+                  decoration: BoxDecoration(
+                    color: context.secondaryBgColor,
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      CircularProgressIndicator(
+                        valueColor:
+                            AlwaysStoppedAnimation<Color>(context.primaryColor),
+                      ),
+                      const SizedBox(height: 24),
+                      Text(
+                        'Creazione della lega in corso...',
+                        style: context.textTheme.titleMedium,
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
             ),
           );
+        },
+      );
+
+      // Delay to show the loader for a better UX
+      Future.delayed(const Duration(seconds: 2), () {
+        // Only proceed if the widget is still mounted
+        if (mounted) {
+          context.read<LeagueBloc>().add(
+                CreateLeagueEvent(
+                  name: _nameController.text.trim(),
+                  description: _descriptionController.text.trim(),
+                  isTeamBased: _isTeamBased,
+                  rules: _rules,
+                ),
+              );
+        }
+      });
     }
   }
 
   void _handleRuleModeChanged(GameMode mode) {
+    // Store current rules in cache before switching
+    String currentModeKey;
+    if (_selectedRuleMode == GameMode.hot) {
+      currentModeKey = 'hard';
+    } else if (_selectedRuleMode == GameMode.soft) {
+      currentModeKey = 'soft';
+    } else {
+      currentModeKey = 'custom';
+    }
+
+    // Save current rules to cache
+    if (_rules.isNotEmpty) {
+      _cachedRules[currentModeKey] = List<Rule>.from(_rules);
+    }
+
+    // Set new mode and clear rules
     setState(() {
       _selectedRuleMode = mode;
       _rules = [];
       _rulesLoaded = false;
     });
 
+    // Load rules for the new mode
     if (mode == GameMode.hot) {
       _loadPredefinedRules("hard");
     } else if (mode == GameMode.soft) {
       _loadPredefinedRules("soft");
     } else {
-      setState(() {
-        _rulesLoaded = true;
-      });
+      // For custom mode, either load cached custom rules or set empty
+      if (_cachedRules['custom']!.isNotEmpty) {
+        setState(() {
+          _rules = List<Rule>.from(_cachedRules['custom']!);
+          _rulesLoaded = true;
+        });
+      } else {
+        setState(() {
+          _rulesLoaded = true;
+        });
+      }
     }
   }
 
@@ -252,12 +368,14 @@ class _CreateLeaguePageState extends State<CreateLeaguePage> {
   Widget build(BuildContext context) {
     return BlocConsumer<LeagueBloc, LeagueState>(
       listener: (context, state) {
-        if (state is LeagueCreated) {
-          // After successful league creation, refresh the leagues in AppLeagueCubit
+        if (state is LeagueSuccess) {
+          // After successful league creation, refresh the leagues
           context.read<AppLeagueCubit>().getUserLeagues();
 
-          // Select the newly created league
-          context.read<AppLeagueCubit>().selectLeague(state.league);
+          // Clear cached rules after successful league creation
+          _cachedRules['hard'] = [];
+          _cachedRules['soft'] = [];
+          _cachedRules['custom'] = [];
 
           //Go to the league created page
           Navigator.pushReplacement(
@@ -275,20 +393,16 @@ class _CreateLeaguePageState extends State<CreateLeaguePage> {
           });
           showSnackBar(context, state.message);
         } else if (state is RulesLoaded) {
+          // Determine which cache to update based on the mode
+          String cacheKey = state.mode;
+
           setState(() {
             _isLoadingRules = false;
             _rulesLoaded = true;
+            _rules = state.rules;
 
-            _rules = state.rules
-                .map((rule) => {
-                      'id': rule.id,
-                      'name': rule.name,
-                      'type': rule.type.toString().split('.').last,
-                      'points': rule.points,
-                    })
-                .toList();
-
-            _updateRuleIds();
+            // Store the fetched rules in cache
+            _cachedRules[cacheKey] = List<Rule>.from(state.rules);
           });
         }
       },

@@ -1,4 +1,6 @@
 import 'package:fantavacanze_official/core/errors/exceptions.dart';
+import 'package:fantavacanze_official/features/league/data/models/league_model.dart';
+import 'package:fantavacanze_official/features/league/data/models/rule_model.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:fantavacanze_official/core/errors/failure.dart';
 import 'package:fantavacanze_official/core/network/connection_checker.dart';
@@ -24,7 +26,7 @@ class LeagueRepositoryImpl implements LeagueRepository {
     required String name,
     String? description,
     required bool isTeamBased,
-    required List<Map<String, dynamic>> rules,
+    required List<Rule> rules,
   }) async {
     try {
       if (!await connectionChecker.isConnected) {
@@ -34,11 +36,21 @@ class LeagueRepositoryImpl implements LeagueRepository {
         );
       }
 
+      // Convert Rule objects to RuleModel objects
+      final List<RuleModel> ruleModels = rules
+          .map((rule) => RuleModel(
+                createdAt: rule.createdAt,
+                name: rule.name,
+                type: rule.type,
+                points: rule.points,
+              ))
+          .toList();
+
       final league = await remoteDataSource.createLeague(
         name: name,
         description: description ?? "",
         isTeamBased: isTeamBased,
-        rules: rules,
+        rules: ruleModels,
       );
 
       // Cache the newly created league
@@ -106,7 +118,7 @@ class LeagueRepositoryImpl implements LeagueRepository {
   }
 
   @override
-  Future<Either<Failure, League>> updateLeague({
+  Future<Either<Failure, League>> updateLeagueNameOrDescription({
     required String leagueId,
     String? name,
     String? description,
@@ -120,7 +132,7 @@ class LeagueRepositoryImpl implements LeagueRepository {
         );
       }
 
-      final league = await remoteDataSource.updateLeague(
+      final league = await remoteDataSource.updateLeagueNameOrDescription(
         leagueId: leagueId,
         name: name,
         description: description,
@@ -195,7 +207,7 @@ class LeagueRepositoryImpl implements LeagueRepository {
 
   @override
   Future<Either<Failure, League>> exitLeague({
-    required String leagueId,
+    required League league,
     required String userId,
   }) async {
     try {
@@ -206,15 +218,15 @@ class LeagueRepositoryImpl implements LeagueRepository {
         );
       }
 
-      final league = await remoteDataSource.exitLeague(
-        leagueId: leagueId,
+      final updatedLeague = await remoteDataSource.exitLeague(
+        league: league as LeagueModel,
         userId: userId,
       );
 
       // Update cache
-      // We might need to update both the specific league and the user leagues list
+      await localDataSource.cacheLeague(updatedLeague);
 
-      return Right(league);
+      return Right(updatedLeague);
     } on ServerException catch (e) {
       return Left(Failure(e.message));
     }
@@ -222,7 +234,7 @@ class LeagueRepositoryImpl implements LeagueRepository {
 
   @override
   Future<Either<Failure, League>> updateTeamName({
-    required String leagueId,
+    required League league,
     required String userId,
     required String newName,
   }) async {
@@ -234,16 +246,16 @@ class LeagueRepositoryImpl implements LeagueRepository {
         );
       }
 
-      final league = await remoteDataSource.updateTeamName(
-        leagueId: leagueId,
+      final updatedLeague = await remoteDataSource.updateTeamName(
+        league: league as LeagueModel,
         userId: userId,
         newName: newName,
       );
 
       // Update cache
-      await localDataSource.cacheLeague(league);
+      await localDataSource.cacheLeague(updatedLeague);
 
-      return Right(league);
+      return Right(updatedLeague);
     } on ServerException catch (e) {
       return Left(Failure(e.message));
     }
@@ -251,7 +263,7 @@ class LeagueRepositoryImpl implements LeagueRepository {
 
   @override
   Future<Either<Failure, League>> addEvent({
-    required String leagueId,
+    required League league,
     required String name,
     required int points,
     required String creatorId,
@@ -267,8 +279,8 @@ class LeagueRepositoryImpl implements LeagueRepository {
         );
       }
 
-      final league = await remoteDataSource.addEvent(
-        leagueId: leagueId,
+      final updatedLeague = await remoteDataSource.addEvent(
+        league: league as LeagueModel,
         name: name,
         points: points,
         creatorId: creatorId,
@@ -278,9 +290,9 @@ class LeagueRepositoryImpl implements LeagueRepository {
       );
 
       // Update cache
-      await localDataSource.cacheLeague(league);
+      await localDataSource.cacheLeague(updatedLeague);
 
-      return Right(league);
+      return Right(updatedLeague);
     } on ServerException catch (e) {
       return Left(Failure(e.message));
     }
@@ -288,7 +300,7 @@ class LeagueRepositoryImpl implements LeagueRepository {
 
   @override
   Future<Either<Failure, League>> removeEvent({
-    required String leagueId,
+    required League league,
     required String eventId,
   }) async {
     try {
@@ -299,15 +311,15 @@ class LeagueRepositoryImpl implements LeagueRepository {
         );
       }
 
-      final league = await remoteDataSource.removeEvent(
-        leagueId: leagueId,
+      final updatedLeague = await remoteDataSource.removeEvent(
+        league: league as LeagueModel,
         eventId: eventId,
       );
 
       // Update cache
-      await localDataSource.cacheLeague(league);
+      await localDataSource.cacheLeague(updatedLeague);
 
-      return Right(league);
+      return Right(updatedLeague);
     } on ServerException catch (e) {
       return Left(Failure(e.message));
     }
@@ -315,7 +327,7 @@ class LeagueRepositoryImpl implements LeagueRepository {
 
   @override
   Future<Either<Failure, League>> addMemory({
-    required String leagueId,
+    required League league,
     required String imageUrl,
     required String text,
     required String userId,
@@ -329,8 +341,8 @@ class LeagueRepositoryImpl implements LeagueRepository {
         );
       }
 
-      final league = await remoteDataSource.addMemory(
-        leagueId: leagueId,
+      final updatedLeague = await remoteDataSource.addMemory(
+        league: league as LeagueModel,
         imageUrl: imageUrl,
         text: text,
         userId: userId,
@@ -338,9 +350,9 @@ class LeagueRepositoryImpl implements LeagueRepository {
       );
 
       // Update cache
-      await localDataSource.cacheLeague(league);
+      await localDataSource.cacheLeague(updatedLeague);
 
-      return Right(league);
+      return Right(updatedLeague);
     } on ServerException catch (e) {
       return Left(Failure(e.message));
     }
@@ -348,7 +360,7 @@ class LeagueRepositoryImpl implements LeagueRepository {
 
   @override
   Future<Either<Failure, League>> removeMemory({
-    required String leagueId,
+    required League league,
     required String memoryId,
   }) async {
     try {
@@ -359,15 +371,15 @@ class LeagueRepositoryImpl implements LeagueRepository {
         );
       }
 
-      final league = await remoteDataSource.removeMemory(
-        leagueId: leagueId,
+      final updatedLeague = await remoteDataSource.removeMemory(
+        league: league as LeagueModel,
         memoryId: memoryId,
       );
 
       // Update cache
-      await localDataSource.cacheLeague(league);
+      await localDataSource.cacheLeague(updatedLeague);
 
-      return Right(league);
+      return Right(updatedLeague);
     } on ServerException catch (e) {
       return Left(Failure(e.message));
     }
@@ -407,8 +419,9 @@ class LeagueRepositoryImpl implements LeagueRepository {
 
   @override
   Future<Either<Failure, League>> updateRule({
-    required String leagueId,
-    required Map<String, dynamic> rule,
+    required League league,
+    required Rule rule,
+    String? originalRuleName,
   }) async {
     try {
       if (!await connectionChecker.isConnected) {
@@ -418,15 +431,24 @@ class LeagueRepositoryImpl implements LeagueRepository {
         );
       }
 
-      final league = await remoteDataSource.updateRule(
-        leagueId: leagueId,
-        rule: rule,
+      // Properly convert Rule to RuleModel
+      final ruleModel = RuleModel(
+        createdAt: rule.createdAt,
+        name: rule.name,
+        type: rule.type,
+        points: rule.points,
+      );
+
+      final updatedLeague = await remoteDataSource.updateRule(
+        league: league as LeagueModel,
+        rule: ruleModel,
+        originalRuleName: originalRuleName,
       );
 
       // Update cache
-      await localDataSource.cacheLeague(league);
+      await localDataSource.cacheLeague(updatedLeague);
 
-      return Right(league);
+      return Right(updatedLeague);
     } on ServerException catch (e) {
       return Left(Failure(e.message));
     }
@@ -434,8 +456,8 @@ class LeagueRepositoryImpl implements LeagueRepository {
 
   @override
   Future<Either<Failure, League>> deleteRule({
-    required String leagueId,
-    required int ruleId,
+    required League league,
+    required String ruleName,
   }) async {
     try {
       if (!await connectionChecker.isConnected) {
@@ -445,15 +467,49 @@ class LeagueRepositoryImpl implements LeagueRepository {
         );
       }
 
-      final league = await remoteDataSource.deleteRule(
-        leagueId: leagueId,
-        ruleId: ruleId,
+      final updatedLeague = await remoteDataSource.deleteRule(
+        league: league as LeagueModel,
+        ruleName: ruleName,
       );
 
       // Update cache
-      await localDataSource.cacheLeague(league);
+      await localDataSource.cacheLeague(updatedLeague);
 
-      return Right(league);
+      return Right(updatedLeague);
+    } on ServerException catch (e) {
+      return Left(Failure(e.message));
+    }
+  }
+
+  @override
+  Future<Either<Failure, League>> addRule({
+    required League league,
+    required Rule rule,
+  }) async {
+    try {
+      if (!await connectionChecker.isConnected) {
+        return Left(
+          Failure(
+              "Nessuna connessione ad internet, riprova appena sarai connesso."),
+        );
+      }
+
+      final ruleModel = RuleModel(
+        createdAt: rule.createdAt,
+        name: rule.name,
+        type: rule.type,
+        points: rule.points,
+      );
+
+      final updatedLeague = await remoteDataSource.addRule(
+        league: league as LeagueModel,
+        rule: ruleModel,
+      );
+
+      // Update cache
+      await localDataSource.cacheLeague(updatedLeague);
+
+      return Right(updatedLeague);
     } on ServerException catch (e) {
       return Left(Failure(e.message));
     }
