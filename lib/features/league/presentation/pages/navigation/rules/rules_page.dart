@@ -123,8 +123,9 @@ class _RulesPageState extends State<RulesPage>
                           return FloatingActionButton(
                             onPressed: () =>
                                 _showAddRuleDialog(context, league, isBonus),
-                            backgroundColor:
-                                isBonus ? Colors.green : Colors.red,
+                            backgroundColor: isBonus
+                                ? ColorPalette.success
+                                : ColorPalette.error,
                             child: Icon(
                               isBonus ? Icons.add : Icons.remove,
                             ),

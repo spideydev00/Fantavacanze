@@ -45,6 +45,34 @@ class LeagueDropdown extends StatelessWidget {
 
   Widget _buildLeagueSelector(
       BuildContext context, List<League> leagues, League selectedLeague) {
+    // Safety check: Verify the selected league ID exists in the leagues list
+    final leagueIds = leagues.map((l) => l.id).toList();
+    final safeValue = leagueIds.contains(selectedLeague.id)
+        ? selectedLeague.id
+        : (leagueIds.isNotEmpty ? leagueIds.first : null);
+
+    // If no valid value can be found, show a placeholder instead of dropdown
+    if (safeValue == null) {
+      return Container(
+        padding: const EdgeInsets.symmetric(
+          horizontal: ThemeSizes.md,
+          vertical: ThemeSizes.sm,
+        ),
+        decoration: BoxDecoration(
+          color: context.bgColor.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusMd),
+          border: Border.all(
+            color: context.primaryColor.withValues(alpha: 0.3),
+            width: 1,
+          ),
+        ),
+        child: Text(
+          "Nessuna lega disponibile",
+          style: context.textTheme.bodyMedium,
+        ),
+      );
+    }
+
     return Container(
       padding: const EdgeInsets.symmetric(
         horizontal: ThemeSizes.md,
@@ -59,7 +87,7 @@ class LeagueDropdown extends StatelessWidget {
         ),
       ),
       child: DropdownButton<String>(
-        value: selectedLeague.id,
+        value: safeValue,
         onChanged: (String? newLeagueId) {
           if (newLeagueId != null) {
             final newLeague = leagues.firstWhere(

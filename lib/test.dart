@@ -1,3 +1,4 @@
+import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:flutter/material.dart';
 
 class TestPage extends StatefulWidget {
@@ -25,8 +26,8 @@ class _TestPageState extends State<TestPage> {
                 });
               },
               children: [
-                Container(color: Colors.red),
-                Container(color: Colors.green),
+                Container(color: ColorPalette.error),
+                Container(color: ColorPalette.success),
                 Container(color: Colors.blue),
               ],
             ),

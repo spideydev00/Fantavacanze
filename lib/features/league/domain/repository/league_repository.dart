@@ -91,4 +91,8 @@ abstract class LeagueRepository {
     required League league,
     required String ruleName,
   });
+
+  // User operations
+  Future<Either<Failure, List<Map<String, dynamic>>>> getUsersDetails(
+      List<String> userIds);
 }

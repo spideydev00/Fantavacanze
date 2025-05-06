@@ -25,6 +25,7 @@ import 'package:fantavacanze_official/features/league/domain/use_cases/exit_leag
 import 'package:fantavacanze_official/features/league/domain/use_cases/get_league.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/get_rules.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/get_user_leagues.dart';
+import 'package:fantavacanze_official/features/league/domain/use_cases/get_users_details.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/join_league.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/remove_memory.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/update_rule.dart';

@@ -514,4 +514,24 @@ class LeagueRepositoryImpl implements LeagueRepository {
       return Left(Failure(e.message));
     }
   }
+
+  @override
+  Future<Either<Failure, List<Map<String, dynamic>>>> getUsersDetails(
+      List<String> userIds) async {
+    try {
+      if (!await connectionChecker.isConnected) {
+        return Left(
+          Failure(
+              "Nessuna connessione ad internet, riprova appena sarai connesso."),
+        );
+      }
+
+      final usersDetails = await remoteDataSource.getUsersDetails(userIds);
+      return Right(usersDetails);
+    } on ServerException catch (e) {
+      return Left(Failure(e.message));
+    } catch (e) {
+      return Left(Failure(e.toString()));
+    }
+  }
 }

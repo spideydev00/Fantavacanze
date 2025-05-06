@@ -341,13 +341,13 @@ class _EventCard extends StatelessWidget {
               padding: const EdgeInsets.all(ThemeSizes.sm),
               decoration: BoxDecoration(
                 color: isBonus
-                    ? Colors.green.withValues(alpha: 0.1)
-                    : Colors.red.withValues(alpha: 0.1),
+                    ? ColorPalette.success.withValues(alpha: 0.1)
+                    : ColorPalette.error.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: Icon(
                 isBonus ? Icons.arrow_upward : Icons.arrow_downward,
-                color: isBonus ? Colors.green : Colors.red,
+                color: isBonus ? ColorPalette.success : ColorPalette.error,
                 size: 24,
               ),
             ),
@@ -388,7 +388,7 @@ class _EventCard extends StatelessWidget {
               style: TextStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: 18,
-                color: isBonus ? Colors.green : Colors.red,
+                color: isBonus ? ColorPalette.success : ColorPalette.error,
               ),
             ),
           ],

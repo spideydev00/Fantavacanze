@@ -95,6 +95,8 @@ abstract class LeagueRemoteDataSource {
     required LeagueModel league,
     required RuleModel rule,
   });
+
+  Future<List<Map<String, dynamic>>> getUsersDetails(List<String> userIds);
 }
 
 class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
@@ -645,6 +647,30 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
       throw ServerException('Errore: ${e.message}');
     } catch (e) {
       if (e is ServerException) rethrow;
+      throw ServerException('Si è verificato un errore: ${e.toString()}');
+    }
+  }
+
+  // ------------------------------------------------
+  // G E T   U S E R S   D E T A I L S
+  @override
+  Future<List<Map<String, dynamic>>> getUsersDetails(List<String> userIds) async {
+    try {
+      if (userIds.isEmpty) {
+        return [];
+      }
+      
+      // Call the Supabase RPC function
+      final response = await supabaseClient.rpc(
+        'get_users_details',
+        params: {'user_ids': userIds},
+      );
+      
+      // Convert response to list of maps
+      return List<Map<String, dynamic>>.from(response);
+    } on PostgrestException catch (e) {
+      throw ServerException('Errore nel recupero dei dettagli utenti: ${e.message}');
+    } catch (e) {
       throw ServerException('Si è verificato un errore: ${e.toString()}');
     }
   }

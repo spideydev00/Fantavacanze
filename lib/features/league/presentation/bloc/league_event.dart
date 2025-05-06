@@ -186,3 +186,12 @@ class AddRuleEvent extends LeagueEvent {
   @override
   List<Object?> get props => [league, rule];
 }
+
+class GetUsersDetailsEvent extends LeagueEvent {
+  final List<String> userIds;
+
+  const GetUsersDetailsEvent({required this.userIds});
+
+  @override
+  List<Object?> get props => [userIds];
+}

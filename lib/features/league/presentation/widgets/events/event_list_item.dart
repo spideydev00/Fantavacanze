@@ -1,3 +1,4 @@
+import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/event.dart';
 import 'package:intl/intl.dart';
@@ -80,9 +81,9 @@ class EventListItem extends StatelessWidget {
 
   Color _getPointsColor(int points) {
     if (points > 0) {
-      return Colors.green;
+      return ColorPalette.success;
     } else if (points < 0) {
-      return Colors.red;
+      return ColorPalette.error;
     } else {
       return Colors.grey;
     }

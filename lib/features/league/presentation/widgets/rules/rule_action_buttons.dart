@@ -1,3 +1,4 @@
+import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/rule.dart';
@@ -47,7 +48,8 @@ class RuleActionButtons extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final primaryColor = ruleType == RuleType.bonus ? Colors.green : Colors.red;
+    final primaryColor =
+        ruleType == RuleType.bonus ? ColorPalette.success : ColorPalette.error;
 
     // Create the buttons
     final primary = Expanded(
