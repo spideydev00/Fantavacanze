@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
-import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit.dart';
 import 'package:fantavacanze_official/core/use-case/usecase.dart';
+import 'package:fantavacanze_official/core/utils/sort_leagues_by_date.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/league.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/get_user_leagues.dart';
 import 'package:flutter/material.dart';
@@ -10,124 +10,92 @@ import 'package:shared_preferences/shared_preferences.dart';
 part 'app_league_state.dart';
 
 class AppLeagueCubit extends Cubit<AppLeagueState> {
-  static const String _selectedLeagueIdKey = 'selected_league_id';
   final GetUserLeagues _getUserLeagues;
   final SharedPreferences _prefs;
-  final AppUserCubit _appUserCubit;
+
+  // Key for storing selected league ID in shared preferences
+  static const String _selectedLeagueKey = 'selected_league_id';
 
   AppLeagueCubit({
     required GetUserLeagues getUserLeagues,
     required SharedPreferences prefs,
-    required AppUserCubit appUserCubit,
   })  : _getUserLeagues = getUserLeagues,
         _prefs = prefs,
-        _appUserCubit = appUserCubit,
         super(AppLeagueInitial());
 
+  // -----------------------------------------
+  // F E T C H E S   U S E R   L E A G U E S
+  // -----------------------------------------
   Future<void> getUserLeagues() async {
     final res = await _getUserLeagues.call(NoParams());
 
     res.fold(
       (l) {
-        debugPrint("🧊AppLeagueCubit: Error fetching leagues - ${l.message}");
+        debugPrint("🧊AppLeagueCubit - Error fetching leagues - ${l.message}");
         emit(AppLeagueInitial());
       },
       (leagues) {
-        debugPrint("🧊AppLeagueCubit: Got ${leagues.length} leagues");
+        debugPrint("🧊AppLeagueCubit - Got ${leagues.length} leagues");
         if (leagues.isEmpty) {
           emit(AppLeagueInitial());
         } else {
-          loadSelectedLeague(leagues);
+          _emitAppLeagueExists(leagues);
         }
       },
     );
   }
 
-  void loadSelectedLeague(List<League> leagues) {
+  // ----------------------------------
+  // U P D A T E S   T H E   S T A T E
+  // ----------------------------------
+  void _emitAppLeagueExists(List<League> leagues) {
     if (leagues.isEmpty) {
       emit(AppLeagueInitial());
       return;
     }
 
-    // Sort leagues by creation date (newest first)
-    final sortedLeagues = List<League>.from(leagues)
-      ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    // Get saved league ID from preferences
+    final savedLeagueId = _prefs.getString(_selectedLeagueKey);
+    League selectedLeague;
 
-    final savedLeagueId = _prefs.getString(_selectedLeagueIdKey);
-
-    League? selectedLeague;
+    // If we have a saved league ID, try to find it in the current leagues list
     if (savedLeagueId != null) {
-      final foundLeague = leagues
-          .where(
-            (league) => league.id == savedLeagueId,
-          )
-          .firstOrNull;
-
-      selectedLeague = foundLeague ?? sortedLeagues.first;
+      final leagueIndex =
+          leagues.indexWhere((league) => league.id == savedLeagueId);
+      if (leagueIndex >= 0) {
+        selectedLeague = leagues[leagueIndex];
+      } else {
+        selectedLeague = sortLeaguesByDate(leagues).first;
+      }
     } else {
-      selectedLeague = sortedLeagues.first;
+      selectedLeague = sortLeaguesByDate(leagues).first;
     }
 
+    debugPrint(
+        "🧊AppLeagueCubit: Selected league: ${selectedLeague.name} (ID: ${selectedLeague.id})");
     emit(AppLeagueExists(leagues: leagues, selectedLeague: selectedLeague));
-    _saveSelectedLeagueId(selectedLeague.id);
   }
 
+  // ---------------------------------
+  // S E L E C T S   A   L E A G U E
+  // ---------------------------------
   void selectLeague(League league) {
     final currentState = state;
     if (currentState is AppLeagueExists) {
+      // Save selection to SharedPreferences
+      _prefs.setString(_selectedLeagueKey, league.id);
       emit(currentState.copyWith(selectedLeague: league));
-      _saveSelectedLeagueId(league.id);
     }
   }
 
+  // -----------------------------------------
+  // C L E A R  S E L E C T E D   L E A G U E
+  // -----------------------------------------
   void clearSelectedLeague() {
     final currentState = state;
     if (currentState is AppLeagueExists) {
+      _prefs.remove(_selectedLeagueKey);
       emit(currentState.copyWith(selectedLeague: null));
-      _prefs.remove(_selectedLeagueIdKey);
     }
-  }
-
-  void _saveSelectedLeagueId(String leagueId) {
-    _prefs.setString(_selectedLeagueIdKey, leagueId);
-  }
-
-  // Checks if the current user is an admin of the given league
-  // Returns true if the user is an admin, false otherwise
-  bool isAdmin({String? leagueId}) {
-    // Get current user ID
-    final userState = _appUserCubit.state;
-    if (userState is! AppUserIsLoggedIn) {
-      return false;
-    }
-
-    final String userId = userState.user.id;
-
-    // If no leagueId provided, check the currently selected league
-    if (leagueId == null) {
-      final currentState = state;
-      if (currentState is AppLeagueExists &&
-          currentState.selectedLeague != null) {
-        return currentState.selectedLeague!.admins.contains(userId);
-      }
-      return false;
-    }
-
-    // If leagueId is provided, find that specific league
-    final currentState = state;
-    if (currentState is AppLeagueExists) {
-      // Safely find the league without throwing an exception
-      final league =
-          currentState.leagues.where((l) => l.id == leagueId).firstOrNull;
-
-      // If league is not found, return false instead of throwing an exception
-      if (league == null) {
-        return false;
-      }
-
-      return league.admins.contains(userId);
-    }
-
-    return false;
   }
 }

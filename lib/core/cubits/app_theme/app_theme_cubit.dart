@@ -17,15 +17,19 @@ class AppThemeCubit extends Cubit<AppThemeState> {
   Future<void> loadTheme() async {
     final savedTheme = _prefs.getString(_prefKey);
     if (savedTheme != null) {
+      // Explicitly emit the loaded theme
       emit(AppThemeState(_themeFromString(savedTheme)));
+      debugPrint('AppThemeCubit: Loaded saved theme: $savedTheme');
     } else {
-      // Default to system theme
-      emit(AppThemeState(ThemeMode.system));
+      // Use dark theme as the default
+      final themeMode = ThemeMode.dark;
+      emit(AppThemeState(themeMode));
     }
   }
 
   Future<void> setTheme(ThemeMode themeMode) async {
     await _prefs.setString(_prefKey, _themeToString(themeMode));
+    debugPrint('AppThemeCubit: Setting theme to ${_themeToString(themeMode)}');
     emit(AppThemeState(themeMode));
   }
 

@@ -18,16 +18,12 @@ class TeamInfoPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<AppLeagueCubit, AppLeagueState>(
       builder: (context, state) {
-        if (state is AppLeagueExists && state.selectedLeague != null) {
-          final league = state.selectedLeague!;
-          final userState = context.read<AppUserCubit>().state;
+        if (state is AppLeagueExists) {
+          final league = state.selectedLeague;
+          final userId =
+              (context.read<AppUserCubit>().state as AppUserIsLoggedIn).user.id;
 
-          if (userState is! AppUserIsLoggedIn) {
-            return const Center(child: Text('Utente non autenticato'));
-          }
-
-          final userId = userState.user.id;
-          final isAdmin = context.read<AppLeagueCubit>().isAdmin();
+          final isAdmin = context.read<LeagueBloc>().isAdmin();
 
           // Find user's participant entry
           Participant? userParticipant;
@@ -160,7 +156,7 @@ class _TeamBasedInfoState extends State<_TeamBasedInfo>
 
     context.read<LeagueBloc>().add(
           UpdateTeamNameEvent(
-            leagueId: widget.league.id,
+            league: widget.league,
             userId: widget.userId,
             newName: _teamNameController.text.trim(),
           ),
@@ -686,7 +682,7 @@ class _TeamBasedInfoState extends State<_TeamBasedInfo>
                     onPressed: () {
                       context.read<LeagueBloc>().add(
                             ExitLeagueEvent(
-                              leagueId: widget.league.id,
+                              league: widget.league,
                               userId: widget.userId,
                             ),
                           );
@@ -1000,7 +996,7 @@ class _IndividualInfo extends StatelessWidget {
                             onPressed: () {
                               context.read<LeagueBloc>().add(
                                     ExitLeagueEvent(
-                                      leagueId: league.id,
+                                      league: league,
                                       userId: userId,
                                     ),
                                   );

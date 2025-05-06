@@ -53,7 +53,7 @@ class _AddEventPageState extends State<AddEventPage> {
 
   League? _getCurrentLeague() {
     final state = context.read<AppLeagueCubit>().state;
-    if (state is AppLeagueExists && state.selectedLeague != null) {
+    if (state is AppLeagueExists) {
       return state.selectedLeague;
     }
     return null;
@@ -71,7 +71,8 @@ class _AddEventPageState extends State<AddEventPage> {
     }
 
     // Check if user is admin before allowing event creation
-    final isAdmin = context.read<AppLeagueCubit>().isAdmin();
+    final isAdmin = context.read<LeagueBloc>().isAdmin();
+
     if (!isAdmin) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -114,7 +115,7 @@ class _AddEventPageState extends State<AddEventPage> {
 
     context.read<LeagueBloc>().add(
           AddEventEvent(
-            leagueId: league.id,
+            league: league,
             name: name,
             points: points,
             creatorId: creatorId,
@@ -130,7 +131,7 @@ class _AddEventPageState extends State<AddEventPage> {
   @override
   Widget build(BuildContext context) {
     final league = _getCurrentLeague();
-    final isAdmin = context.read<AppLeagueCubit>().isAdmin();
+    final isAdmin = context.read<LeagueBloc>().isAdmin();
 
     return Scaffold(
       appBar: AppBar(
@@ -212,7 +213,9 @@ class _AddEventPageState extends State<AddEventPage> {
                               itemCount: league.rules.length,
                               itemBuilder: (context, index) {
                                 final rule = league.rules[index];
-                                final isSelected = _selectedRule?.id == rule.id;
+                                final isSelected =
+                                    (_selectedRule?.name.trim().toLowerCase() ==
+                                        rule.name.trim().toLowerCase());
 
                                 return ListTile(
                                   title: Text(rule.name),

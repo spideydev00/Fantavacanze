@@ -3,6 +3,7 @@ import 'package:fantavacanze_official/core/use-case/usecase.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/league.dart';
 import 'package:fantavacanze_official/features/league/domain/repository/league_repository.dart';
 import 'package:fpdart/fpdart.dart';
+import 'package:flutter/foundation.dart';
 
 class AddMemory implements Usecase<League, AddMemoryParams> {
   final LeagueRepository leagueRepository;
@@ -12,7 +13,7 @@ class AddMemory implements Usecase<League, AddMemoryParams> {
   @override
   Future<Either<Failure, League>> call(AddMemoryParams params) async {
     return leagueRepository.addMemory(
-      leagueId: params.leagueId,
+      league: params.league,
       imageUrl: params.imageUrl,
       text: params.text,
       userId: params.userId,
@@ -21,15 +22,16 @@ class AddMemory implements Usecase<League, AddMemoryParams> {
   }
 }
 
+@immutable
 class AddMemoryParams {
-  final String leagueId;
+  final League league;
   final String imageUrl;
   final String text;
   final String userId;
   final String? relatedEventId;
 
-  AddMemoryParams({
-    required this.leagueId,
+  const AddMemoryParams({
+    required this.league,
     required this.imageUrl,
     required this.text,
     required this.userId,

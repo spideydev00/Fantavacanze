@@ -18,6 +18,7 @@ import 'package:fantavacanze_official/features/league/data/repository/league_rep
 import 'package:fantavacanze_official/features/league/domain/repository/league_repository.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/add_event.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/add_memory.dart';
+import 'package:fantavacanze_official/features/league/domain/use_cases/add_rule.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/create_league.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/delete_rule.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/exit_league.dart';

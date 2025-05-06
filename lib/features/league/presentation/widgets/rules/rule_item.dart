@@ -1,11 +1,12 @@
 import 'package:fantavacanze_official/core/theme/colors.dart';
+import 'package:fantavacanze_official/features/league/domain/entities/rule.dart';
 import 'package:flutter/material.dart';
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/extensions/context_extension.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
 
 class RuleItem extends StatelessWidget {
-  final Map<String, dynamic> rule;
+  final Rule rule;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
 
@@ -18,7 +19,7 @@ class RuleItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isBonus = rule['type'] == 'bonus';
+    final isBonus = rule.type == RuleType.bonus;
     final mainColor = isBonus ? ColorPalette.success : ColorPalette.error;
 
     return Card(
@@ -81,7 +82,7 @@ class RuleItem extends StatelessWidget {
                   ),
                 ),
                 child: Text(
-                  '${isBonus ? '+' : '-'}${rule['points'].toInt()}',
+                  '${isBonus ? '+' : '-'}${rule.points.abs().toInt()}',
                   style: TextStyle(
                     color: mainColor,
                     fontWeight: FontWeight.bold,
@@ -97,7 +98,7 @@ class RuleItem extends StatelessWidget {
                   constraints: const BoxConstraints(minHeight: 36),
                   child: Center(
                     child: Text(
-                      rule['name'],
+                      rule.name,
                       style: context.textTheme.labelSmall?.copyWith(
                         fontWeight: FontWeight.w500,
                         fontSize: 11,

@@ -2,7 +2,7 @@ import 'package:fantavacanze_official/features/league/domain/entities/rule.dart'
 
 class RuleModel extends Rule {
   const RuleModel({
-    required super.id,
+    required super.createdAt,
     required super.name,
     required super.type,
     required super.points,
@@ -46,24 +46,9 @@ class RuleModel extends Rule {
     }
 
     //----------------------------------------
-    // H A N D L E   I D   C O N V E R S I O N - IMPROVED
-    int idValue = 0; // Default to 0
-
-    if (json['id'] != null) {
-      if (json['id'] is int) {
-        idValue = json['id'] as int;
-      } else if (json['id'] is double) {
-        idValue = (json['id'] as double).toInt();
-      } else if (json['id'] is String && (json['id'] as String).isNotEmpty) {
-        // Try to parse string to int
-        idValue = int.tryParse((json['id'] as String)) ?? 0;
-      }
-    }
-
-    //----------------------------------------
     // C R E A T E   R U L E   M O D E L
     return RuleModel(
-      id: idValue,
+      createdAt: DateTime.now(),
       name: json['name'] as String,
       type: ruleType,
       points: pointsValue,
@@ -72,11 +57,10 @@ class RuleModel extends Rule {
 
   Map<String, dynamic> toJson() {
     return {
-      'id': id,
+      'created_at': createdAt.toIso8601String(),
       'name': name,
-      'rule_type':
-          type.toString().split('.').last, // Use rule_type consistently
-      'points': points, // Points already has the correct sign
+      'rule_type': type.toString().split('.').last,
+      'points': points,
     };
   }
 }

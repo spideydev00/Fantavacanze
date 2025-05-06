@@ -55,12 +55,11 @@ Future<void> initDependencies() async {
           prefs: serviceLocator<SharedPreferences>(),
         ),
       )
-      //4. league cubit
+      //4. league cubit - now with SharedPreferences
       ..registerLazySingleton(
         () => AppLeagueCubit(
           getUserLeagues: serviceLocator(),
           prefs: serviceLocator<SharedPreferences>(),
-          appUserCubit: serviceLocator(),
         ),
       )
       //5. connection checker
@@ -158,14 +157,14 @@ void _initLeague() {
     ..registerFactory(() => RemoveMemory(leagueRepository: serviceLocator()))
     ..registerFactory(() => GetRules(leagueRepository: serviceLocator()))
     ..registerFactory(() => UpdateRule(leagueRepository: serviceLocator()))
+    ..registerFactory(() => AddRule(leagueRepository: serviceLocator()))
     ..registerFactory(() => DeleteRule(leagueRepository: serviceLocator()))
 
-    // bloc
+    // bloc - no longer handling league retrieval or shared preferences directly
     ..registerFactory(
       () => LeagueBloc(
         createLeague: serviceLocator(),
         getLeague: serviceLocator(),
-        getUserLeagues: serviceLocator(),
         joinLeague: serviceLocator(),
         exitLeague: serviceLocator(),
         updateTeamName: serviceLocator(),
@@ -174,6 +173,7 @@ void _initLeague() {
         removeMemory: serviceLocator(),
         getRules: serviceLocator(),
         updateRule: serviceLocator(),
+        addRule: serviceLocator(),
         deleteRule: serviceLocator(),
         appUserCubit: serviceLocator(),
         appLeagueCubit: serviceLocator(),

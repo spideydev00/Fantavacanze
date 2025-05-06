@@ -105,10 +105,9 @@ class _InviteCodeCardState extends State<InviteCodeCard> {
                       Text(
                         widget.inviteCode,
                         style: context.textTheme.headlineSmall?.copyWith(
-                          fontWeight: FontWeight.bold,
                           letterSpacing: 2,
                           color:
-                              context.textPrimaryColor.withValues(alpha: 0.5),
+                              context.textPrimaryColor.withValues(alpha: 0.7),
                         ),
                       ),
                     ],

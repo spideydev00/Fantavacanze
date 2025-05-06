@@ -19,6 +19,10 @@ void main() async {
   // Initialize dependencies
   await initDependencies();
 
+  // Pre-load theme settings
+  final themeCubit = serviceLocator<AppThemeCubit>();
+  await themeCubit.loadTheme();
+
   //vertical orientation
   SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
@@ -42,7 +46,7 @@ void main() async {
             create: (_) => serviceLocator<AppNavigationCubit>(),
           ),
           BlocProvider(
-            create: (_) => serviceLocator<AppThemeCubit>()..loadTheme(),
+            create: (_) => serviceLocator<AppThemeCubit>(),
           ),
         ],
         child: const MyApp(),
@@ -66,38 +70,20 @@ class _MyAppState extends State<MyApp> {
   }
 
   Future<void> _initializeApp() async {
-    await Future.wait([
-      _initializeUserAndLeagues(),
-      // Attendi almeno 3 secondi per permettere di mostrare lo splash screen
-      Future.delayed(
-        const Duration(seconds: 3),
-      ),
-    ]).timeout(
-      const Duration(seconds: 10),
-      onTimeout: () {
-        debugPrint("Initialization timed out!");
-        return <void>[];
-      },
-    );
-
-    debugPrint("User and leagues initialized successfully.");
-  }
-
-  Future<void> _initializeUserAndLeagues() async {
     try {
       // Get current user
-      await context.read<AppUserCubit>().getCurrentUser();
-
       if (mounted) {
-        final userState = context.read<AppUserCubit>().state;
-
-        if (userState is AppUserIsLoggedIn) {
-          // Fetch user leagues
-          await context.read<AppLeagueCubit>().getUserLeagues();
-        }
+        await context.read<AppUserCubit>().getCurrentUser();
       }
+
+      if (mounted && context.read<AppUserCubit>().state is AppUserIsLoggedIn) {
+        // Fetch user leagues using AppLeagueCubit
+        await context.read<AppLeagueCubit>().getUserLeagues();
+      }
+
+      await Future.delayed(const Duration(seconds: 2));
     } catch (e) {
-      debugPrint("Error in user/league initialization: $e");
+      debugPrint("Error in initialization: $e");
     } finally {
       // Hide the splash screen
       FlutterNativeSplash.remove();

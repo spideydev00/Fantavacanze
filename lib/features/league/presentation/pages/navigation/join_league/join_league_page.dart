@@ -1,3 +1,4 @@
+import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
@@ -46,11 +47,11 @@ class _JoinLeaguePageState extends State<JoinLeaguePage> {
             setState(() {
               _isJoining = false;
             });
-          } else if (state is LeagueJoined) {
+          } else if (state is LeagueSuccess) {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
                 content: Text('Ti sei unito alla lega con successo!'),
-                backgroundColor: Colors.green,
+                backgroundColor: ColorPalette.success,
               ),
             );
             Navigator.pop(context);
@@ -59,7 +60,10 @@ class _JoinLeaguePageState extends State<JoinLeaguePage> {
               _isJoining = false;
             });
             _showLeagueSelectionDialog(
-                context, state.inviteCode, state.possibleLeagues);
+              context,
+              state.inviteCode,
+              state.possibleLeagues,
+            );
           }
         },
         builder: (context, state) {

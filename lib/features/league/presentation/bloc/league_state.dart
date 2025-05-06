@@ -26,76 +26,18 @@ class LeagueError extends LeagueState {
   List<Object?> get props => [message];
 }
 
-class LeagueCreated extends LeagueState {
+/// A unified state for all operations that return a League entity
+class LeagueSuccess extends LeagueState {
   final League league;
+  final String? operation;
 
-  const LeagueCreated({required this.league});
-
-  @override
-  List<Object?> get props => [league];
-}
-
-class LeagueLoaded extends LeagueState {
-  final League league;
-
-  const LeagueLoaded({required this.league});
+  const LeagueSuccess({
+    required this.league,
+    this.operation,
+  });
 
   @override
-  List<Object?> get props => [league];
-}
-
-class UserLeaguesLoaded extends LeagueState {
-  final List<League> leagues;
-
-  const UserLeaguesLoaded({required this.leagues});
-
-  @override
-  List<Object?> get props => [leagues];
-}
-
-class LeagueJoined extends LeagueState {
-  final League league;
-
-  const LeagueJoined({required this.league});
-
-  @override
-  List<Object?> get props => [league];
-}
-
-class LeagueExited extends LeagueState {
-  final League league;
-
-  const LeagueExited({required this.league});
-
-  @override
-  List<Object?> get props => [league];
-}
-
-class TeamNameUpdated extends LeagueState {
-  final League league;
-
-  const TeamNameUpdated({required this.league});
-
-  @override
-  List<Object?> get props => [league];
-}
-
-class EventAdded extends LeagueState {
-  final League league;
-
-  const EventAdded({required this.league});
-
-  @override
-  List<Object?> get props => [league];
-}
-
-class MemoryAdded extends LeagueState {
-  final League league;
-
-  const MemoryAdded({required this.league});
-
-  @override
-  List<Object?> get props => [league];
+  List<Object?> get props => [league, operation];
 }
 
 class MultiplePossibleLeagues extends LeagueState {

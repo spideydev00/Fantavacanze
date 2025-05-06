@@ -14,7 +14,7 @@ class AddEvent implements Usecase<League, AddEventParams> {
   @override
   Future<Either<Failure, League>> call(AddEventParams params) async {
     return leagueRepository.addEvent(
-      leagueId: params.leagueId,
+      league: params.league,
       name: params.name,
       points: params.points,
       creatorId: params.creatorId,
@@ -27,7 +27,7 @@ class AddEvent implements Usecase<League, AddEventParams> {
 
 @immutable
 class AddEventParams {
-  final String leagueId;
+  final League league;
   final String name;
   final int points;
   final String creatorId;
@@ -36,7 +36,7 @@ class AddEventParams {
   final String? description;
 
   const AddEventParams({
-    required this.leagueId,
+    required this.league,
     required this.name,
     required this.points,
     required this.creatorId,
