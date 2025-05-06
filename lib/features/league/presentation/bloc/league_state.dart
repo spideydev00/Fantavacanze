@@ -65,3 +65,14 @@ class RulesLoaded extends LeagueState {
   @override
   List<Object?> get props => [rules, mode];
 }
+
+class UsersDetailsLoaded extends LeagueState {
+  final List<Map<String, dynamic>> usersDetails;
+
+  const UsersDetailsLoaded({
+    required this.usersDetails,
+  });
+
+  @override
+  List<Object?> get props => [usersDetails];
+}

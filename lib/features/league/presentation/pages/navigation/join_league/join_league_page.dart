@@ -41,7 +41,7 @@ class _JoinLeaguePageState extends State<JoinLeaguePage> {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(state.message),
-                backgroundColor: Colors.red,
+                backgroundColor: ColorPalette.error,
               ),
             );
             setState(() {

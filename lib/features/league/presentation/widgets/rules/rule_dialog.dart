@@ -46,8 +46,8 @@ class _RuleDialogState extends State<RuleDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final bonusColor = Colors.green.withValues(alpha: 0.8);
-    final malusColor = Colors.red.withValues(alpha: 0.8);
+    final bonusColor = ColorPalette.success.withValues(alpha: 0.8);
+    final malusColor = ColorPalette.error.withValues(alpha: 0.8);
 
     // Get available screen height minus keyboard height
     final viewInsets = MediaQuery.of(context).viewInsets;

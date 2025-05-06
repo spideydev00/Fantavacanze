@@ -159,6 +159,7 @@ void _initLeague() {
     ..registerFactory(() => UpdateRule(leagueRepository: serviceLocator()))
     ..registerFactory(() => AddRule(leagueRepository: serviceLocator()))
     ..registerFactory(() => DeleteRule(leagueRepository: serviceLocator()))
+    ..registerFactory(() => GetUsersDetails(leagueRepository: serviceLocator()))
 
     // bloc - no longer handling league retrieval or shared preferences directly
     ..registerFactory(
@@ -177,6 +178,7 @@ void _initLeague() {
         deleteRule: serviceLocator(),
         appUserCubit: serviceLocator(),
         appLeagueCubit: serviceLocator(),
+        getUsersDetails: serviceLocator(),
       ),
     );
 }

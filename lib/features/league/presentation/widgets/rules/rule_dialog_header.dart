@@ -1,3 +1,4 @@
+import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
@@ -34,7 +35,8 @@ class RuleDialogHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = ruleType == RuleType.bonus ? Colors.green : Colors.red;
+    final color =
+        ruleType == RuleType.bonus ? ColorPalette.success : ColorPalette.error;
     final defaultIcon =
         ruleType == RuleType.bonus ? Icons.add_circle : Icons.remove_circle;
 

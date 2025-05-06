@@ -2,6 +2,7 @@ import 'package:fantavacanze_official/core/constants/constants.dart';
 import 'package:fantavacanze_official/core/cubits/app_league/app_league_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit.dart';
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
+import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/league.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/rule.dart';
@@ -223,8 +224,8 @@ class _AddEventPageState extends State<AddEventPage> {
                                     '${rule.type == RuleType.bonus ? '+' : '-'}${rule.points} punti',
                                     style: TextStyle(
                                       color: rule.type == RuleType.bonus
-                                          ? Colors.green
-                                          : Colors.red,
+                                          ? ColorPalette.success
+                                          : ColorPalette.error,
                                     ),
                                   ),
                                   tileColor: isSelected
@@ -252,8 +253,8 @@ class _AddEventPageState extends State<AddEventPage> {
                               'Punti: ${_selectedRule!.points}',
                               style: TextStyle(
                                 color: _selectedRule!.type == RuleType.bonus
-                                    ? Colors.green
-                                    : Colors.red,
+                                    ? ColorPalette.success
+                                    : ColorPalette.error,
                               ),
                             ),
                           ],

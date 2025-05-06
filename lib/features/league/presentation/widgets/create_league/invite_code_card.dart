@@ -29,7 +29,7 @@ class _InviteCodeCardState extends State<InviteCodeCard> {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text('Codice copiato negli appunti!'),
-        backgroundColor: Colors.green,
+        backgroundColor: ColorPalette.success,
         duration: Duration(seconds: 2),
       ),
     );

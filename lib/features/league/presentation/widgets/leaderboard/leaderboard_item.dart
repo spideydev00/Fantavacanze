@@ -6,7 +6,7 @@ import 'package:fantavacanze_official/core/utils/date_formatter.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/event.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/league.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/participant.dart';
-import 'package:fantavacanze_official/features/league/presentation/widgets/leaderboard/utils/event_finder.dart';
+import 'package:fantavacanze_official/core/utils/event_finder.dart';
 import 'package:flutter/material.dart';
 
 /// A flexible component that displays a participant item in a leaderboard

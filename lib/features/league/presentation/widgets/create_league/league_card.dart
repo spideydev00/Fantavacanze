@@ -1,3 +1,4 @@
+import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/league.dart';
@@ -61,14 +62,16 @@ class LeagueCard extends StatelessWidget {
                     decoration: BoxDecoration(
                       color: league.isTeamBased
                           ? Colors.blue.withValues(alpha: 0.2)
-                          : Colors.green.withValues(alpha: 0.2),
+                          : ColorPalette.success.withValues(alpha: 0.2),
                       borderRadius:
                           BorderRadius.circular(ThemeSizes.borderRadiusMd),
                     ),
                     child: Text(
                       league.isTeamBased ? 'Squadre' : 'Individuale',
                       style: TextStyle(
-                        color: league.isTeamBased ? Colors.blue : Colors.green,
+                        color: league.isTeamBased
+                            ? Colors.blue
+                            : ColorPalette.success,
                         fontWeight: FontWeight.bold,
                         fontSize: ThemeSizes.labelMd,
                       ),
@@ -128,7 +131,7 @@ class LeagueCard extends StatelessWidget {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
                           content: Text('Codice invito copiato negli appunti'),
-                          backgroundColor: Colors.green,
+                          backgroundColor: ColorPalette.success,
                           duration: Duration(seconds: 2),
                         ),
                       );

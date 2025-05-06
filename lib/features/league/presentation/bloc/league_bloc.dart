@@ -6,6 +6,7 @@ import 'package:fantavacanze_official/features/league/domain/use_cases/create_le
 import 'package:fantavacanze_official/features/league/domain/use_cases/exit_league.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/get_league.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/get_rules.dart';
+import 'package:fantavacanze_official/features/league/domain/use_cases/get_users_details.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/join_league.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/remove_memory.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/update_team_name.dart';
@@ -29,6 +30,7 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
   final UpdateRule updateRule;
   final DeleteRule deleteRule;
   final AddRule addRule;
+  final GetUsersDetails getUsersDetails;
   final AppUserCubit appUserCubit;
   final AppLeagueCubit appLeagueCubit;
 
@@ -45,6 +47,7 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
     required this.updateRule,
     required this.deleteRule,
     required this.addRule,
+    required this.getUsersDetails,
     required this.appUserCubit,
     required this.appLeagueCubit,
   }) : super(LeagueInitial()) {
@@ -59,6 +62,7 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
     on<UpdateRuleEvent>(_onUpdateRule);
     on<DeleteRuleEvent>(_onDeleteRule);
     on<AddRuleEvent>(_onAddRule);
+    on<GetUsersDetailsEvent>(_onGetUsersDetails);
   }
 
   // -----------------------------------------------------------
@@ -423,6 +427,25 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
             appLeagueCubit.selectLeague(league);
           }
         },
+      );
+    } catch (e) {
+      emit(LeagueError(message: e.toString()));
+    }
+  }
+
+  // G E T   U S E R S   D E T A I L S
+  Future<void> _onGetUsersDetails(
+    GetUsersDetailsEvent event,
+    Emitter<LeagueState> emit,
+  ) async {
+    try {
+      emit(LeagueLoading());
+
+      final result = await getUsersDetails(event.userIds);
+
+      result.fold(
+        (failure) => emit(LeagueError(message: failure.message)),
+        (usersDetails) => emit(UsersDetailsLoaded(usersDetails: usersDetails)),
       );
     } catch (e) {
       emit(LeagueError(message: e.toString()));

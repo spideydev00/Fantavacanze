@@ -273,7 +273,7 @@ class RulesList extends StatelessWidget {
       builder: (context) => ConfirmationDialog(
         title: 'Eliminare questa regola?',
         message: 'Sei sicuro di voler eliminare la regola "${rule.name}"?',
-        color: Colors.red,
+        color: ColorPalette.error,
         confirmText: 'Elimina',
         onConfirm: () {
           // Call the delete rule method

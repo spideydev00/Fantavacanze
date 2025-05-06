@@ -1,3 +1,4 @@
+import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/memory.dart';
 import 'package:intl/intl.dart';
@@ -37,7 +38,7 @@ class MemoryItem extends StatelessWidget {
                   child: const Center(
                     child: Icon(
                       Icons.error_outline,
-                      color: Colors.red,
+                      color: ColorPalette.error,
                     ),
                   ),
                 );
