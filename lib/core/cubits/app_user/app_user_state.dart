@@ -10,3 +10,9 @@ final class AppUserIsLoggedIn extends AppUserState {
 
   AppUserIsLoggedIn({required this.user});
 }
+
+final class AppUserNeedsOnboarding extends AppUserState {
+  final User user;
+
+  AppUserNeedsOnboarding({required this.user});
+}

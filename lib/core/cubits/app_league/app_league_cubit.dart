@@ -31,11 +31,11 @@ class AppLeagueCubit extends Cubit<AppLeagueState> {
 
     res.fold(
       (l) {
-        debugPrint("🧊AppLeagueCubit - Error fetching leagues - ${l.message}");
+        debugPrint("🧊 AppLeagueCubit - Error fetching leagues - ${l.message}");
         emit(AppLeagueInitial());
       },
       (leagues) {
-        debugPrint("🧊AppLeagueCubit - Got ${leagues.length} leagues");
+        debugPrint("🧊 AppLeagueCubit - Got ${leagues.length} leagues");
         if (leagues.isEmpty) {
           emit(AppLeagueInitial());
         } else {
@@ -72,7 +72,7 @@ class AppLeagueCubit extends Cubit<AppLeagueState> {
     }
 
     debugPrint(
-        "🧊AppLeagueCubit: Selected league: ${selectedLeague.name} (ID: ${selectedLeague.id})");
+        "🧊 AppLeagueCubit: Selected league: ${selectedLeague.name} (ID: ${selectedLeague.id})");
     emit(AppLeagueExists(leagues: leagues, selectedLeague: selectedLeague));
   }
 

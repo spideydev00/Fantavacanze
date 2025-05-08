@@ -4,6 +4,8 @@ import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/league.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/rule.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc.dart';
+import 'package:fantavacanze_official/features/league/presentation/bloc/league_event.dart';
+import 'package:fantavacanze_official/features/league/presentation/widgets/core/confirmation_dialog.dart';
 import 'package:fantavacanze_official/features/league/presentation/widgets/rules/index.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -92,7 +94,8 @@ class _RulesPageState extends State<RulesPage>
                         isBonus: true,
                         isAdmin: isAdmin,
                         league: league,
-                        onAddPressed: _showAddRuleDialog,
+                        onAddPressed: _addRuleDirectly,
+                        onDeleteRule: _showDeleteRuleConfirmation,
                       ),
 
                       // Malus rules tab
@@ -102,7 +105,8 @@ class _RulesPageState extends State<RulesPage>
                         isBonus: false,
                         isAdmin: isAdmin,
                         league: league,
-                        onAddPressed: _showAddRuleDialog,
+                        onAddPressed: _addRuleDirectly,
+                        onDeleteRule: _showDeleteRuleConfirmation,
                       ),
                     ],
                   ),
@@ -122,7 +126,7 @@ class _RulesPageState extends State<RulesPage>
 
                           return FloatingActionButton(
                             onPressed: () =>
-                                _showAddRuleDialog(context, league, isBonus),
+                                _addRuleDirectly(context, league, isBonus),
                             backgroundColor: isBonus
                                 ? ColorPalette.success
                                 : ColorPalette.error,
@@ -143,13 +147,12 @@ class _RulesPageState extends State<RulesPage>
     );
   }
 
-  /// Display a dialog to add a new rule
-  void _showAddRuleDialog(BuildContext context, League league,
-      [bool? isBonus]) {
+  /// Display the rule form dialog directly without confirmation
+  void _addRuleDirectly(BuildContext context, League league, [bool? isBonus]) {
     // Use the current tab to determine if bonus or malus if not explicitly provided
     final selectedTab = isBonus ?? _tabController.index == 0;
 
-    // Use our RulesList component's internal method to show the dialog
+    // Use our RulesList component's internal method to show the add rule dialog
     final rulesList = RulesList(
       rules: const [], // Empty list, not used for this purpose
       emptyMessage: '', // Not used for this purpose
@@ -158,7 +161,26 @@ class _RulesPageState extends State<RulesPage>
       league: league,
     );
 
-    // Call the internal method to show the dialog
     rulesList.showAddRuleDialog(context, league);
+  }
+
+  /// Display a confirmation dialog before deleting a rule
+  void _showDeleteRuleConfirmation(
+      BuildContext context, League league, Rule rule) {
+    showDialog(
+      context: context,
+      builder: (context) => ConfirmationDialog.deleteRule(
+        ruleName: rule.name,
+        onDelete: () {
+          // Dispatch delete rule event to the bloc
+          context.read<LeagueBloc>().add(
+                DeleteRuleEvent(
+                  league: league,
+                  ruleName: rule.name,
+                ),
+              );
+        },
+      ),
+    );
   }
 }

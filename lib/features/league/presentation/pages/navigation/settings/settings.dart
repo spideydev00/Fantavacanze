@@ -1,4 +1,5 @@
 import 'package:fantavacanze_official/core/cubits/app_theme/app_theme_cubit.dart';
+import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit.dart';
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/extensions/context_extension.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
@@ -226,8 +227,8 @@ class SettingsPage extends StatelessWidget {
   void _handleLogout(BuildContext context) {
     showLogoutDialog(
       context,
-      onConfirm: () {
-        // Perform logout action
+      onConfirm: () async {
+        await context.read<AppUserCubit>().signOut();
       },
     );
   }

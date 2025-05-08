@@ -1,3 +1,5 @@
+import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
+import 'package:fantavacanze_official/features/league/presentation/widgets/core/form_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
@@ -6,14 +8,9 @@ import 'package:fantavacanze_official/features/league/domain/entities/league.dar
 import 'package:fantavacanze_official/features/league/domain/entities/rule.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_event.dart';
-import 'package:fantavacanze_official/features/league/presentation/widgets/rules/confirmation_dialog.dart';
 import 'package:fantavacanze_official/features/league/presentation/widgets/rules/empty_rules_view.dart';
-import 'package:fantavacanze_official/features/league/presentation/widgets/rules/rule_dialog_container.dart';
-import 'package:fantavacanze_official/features/league/presentation/widgets/rules/rule_dialog_header.dart';
-import 'package:fantavacanze_official/features/league/presentation/widgets/rules/rule_form_fields.dart';
-import 'package:fantavacanze_official/features/league/presentation/widgets/rules/rule_action_buttons.dart';
-import 'package:fantavacanze_official/features/league/presentation/widgets/rules/rule_info_banner.dart';
 import 'package:fantavacanze_official/features/league/presentation/widgets/rules/rule_item.dart';
+import 'package:fantavacanze_official/features/league/presentation/widgets/rules/rule_info_banner.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 /// A component to display a list of rules
@@ -37,7 +34,10 @@ class RulesList extends StatelessWidget {
   final League league;
 
   /// Optional callback to add a new rule
-  final Function(BuildContext, League)? onAddPressed;
+  final Function(BuildContext, League, [bool?])? onAddPressed;
+
+  /// Optional callback to delete a rule
+  final Function(BuildContext, League, Rule)? onDeleteRule;
 
   const RulesList({
     super.key,
@@ -47,6 +47,7 @@ class RulesList extends StatelessWidget {
     required this.isAdmin,
     required this.league,
     this.onAddPressed,
+    this.onDeleteRule,
   });
 
   @override
@@ -92,12 +93,13 @@ class RulesList extends StatelessWidget {
                   padding: const EdgeInsets.only(bottom: ThemeSizes.sm),
                   child: RuleItem(
                     rule: rule,
-                    onEdit: isAdmin
-                        ? () => _editRule(context, rule, league)
-                        : () {},
+                    onEdit:
+                        isAdmin ? () => _editRule(context, rule, league) : null,
                     onDelete: isAdmin
-                        ? () => _confirmDeleteRule(context, rule, league)
-                        : () {},
+                        ? () => onDeleteRule != null
+                            ? onDeleteRule!(context, league, rule)
+                            : _deleteRule(context, rule, league)
+                        : null,
                   ),
                 );
               },
@@ -121,70 +123,78 @@ class RulesList extends StatelessWidget {
 
     showDialog(
       context: context,
-      builder: (dialogContext) => RuleDialogContainer(
-        child: Column(
+      builder: (dialogContext) => FormDialog.ruleForm(
+        title: isBonus ? 'Aggiungi Bonus' : 'Aggiungi Malus',
+        isBonus: isBonus,
+        formKey: formKey,
+        primaryActionText: 'Salva',
+        content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header
-            RuleDialogHeader(
-              title: isBonus ? 'Aggiungi Bonus' : 'Aggiungi Malus',
-              ruleType: ruleType,
+            TextField(
+              controller: nameController,
+              decoration: InputDecoration(
+                labelText: 'Nome Regola',
+                hintText: 'Inserisci il nome della regola',
+                prefixIcon: const Icon(Icons.text_fields),
+              ),
             ),
-
-            const SizedBox(height: ThemeSizes.lg),
-
-            // Form fields
-            RuleFormFields(
-              formKey: formKey,
-              nameController: nameController,
-              pointsController: pointsController,
-              ruleType: ruleType,
-              infoMessage: infoMessage,
+            const SizedBox(height: ThemeSizes.md),
+            TextField(
+              controller: pointsController,
+              decoration: InputDecoration(
+                labelText: 'Punti',
+                hintText: isBonus ? 'Punti bonus' : 'Punti malus',
+                prefixIcon: Icon(
+                  Icons.star,
+                  color: isBonus ? ColorPalette.success : ColorPalette.error,
+                ),
+                suffixText: 'pt',
+              ),
+              keyboardType: TextInputType.number,
             ),
-
-            const SizedBox(height: ThemeSizes.lg),
-
-            // Action buttons
-            RuleActionButtons(
-              primaryText: 'Salva',
-              ruleType: ruleType,
-              onPrimaryPressed: () {
-                if (formKey.currentState!.validate()) {
-                  final name = nameController.text.trim();
-                  final pointsValue =
-                      double.parse(pointsController.text.trim());
-
-                  final rule = Rule(
-                    name: name,
-                    type: ruleType,
-                    points: pointsValue,
-                    createdAt: DateTime.now(),
-                  );
-
-                  // Add the rule to the league via the bloc
-                  context.read<LeagueBloc>().add(
-                        AddRuleEvent(
-                          league: league,
-                          rule: rule,
-                        ),
-                      );
-
-                  Navigator.pop(context);
-
-                  showSnackBar(
-                    context,
-                    'Regola "$name" aggiunta con successo',
-                    color: ColorPalette.success,
-                  );
-                }
-              },
-              primaryIcon: Icons.save,
-              secondaryIcon: Icons.close,
-              reverseOrder: true,
+            const SizedBox(height: ThemeSizes.md),
+            // Info message about points
+            Text(
+              infoMessage,
+              style: TextStyle(
+                fontSize: 12,
+                fontStyle: FontStyle.italic,
+                color: context.textSecondaryColor,
+              ),
             ),
           ],
         ),
+        onPrimaryAction: () {
+          if (formKey.currentState!.validate()) {
+            final name = nameController.text.trim();
+            final pointsValue = double.parse(pointsController.text.trim());
+
+            final rule = Rule(
+              name: name,
+              type: ruleType,
+              points: pointsValue,
+              createdAt: DateTime.now(),
+            );
+
+            // Add the rule to the league via the bloc
+            context.read<LeagueBloc>().add(
+                  AddRuleEvent(
+                    league: league,
+                    rule: rule,
+                  ),
+                );
+
+            Navigator.pop(context);
+
+            showSnackBar(
+              context,
+              'Regola "$name" aggiunta con successo',
+              color: ColorPalette.success,
+            );
+          }
+        },
       ),
     );
   }
@@ -195,102 +205,92 @@ class RulesList extends StatelessWidget {
         TextEditingController(text: rule.points.abs().toString());
     final formKey = GlobalKey<FormState>();
     final ruleType = rule.type;
-    // Store the original rule to properly preserve its properties
-    final originalRule = rule;
+    final isBonus = rule.type == RuleType.bonus;
 
     showDialog(
       context: context,
-      builder: (context) => RuleDialogContainer(
-        child: Column(
+      builder: (context) => FormDialog.ruleForm(
+        title: 'Modifica Regola',
+        isBonus: isBonus,
+        formKey: formKey,
+        primaryActionText: 'Salva',
+        content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header
-            RuleDialogHeader(
-              title: 'Modifica Regola',
-              ruleType: ruleType,
+            TextField(
+              controller: nameController,
+              decoration: InputDecoration(
+                labelText: 'Nome Regola',
+                hintText: 'Inserisci il nome della regola',
+                prefixIcon: const Icon(Icons.text_fields),
+              ),
             ),
-
-            const SizedBox(height: ThemeSizes.lg),
-
-            // Form fields
-            RuleFormFields(
-              formKey: formKey,
-              nameController: nameController,
-              pointsController: pointsController,
-              ruleType: ruleType,
-            ),
-
-            const SizedBox(height: ThemeSizes.lg),
-
-            // Action buttons
-            RuleActionButtons(
-              primaryText: 'Salva',
-              ruleType: ruleType,
-              onPrimaryPressed: () {
-                if (formKey.currentState!.validate()) {
-                  final pointsValue =
-                      double.parse(pointsController.text.trim());
-                  final name = nameController.text.trim();
-
-                  // Create a new Rule
-                  Rule updatedRule = Rule(
-                    name: name,
-                    points: pointsValue,
-                    type: ruleType,
-                    createdAt: originalRule.createdAt,
-                  );
-
-                  // Call method to update rule in database
-                  context.read<LeagueBloc>().add(
-                        UpdateRuleEvent(
-                          league: league,
-                          rule: updatedRule,
-                          originalRuleName: originalRule.name,
-                        ),
-                      );
-
-                  Navigator.pop(context);
-
-                  // Show a snackbar with feedback
-                  showSnackBar(
-                    context,
-                    "Regola aggiornata con successo",
-                    color: ColorPalette.success,
-                  );
-                }
-              },
+            const SizedBox(height: ThemeSizes.md),
+            TextField(
+              controller: pointsController,
+              decoration: InputDecoration(
+                labelText: 'Punti',
+                hintText: isBonus ? 'Punti bonus' : 'Punti malus',
+                prefixIcon: Icon(
+                  Icons.star,
+                  color: isBonus ? ColorPalette.success : ColorPalette.error,
+                ),
+                suffixText: 'pt',
+              ),
+              keyboardType: TextInputType.number,
             ),
           ],
         ),
+        onPrimaryAction: () {
+          if (formKey.currentState!.validate()) {
+            final pointsValue = double.parse(pointsController.text.trim());
+            final name = nameController.text.trim();
+
+            // Create a new Rule
+            Rule updatedRule = Rule(
+              name: name,
+              points: pointsValue,
+              type: ruleType,
+              createdAt: rule.createdAt,
+            );
+
+            // Call method to update rule in database
+            context.read<LeagueBloc>().add(
+                  UpdateRuleEvent(
+                    league: league,
+                    rule: updatedRule,
+                    originalRuleName: rule.name,
+                  ),
+                );
+
+            Navigator.pop(context);
+
+            // Show a snackbar with feedback
+            showSnackBar(
+              context,
+              "Regola aggiornata con successo",
+              color: ColorPalette.success,
+            );
+          }
+        },
       ),
     );
   }
 
-  void _confirmDeleteRule(BuildContext context, Rule rule, League league) {
-    showDialog(
-      context: context,
-      builder: (context) => ConfirmationDialog(
-        title: 'Eliminare questa regola?',
-        message: 'Sei sicuro di voler eliminare la regola "${rule.name}"?',
-        color: ColorPalette.error,
-        confirmText: 'Elimina',
-        onConfirm: () {
-          // Call the delete rule method
-          context.read<LeagueBloc>().add(
-                DeleteRuleEvent(
-                  league: league,
-                  ruleName: rule.name,
-                ),
-              );
+  void _deleteRule(BuildContext context, Rule rule, League league) {
+    // If no external handler is provided, directly dispatch event
+    context.read<LeagueBloc>().add(
+          DeleteRuleEvent(
+            league: league,
+            ruleName: rule.name,
+          ),
+        );
 
-          showSnackBar(
-            context,
-            'Regola "${rule.name}" eliminata',
-            color: ColorPalette.success,
-          );
-        },
-      ),
+    showSnackBar(
+      context,
+      'Regola "${rule.name}" eliminata',
+      color: ColorPalette.success,
     );
   }
 }

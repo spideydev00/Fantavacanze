@@ -15,7 +15,7 @@ import 'package:fantavacanze_official/features/league/presentation/bloc/league_s
 import 'package:fantavacanze_official/features/league/presentation/widgets/create_league/basic_info_step.dart';
 import 'package:fantavacanze_official/features/league/presentation/widgets/create_league/team_type_step.dart';
 import 'package:fantavacanze_official/features/league/presentation/widgets/create_league/rules_step.dart';
-import 'package:fantavacanze_official/features/league/presentation/widgets/rules/rule_dialog.dart';
+import 'package:fantavacanze_official/features/league/presentation/widgets/core/form_dialog.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/create_league/league_created_page.dart';
 
 class CreateLeaguePage extends StatefulWidget {
@@ -119,77 +119,25 @@ class _CreateLeaguePageState extends State<CreateLeaguePage> {
       barrierColor: Colors.black.withAlpha(153),
       transitionDuration: const Duration(milliseconds: 200),
       pageBuilder: (context, animation1, animation2) {
-        return RuleDialog(
-          title: 'Aggiungi Regola',
-          buttonText: 'Aggiungi',
-          onSave: (name, type, points) {
-            setState(
-              () {
-                // Create a RuleModel instead of a Rule
-                final newRule = RuleModel(
-                  name: name,
-                  type: type,
-                  points: points,
-                  createdAt: DateTime.now(),
-                );
-
-                if (type == RuleType.bonus) {
-                  int lastBonusIndex = -1;
-                  for (int i = 0; i < _rules.length; i++) {
-                    if (_rules[i].type == RuleType.bonus) {
-                      lastBonusIndex = i;
-                    }
-                  }
-
-                  if (lastBonusIndex >= 0) {
-                    _rules.insert(lastBonusIndex + 1, newRule);
-                  } else {
-                    _rules.insert(0, newRule);
-                  }
-                } else {
-                  _rules.add(newRule);
-                }
-
-                // Update the cache for the current mode
-                String currentModeKey;
-                if (_selectedRuleMode == GameMode.hot) {
-                  currentModeKey = 'hard';
-                } else if (_selectedRuleMode == GameMode.soft) {
-                  currentModeKey = 'soft';
-                } else {
-                  currentModeKey = 'custom';
-                }
-                _cachedRules[currentModeKey] = List<Rule>.from(_rules);
-              },
-            );
-          },
-        );
-      },
-    );
-  }
-
-  void _editRule(int index) {
-    final rule = _rules[index];
-
-    showGeneralDialog(
-      context: context,
-      barrierDismissible: true,
-      barrierLabel: 'Annulla',
-      barrierColor: Colors.black.withAlpha(153),
-      transitionDuration: const Duration(milliseconds: 200),
-      pageBuilder: (context, animation1, animation2) {
-        return RuleDialog(
-          title: 'Modifica Regola',
-          buttonText: 'Salva',
-          initialRule: rule,
-          onSave: (name, type, points) {
+        return _AddRuleDialog(
+          onAdd: (RuleModel newRule) {
             setState(() {
-              _rules[index] = RuleModel(
-                name: name,
-                type: type,
-                points: points,
-                createdAt: rule.createdAt,
-              );
+              if (newRule.type == RuleType.bonus) {
+                int lastBonusIndex = -1;
+                for (int i = 0; i < _rules.length; i++) {
+                  if (_rules[i].type == RuleType.bonus) {
+                    lastBonusIndex = i;
+                  }
+                }
+
+                if (lastBonusIndex >= 0) {
+                  _rules.insert(lastBonusIndex + 1, newRule);
+                } else {
+                  _rules.insert(0, newRule);
+                }
+              } else {
+                _rules.add(newRule);
+              }
 
               // Update the cache for the current mode
               String currentModeKey;
@@ -202,6 +150,126 @@ class _CreateLeaguePageState extends State<CreateLeaguePage> {
               }
               _cachedRules[currentModeKey] = List<Rule>.from(_rules);
             });
+          },
+        );
+      },
+    );
+  }
+
+  void _editRule(int index) {
+    final rule = _rules[index];
+    final nameController = TextEditingController(text: rule.name);
+    final pointsController =
+        TextEditingController(text: rule.points.abs().toString());
+    final formKey = GlobalKey<FormState>();
+    final isBonus = rule.type == RuleType.bonus;
+
+    showGeneralDialog(
+      context: context,
+      barrierDismissible: true,
+      barrierLabel: 'Annulla',
+      barrierColor: Colors.black.withAlpha(153),
+      transitionDuration: const Duration(milliseconds: 200),
+      pageBuilder: (context, animation1, animation2) {
+        return FormDialog.ruleForm(
+          title: 'Modifica Regola',
+          isBonus: isBonus,
+          formKey: formKey,
+          primaryActionText: 'Salva',
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Type selector (disabled for edit to maintain consistency)
+              Text(
+                'Tipo di Regola',
+                style: context.textTheme.titleMedium,
+              ),
+              const SizedBox(height: ThemeSizes.sm),
+              Row(
+                children: [
+                  Expanded(
+                    child: _TypeSelector(
+                      label: 'Bonus',
+                      icon: Icons.add_circle,
+                      color: ColorPalette.success,
+                      isSelected: isBonus,
+                      onTap: null, // Disabled in edit mode
+                    ),
+                  ),
+                  const SizedBox(width: ThemeSizes.sm),
+                  Expanded(
+                    child: _TypeSelector(
+                      label: 'Malus',
+                      icon: Icons.remove_circle,
+                      color: ColorPalette.error,
+                      isSelected: !isBonus,
+                      onTap: null, // Disabled in edit mode
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: ThemeSizes.md),
+              // Name field
+              TextField(
+                controller: nameController,
+                decoration: const InputDecoration(
+                  labelText: 'Nome Regola',
+                  hintText: 'Inserisci il nome della regola',
+                  prefixIcon: Icon(Icons.text_fields),
+                ),
+              ),
+              const SizedBox(height: ThemeSizes.md),
+              // Points field
+              TextField(
+                controller: pointsController,
+                decoration: InputDecoration(
+                  labelText: 'Punti',
+                  hintText: 'Valore dei punti',
+                  prefixIcon: Icon(
+                    Icons.star,
+                    color: isBonus ? ColorPalette.success : ColorPalette.error,
+                  ),
+                  suffixText: 'pt',
+                ),
+                keyboardType: TextInputType.number,
+              ),
+            ],
+          ),
+          onPrimaryAction: () {
+            final name = nameController.text.trim();
+            final String pointsText = pointsController.text.trim();
+
+            if (name.isNotEmpty && pointsText.isNotEmpty) {
+              double points = double.tryParse(pointsText) ?? 0;
+
+              // For malus rules, make points negative
+              if (!isBonus) {
+                points = -points.abs();
+              }
+
+              setState(() {
+                _rules[index] = RuleModel(
+                  name: name,
+                  type: rule.type,
+                  points: points,
+                  createdAt: rule.createdAt,
+                );
+
+                // Update the cache for the current mode
+                String currentModeKey;
+                if (_selectedRuleMode == GameMode.hot) {
+                  currentModeKey = 'hard';
+                } else if (_selectedRuleMode == GameMode.soft) {
+                  currentModeKey = 'soft';
+                } else {
+                  currentModeKey = 'custom';
+                }
+                _cachedRules[currentModeKey] = List<Rule>.from(_rules);
+              });
+
+              Navigator.pop(context);
+            }
           },
         );
       },
@@ -630,6 +698,160 @@ class _CreateLeaguePageState extends State<CreateLeaguePage> {
             ],
           ),
         );
+      },
+    );
+  }
+}
+
+// Helper widget for type selection
+class _TypeSelector extends StatelessWidget {
+  final String label;
+  final IconData icon;
+  final Color color;
+  final bool isSelected;
+  final VoidCallback? onTap;
+
+  const _TypeSelector({
+    required this.label,
+    required this.icon,
+    required this.color,
+    required this.isSelected,
+    this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(
+          vertical: ThemeSizes.md,
+          horizontal: ThemeSizes.sm,
+        ),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? color.withValues(alpha: 0.1)
+              : context.secondaryBgColor.withValues(alpha: 0.5),
+          borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusLg),
+          border: Border.all(
+            color: isSelected ? color : Colors.transparent,
+            width: 1.5,
+          ),
+        ),
+        child: Column(
+          children: [
+            Icon(
+              icon,
+              color: color,
+              size: 32,
+            ),
+            const SizedBox(height: ThemeSizes.xs),
+            Text(
+              label,
+              style: TextStyle(
+                color: isSelected ? color : context.textSecondaryColor,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// Widget custom per gestire lo stato del tipo di regola
+class _AddRuleDialog extends StatefulWidget {
+  final void Function(RuleModel) onAdd;
+  const _AddRuleDialog({required this.onAdd});
+
+  @override
+  State<_AddRuleDialog> createState() => _AddRuleDialogState();
+}
+
+class _AddRuleDialogState extends State<_AddRuleDialog> {
+  final nameController = TextEditingController();
+  final pointsController = TextEditingController();
+  final formKey = GlobalKey<FormState>();
+  RuleType ruleType = RuleType.bonus;
+
+  @override
+  Widget build(BuildContext context) {
+    return FormDialog.ruleForm(
+      title: 'Aggiungi Regola',
+      isBonus: ruleType == RuleType.bonus,
+      formKey: formKey,
+      primaryActionText: 'Aggiungi',
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Tipo di Regola',
+              style: Theme.of(context).textTheme.titleMedium),
+          const SizedBox(height: ThemeSizes.sm),
+          Row(
+            children: [
+              Expanded(
+                child: _TypeSelector(
+                  label: 'Bonus',
+                  icon: Icons.add_circle,
+                  color: ColorPalette.success,
+                  isSelected: ruleType == RuleType.bonus,
+                  onTap: () => setState(() => ruleType = RuleType.bonus),
+                ),
+              ),
+              const SizedBox(width: ThemeSizes.sm),
+              Expanded(
+                child: _TypeSelector(
+                  label: 'Malus',
+                  icon: Icons.remove_circle,
+                  color: ColorPalette.error,
+                  isSelected: ruleType == RuleType.malus,
+                  onTap: () => setState(() => ruleType = RuleType.malus),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: ThemeSizes.md),
+          TextField(
+            controller: nameController,
+            decoration: const InputDecoration(
+              labelText: 'Nome Regola',
+              hintText: 'Inserisci il nome della regola',
+              prefixIcon: Icon(Icons.text_fields),
+            ),
+          ),
+          const SizedBox(height: ThemeSizes.md),
+          TextField(
+            controller: pointsController,
+            decoration: InputDecoration(
+              labelText: 'Punti',
+              hintText: 'Valore dei punti',
+              prefixIcon: Icon(
+                Icons.star,
+                color: ruleType == RuleType.bonus
+                    ? ColorPalette.success
+                    : ColorPalette.error,
+              ),
+              suffixText: 'pt',
+            ),
+            keyboardType: TextInputType.number,
+          ),
+        ],
+      ),
+      onPrimaryAction: () {
+        final name = nameController.text.trim();
+        final String pointsText = pointsController.text.trim();
+        if (name.isNotEmpty && pointsText.isNotEmpty) {
+          final double points = double.tryParse(pointsText) ?? 0;
+          widget.onAdd(RuleModel(
+            name: name,
+            type: ruleType,
+            points: ruleType == RuleType.bonus ? points.abs() : -points.abs(),
+            createdAt: DateTime.now(),
+          ));
+          Navigator.pop(context);
+        }
       },
     );
   }

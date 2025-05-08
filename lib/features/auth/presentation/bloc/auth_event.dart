@@ -29,4 +29,12 @@ class AuthEmailSignUp extends AuthEvent {
       required this.hCaptcha});
 }
 
+class AuthSignOut extends AuthEvent {}
+
+class AuthChangeIsOnboardedValue extends AuthEvent {
+  final bool isOnboarded;
+
+  AuthChangeIsOnboardedValue({required this.isOnboarded});
+}
+
 // class AuthFacebookSignIn extends AuthEvent {}

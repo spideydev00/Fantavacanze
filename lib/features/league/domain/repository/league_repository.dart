@@ -26,13 +26,12 @@ abstract class LeagueRepository {
   // Participant operations
   Future<Either<Failure, League>> joinLeague({
     required String inviteCode,
-    required String userId,
     String? teamName,
     List<String>? teamMembers,
     String? specificLeagueId,
   });
 
-  Future<Either<Failure, League>> exitLeague({
+  Future<Either<Failure, void>> exitLeague({
     required League league,
     required String userId,
   });
@@ -41,6 +40,13 @@ abstract class LeagueRepository {
     required League league,
     required String userId,
     required String newName,
+  });
+
+  Future<Either<Failure, League>> removeTeamParticipants({
+    required League league,
+    required String teamName,
+    required List<String> userIdsToRemove,
+    required String requestingUserId,
   });
 
   // Event operations
@@ -95,4 +101,7 @@ abstract class LeagueRepository {
   // User operations
   Future<Either<Failure, List<Map<String, dynamic>>>> getUsersDetails(
       List<String> userIds);
+
+  // Cache operations
+  Future<Either<Failure, void>> clearLocalCache();
 }

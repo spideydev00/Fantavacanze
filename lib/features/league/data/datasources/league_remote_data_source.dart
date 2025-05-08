@@ -8,6 +8,7 @@ import 'package:fantavacanze_official/features/league/data/models/participant_mo
 import 'package:fantavacanze_official/features/league/data/models/rule_model.dart';
 import 'package:fantavacanze_official/features/league/data/models/team_participant_model.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/rule.dart';
+import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:uuid/uuid.dart';
 
@@ -33,15 +34,21 @@ abstract class LeagueRemoteDataSource {
 
   Future<LeagueModel> joinLeague({
     required String inviteCode,
-    required String userId,
     String? teamName,
     List<String>? teamMembers,
     String? specificLeagueId,
   });
 
-  Future<LeagueModel> exitLeague({
+  Future<void> exitLeague({
     required LeagueModel league,
     required String userId,
+  });
+
+  Future<LeagueModel> removeTeamParticipants({
+    required LeagueModel league,
+    required String teamName,
+    required List<String> userIdsToRemove,
+    required String requestingUserId,
   });
 
   Future<LeagueModel> updateTeamName({
@@ -242,90 +249,179 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
   @override
   Future<LeagueModel> joinLeague({
     required String inviteCode,
-    required String userId,
     String? teamName,
     List<String>? teamMembers,
     String? specificLeagueId,
   }) async {
     try {
-      // Get leagues with this invite code
-      final leagueResponse = await supabaseClient
-          .from('leagues')
-          .select()
-          .eq('invite_code', inviteCode);
+      final currentUserId = _checkAuthentication();
+      final currentUserName = _getCurrentUserName() ?? "Utente";
 
-      if (leagueResponse.isEmpty) {
-        throw ServerException(
-            'Nessuna lega trovata con questo codice di invito');
+      // Call the RPC function with parameters in correct order
+      final response = await supabaseClient.rpc(
+        'join_league',
+        params: {
+          'p_user_id': currentUserId,
+          'p_user_name': currentUserName,
+          'p_invite_code': inviteCode,
+          'p_team_name': teamName,
+          'p_specific_league_id': specificLeagueId,
+        },
+      );
+
+      final result = response as Map<String, dynamic>;
+      final status = result['status'] as String;
+
+      if (status == 'multiple_leagues') {
+        throw ServerException('Multiple leagues found with this invite code',
+            data: result['leagues']);
+      } else if (status == 'league_found' || status == 'joined') {
+        final leagueData = result['league'] as Map<String, dynamic>;
+        return _convertResponseToModel(leagueData);
+      } else {
+        throw ServerException('Unexpected response from server');
       }
-
-      // Determine which league to join
-      final result = _determineLeagueToJoin(
-        leagueResponse: leagueResponse,
-        specificLeagueId: specificLeagueId,
-      );
-
-      final leagueData = result['leagueData'];
-      final leagueId = result['leagueId'];
-
-      // Convert to our model format
-      final league = _convertResponseToModel(leagueData);
-
-      // Check if user is already a participant
-      _checkIfUserIsAlreadyParticipant(league, userId);
-
-      // Create participant data
-      final Map<String, dynamic> participantData = _createParticipantData(
-        league: league,
-        userId: userId,
-        teamName: teamName,
-        teamMembers: teamMembers,
-      );
-
-      // Update the league with the new participant
-      final List<dynamic> updatedParticipants = [
-        ...league.participants.map((p) => (p as ParticipantModel).toJson()),
-        participantData,
-      ];
-
-      // Update in Supabase
-      return await _updateLeagueInDb(
-        leagueId: leagueId,
-        updateData: {'participants': updatedParticipants},
-      );
     } on PostgrestException catch (e) {
       throw ServerException('Errore: ${e.message}');
     } catch (e) {
-      throw ServerException(e.toString());
+      if (e is ServerException) rethrow;
+      throw ServerException('Errore generico: ${e.toString()}');
     }
   }
 
   // ------------------------------------------------
   // E X I T   L E A G U E
   @override
-  Future<LeagueModel> exitLeague({
+  Future<void> exitLeague({
     required LeagueModel league,
     required String userId,
   }) async {
     try {
-      // Check if user is an admin
-      if (league.admins.contains(userId)) {
-        await _handleAdminExit(league.id, userId, league);
+      // Controlla se è una lega a squadre o individuale
+      if (league.isTeamBased) {
+        await _exitTeamLeague(league, userId);
+      } else {
+        await _exitIndividualLeague(league, userId);
+      }
+    } catch (e) {
+      throw ServerException(
+          'Si è verificato un errore nell\'uscire dalla lega: ${e.toString()}');
+    }
+  }
+
+  // Gestisce l'uscita da una lega individuale
+  Future<void> _exitIndividualLeague(
+    LeagueModel league,
+    String userId,
+  ) async {
+    // Trova l'utente nei partecipanti
+    int participantIndex = -1;
+
+    for (int i = 0; i < league.participants.length; i++) {
+      final participant = league.participants[i];
+      if (participant is IndividualParticipantModel &&
+          participant.userId == userId) {
+        participantIndex = i;
+        break;
+      }
+    }
+
+    if (participantIndex == -1) {
+      throw ServerException('Utente non trovato nei partecipanti della lega');
+    }
+
+    // Se è l'unico partecipante, elimina la lega
+    if (league.participants.length == 1) {
+      await deleteLeague(league.id);
+      return; // Early return if we delete the league
+    }
+
+    // Altrimenti rimuovi solo il partecipante
+    final updatedParticipants = List<dynamic>.from(league.participants)
+      ..removeAt(participantIndex);
+
+    await _updateLeagueInDb(
+      leagueId: league.id,
+      updateData: {
+        'participants': updatedParticipants
+            .map((p) => (p as ParticipantModel).toJson())
+            .toList(),
+      },
+    );
+  }
+
+  // Gestisce l'uscita da una lega a squadre
+  Future<void> _exitTeamLeague(
+    LeagueModel league,
+    String userId,
+  ) async {
+    // Trova il team del partecipante
+    int teamIndex = -1;
+    TeamParticipantModel? team;
+
+    for (int i = 0; i < league.participants.length; i++) {
+      final participant = league.participants[i];
+      if (participant is TeamParticipantModel &&
+          participant.userIds.contains(userId)) {
+        teamIndex = i;
+        team = participant;
+        break;
+      }
+    }
+
+    if (teamIndex == -1 || team == null) {
+      throw ServerException('Utente non trovato in nessun team della lega');
+    }
+
+    // Se è l'ultimo membro del team, rimuovi il team
+    if (team.userIds.length == 1) {
+      // Se è anche l'ultimo team, elimina la lega
+      if (league.participants.length == 1) {
+        await deleteLeague(league.id);
+        return; // Early return if we delete the league
       }
 
-      // Remove user from participants
-      final updatedParticipants =
-          _getUpdatedParticipantsAfterExit(league, userId);
+      // Altrimenti rimuovi solo il team
+      final updatedParticipants = List<dynamic>.from(league.participants)
+        ..removeAt(teamIndex);
 
-      // Update in Supabase
-      return await _updateLeagueInDb(
+      await _updateLeagueInDb(
         leagueId: league.id,
-        updateData: {'participants': updatedParticipants},
+        updateData: {
+          'participants': updatedParticipants
+              .map((p) => (p as ParticipantModel).toJson())
+              .toList(),
+        },
       );
-    } catch (e) {
-      if (e is ServerException) rethrow;
-      throw ServerException('Si è verificato un errore: ${e.toString()}');
+      return;
     }
+
+    // Se ci sono altri membri nel team, rimuovi solo l'utente
+    final updatedUserIds = List<String>.from(team.userIds)..remove(userId);
+
+    // Crea il team aggiornato
+    final updatedTeam = TeamParticipantModel(
+      userIds: updatedUserIds,
+      captainId: team.captainId,
+      name: team.name,
+      points: team.points,
+      malusTotal: team.malusTotal,
+      bonusTotal: team.bonusTotal,
+      teamLogoUrl: team.teamLogoUrl,
+    );
+
+    // Aggiorna la lista dei partecipanti
+    final updatedParticipants = List<dynamic>.from(league.participants);
+    updatedParticipants[teamIndex] = updatedTeam;
+
+    await _updateLeagueInDb(
+      leagueId: league.id,
+      updateData: {
+        'participants': updatedParticipants
+            .map((p) => (p as ParticipantModel).toJson())
+            .toList(),
+      },
+    );
   }
 
   // ------------------------------------------------
@@ -652,24 +748,106 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
   }
 
   // ------------------------------------------------
+  // R E M O V E   T E A M   P A R T I C I P A N T S
+  @override
+  Future<LeagueModel> removeTeamParticipants({
+    required LeagueModel league,
+    required String teamName,
+    required List<String> userIdsToRemove,
+    required String requestingUserId,
+  }) async {
+    try {
+      // Verifica che l'utente che richiede l'operazione sia un admin
+      if (!league.admins.contains(requestingUserId)) {
+        throw ServerException(
+            'Solo gli amministratori possono rimuovere membri dal team');
+      }
+
+      // Controllo che la lega sia a squadre
+      if (!league.isTeamBased) {
+        throw ServerException(
+            'Questa operazione è valida solo per leghe a squadre');
+      }
+
+      // Trova il team
+      int teamIndex = -1;
+      for (int i = 0; i < league.participants.length; i++) {
+        final participant = league.participants[i] as ParticipantModel;
+        final participantJson = participant.toJson();
+
+        if (participantJson['type'] == 'team' &&
+            participantJson['name'] == teamName) {
+          teamIndex = i;
+          break;
+        }
+      }
+
+      if (teamIndex == -1) {
+        throw ServerException('Team non trovato');
+      }
+
+      // Ottiene il team e i suoi membri attuali
+      final teamParticipant =
+          league.participants[teamIndex] as TeamParticipantModel;
+      final List<String> currentMembers =
+          List<String>.from(teamParticipant.userIds);
+
+      // Rimuove gli utenti dal team
+      final List<String> updatedMembers =
+          currentMembers.where((id) => !userIdsToRemove.contains(id)).toList();
+
+      // Crea il team aggiornato
+      final updatedTeam = TeamParticipantModel(
+        userIds: updatedMembers,
+        captainId: teamParticipant.captainId,
+        name: teamParticipant.name,
+        points: teamParticipant.points,
+        malusTotal: teamParticipant.malusTotal,
+        bonusTotal: teamParticipant.bonusTotal,
+        teamLogoUrl: teamParticipant.teamLogoUrl,
+      );
+
+      // Crea la lista aggiornata dei partecipanti
+      final List<dynamic> updatedParticipants = [...league.participants];
+      updatedParticipants[teamIndex] = updatedTeam;
+
+      // Prepara i dati per l'aggiornamento
+      final List<Map<String, dynamic>> participantsJson = updatedParticipants
+          .map((p) => (p as ParticipantModel).toJson())
+          .toList();
+
+      // Aggiorna nel database
+      return await _updateLeagueInDb(
+        leagueId: league.id,
+        updateData: {'participants': participantsJson},
+      );
+    } catch (e) {
+      if (e is ServerException) rethrow;
+      throw ServerException('Si è verificato un errore: ${e.toString()}');
+    }
+  }
+
+  // ------------------------------------------------
   // G E T   U S E R S   D E T A I L S
   @override
-  Future<List<Map<String, dynamic>>> getUsersDetails(List<String> userIds) async {
+  Future<List<Map<String, dynamic>>> getUsersDetails(
+      List<String> userIds) async {
     try {
       if (userIds.isEmpty) {
         return [];
       }
-      
+
       // Call the Supabase RPC function
       final response = await supabaseClient.rpc(
         'get_users_details',
         params: {'user_ids': userIds},
       );
-      
+
       // Convert response to list of maps
       return List<Map<String, dynamic>>.from(response);
     } on PostgrestException catch (e) {
-      throw ServerException('Errore nel recupero dei dettagli utenti: ${e.message}');
+      throw ServerException(
+          'Errore nel recupero dei dettagli utenti: ${e.message}');
     } catch (e) {
       throw ServerException('Si è verificato un errore: ${e.toString()}');
     }
@@ -749,18 +927,30 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
     required Map<String, dynamic> updateData,
   }) async {
     try {
+      debugPrint(
+          "🔄 _updateLeagueInDb: Starting update for league -> $leagueId");
+
       final updatedResponse = await supabaseClient
           .from('leagues')
           .update(updateData)
           .eq('id', leagueId)
-          .select()
-          .single();
+          .select();
 
-      return _convertResponseToModel(updatedResponse);
+      debugPrint(
+          "✅ _updateLeagueInDb: Update successful, response size: ${updatedResponse.length}");
+
+      if (updatedResponse.isEmpty) {
+        throw ServerException('Nessun dato restituito dopo l\'aggiornamento');
+      }
+
+      return _convertResponseToModel(updatedResponse.first);
     } on PostgrestException catch (e) {
-      throw ServerException('Errore: ${e.message}');
+      debugPrint("❌ _updateLeagueInDb: PostgrestException -> ${e.message}");
+      throw ServerException('Errore PostgreSQL: ${e.message}');
     } catch (e) {
-      throw ServerException('Si è verificato un errore: ${e.toString()}');
+      debugPrint("❌ _updateLeagueInDb: Error type: ${e.runtimeType}");
+      debugPrint("❌ _updateLeagueInDb: Detailed error -> ${e.toString()}");
+      throw ServerException('Errore generico: ${e.toString()}');
     }
   }
 
@@ -774,6 +964,7 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
     if (isTeamBased) {
       return TeamParticipantModel(
         userIds: [creatorId],
+        captainId: creatorId,
         name: 'Squadra di $creatorName',
         points: 0,
         malusTotal: 0,
@@ -787,99 +978,6 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
         malusTotal: 0,
         bonusTotal: 0,
       );
-    }
-  }
-
-  // ------------------------------------------------
-  // H E L P E R  -  D E T E R M I N E   L E A G U E   T O   J O I N
-  Map<String, dynamic> _determineLeagueToJoin({
-    required List<dynamic> leagueResponse,
-    String? specificLeagueId,
-  }) {
-    if (specificLeagueId != null) {
-      // If user has selected a specific league from multiple options
-      final leagueIndex =
-          leagueResponse.indexWhere((l) => l['id'] == specificLeagueId);
-      if (leagueIndex == -1) {
-        throw ServerException('Lega selezionata non trovata');
-      }
-      return {
-        'leagueData': leagueResponse[leagueIndex],
-        'leagueId': specificLeagueId,
-      };
-    } else if (leagueResponse.length > 1) {
-      // Present multiple leagues to the user to choose from
-      throw ServerException(
-        'Più leghe trovate con questo codice. Selezionane una:',
-        data: leagueResponse
-            .map((league) => {
-                  'id': league['id'],
-                  'name': league['name'],
-                  'description': league['description'],
-                })
-            .toList(),
-      );
-    } else {
-      // Only one league found with this code
-      return {
-        'leagueData': leagueResponse[0],
-        'leagueId': leagueResponse[0]['id'],
-      };
-    }
-  }
-
-  // ------------------------------------------------
-  // H E L P E R  -  C H E C K   I F   U S E R   I S   A L R E A D Y   P A R T I C I P A N T
-  void _checkIfUserIsAlreadyParticipant(LeagueModel league, String userId) {
-    final isAlreadyParticipant = league.participants.any((p) =>
-        (p is ParticipantModel &&
-            p.toJson()['type'] == 'individual' &&
-            p.toJson()['userId'] == userId) ||
-        (p is ParticipantModel &&
-            p.toJson()['type'] == 'team' &&
-            (p.toJson()['userIds'] as List<dynamic>).contains(userId)));
-
-    if (isAlreadyParticipant) {
-      throw ServerException('L\'utente è già un partecipante di questa lega');
-    }
-  }
-
-  // ------------------------------------------------
-  // H E L P E R  -  C R E A T E   P A R T I C I P A N T   D A T A
-  Map<String, dynamic> _createParticipantData({
-    required LeagueModel league,
-    required String userId,
-    String? teamName,
-    List<String>? teamMembers,
-  }) {
-    if (league.isTeamBased) {
-      if (teamName == null) {
-        throw ServerException(
-            'Il nome del team è obbligatorio per le leghe basate su squadre');
-      }
-
-      return {
-        'type': 'team',
-        'userIds': teamMembers ?? [userId],
-        'name': teamName,
-        'score': 0,
-        'malusTotal': 0,
-        'bonusTotal': 0,
-      };
-    } else {
-      final currentUserName = _getCurrentUserName();
-      if (currentUserName == null) {
-        throw ServerException('Utente non autenticato');
-      }
-
-      return {
-        'type': 'individual',
-        'userId': userId,
-        'name': currentUserName,
-        'score': 0,
-        'malusTotal': 0,
-        'bonusTotal': 0,
-      };
     }
   }
 
@@ -975,7 +1073,7 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
     // Create updated participant data
     final updatedParticipantData = {
       ...participantJson,
-      'score': updatedScore,
+      'points': updatedScore,
       'bonusTotal': updatedBonusTotal,
       'malusTotal': updatedMalusTotal,
     };
@@ -1018,54 +1116,6 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
   }
 
   // ------------------------------------------------
-  // H E L P E R  -  H A N D L E   A D M I N   E X I T
-  Future<void> _handleAdminExit(
-      String leagueId, String userId, LeagueModel league) async {
-    // If this is the only admin, don't allow exit
-    if (league.admins.length == 1) {
-      throw ServerException(
-          'Impossibile uscire dalla lega: sei l\'unico amministratore. Trasferisci i diritti di amministratore o elimina la lega');
-    }
-
-    // Update admins list
-    final updatedAdmins = [...league.admins];
-    updatedAdmins.remove(userId);
-
-    await supabaseClient.from('leagues').update({
-      'admins': updatedAdmins,
-    }).eq('id', leagueId);
-  }
-
-  // ------------------------------------------------
-  // H E L P E R  -  G E T   U P D A T E D   P A R T I C I P A N T S   A F T E R   E X I T
-  List<Map<String, dynamic>> _getUpdatedParticipantsAfterExit(
-      LeagueModel league, String userId) {
-    return league.participants
-        .where((p) {
-          final participantJson = (p as ParticipantModel).toJson();
-          if (participantJson['type'] == 'individual') {
-            return participantJson['userId'] != userId;
-          } else {
-            // For teams, we need to check if user is in the team
-            final userIds = List<String>.from(participantJson['userIds']);
-            // If user is in team:
-            if (userIds.contains(userId)) {
-              // If they're the only member, remove the whole team
-              if (userIds.length == 1) {
-                return false;
-              }
-              // Otherwise, keep the team but remove the user below
-              userIds.remove(userId);
-              participantJson['userIds'] = userIds;
-            }
-            return true;
-          }
-        })
-        .map((p) => (p as ParticipantModel).toJson())
-        .toList();
-  }
-
-  // ------------------------------------------------
   // H E L P E R  -  G E T   U P D A T E D   E V E N T S   A F T E R   R E M O V A L
   List<Map<String, dynamic>> _getUpdatedEventsAfterRemoval(
       LeagueModel league, String eventId) {
@@ -1100,7 +1150,7 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
 
         return {
           ...participantJson,
-          'score': updatedScore,
+          'points': updatedScore,
           'bonusTotal': updatedBonusTotal,
           'malusTotal': updatedMalusTotal,
         };

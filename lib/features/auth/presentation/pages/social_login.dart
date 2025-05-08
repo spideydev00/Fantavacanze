@@ -10,7 +10,7 @@ import 'package:fantavacanze_official/features/auth/presentation/widgets/promo_t
 import 'package:fantavacanze_official/features/auth/presentation/widgets/rich_text.dart';
 import 'package:fantavacanze_official/features/auth/presentation/widgets/social_button.dart';
 import 'package:fantavacanze_official/core/widgets/custom_dialog_box.dart';
-import 'package:fantavacanze_official/features/auth/presentation/pages/onboarding.dart';
+import 'package:fantavacanze_official/initial_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -41,8 +41,12 @@ class _SocialLoginPageState extends State<SocialLoginPage> {
           );
         }
         if (state is AuthSuccess) {
-          Navigator.of(context)
-              .pushAndRemoveUntil(OnBoardingScreen.route, (route) => false);
+          Navigator.pushAndRemoveUntil(
+              context,
+              MaterialPageRoute(
+                builder: (_) => InitialPage(),
+              ),
+              (route) => false);
         }
       },
       builder: (context, state) {

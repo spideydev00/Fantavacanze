@@ -25,6 +25,12 @@ abstract interface class AuthRemoteDataSource {
       required String password,
       required String hCaptcha});
 
+  Future<void> signOut();
+
+  Future<UserModel> changeIsOnboardedValue({
+    required bool newValue,
+  });
+
   //helper methods
   Future<UserModel?> getCurrentUserData();
   Session? get currentSession;
@@ -75,53 +81,35 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
 
       final idToken = credential.identityToken;
       if (idToken == null) {
-        throw ServerException(
-            'Impossibile trovare token ID dalle credenziali fornite!');
+        throw ServerException('ID token non trovato.');
       }
 
-      //autentica l'utente tramite IdToken
       final response = await supabaseClient.auth.signInWithIdToken(
         provider: OAuthProvider.apple,
         idToken: idToken,
         nonce: rawNonce,
       );
 
-      final user = response.user;
-
-      if (user == null) {
+      if (response.user == null) {
         throw ServerException("Errore nella creazione dell'utente.");
       }
 
+      final userId = response.user!.id;
       final givenName = credential.givenName;
-      final userId = user.id;
-      late UserModel userModel;
 
-      //Check if it's first access
-      if (!(user.userMetadata!.containsKey('full_name'))) {
-        //update auth.users to include name
+      // Primo accesso → aggiorna profilo
+      if (!(response.user!.userMetadata?.containsKey('full_name') ?? false)) {
         await supabaseClient.auth
             .updateUser(UserAttributes(data: {'full_name': givenName}));
-
-        //update profiles
         await supabaseClient
             .from('profiles')
             .update({'name': givenName}).eq('id', userId);
-
-        //create the user model with the updated name
-        userModel = UserModel.fromJson(user.toJson()).copyWith(
-          name: givenName,
-        );
-
-        return userModel;
       }
 
-      //If it's not first access
-      userModel = UserModel.fromJson(user.toJson());
-
-      return userModel;
+      final user = await getCurrentUserData();
+      return user!;
     } on AuthException catch (e) {
       throw ServerException(e.toString());
-      //apple related exception
     } on SignInWithAppleException catch (e) {
       throw ServerException(e.toString());
     } catch (e) {
@@ -141,7 +129,10 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       if (response.user == null) {
         throw ServerException('User is null!');
       }
-      return UserModel.fromJson(response.user!.toJson());
+
+      final profileResponse = await getCurrentUserData();
+
+      return profileResponse!;
     } on AuthException catch (e) {
       throw ServerException(e.message);
     } catch (e) {
@@ -156,12 +147,10 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       const iosClientId = AppSecrets.iosClientId;
       const webClientId = AppSecrets.webClientId;
 
-      GoogleSignIn googleSignIn = GoogleSignIn(
+      final googleSignIn = GoogleSignIn(
         clientId: iosClientId,
         serverClientId: webClientId,
-        scopes: [
-          'email',
-        ],
+        scopes: ['email'],
       );
 
       final googleUser = await googleSignIn.signIn();
@@ -169,11 +158,8 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       final accessToken = googleAuth.accessToken;
       final idToken = googleAuth.idToken;
 
-      if (accessToken == null) {
-        throw ServerException('Nessun token di accesso trovato.');
-      }
-      if (idToken == null) {
-        throw ServerException('Nessun ID Token trovato.');
+      if (accessToken == null || idToken == null) {
+        throw ServerException('Token di accesso o ID mancante.');
       }
 
       final response = await supabaseClient.auth.signInWithIdToken(
@@ -186,10 +172,8 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         throw ServerException("Errore nella creazione dell'utente.");
       }
 
-      //create a user
-      final user = UserModel.fromJson(response.user!.toJson());
-
-      return user;
+      final user = await getCurrentUserData();
+      return user!;
     } on AuthException catch (e) {
       throw ServerException(e.toString());
     } catch (e) {
@@ -210,17 +194,46 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         password: password,
         email: email,
         captchaToken: hCaptcha,
-        data: {
-          'name': name,
-        },
+        data: {'name': name},
         emailRedirectTo: "https://fantavacanze.it/",
       );
+
       if (response.user == null) {
         throw ServerException('User is null!');
       }
-      return UserModel.fromJson(response.user!.toJson());
+
+      // Recupera i dati utente aggiornati
+      final user = await getCurrentUserData();
+      return user!;
     } on AuthException catch (e) {
       throw ServerException(e.message);
+    } catch (e) {
+      throw ServerException(e.toString());
+    }
+  }
+
+  // ------------------ SIGN OUT ------------------ //
+  @override
+  Future<void> signOut() async {
+    try {
+      await supabaseClient.auth.signOut();
+    } catch (e) {
+      throw ServerException(e.toString());
+    }
+  }
+
+  // ------------------ CHANGE ISONBOARDED VALUE ------------------ //
+  @override
+  Future<UserModel> changeIsOnboardedValue({required bool newValue}) async {
+    try {
+      final response = await supabaseClient
+          .from('profiles')
+          .update({'is_onboarded': newValue})
+          .eq('id', currentSession!.user.id)
+          .select()
+          .single();
+
+      return UserModel.fromJson(response);
     } catch (e) {
       throw ServerException(e.toString());
     }

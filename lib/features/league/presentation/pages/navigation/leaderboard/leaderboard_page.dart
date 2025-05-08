@@ -59,7 +59,7 @@ class LeaderboardPage extends StatelessWidget {
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  'Nessuna lega selezionata',
+                  'Nessuna lega trovata',
                   style: context.textTheme.titleMedium?.copyWith(
                     color: context.textSecondaryColor,
                   ),

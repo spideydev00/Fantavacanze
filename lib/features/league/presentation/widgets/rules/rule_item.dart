@@ -7,14 +7,14 @@ import 'package:fantavacanze_official/core/theme/sizes.dart';
 
 class RuleItem extends StatelessWidget {
   final Rule rule;
-  final VoidCallback onEdit;
-  final VoidCallback onDelete;
+  final VoidCallback? onEdit;
+  final VoidCallback? onDelete;
 
   const RuleItem({
     super.key,
     required this.rule,
-    required this.onEdit,
-    required this.onDelete,
+    this.onEdit,
+    this.onDelete,
   });
 
   @override
@@ -113,41 +113,44 @@ class RuleItem extends StatelessWidget {
               ),
 
               // Action buttons with a more subtle design
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  IconButton(
-                    icon: Icon(
-                      Icons.edit_outlined,
-                      size: 18,
-                      color: context.textSecondaryColor,
-                    ),
-                    visualDensity: VisualDensity.compact,
-                    onPressed: onEdit,
-                    tooltip: 'Modifica',
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(
-                      minWidth: 32,
-                      minHeight: 32,
-                    ),
-                  ),
-                  IconButton(
-                    icon: Icon(
-                      Icons.delete_outline,
-                      size: 18,
-                      color: context.textSecondaryColor,
-                    ),
-                    visualDensity: VisualDensity.compact,
-                    onPressed: onDelete,
-                    tooltip: 'Rimuovi',
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(
-                      minWidth: 32,
-                      minHeight: 32,
-                    ),
-                  ),
-                ],
-              ),
+              if (onEdit != null || onDelete != null)
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (onEdit != null)
+                      IconButton(
+                        icon: Icon(
+                          Icons.edit_outlined,
+                          size: 18,
+                          color: context.textSecondaryColor,
+                        ),
+                        visualDensity: VisualDensity.compact,
+                        onPressed: onEdit,
+                        tooltip: 'Modifica',
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(
+                          minWidth: 32,
+                          minHeight: 32,
+                        ),
+                      ),
+                    if (onDelete != null)
+                      IconButton(
+                        icon: Icon(
+                          Icons.delete_outline,
+                          size: 18,
+                          color: context.textSecondaryColor,
+                        ),
+                        visualDensity: VisualDensity.compact,
+                        onPressed: onDelete,
+                        tooltip: 'Rimuovi',
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(
+                          minWidth: 32,
+                          minHeight: 32,
+                        ),
+                      ),
+                  ],
+                ),
             ],
           ),
         ),

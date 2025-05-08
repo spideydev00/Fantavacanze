@@ -87,6 +87,25 @@ class AuthRepositoryImpl implements AuthRepository {
     }
   }
 
+  @override
+  Future<Either<Failure, User>> changeIsOnboardedValue(
+      {required bool newValue}) async {
+    try {
+      if (!await connectionChecker.isConnected) {
+        return left(
+            Failure("Connessione a internet assente. Riprova più tardi."));
+      }
+
+      final user = await authRemoteDataSource.changeIsOnboardedValue(
+        newValue: newValue,
+      );
+
+      return right(user);
+    } on ServerException catch (e) {
+      return left(Failure(e.message));
+    }
+  }
+
   //Get User if logged in
   @override
   Future<Either<Failure, User>> currentUser() async {
@@ -103,6 +122,7 @@ class AuthRepositoryImpl implements AuthRepository {
             id: session.user.id,
             email: session.user.email ?? 'No email found.',
             name: 'No name found.',
+            isOnboarded: true,
           ),
         );
       }
@@ -113,6 +133,21 @@ class AuthRepositoryImpl implements AuthRepository {
       }
 
       return right(user);
+    } on ServerException catch (e) {
+      return left(Failure(e.message));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> signOut() async {
+    try {
+      if (!await connectionChecker.isConnected) {
+        return left(
+            Failure("Connessione a internet assente. Riprova più tardi."));
+      }
+
+      await authRemoteDataSource.signOut();
+      return right(null);
     } on ServerException catch (e) {
       return left(Failure(e.message));
     }
