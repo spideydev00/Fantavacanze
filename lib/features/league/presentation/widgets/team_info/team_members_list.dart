@@ -1,6 +1,8 @@
+import 'package:fantavacanze_official/core/cubits/app_league/app_league_cubit.dart';
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
+import 'package:fantavacanze_official/core/utils/show_snackbar.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/team_participant.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_event.dart';
@@ -12,21 +14,36 @@ class TeamMembersList extends StatefulWidget {
   final TeamParticipant team;
   final List<String> admins;
   final String currentUserId;
+  final bool isCaptain; // Add this parameter
 
   const TeamMembersList({
     super.key,
     required this.team,
     required this.admins,
     required this.currentUserId,
+    this.isCaptain = false, // Default to false
   });
 
   @override
   State<TeamMembersList> createState() => _TeamMembersListState();
+
+  // Add public method that can be called from parent
+  void toggleRemovalMode() {
+    // Create a key and access the state
+    if (key != null && key is GlobalKey) {
+      final state = (key as GlobalKey).currentState as _TeamMembersListState?;
+      if (state != null) {
+        state._toggleRemovalMode();
+      }
+    }
+  }
 }
 
 class _TeamMembersListState extends State<TeamMembersList> {
   bool _isLoading = true;
   List<Map<String, dynamic>>? _memberDetails;
+  bool _isRemovingMembers = false;
+  final Set<String> _selectedMembersToRemove = {};
 
   @override
   void initState() {
@@ -48,6 +65,50 @@ class _TeamMembersListState extends State<TeamMembersList> {
         );
   }
 
+  void _toggleRemovalMode() {
+    setState(() {
+      _isRemovingMembers = !_isRemovingMembers;
+      _selectedMembersToRemove.clear();
+    });
+  }
+
+  void _toggleMemberSelection(String userId) {
+    setState(() {
+      if (_selectedMembersToRemove.contains(userId)) {
+        _selectedMembersToRemove.remove(userId);
+      } else {
+        _selectedMembersToRemove.add(userId);
+      }
+    });
+  }
+
+  void _removeSelectedMembers() {
+    if (_selectedMembersToRemove.isEmpty) {
+      showSnackBar(context, 'Seleziona almeno un membro da rimuovere');
+      return;
+    }
+
+    final leagueBloc = context.read<LeagueBloc>();
+    final AppLeagueCubit leagueCubit = context.read<AppLeagueCubit>();
+    final leagueState = leagueCubit.state;
+
+    if (leagueState is AppLeagueExists) {
+      leagueBloc.add(
+        RemoveTeamParticipantsEvent(
+          league: leagueState.selectedLeague,
+          teamName: widget.team.name,
+          userIdsToRemove: _selectedMembersToRemove.toList(),
+        ),
+      );
+
+      // Reset state
+      setState(() {
+        _isRemovingMembers = false;
+        _selectedMembersToRemove.clear();
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocListener<LeagueBloc, LeagueState>(
@@ -61,17 +122,21 @@ class _TeamMembersListState extends State<TeamMembersList> {
           setState(() {
             _isLoading = false;
           });
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Errore: ${state.message}')),
-          );
+          showSnackBar(context, 'Errore: ${state.message}');
         }
       },
       child: TeamMembersListContent(
         team: widget.team,
         admins: widget.admins,
         currentUserId: widget.currentUserId,
+        isCaptain: widget.isCaptain, // Pass this parameter
         isLoadingMembers: _isLoading,
         memberDetails: _memberDetails,
+        isRemovingMembers: _isRemovingMembers,
+        selectedMembersToRemove: _selectedMembersToRemove,
+        onToggleRemovalMode: _toggleRemovalMode,
+        onToggleMemberSelection: _toggleMemberSelection,
+        onRemoveSelectedMembers: _removeSelectedMembers,
       ),
     );
   }
@@ -81,20 +146,35 @@ class TeamMembersListContent extends StatelessWidget {
   final TeamParticipant team;
   final List<String> admins;
   final String currentUserId;
+  final bool isCaptain; // Add this parameter
   final bool isLoadingMembers;
   final List<Map<String, dynamic>>? memberDetails;
+  final bool isRemovingMembers;
+  final Set<String> selectedMembersToRemove;
+  final VoidCallback onToggleRemovalMode;
+  final void Function(String userId) onToggleMemberSelection;
+  final VoidCallback onRemoveSelectedMembers;
 
   const TeamMembersListContent({
     super.key,
     required this.team,
     required this.admins,
     required this.currentUserId,
+    this.isCaptain = false, // Default to false
     this.isLoadingMembers = false,
     this.memberDetails,
+    this.isRemovingMembers = false,
+    required this.selectedMembersToRemove,
+    required this.onToggleRemovalMode,
+    required this.onToggleMemberSelection,
+    required this.onRemoveSelectedMembers,
   });
 
   @override
   Widget build(BuildContext context) {
+    final isAdmin = admins.contains(currentUserId);
+    final canManageMembers = isAdmin || isCaptain;
+
     if (isLoadingMembers) {
       return const Center(
         child: Padding(
@@ -121,15 +201,35 @@ class TeamMembersListContent extends StatelessWidget {
 
     return Column(
       children: [
-        // Visualizza ciascun membro del team
+        // Pulsante per confermare la rimozione (mostrato solo in modalità rimozione)
+        if (isRemovingMembers && selectedMembersToRemove.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.all(ThemeSizes.md),
+            child: ElevatedButton.icon(
+              onPressed: onRemoveSelectedMembers,
+              icon: const Icon(Icons.delete),
+              label: Text('Rimuovi ${selectedMembersToRemove.length} membri'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: ColorPalette.error,
+                foregroundColor: Colors.white,
+              ),
+            ),
+          ),
+
+        // Lista dei membri
         ...List.generate(team.userIds.length, (index) {
           final userId = team.userIds[index];
-          final isAdmin = admins.contains(userId);
+          final isUserAdmin = admins.contains(userId);
           final isCurrentUser = userId == currentUserId;
+          final isUserCaptain =
+              userId == team.captainId; // Check if user is the team captain
 
-          // Trova i dettagli dell'utente, se disponibili
+          // Se siamo in modalità rimozione e l'utente è l'admin corrente,
+          // non permettere la selezione
+          final canBeRemoved =
+              !isRemovingMembers || (!isCurrentUser && canManageMembers);
+
           String? userName;
-          bool? isPremium;
 
           if (memberDetails != null) {
             final userDetail = memberDetails!.firstWhere(
@@ -138,16 +238,21 @@ class TeamMembersListContent extends StatelessWidget {
             );
 
             userName = userDetail['name'];
-            isPremium = userDetail['is_premium'];
           }
 
           return _buildMemberItem(
             context,
             userId: userId,
             name: userName ?? 'Utente ${index + 1}',
-            isAdmin: isAdmin,
+            isAdmin: isUserAdmin,
             isCurrentUser: isCurrentUser,
-            isPremium: isPremium ?? false,
+            isCaptain: isUserCaptain,
+            isSelected: selectedMembersToRemove.contains(userId),
+            isRemovingMembers: isRemovingMembers,
+            onToggleMemberSelection: onToggleMemberSelection,
+            canBeRemoved: canBeRemoved &&
+                !isUserAdmin &&
+                !isUserCaptain, // Neither admins nor captains can be removed
           );
         }),
       ],
@@ -160,104 +265,155 @@ class TeamMembersListContent extends StatelessWidget {
     required String name,
     required bool isAdmin,
     required bool isCurrentUser,
-    required bool isPremium,
+    required bool isSelected,
+    required bool isRemovingMembers,
+    required void Function(String userId) onToggleMemberSelection,
+    required bool canBeRemoved,
+    required bool isCaptain,
   }) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: ThemeSizes.sm),
-      padding: const EdgeInsets.all(ThemeSizes.sm),
-      decoration: BoxDecoration(
-        color: context.bgColor,
-        borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusMd),
-      ),
-      child: Row(
-        children: [
-          // Avatar
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: isCurrentUser
-                  ? context.primaryColor.withValues(alpha: 0.2)
-                  : isPremium
-                      ? ColorPalette.premiumUser.withValues(alpha: 0.2)
-                      : context.primaryColor.withValues(alpha: 0.1),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              Icons.person,
-              color:
-                  isPremium ? ColorPalette.premiumUser : context.primaryColor,
-            ),
-          ),
-          const SizedBox(width: ThemeSizes.md),
+    return GestureDetector(
+      onTap: (isRemovingMembers && canBeRemoved)
+          ? () => onToggleMemberSelection(userId)
+          : null,
+      child: Container(
+        margin: const EdgeInsets.only(bottom: ThemeSizes.sm),
+        padding: const EdgeInsets.all(ThemeSizes.sm),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? context.primaryColor.withValues(alpha: 0.2)
+              : context.bgColor,
+          borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusMd),
+          border: isRemovingMembers && !canBeRemoved
+              ? Border.all(color: Colors.grey.withValues(alpha: 0.3))
+              : null,
+        ),
+        child: Row(
+          children: [
+            // Checkbox per la selezione (visibile solo in modalità rimozione)
+            if (isRemovingMembers)
+              Padding(
+                padding: const EdgeInsets.only(right: ThemeSizes.sm),
+                child: canBeRemoved
+                    ? Checkbox(
+                        value: isSelected,
+                        onChanged: (value) => onToggleMemberSelection(userId),
+                        activeColor: context.primaryColor,
+                      )
+                    : const SizedBox(
+                        width: 24, height: 24), // Spazio per allineamento
+              ),
 
-          // Informazioni sul membro
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  "$name  ${isCurrentUser ? '(Tu)' : ''}",
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: context.textPrimaryColor,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                ),
-                Row(
-                  children: [
-                    Text(
-                      isAdmin ? 'Admin' : 'Membro',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: context.textSecondaryColor,
-                      ),
+            // Avatar
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: isCurrentUser
+                    ? context.primaryColor.withValues(alpha: 0.2)
+                    : context.primaryColor.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.person,
+                color: context.primaryColor,
+              ),
+            ),
+            const SizedBox(width: ThemeSizes.md),
+
+            // Informazioni sul membro
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "$name  ${isCurrentUser ? '(Tu)' : ''}",
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: context.textPrimaryColor,
+                      decoration: isRemovingMembers && !canBeRemoved
+                          ? TextDecoration.lineThrough
+                          : null,
+                      decorationColor: Colors.grey,
+                      decorationThickness: 2,
                     ),
-                    if (isPremium) ...[
-                      const SizedBox(width: 4),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  Row(
+                    children: [
+                      Text(
+                        // Use a helper method to determine the role text
+                        _getUserRoleText(isAdmin, isCaptain),
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: context.textSecondaryColor,
+                        ),
+                      ),
+                      SizedBox(width: ThemeSizes.xs),
                       Icon(
                         Icons.workspace_premium,
                         size: 14,
-                        color: ColorPalette.premiumUser,
-                      ),
-                      const SizedBox(width: 2),
-                      Text(
-                        'Premium',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: ColorPalette.premiumUser,
-                          fontWeight: FontWeight.w500,
-                        ),
+                        color: ColorPalette.success,
                       ),
                     ],
-                  ],
-                ),
-              ],
+                  ),
+                ],
+              ),
             ),
-          ),
 
-          // Badge Admin
-          if (isAdmin)
-            Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: ThemeSizes.sm,
-                vertical: ThemeSizes.xs,
-              ),
-              decoration: BoxDecoration(
-                color: context.primaryColor.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusMd),
-              ),
-              child: Text(
-                'Admin',
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                  color: context.primaryColor,
+            // Badge for Admin or Captain
+            if (isAdmin || isCaptain)
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: ThemeSizes.sm,
+                  vertical: ThemeSizes.xs,
+                ),
+                decoration: BoxDecoration(
+                  color: context.primaryColor.withValues(alpha: 0.1),
+                  borderRadius:
+                      BorderRadius.circular(ThemeSizes.borderRadiusMd),
+                ),
+                child: Text(
+                  isAdmin ? 'Admin' : 'Captain',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    color: context.primaryColor,
+                  ),
                 ),
               ),
-            ),
-        ],
+
+            // Tooltip for why user can't be removed
+            if (isRemovingMembers && !canBeRemoved)
+              Tooltip(
+                message: isCurrentUser
+                    ? 'Non puoi rimuovere te stesso'
+                    : isAdmin
+                        ? 'Non puoi rimuovere un admin'
+                        : isCaptain
+                            ? 'Non puoi rimuovere il captain'
+                            : 'Non puoi rimuovere questo utente',
+                child: Icon(
+                  Icons.info_outline,
+                  size: 16,
+                  color: context.textSecondaryColor.withValues(alpha: 0.5),
+                ),
+              ),
+          ],
+        ),
       ),
     );
+  }
+
+  // Helper method to determine the appropriate role text
+  String _getUserRoleText(bool isAdmin, bool isCaptain) {
+    if (isAdmin && isCaptain) {
+      return 'Admin & Captain';
+    } else if (isAdmin) {
+      return 'Admin';
+    } else if (isCaptain) {
+      return 'Captain';
+    } else {
+      return 'Membro';
+    }
   }
 }

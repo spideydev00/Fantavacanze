@@ -1,12 +1,12 @@
 import 'package:fantavacanze_official/core/cubits/app_league/app_league_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit.dart';
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
-import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/league.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/memory.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_event.dart';
+import 'package:fantavacanze_official/features/league/presentation/widgets/core/confirmation_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
@@ -317,30 +317,15 @@ class MemoriesPage extends StatelessWidget {
       BuildContext context, League league, String memoryId) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Conferma eliminazione'),
-        content: const Text('Sei sicuro di voler eliminare questo ricordo?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Annulla'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              context.read<LeagueBloc>().add(
-                    RemoveMemoryEvent(
-                      league: league,
-                      memoryId: memoryId,
-                    ),
-                  );
-              Navigator.pop(context);
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: ColorPalette.error,
-            ),
-            child: const Text('Elimina'),
-          ),
-        ],
+      builder: (context) => ConfirmationDialog.deleteMemory(
+        onDelete: () {
+          context.read<LeagueBloc>().add(
+                RemoveMemoryEvent(
+                  league: league,
+                  memoryId: memoryId,
+                ),
+              );
+        },
       ),
     );
   }

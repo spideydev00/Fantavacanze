@@ -15,5 +15,11 @@ abstract interface class AuthRepository {
       required String password,
       required String hCaptcha});
 
+  Future<Either<Failure, User>> changeIsOnboardedValue({
+    required bool newValue,
+  });
+
   Future<Either<Failure, User>> currentUser();
+
+  Future<Either<Failure, void>> signOut();
 }

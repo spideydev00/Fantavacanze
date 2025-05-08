@@ -40,17 +40,32 @@ class LeagueSuccess extends LeagueState {
   List<Object?> get props => [league, operation];
 }
 
-class MultiplePossibleLeagues extends LeagueState {
-  final String inviteCode;
-  final List<dynamic> possibleLeagues;
+class ExitLeagueSuccess extends LeagueState {}
 
-  const MultiplePossibleLeagues({
+class LeagueWithInviteCode extends LeagueState {
+  final League league;
+  final String inviteCode;
+
+  const LeagueWithInviteCode({
+    required this.league,
     required this.inviteCode,
-    required this.possibleLeagues,
   });
 
   @override
-  List<Object?> get props => [inviteCode, possibleLeagues];
+  List<Object?> get props => [league, inviteCode];
+}
+
+class MultiplePossibleLeagues extends LeagueState {
+  final List<dynamic> possibleLeagues;
+  final String inviteCode;
+
+  const MultiplePossibleLeagues({
+    required this.possibleLeagues,
+    required this.inviteCode,
+  });
+
+  @override
+  List<Object?> get props => [possibleLeagues, inviteCode];
 }
 
 class RulesLoaded extends LeagueState {
@@ -75,4 +90,13 @@ class UsersDetailsLoaded extends LeagueState {
 
   @override
   List<Object?> get props => [usersDetails];
+}
+
+class TeammatesRemovedState extends LeagueState {
+  final League league;
+
+  const TeammatesRemovedState({required this.league});
+
+  @override
+  List<Object?> get props => [league];
 }

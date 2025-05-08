@@ -1,8 +1,12 @@
+import 'package:fantavacanze_official/features/league/domain/entities/event.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/league.dart';
 import 'package:fantavacanze_official/features/league/data/models/event_model.dart';
 import 'package:fantavacanze_official/features/league/data/models/memory_model.dart';
 import 'package:fantavacanze_official/features/league/data/models/participant_model.dart';
 import 'package:fantavacanze_official/features/league/data/models/rule_model.dart';
+import 'package:fantavacanze_official/features/league/domain/entities/memory.dart';
+import 'package:fantavacanze_official/features/league/domain/entities/participant.dart';
+import 'package:fantavacanze_official/features/league/domain/entities/rule.dart';
 
 class LeagueModel extends League {
   final String? inviteCode;
@@ -63,5 +67,33 @@ class LeagueModel extends League {
       'isTeamBased': isTeamBased,
       'invite_code': inviteCode,
     };
+  }
+
+  LeagueModel copyWith({
+    String? id,
+    List<String>? admins,
+    String? name,
+    String? description,
+    DateTime? createdAt,
+    List<Rule>? rules,
+    List<Participant>? participants,
+    List<Event>? events,
+    List<Memory>? memories,
+    bool? isTeamBased,
+    String? inviteCode,
+  }) {
+    return LeagueModel(
+      id: id ?? this.id,
+      admins: admins ?? this.admins,
+      name: name ?? this.name,
+      description: description ?? this.description,
+      createdAt: createdAt ?? this.createdAt,
+      rules: rules ?? this.rules,
+      participants: participants ?? this.participants,
+      events: events ?? this.events,
+      memories: memories ?? this.memories,
+      isTeamBased: isTeamBased ?? this.isTeamBased,
+      inviteCode: inviteCode ?? this.inviteCode,
+    );
   }
 }

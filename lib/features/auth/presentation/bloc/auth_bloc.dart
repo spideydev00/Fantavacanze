@@ -1,12 +1,15 @@
 import 'dart:async';
 
+import 'package:fantavacanze_official/core/cubits/app_league/app_league_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit.dart';
 import 'package:fantavacanze_official/core/use-case/usecase.dart';
 import 'package:fantavacanze_official/features/auth/domain/entities/user.dart';
 import 'package:fantavacanze_official/features/auth/domain/use-cases/apple_sign_in.dart';
+import 'package:fantavacanze_official/features/auth/domain/use-cases/change_is_onboarded_value.dart';
 import 'package:fantavacanze_official/features/auth/domain/use-cases/email_sign_in.dart';
 import 'package:fantavacanze_official/features/auth/domain/use-cases/email_sign_up.dart';
 import 'package:fantavacanze_official/features/auth/domain/use-cases/google_sign_in.dart';
+import 'package:fantavacanze_official/features/auth/domain/use-cases/sign_out.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -18,19 +21,28 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final AppleSignIn _appleSignIn;
   final EmailSignIn _emailSignIn;
   final EmailSignUp _emailSignUp;
+  final SignOut _signOut;
   final AppUserCubit _appUserCubit;
+  final AppLeagueCubit _appLeagueCubit;
+  final ChangeIsOnboardedValue _changeIsOnboardedValue;
 
   AuthBloc({
     required GoogleSignIn googleSignIn,
     required AppleSignIn appleSignIn,
     required EmailSignIn emailSignIn,
     required EmailSignUp emailSignUp,
+    required SignOut signOut,
     required AppUserCubit appUserCubit,
+    required AppLeagueCubit appLeagueCubit,
+    required ChangeIsOnboardedValue changeIsOnboardedValue,
   })  : _googleSignIn = googleSignIn,
         _appleSignIn = appleSignIn,
         _emailSignIn = emailSignIn,
         _emailSignUp = emailSignUp,
+        _signOut = signOut,
         _appUserCubit = appUserCubit,
+        _appLeagueCubit = appLeagueCubit,
+        _changeIsOnboardedValue = changeIsOnboardedValue,
         super(AuthInitial()) {
     //google sign-in
     on<AuthGoogleSignIn>(_onGoogleSignIn);
@@ -40,6 +52,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<AuthEmailSignIn>(_onEmailSignIn);
     //email sign_up
     on<AuthEmailSignUp>(_onEmailSignUp);
+    //sign out
+    on<AuthSignOut>(_onSignOut);
+    //change isOnboarded value
+    on<AuthChangeIsOnboardedValue>(_onChangeIsOnboardedValue);
   }
 
   Future<void> _onGoogleSignIn(
@@ -88,10 +104,36 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         (r) => emit(_emitAuthSuccess(r, emit)));
   }
 
+  Future<void> _onChangeIsOnboardedValue(
+      AuthChangeIsOnboardedValue event, Emitter<AuthState> emit) async {
+    emit(AuthLoading());
+    final res = await _changeIsOnboardedValue
+        .call(ChangeIsOnboardedValueParams(newValue: event.isOnboarded));
+
+    res.fold((l) => emit(AuthFailure(l.message)), (user) {
+      _emitAuthSuccess(user, emit);
+    });
+  }
+
+  Future<void> _onSignOut(AuthSignOut event, Emitter<AuthState> emit) async {
+    emit(AuthLoading());
+    final res = await _signOut.call(NoParams());
+
+    res.fold((l) => emit(AuthFailure(l.message)), (_) {
+      _emitLogoutSuccess(emit);
+    });
+  }
+
   //Save information about user state (logged in or not)
   _emitAuthSuccess(User user, Emitter<AuthState> emit) {
     _appUserCubit.updateUser(user);
+    _appLeagueCubit.getUserLeagues();
 
     emit(AuthSuccess(user));
+  }
+
+  _emitLogoutSuccess(Emitter<AuthState> emit) {
+    _appUserCubit.updateUser(null);
+    emit(AuthInitial());
   }
 }

@@ -5,13 +5,13 @@ import 'package:fantavacanze_official/features/league/domain/repository/league_r
 import 'package:fpdart/fpdart.dart';
 import 'package:flutter/foundation.dart';
 
-class ExitLeague implements Usecase<League, ExitLeagueParams> {
+class ExitLeague implements Usecase<void, ExitLeagueParams> {
   final LeagueRepository leagueRepository;
 
   ExitLeague({required this.leagueRepository});
 
   @override
-  Future<Either<Failure, League>> call(ExitLeagueParams params) async {
+  Future<Either<Failure, void>> call(ExitLeagueParams params) async {
     return leagueRepository.exitLeague(
       league: params.league,
       userId: params.userId,

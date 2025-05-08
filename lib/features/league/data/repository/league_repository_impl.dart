@@ -171,7 +171,6 @@ class LeagueRepositoryImpl implements LeagueRepository {
   @override
   Future<Either<Failure, League>> joinLeague({
     required String inviteCode,
-    required String userId,
     String? teamName,
     List<String>? teamMembers,
     String? specificLeagueId,
@@ -186,7 +185,6 @@ class LeagueRepositoryImpl implements LeagueRepository {
 
       final league = await remoteDataSource.joinLeague(
         inviteCode: inviteCode,
-        userId: userId,
         teamName: teamName,
         teamMembers: teamMembers,
         specificLeagueId: specificLeagueId,
@@ -206,7 +204,7 @@ class LeagueRepositoryImpl implements LeagueRepository {
   }
 
   @override
-  Future<Either<Failure, League>> exitLeague({
+  Future<Either<Failure, void>> exitLeague({
     required League league,
     required String userId,
   }) async {
@@ -218,15 +216,14 @@ class LeagueRepositoryImpl implements LeagueRepository {
         );
       }
 
-      final updatedLeague = await remoteDataSource.exitLeague(
+      await remoteDataSource.exitLeague(
         league: league as LeagueModel,
         userId: userId,
       );
 
-      // Update cache
-      await localDataSource.cacheLeague(updatedLeague);
+      await localDataSource.removeLeagueFromCache(league.id);
 
-      return Right(updatedLeague);
+      return const Right(null);
     } on ServerException catch (e) {
       return Left(Failure(e.message));
     }
@@ -532,6 +529,50 @@ class LeagueRepositoryImpl implements LeagueRepository {
       return Left(Failure(e.message));
     } catch (e) {
       return Left(Failure(e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, League>> removeTeamParticipants({
+    required League league,
+    required String teamName,
+    required List<String> userIdsToRemove,
+    required String requestingUserId,
+  }) async {
+    try {
+      if (!await connectionChecker.isConnected) {
+        return Left(
+          Failure(
+              "Nessuna connessione ad internet, riprova appena sarai connesso."),
+        );
+      }
+
+      final leagueModel = await remoteDataSource.removeTeamParticipants(
+        league: league as LeagueModel,
+        teamName: teamName,
+        userIdsToRemove: userIdsToRemove,
+        requestingUserId: requestingUserId,
+      );
+
+      // Aggiorna la versione in cache
+      await localDataSource.cacheLeague(leagueModel);
+
+      return Right(leagueModel);
+    } on ServerException catch (e) {
+      return Left(Failure(e.message));
+    } catch (e) {
+      return Left(Failure(e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> clearLocalCache() async {
+    try {
+      await localDataSource.clearCache();
+
+      return const Right(null);
+    } on CacheException catch (e) {
+      return Left(Failure('Errore nella pulizia della cache: ${e.toString()}'));
     }
   }
 }

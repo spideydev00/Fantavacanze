@@ -14,7 +14,6 @@ class JoinLeague implements Usecase<League, JoinLeagueParams> {
   Future<Either<Failure, League>> call(JoinLeagueParams params) async {
     return leagueRepository.joinLeague(
       inviteCode: params.inviteCode,
-      userId: params.userId,
       teamName: params.teamName,
       teamMembers: params.teamMembers,
       specificLeagueId: params.specificLeagueId,
@@ -25,14 +24,12 @@ class JoinLeague implements Usecase<League, JoinLeagueParams> {
 @immutable
 class JoinLeagueParams {
   final String inviteCode;
-  final String userId;
   final String? teamName;
   final List<String>? teamMembers;
   final String? specificLeagueId;
 
   const JoinLeagueParams({
     required this.inviteCode,
-    required this.userId,
     this.teamName,
     this.teamMembers,
     this.specificLeagueId,

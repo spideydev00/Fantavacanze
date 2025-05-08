@@ -5,6 +5,7 @@ import 'package:fantavacanze_official/features/league/domain/entities/participan
 class TeamParticipant extends Participant {
   final List<String> userIds;
   final String? teamLogoUrl;
+  final String captainId;
 
   const TeamParticipant({
     required this.userIds,
@@ -12,6 +13,7 @@ class TeamParticipant extends Participant {
     required super.points,
     required super.malusTotal,
     required super.bonusTotal,
+    required this.captainId,
     this.teamLogoUrl,
   });
 }

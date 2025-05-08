@@ -1,9 +1,13 @@
+import 'dart:async';
+
 import 'package:fantavacanze_official/core/cubits/app_league/app_league_cubit.dart';
+import 'package:fantavacanze_official/core/cubits/app_navigation/app_navigation_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit.dart';
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/extensions/context_extension.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
+import 'package:fantavacanze_official/core/widgets/loader.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/individual_participant.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/league.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/participant.dart';
@@ -11,7 +15,7 @@ import 'package:fantavacanze_official/features/league/domain/entities/team_parti
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_event.dart';
 import 'package:fantavacanze_official/features/league/presentation/widgets/team_info/events_list.dart';
-import 'package:fantavacanze_official/features/league/presentation/widgets/team_info/exit_confirmation_dialog.dart';
+import 'package:fantavacanze_official/features/league/presentation/widgets/core/confirmation_dialog.dart';
 import 'package:fantavacanze_official/features/league/presentation/widgets/team_info/leave_league_button.dart';
 import 'package:fantavacanze_official/features/league/presentation/widgets/team_info/score_card.dart';
 import 'package:fantavacanze_official/features/league/presentation/widgets/team_info/section_card.dart';
@@ -29,10 +33,25 @@ class TeamInfoPage extends StatelessWidget {
       builder: (context, state) {
         if (state is AppLeagueExists) {
           final league = state.selectedLeague;
+
           final userId =
               (context.read<AppUserCubit>().state as AppUserIsLoggedIn).user.id;
 
           final isAdmin = context.read<LeagueBloc>().isAdmin();
+
+          late bool isCaptain = false; // Initialize with a default value
+
+          if (league.isTeamBased) {
+            // Find if user is a captain of any team
+            for (final participant in league.participants) {
+              if (participant is TeamParticipant) {
+                if (participant.captainId == userId) {
+                  isCaptain = true;
+                  break;
+                }
+              }
+            }
+          }
 
           // Find user's participant entry
           Participant? userParticipant;
@@ -56,7 +75,7 @@ class TeamInfoPage extends StatelessWidget {
               ? _TeamBasedInfo(
                   league: league,
                   team: userParticipant as TeamParticipant,
-                  isAdmin: isAdmin,
+                  isCaptain: isCaptain,
                   userId: userId,
                 )
               : _IndividualInfo(
@@ -78,13 +97,13 @@ class TeamInfoPage extends StatelessWidget {
 class _TeamBasedInfo extends StatefulWidget {
   final League league;
   final TeamParticipant team;
-  final bool isAdmin;
+  final bool isCaptain;
   final String userId;
 
   const _TeamBasedInfo({
     required this.league,
     required this.team,
-    required this.isAdmin,
+    required this.isCaptain,
     required this.userId,
   });
 
@@ -96,8 +115,9 @@ class _TeamBasedInfoState extends State<_TeamBasedInfo>
     with SingleTickerProviderStateMixin {
   final _teamNameController = TextEditingController();
   bool _isEditing = false;
+  bool _isRemovingMembers = false;
+  final GlobalKey _teamMembersListKey = GlobalKey();
   late AnimationController _animationController;
-  late Animation<double> _scaleAnimation;
 
   @override
   void initState() {
@@ -105,13 +125,7 @@ class _TeamBasedInfoState extends State<_TeamBasedInfo>
     _teamNameController.text = widget.team.name;
     _animationController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 200),
-    );
-    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.97).animate(
-      CurvedAnimation(
-        parent: _animationController,
-        curve: Curves.easeInOut,
-      ),
+      duration: const Duration(milliseconds: 300),
     );
   }
 
@@ -151,8 +165,8 @@ class _TeamBasedInfoState extends State<_TeamBasedInfo>
 
   @override
   Widget build(BuildContext context) {
-    final canEdit =
-        widget.isAdmin || widget.team.userIds.contains(widget.userId);
+    final isAdmin = widget.league.admins.contains(widget.userId);
+    final canEdit = widget.isCaptain || isAdmin;
     final members = widget.team.userIds.length;
 
     return Scaffold(
@@ -385,12 +399,39 @@ class _TeamBasedInfoState extends State<_TeamBasedInfo>
                 SectionCard(
                   title: 'Membri del Team',
                   icon: Icons.people_alt_rounded,
+                  // Add trash icon action for captain or admin
+                  actionButton: canEdit
+                      ? GestureDetector(
+                          onTap: () {
+                            if (_teamMembersListKey.currentWidget != null) {
+                              // Call the public method on the widget instance
+                              final teamMembersList = _teamMembersListKey
+                                  .currentWidget as TeamMembersList;
+                              teamMembersList.toggleRemovalMode();
+                              // Update state to reflect the icon change
+                              setState(() {
+                                _isRemovingMembers = !_isRemovingMembers;
+                              });
+                            }
+                          },
+                          child: Icon(
+                            _isRemovingMembers
+                                ? Icons.close
+                                : Icons.delete_outline,
+                            color: _isRemovingMembers
+                                ? ColorPalette.error
+                                : context.textSecondaryColor,
+                          ),
+                        )
+                      : null,
                   child: Padding(
                     padding: const EdgeInsets.all(ThemeSizes.md),
                     child: TeamMembersList(
+                      key: _teamMembersListKey,
                       team: widget.team,
                       admins: widget.league.admins,
                       currentUserId: widget.userId,
+                      isCaptain: widget.isCaptain,
                     ),
                   ),
                 ),
@@ -417,9 +458,11 @@ class _TeamBasedInfoState extends State<_TeamBasedInfo>
                     vertical: ThemeSizes.md,
                   ),
                   child: LeaveLeagueButton(
-                    onPressed: () => _showExitConfirmationDialog(context),
-                    animationController: _animationController,
-                    scaleAnimation: _scaleAnimation,
+                    onPressed: () => _showExitConfirmationDialog(
+                      context,
+                      widget.league,
+                      widget.userId,
+                    ),
                   ),
                 ),
                 const SizedBox(height: ThemeSizes.lg),
@@ -430,27 +473,9 @@ class _TeamBasedInfoState extends State<_TeamBasedInfo>
       ),
     );
   }
-
-  Future<void> _showExitConfirmationDialog(BuildContext context) async {
-    return showDialog(
-      context: context,
-      builder: (context) => ExitConfirmationDialog(
-        onConfirm: () {
-          context.read<LeagueBloc>().add(
-                ExitLeagueEvent(
-                  league: widget.league,
-                  userId: widget.userId,
-                ),
-              );
-          Navigator.pop(context);
-          Navigator.pop(context); // Return to previous screen after exiting
-        },
-      ),
-    );
-  }
 }
 
-class _IndividualInfo extends StatelessWidget {
+class _IndividualInfo extends StatefulWidget {
   final League league;
   final IndividualParticipant participant;
   final bool isAdmin;
@@ -464,8 +489,13 @@ class _IndividualInfo extends StatelessWidget {
   });
 
   @override
+  State<_IndividualInfo> createState() => _IndividualInfoState();
+}
+
+class _IndividualInfoState extends State<_IndividualInfo> {
+  @override
   Widget build(BuildContext context) {
-    final isCurrentUser = userId == participant.userId;
+    final isCurrentUser = widget.userId == widget.participant.userId;
 
     return Scaffold(
       backgroundColor: context.bgColor,
@@ -486,7 +516,7 @@ class _IndividualInfo extends StatelessWidget {
                 ),
                 child: Center(
                   child: Hero(
-                    tag: 'participant_avatar_${participant.userId}',
+                    tag: 'participant_avatar_${widget.participant.userId}',
                     child: Container(
                       width: 100,
                       height: 100,
@@ -530,7 +560,7 @@ class _IndividualInfo extends StatelessWidget {
               children: [
                 // User name
                 Text(
-                  participant.name,
+                  widget.participant.name,
                   textAlign: TextAlign.center,
                   style: context.textTheme.headlineLarge!.copyWith(
                     fontWeight: FontWeight.w500,
@@ -587,7 +617,7 @@ class _IndividualInfo extends StatelessWidget {
                       children: [
                         // Score card
                         ScoreCard(
-                          score: participant.points.toInt(),
+                          score: widget.participant.points.toInt(),
                           color: context.primaryColor,
                         ),
 
@@ -600,7 +630,7 @@ class _IndividualInfo extends StatelessWidget {
                               child: StatCard(
                                 icon: Icons.arrow_upward_rounded,
                                 label: 'Bonus',
-                                value: '${participant.bonusTotal}',
+                                value: '${widget.participant.bonusTotal}',
                                 isBonus: true,
                               ),
                             ),
@@ -609,7 +639,7 @@ class _IndividualInfo extends StatelessWidget {
                               child: StatCard(
                                 icon: Icons.arrow_downward_rounded,
                                 label: 'Malus',
-                                value: '${participant.malusTotal}',
+                                value: '${widget.participant.malusTotal}',
                                 isBonus: false,
                               ),
                             ),
@@ -627,8 +657,8 @@ class _IndividualInfo extends StatelessWidget {
                   child: Padding(
                     padding: const EdgeInsets.all(ThemeSizes.md),
                     child: EventsList(
-                      league: league,
-                      participant: participant,
+                      league: widget.league,
+                      participant: widget.participant,
                       isTeamBased: false,
                     ),
                   ),
@@ -640,15 +670,13 @@ class _IndividualInfo extends StatelessWidget {
                   Padding(
                     padding: const EdgeInsets.symmetric(
                       horizontal: ThemeSizes.lg,
+                      vertical: ThemeSizes.md,
                     ),
-                    child: ElevatedButton.icon(
-                      onPressed: () => _showExitConfirmationDialog(context),
-                      icon: const Icon(Icons.exit_to_app),
-                      label: const Text('Lascia la Lega'),
-                      style: context.elevatedButtonThemeData.style!.copyWith(
-                        backgroundColor: WidgetStatePropertyAll(
-                          context.primaryColor,
-                        ),
+                    child: LeaveLeagueButton(
+                      onPressed: () => _showExitConfirmationDialog(
+                        context,
+                        widget.league,
+                        widget.userId,
                       ),
                     ),
                   ),
@@ -662,22 +690,79 @@ class _IndividualInfo extends StatelessWidget {
       ),
     );
   }
+}
 
-  Future<void> _showExitConfirmationDialog(BuildContext context) async {
-    return showDialog(
-      context: context,
-      builder: (context) => ExitConfirmationDialog(
-        onConfirm: () {
-          context.read<LeagueBloc>().add(
-                ExitLeagueEvent(
-                  league: league,
-                  userId: userId,
+// Shared utility function for showing exit confirmation dialog
+Future<void> _showExitConfirmationDialog(
+  BuildContext context,
+  League league,
+  String userId,
+) async {
+  return showDialog(
+    context: context,
+    builder: (context) => ConfirmationDialog.exitLeague(
+      onExit: () async {
+        // Chiudi il dialog di conferma
+        Navigator.pop(context);
+
+        final leagueBloc = context.read<LeagueBloc>();
+        final appNavigationCubit = context.read<AppNavigationCubit>();
+
+        if (context.mounted) {
+          // Mostra il dialog di uscita
+          showDialog(
+            context: context,
+            barrierDismissible: false,
+            builder: (dialogContext) {
+              // Avvia il timer di 1 secondo
+              Future.delayed(const Duration(seconds: 1), () {
+                if (dialogContext.mounted) {
+                  // Esegui l'evento di uscita
+                  leagueBloc.add(
+                    ExitLeagueEvent(
+                      league: league,
+                      userId: userId,
+                    ),
+                  );
+                  // Chiude il dialog di loading
+                  Navigator.of(dialogContext).pop();
+                  // Torna alla home
+                  appNavigationCubit.setIndex(0);
+                }
+              });
+
+              return PopScope(
+                canPop: false,
+                child: Dialog(
+                  backgroundColor: Colors.transparent,
+                  elevation: 0,
+                  child: Center(
+                    child: Container(
+                      padding: const EdgeInsets.all(24),
+                      decoration: BoxDecoration(
+                        color: dialogContext.secondaryBgColor,
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Loader(color: context.primaryColor),
+                          const SizedBox(height: 24),
+                          Text(
+                            'Uscita in corso...',
+                            style: dialogContext.textTheme.titleMedium,
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
                 ),
               );
-          Navigator.pop(context);
-          Navigator.pop(context); // Return to previous screen after exiting
-        },
-      ),
-    );
-  }
+            },
+          );
+        }
+      },
+    ),
+  );
 }

@@ -16,7 +16,9 @@ auth/
 │       ├── email_sign_in.dart
 │       ├── email_sign_up.dart
 │       ├── get_current_user.dart
-│       └── google_sign_in.dart
+│       ├── google_sign_in.dart
+│       └── sign_out.dart
+
 └── presentation/
     ├── bloc/
     │   ├── auth_bloc.dart

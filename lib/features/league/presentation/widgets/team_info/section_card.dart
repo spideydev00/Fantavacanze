@@ -7,6 +7,7 @@ class SectionCard extends StatelessWidget {
   final IconData icon;
   final Widget child;
   final VoidCallback? onTitleTap;
+  final Widget? actionButton;
 
   const SectionCard({
     super.key,
@@ -14,6 +15,7 @@ class SectionCard extends StatelessWidget {
     required this.icon,
     required this.child,
     this.onTitleTap,
+    this.actionButton,
   });
 
   @override
@@ -60,14 +62,14 @@ class SectionCard extends StatelessWidget {
                       color: context.textPrimaryColor,
                     ),
                   ),
-                  if (onTitleTap != null) ...[
-                    const Spacer(),
+                  const Spacer(),
+                  if (actionButton != null) actionButton!,
+                  if (onTitleTap != null)
                     Icon(
                       Icons.arrow_forward_ios,
                       color: context.textSecondaryColor,
                       size: 16,
                     ),
-                  ],
                 ],
               ),
             ),

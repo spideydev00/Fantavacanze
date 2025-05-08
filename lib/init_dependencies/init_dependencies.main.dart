@@ -11,19 +11,9 @@ Future<void> initDependencies() async {
 
     serviceLocator.registerLazySingleton(() => supabase.client);
 
-    _initAuth();
-    _initLeague();
-
     // Initialize Hive
     final dir = await getApplicationDocumentsDirectory();
     Hive.defaultDirectory = dir.path;
-
-    // Initialize SharedPreferences
-    final sharedPreferences = await SharedPreferences.getInstance();
-    serviceLocator.registerSingleton<SharedPreferences>(sharedPreferences);
-
-    // Register UUID generator
-    serviceLocator.registerLazySingleton(() => const Uuid());
 
     //hive boxes
     serviceLocator
@@ -40,11 +30,25 @@ Future<void> initDependencies() async {
       () => InternetConnection(),
     );
 
+    // Initialize SharedPreferences
+    final sharedPreferences = await SharedPreferences.getInstance();
+    serviceLocator.registerSingleton<SharedPreferences>(sharedPreferences);
+
+    _initAuth();
+    _initLeague();
+
+    // Register UUID generator
+    serviceLocator.registerLazySingleton(() => const Uuid());
+
     // core cubits
     serviceLocator
       //1. user cubit
       ..registerLazySingleton(
-          () => AppUserCubit(getCurrentUser: serviceLocator()))
+        () => AppUserCubit(
+          getCurrentUser: serviceLocator(),
+          signOut: serviceLocator(),
+        ),
+      )
       //2. navigation cubit
       ..registerLazySingleton(
         () => AppNavigationCubit(),
@@ -105,6 +109,12 @@ void _initAuth() {
     ..registerFactory(
       () => GetCurrentUser(authRepository: serviceLocator()),
     )
+    ..registerFactory(
+      () => SignOut(authRepository: serviceLocator()),
+    )
+    ..registerFactory(
+      () => ChangeIsOnboardedValue(authRepository: serviceLocator()),
+    )
     //bloc
     ..registerLazySingleton(
       () => AuthBloc(
@@ -113,6 +123,9 @@ void _initAuth() {
         appUserCubit: serviceLocator(),
         emailSignIn: serviceLocator(),
         emailSignUp: serviceLocator(),
+        signOut: serviceLocator(),
+        appLeagueCubit: serviceLocator(),
+        changeIsOnboardedValue: serviceLocator(),
       ),
     );
 }
@@ -146,22 +159,56 @@ void _initLeague() {
     )
 
     // use cases
-    ..registerFactory(() => CreateLeague(leagueRepository: serviceLocator()))
-    ..registerFactory(() => GetLeague(leagueRepository: serviceLocator()))
-    ..registerFactory(() => GetUserLeagues(leagueRepository: serviceLocator()))
-    ..registerFactory(() => JoinLeague(leagueRepository: serviceLocator()))
-    ..registerFactory(() => ExitLeague(leagueRepository: serviceLocator()))
-    ..registerFactory(() => UpdateTeamName(leagueRepository: serviceLocator()))
-    ..registerFactory(() => AddEvent(leagueRepository: serviceLocator()))
-    ..registerFactory(() => AddMemory(leagueRepository: serviceLocator()))
-    ..registerFactory(() => RemoveMemory(leagueRepository: serviceLocator()))
-    ..registerFactory(() => GetRules(leagueRepository: serviceLocator()))
-    ..registerFactory(() => UpdateRule(leagueRepository: serviceLocator()))
-    ..registerFactory(() => AddRule(leagueRepository: serviceLocator()))
-    ..registerFactory(() => DeleteRule(leagueRepository: serviceLocator()))
-    ..registerFactory(() => GetUsersDetails(leagueRepository: serviceLocator()))
+    ..registerFactory(
+      () => CreateLeague(leagueRepository: serviceLocator()),
+    )
+    ..registerFactory(
+      () => GetLeague(leagueRepository: serviceLocator()),
+    )
+    ..registerFactory(
+      () => GetUserLeagues(leagueRepository: serviceLocator()),
+    )
+    ..registerFactory(
+      () => JoinLeague(leagueRepository: serviceLocator()),
+    )
+    ..registerFactory(
+      () => ExitLeague(leagueRepository: serviceLocator()),
+    )
+    ..registerFactory(
+      () => UpdateTeamName(leagueRepository: serviceLocator()),
+    )
+    ..registerFactory(
+      () => AddEvent(leagueRepository: serviceLocator()),
+    )
+    ..registerFactory(
+      () => AddMemory(leagueRepository: serviceLocator()),
+    )
+    ..registerFactory(
+      () => RemoveMemory(leagueRepository: serviceLocator()),
+    )
+    ..registerFactory(
+      () => GetRules(leagueRepository: serviceLocator()),
+    )
+    ..registerFactory(
+      () => UpdateRule(leagueRepository: serviceLocator()),
+    )
+    ..registerFactory(
+      () => AddRule(leagueRepository: serviceLocator()),
+    )
+    ..registerFactory(
+      () => DeleteRule(leagueRepository: serviceLocator()),
+    )
+    ..registerFactory(
+      () => GetUsersDetails(leagueRepository: serviceLocator()),
+    )
+    ..registerFactory(
+      () => RemoveTeamParticipants(leagueRepository: serviceLocator()),
+    )
+    // ..registerFactory(
+    //   () => ClearLocalCache(leagueRepository: serviceLocator()),
+    // )
 
-    // bloc - no longer handling league retrieval or shared preferences directly
+    // bloc
     ..registerFactory(
       () => LeagueBloc(
         createLeague: serviceLocator(),
@@ -179,6 +226,7 @@ void _initLeague() {
         appUserCubit: serviceLocator(),
         appLeagueCubit: serviceLocator(),
         getUsersDetails: serviceLocator(),
+        removeTeamParticipants: serviceLocator(),
       ),
     );
 }

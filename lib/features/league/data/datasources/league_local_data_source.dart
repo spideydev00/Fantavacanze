@@ -1,6 +1,7 @@
 import 'package:fantavacanze_official/core/errors/exceptions.dart';
 import 'package:fantavacanze_official/features/league/data/models/league_model.dart';
 import 'package:fantavacanze_official/features/league/data/models/rule_model.dart';
+import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 
 abstract interface class LeagueLocalDataSource {
@@ -9,9 +10,12 @@ abstract interface class LeagueLocalDataSource {
 
   Future<void> cacheLeague(LeagueModel league);
   Future<LeagueModel?> getCachedLeague(String leagueId);
+  Future<void> removeLeagueFromCache(String leagueId);
 
   Future<void> cacheRules(List<RuleModel> rules, String mode);
   Future<List<RuleModel>> getCachedRules(String mode);
+
+  Future<void> clearCache();
 }
 
 class LeagueLocalDataSourceImpl implements LeagueLocalDataSource {
@@ -34,6 +38,8 @@ class LeagueLocalDataSourceImpl implements LeagueLocalDataSource {
       leaguesBox.write(() {
         leaguesBox.put('user_leagues', leaguesMap);
       });
+
+      debugPrint("📦 Cached ${leagues.length} leagues");
     } catch (e) {
       throw CacheException(
           'Errore nel salvare le leghe in cache: ${e.toString()}');
@@ -53,6 +59,10 @@ class LeagueLocalDataSourceImpl implements LeagueLocalDataSource {
               .map((league) =>
                   LeagueModel.fromJson(Map<String, dynamic>.from(league)))
               .toList();
+
+          debugPrint("📤 Loaded ${leagues.length} leagues from cache)");
+        } else {
+          debugPrint("📤 No cached leagues found.");
         }
       });
 
@@ -74,6 +84,8 @@ class LeagueLocalDataSourceImpl implements LeagueLocalDataSource {
       leaguesBox.write(() {
         leaguesBox.put(league.id, leagueData);
       });
+
+      debugPrint("📦 Cached single league [${league.id}]");
     } catch (e) {
       throw CacheException(
           'Errore nel salvare la lega in cache: ${e.toString()}');
@@ -89,8 +101,10 @@ class LeagueLocalDataSourceImpl implements LeagueLocalDataSource {
         final leagueData = leaguesBox.get(leagueId);
         if (leagueData != null) {
           league = LeagueModel.fromJson(
-            Map<String, dynamic>.from(leagueData['data']),
-          );
+              Map<String, dynamic>.from(leagueData['data']));
+          debugPrint("📤 Loaded league [$leagueId] from cache)");
+        } else {
+          debugPrint("📤 League [$leagueId] not found in cache.");
         }
       });
 
@@ -98,6 +112,38 @@ class LeagueLocalDataSourceImpl implements LeagueLocalDataSource {
     } catch (e) {
       throw CacheException(
           'Errore nel recuperare la lega dalla cache: ${e.toString()}');
+    }
+  }
+
+  @override
+  Future<void> removeLeagueFromCache(String leagueId) async {
+    try {
+      leaguesBox.write(() {
+        leaguesBox.delete(leagueId);
+
+        final userLeaguesData = leaguesBox.get('user_leagues');
+        if (userLeaguesData != null) {
+          final List<dynamic> leaguesList = userLeaguesData['data'] as List;
+          final updatedLeaguesList = leaguesList.where((leagueData) {
+            final league =
+                LeagueModel.fromJson(Map<String, dynamic>.from(leagueData));
+            return league.id != leagueId;
+          }).toList();
+
+          final updatedUserLeaguesData = {
+            'timestamp': DateTime.now().toIso8601String(),
+            'data': updatedLeaguesList,
+          };
+
+          leaguesBox.put('user_leagues', updatedUserLeaguesData);
+
+          debugPrint(
+              "🗑️ Removed league [$leagueId] and updated user_leagues cache.");
+        }
+      });
+    } catch (e) {
+      throw CacheException(
+          'Errore nel rimuovere la lega dalla cache: ${e.toString()}');
     }
   }
 
@@ -112,6 +158,8 @@ class LeagueLocalDataSourceImpl implements LeagueLocalDataSource {
       rulesBox.write(() {
         rulesBox.put('rules_$mode', rulesData);
       });
+
+      debugPrint("📦 Cached ${rules.length} rules for mode [$mode]");
     } catch (e) {
       throw CacheException(
           'Errore nel salvare le regole in cache: ${e.toString()}');
@@ -131,6 +179,11 @@ class LeagueLocalDataSourceImpl implements LeagueLocalDataSource {
               .map(
                   (rule) => RuleModel.fromJson(Map<String, dynamic>.from(rule)))
               .toList();
+
+          debugPrint(
+              "📤 Loaded ${rules.length} rules for mode [$mode] from cache)");
+        } else {
+          debugPrint("📤 No cached rules found for mode [$mode].");
         }
       });
 
@@ -138,6 +191,18 @@ class LeagueLocalDataSourceImpl implements LeagueLocalDataSource {
     } catch (e) {
       throw CacheException(
           'Errore nel recuperare le regole dalla cache: ${e.toString()}');
+    }
+  }
+
+  @override
+  Future<void> clearCache() async {
+    try {
+      leaguesBox.clear();
+      rulesBox.clear();
+      debugPrint("🧹 Cleared all league and rules cache");
+    } catch (e) {
+      throw CacheException(
+          'Errore nella pulizia della cache locale: ${e.toString()}');
     }
   }
 }

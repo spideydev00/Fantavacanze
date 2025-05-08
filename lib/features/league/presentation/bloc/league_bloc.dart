@@ -9,6 +9,7 @@ import 'package:fantavacanze_official/features/league/domain/use_cases/get_rules
 import 'package:fantavacanze_official/features/league/domain/use_cases/get_users_details.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/join_league.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/remove_memory.dart';
+import 'package:fantavacanze_official/features/league/domain/use_cases/remove_team_participants.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/update_team_name.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/update_rule.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/delete_rule.dart';
@@ -26,6 +27,7 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
   final AddEvent addEvent;
   final AddMemory addMemory;
   final RemoveMemory removeMemory;
+  final RemoveTeamParticipants removeTeamParticipants;
   final GetRules getRules;
   final UpdateRule updateRule;
   final DeleteRule deleteRule;
@@ -50,10 +52,11 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
     required this.getUsersDetails,
     required this.appUserCubit,
     required this.appLeagueCubit,
+    required this.removeTeamParticipants,
   }) : super(LeagueInitial()) {
     on<CreateLeagueEvent>(_onCreateLeague);
     on<GetLeagueEvent>(_onGetLeague);
-    on<JoinLeagueEvent>(_onJoinLeague);
+    on<JoinLeagueEvent>(_handleJoinLeague);
     on<ExitLeagueEvent>(_onExitLeague);
     on<UpdateTeamNameEvent>(_onUpdateTeamName);
     on<AddEventEvent>(_onAddEvent);
@@ -63,6 +66,7 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
     on<DeleteRuleEvent>(_onDeleteRule);
     on<AddRuleEvent>(_onAddRule);
     on<GetUsersDetailsEvent>(_onGetUsersDetails);
+    on<RemoveTeamParticipantsEvent>(_handleRemoveTeamParticipants);
   }
 
   // -----------------------------------------------------------
@@ -99,24 +103,14 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
   }
 
   // J O I N   L E A G U E
-  Future<void> _onJoinLeague(
-    JoinLeagueEvent event,
-    Emitter<LeagueState> emit,
-  ) async {
+  void _handleJoinLeague(
+      JoinLeagueEvent event, Emitter<LeagueState> emit) async {
+    emit(LeagueLoading());
+
     try {
-      emit(LeagueLoading());
-
-      late String userId;
-      final state = appUserCubit.state;
-
-      if (state is AppUserIsLoggedIn) {
-        userId = state.user.id;
-      }
-
       final result = await joinLeague(
         JoinLeagueParams(
           inviteCode: event.inviteCode,
-          userId: userId,
           teamName: event.teamName,
           teamMembers: event.teamMembers,
           specificLeagueId: event.specificLeagueId,
@@ -125,22 +119,40 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
 
       result.fold(
         (failure) {
-          // Check if we have multiple leagues with same invite code
-          if (failure.data != null && failure.data is List) {
+          // Check if the error contains data about multiple leagues
+          if (failure.data != null &&
+              failure.data is List &&
+              failure.message.contains('Multiple leagues')) {
             emit(MultiplePossibleLeagues(
-              inviteCode: event.inviteCode,
               possibleLeagues: failure.data,
+              inviteCode: event.inviteCode,
             ));
           } else {
             emit(LeagueError(message: failure.message));
           }
         },
         (league) {
-          emit(LeagueSuccess(league: league, operation: 'join_league'));
-          // Refresh app league cubit after joining
-          appLeagueCubit.getUserLeagues();
-          // Update app-wide shared preferences
-          appLeagueCubit.selectLeague(league);
+          // If this is a search operation (no team or specific league details provided)
+          bool isSearchOnly = event.teamName == null &&
+              event.teamMembers == null &&
+              event.specificLeagueId == null;
+
+          if (isSearchOnly) {
+            // First stage: just finding the league
+            emit(LeagueWithInviteCode(
+              league: league,
+              inviteCode: event.inviteCode,
+            ));
+          } else {
+            // Second stage: actually joining the league
+            emit(LeagueSuccess(
+              league: league,
+              operation: 'join_league',
+            ));
+
+            // Make sure to update the list of user leagues
+            appLeagueCubit.getUserLeagues();
+          }
         },
       );
     } catch (e) {
@@ -172,9 +184,10 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
 
       result.fold(
         (failure) => emit(LeagueError(message: failure.message)),
-        (league) {
-          emit(LeagueSuccess(league: league, operation: 'exit_league'));
-
+        (_) {
+          emit(ExitLeagueSuccess());
+          // Remove selected league from shared preferences
+          appLeagueCubit.clearSelectedLeague();
           // Refresh app league cubit after exiting
           appLeagueCubit.getUserLeagues();
         },
@@ -446,6 +459,60 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
       result.fold(
         (failure) => emit(LeagueError(message: failure.message)),
         (usersDetails) => emit(UsersDetailsLoaded(usersDetails: usersDetails)),
+      );
+    } catch (e) {
+      emit(LeagueError(message: e.toString()));
+    }
+  }
+
+  // R E M O V E   T E A M   P A R T I C I P A N T S
+  Future<void> _handleRemoveTeamParticipants(
+    RemoveTeamParticipantsEvent event,
+    Emitter<LeagueState> emit,
+  ) async {
+    try {
+      emit(LeagueLoading());
+
+      // Ottieni l'ID dell'utente corrente
+      late String requestingUserId;
+      final userState = appUserCubit.state;
+
+      if (userState is AppUserIsLoggedIn) {
+        requestingUserId = userState.user.id;
+      } else {
+        emit(const LeagueError(message: "Utente non autenticato"));
+        return;
+      }
+
+      // Controlla se l'utente è admin della lega
+      if (!event.league.admins.contains(requestingUserId)) {
+        emit(const LeagueError(
+            message:
+                "Solo gli amministratori possono rimuovere membri dai team"));
+        return;
+      }
+
+      final result = await removeTeamParticipants(
+        RemoveTeamParticipantsParams(
+          league: event.league,
+          teamName: event.teamName,
+          userIdsToRemove: event.userIdsToRemove,
+          requestingUserId: requestingUserId,
+        ),
+      );
+
+      result.fold(
+        (failure) => emit(LeagueError(message: failure.message)),
+        (league) {
+          emit(TeammatesRemovedState(league: league));
+
+          // Aggiorna lo stato globale se questa è la lega selezionata
+          final cubitState = appLeagueCubit.state;
+          if (cubitState is AppLeagueExists &&
+              cubitState.selectedLeague.id == league.id) {
+            appLeagueCubit.selectLeague(league);
+          }
+        },
       );
     } catch (e) {
       emit(LeagueError(message: e.toString()));

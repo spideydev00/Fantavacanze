@@ -104,12 +104,12 @@ class _LeaderboardItemState extends State<LeaderboardItem> {
             children: [
               // Position or medal
               SizedBox(
-                width: 35,
+                width: 28,
                 child: medalColor != null
                     ? Icon(
                         Icons.emoji_events,
                         color: medalColor,
-                        size: 18,
+                        size: 24,
                       )
                     : Text(
                         '${widget.position}',
@@ -120,6 +120,8 @@ class _LeaderboardItemState extends State<LeaderboardItem> {
                       ),
               ),
 
+              SizedBox(width: 6),
+
               // Participant name
               Expanded(
                 flex: 4,
@@ -129,7 +131,7 @@ class _LeaderboardItemState extends State<LeaderboardItem> {
                     fontWeight: FontWeight.bold,
                   ),
                   overflow: TextOverflow.ellipsis,
-                  maxLines: 1,
+                  maxLines: 2,
                 ),
               ),
 
