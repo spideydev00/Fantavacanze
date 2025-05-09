@@ -210,3 +210,12 @@ class RemoveTeamParticipantsEvent extends LeagueEvent {
   @override
   List<Object?> get props => [league, teamName, userIdsToRemove];
 }
+
+class SearchLeagueEvent extends LeagueEvent {
+  final String inviteCode;
+
+  const SearchLeagueEvent({required this.inviteCode});
+
+  @override
+  List<Object?> get props => [inviteCode];
+}

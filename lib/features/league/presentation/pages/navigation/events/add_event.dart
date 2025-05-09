@@ -12,6 +12,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class AddEventPage extends StatefulWidget {
+  static get route =>
+      MaterialPageRoute(builder: (context) => const AddEventPage());
   const AddEventPage({super.key});
 
   @override
@@ -166,7 +168,7 @@ class _AddEventPageState extends State<AddEventPage> {
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: _isFromRule
                                       ? context.primaryColor
-                                      : context.buttonSecondaryColor,
+                                      : context.secondaryColor,
                                   foregroundColor: _isFromRule
                                       ? Colors.white
                                       : context.textPrimaryColor,
@@ -181,7 +183,7 @@ class _AddEventPageState extends State<AddEventPage> {
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: !_isFromRule
                                       ? context.primaryColor
-                                      : context.buttonSecondaryColor,
+                                      : context.secondaryColor,
                                   foregroundColor: !_isFromRule
                                       ? Colors.white
                                       : context.textPrimaryColor,

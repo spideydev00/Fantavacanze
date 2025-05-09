@@ -56,7 +56,7 @@ class LeagueWithInviteCode extends LeagueState {
 }
 
 class MultiplePossibleLeagues extends LeagueState {
-  final List<dynamic> possibleLeagues;
+  final List<League> possibleLeagues;
   final String inviteCode;
 
   const MultiplePossibleLeagues({

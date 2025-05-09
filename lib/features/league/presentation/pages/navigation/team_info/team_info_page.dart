@@ -25,6 +25,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class TeamInfoPage extends StatelessWidget {
+  static Route get route =>
+      MaterialPageRoute(builder: (context) => const TeamInfoPage());
   const TeamInfoPage({super.key});
 
   @override

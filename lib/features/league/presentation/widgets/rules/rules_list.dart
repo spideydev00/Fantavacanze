@@ -10,7 +10,7 @@ import 'package:fantavacanze_official/features/league/presentation/bloc/league_b
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_event.dart';
 import 'package:fantavacanze_official/features/league/presentation/widgets/rules/empty_rules_view.dart';
 import 'package:fantavacanze_official/features/league/presentation/widgets/rules/rule_item.dart';
-import 'package:fantavacanze_official/features/league/presentation/widgets/rules/rule_info_banner.dart';
+import 'package:fantavacanze_official/features/league/presentation/widgets/core/info_banner.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 /// A component to display a list of rules
@@ -77,7 +77,7 @@ class RulesList extends StatelessWidget {
       child: Column(
         children: [
           // Info banner for rule type
-          RuleInfoBanner(
+          InfoBanner(
             message: infoMessage,
             color: color,
           ),

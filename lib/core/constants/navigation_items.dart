@@ -4,7 +4,7 @@ import 'package:fantavacanze_official/features/blog/presentation/pages/articles_
 import 'package:fantavacanze_official/features/games/presentation/pages/drink_games.dart';
 import 'package:fantavacanze_official/features/games/presentation/pages/quick_challenge.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/create_league/create_league_page.dart';
-import 'package:fantavacanze_official/features/league/presentation/pages/navigation/join_league/join_league_page.dart';
+import 'package:fantavacanze_official/features/league/presentation/pages/navigation/join_league/search_league_page.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/leaderboard/leaderboard_page.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/memories/memories_page.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/notes/notes_page.dart';
@@ -55,7 +55,7 @@ List<NavigationItem> nonParticipantNavbarItems = [
     darkSvgIcon: 'assets/images/icons/homepage_icons/search-league-icon.svg',
     lightSvgIcon:
         'assets/images/icons/homepage_icons/search-league-icon-dark.svg',
-    screen: const JoinLeaguePage(),
+    screen: const SearchLeaguePage(),
     subsection: "Lega",
   ),
 ];
@@ -131,7 +131,7 @@ List<NavigationItem> participantNavbarItems = [
     darkSvgIcon: 'assets/images/icons/homepage_icons/search-league-icon.svg',
     lightSvgIcon:
         'assets/images/icons/homepage_icons/search-league-icon-dark.svg',
-    screen: const JoinLeaguePage(),
+    screen: const SearchLeaguePage(),
     subsection: "Nuova Lega",
   ),
   NavigationItem(

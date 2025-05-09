@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 class NotesPage extends StatelessWidget {
+  static Route get route =>
+      MaterialPageRoute(builder: (context) => const NotesPage());
   const NotesPage({super.key});
 
   @override

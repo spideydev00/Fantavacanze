@@ -12,6 +12,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 
 class MemoriesPage extends StatelessWidget {
+  static Route get route =>
+      MaterialPageRoute(builder: (context) => const MemoriesPage());
   const MemoriesPage({super.key});
 
   @override

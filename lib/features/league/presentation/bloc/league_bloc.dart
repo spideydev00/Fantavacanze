@@ -14,6 +14,7 @@ import 'package:fantavacanze_official/features/league/domain/use_cases/update_te
 import 'package:fantavacanze_official/features/league/domain/use_cases/update_rule.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/delete_rule.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/add_rule.dart';
+import 'package:fantavacanze_official/features/league/domain/use_cases/search_league.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_event.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -33,6 +34,7 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
   final DeleteRule deleteRule;
   final AddRule addRule;
   final GetUsersDetails getUsersDetails;
+  final SearchLeague searchLeague;
   final AppUserCubit appUserCubit;
   final AppLeagueCubit appLeagueCubit;
 
@@ -50,12 +52,14 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
     required this.deleteRule,
     required this.addRule,
     required this.getUsersDetails,
+    required this.searchLeague,
     required this.appUserCubit,
     required this.appLeagueCubit,
     required this.removeTeamParticipants,
   }) : super(LeagueInitial()) {
     on<CreateLeagueEvent>(_onCreateLeague);
     on<GetLeagueEvent>(_onGetLeague);
+    on<SearchLeagueEvent>(_handleSearchLeague);
     on<JoinLeagueEvent>(_handleJoinLeague);
     on<ExitLeagueEvent>(_onExitLeague);
     on<UpdateTeamNameEvent>(_onUpdateTeamName);
@@ -102,9 +106,41 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
     );
   }
 
+  // S E A R C H   L E A G U E
+  Future<void> _handleSearchLeague(
+    SearchLeagueEvent event,
+    Emitter<LeagueState> emit,
+  ) async {
+    emit(LeagueLoading());
+    final result = await searchLeague(
+      SearchLeagueParams(inviteCode: event.inviteCode),
+    );
+    result.fold(
+      (failure) => emit(LeagueError(message: failure.message)),
+      (leagues) {
+        if (leagues.isEmpty) {
+          emit(const LeagueError(
+              message: "Nessuna lega trovata con questo codice"));
+        } else if (leagues.length == 1) {
+          emit(LeagueWithInviteCode(
+            league: leagues.first,
+            inviteCode: event.inviteCode,
+          ));
+        } else {
+          emit(MultiplePossibleLeagues(
+            possibleLeagues: leagues,
+            inviteCode: event.inviteCode,
+          ));
+        }
+      },
+    );
+  }
+
   // J O I N   L E A G U E
   void _handleJoinLeague(
-      JoinLeagueEvent event, Emitter<LeagueState> emit) async {
+    JoinLeagueEvent event,
+    Emitter<LeagueState> emit,
+  ) async {
     emit(LeagueLoading());
 
     try {
@@ -119,40 +155,19 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
 
       result.fold(
         (failure) {
-          // Check if the error contains data about multiple leagues
-          if (failure.data != null &&
-              failure.data is List &&
-              failure.message.contains('Multiple leagues')) {
-            emit(MultiplePossibleLeagues(
-              possibleLeagues: failure.data,
-              inviteCode: event.inviteCode,
-            ));
-          } else {
-            emit(LeagueError(message: failure.message));
-          }
+          emit(LeagueError(message: failure.message));
         },
         (league) {
-          // If this is a search operation (no team or specific league details provided)
-          bool isSearchOnly = event.teamName == null &&
-              event.teamMembers == null &&
-              event.specificLeagueId == null;
+          emit(LeagueSuccess(
+            league: league,
+            operation: 'join_league',
+          ));
 
-          if (isSearchOnly) {
-            // First stage: just finding the league
-            emit(LeagueWithInviteCode(
-              league: league,
-              inviteCode: event.inviteCode,
-            ));
-          } else {
-            // Second stage: actually joining the league
-            emit(LeagueSuccess(
-              league: league,
-              operation: 'join_league',
-            ));
+          // Delete previous selected league from shared preferences
+          appLeagueCubit.selectLeague(league);
 
-            // Make sure to update the list of user leagues
-            appLeagueCubit.getUserLeagues();
-          }
+          // Make sure to update the list of user leagues
+          appLeagueCubit.getUserLeagues();
         },
       );
     } catch (e) {

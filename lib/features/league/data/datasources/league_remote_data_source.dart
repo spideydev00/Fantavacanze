@@ -32,6 +32,8 @@ abstract class LeagueRemoteDataSource {
 
   Future<void> deleteLeague(String leagueId);
 
+  Future<List<LeagueModel>> searchLeague({required String inviteCode});
+
   Future<LeagueModel> joinLeague({
     required String inviteCode,
     String? teamName,
@@ -162,10 +164,9 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
           .single();
 
       return _convertResponseToModel(response);
-    } on PostgrestException catch (e) {
-      throw ServerException('Errore: ${e.message}');
     } catch (e) {
-      throw ServerException('Si è verificato un errore: ${e.toString()}');
+      throw ServerException(
+          'Si è verificato un errore durante la creazione: ${e.toString()}');
     }
   }
 
@@ -196,10 +197,9 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
         leagues.add(_convertResponseToModel(league));
       }
       return leagues;
-    } on PostgrestException catch (e) {
-      throw ServerException('Errore: ${e.message}');
     } catch (e) {
-      throw ServerException('Si è verificato un errore: ${e.toString()}');
+      throw ServerException(
+          'Si è verificato un errore durante il caricamento delle leghe: ${e.toString()}');
     }
   }
 
@@ -237,10 +237,54 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
   Future<void> deleteLeague(String leagueId) async {
     try {
       await supabaseClient.from('leagues').delete().eq('id', leagueId);
-    } on PostgrestException catch (e) {
-      throw ServerException('Errore: ${e.message}');
     } catch (e) {
-      throw ServerException('Si è verificato un errore: ${e.toString()}');
+      throw ServerException(
+          'Si è verificato un errore durante la cancellazione: ${e.toString()}');
+    }
+  }
+
+  // ------------------------------------------------
+  // S E A R C H   L E A G U E
+  @override
+  Future<List<LeagueModel>> searchLeague({required String inviteCode}) async {
+    try {
+      final response = await supabaseClient.rpc(
+        'search_league_by_invite_code',
+        params: {'p_invite_code': inviteCode},
+      );
+      final result = response as Map<String, dynamic>;
+      final leaguesJson = result['leagues'] as List<dynamic>? ?? [];
+      final leagues = leaguesJson
+          .map((json) =>
+              _convertResponseToModel(Map<String, dynamic>.from(json)))
+          .toList();
+
+      // Check if user is already a participant in any of the found leagues
+      final currentUserId = _getCurrentUserId();
+      if (currentUserId != null) {
+        for (final league in leagues) {
+          final isParticipant = league.participants.any((participant) {
+            // Team-based: check userIds, Individual: check userId
+            final json = (participant as ParticipantModel).toJson();
+            if (league.isTeamBased) {
+              final userIds = (json['userIds'] as List?)?.cast<String>() ?? [];
+              return userIds.contains(currentUserId);
+            } else {
+              return json['userId'] == currentUserId;
+            }
+          });
+          if (isParticipant) {
+            throw ServerException(
+                "Sei già iscritto a questa lega: ${league.name}");
+          }
+        }
+      }
+
+      return leagues;
+    } catch (e) {
+      if (e is ServerException) rethrow;
+      throw ServerException(
+          'Si è verificato un errore durante la ricerca della lega: ${e.toString()}');
     }
   }
 
@@ -272,20 +316,15 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
       final result = response as Map<String, dynamic>;
       final status = result['status'] as String;
 
-      if (status == 'multiple_leagues') {
-        throw ServerException('Multiple leagues found with this invite code',
-            data: result['leagues']);
-      } else if (status == 'league_found' || status == 'joined') {
+      if (status == 'joined') {
         final leagueData = result['league'] as Map<String, dynamic>;
         return _convertResponseToModel(leagueData);
       } else {
-        throw ServerException('Unexpected response from server');
+        throw ServerException('Risposta inattesa dal server');
       }
-    } on PostgrestException catch (e) {
-      throw ServerException('Errore: ${e.message}');
     } catch (e) {
       if (e is ServerException) rethrow;
-      throw ServerException('Errore generico: ${e.toString()}');
+      throw ServerException('Si è verificato un errore: ${e.toString()}');
     }
   }
 
@@ -355,35 +394,65 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
     LeagueModel league,
     String userId,
   ) async {
-    // Trova il team del partecipante
-    int teamIndex = -1;
-    TeamParticipantModel? team;
+    try {
+      // Trova il team del partecipante
+      int teamIndex = -1;
+      TeamParticipantModel? team;
 
-    for (int i = 0; i < league.participants.length; i++) {
-      final participant = league.participants[i];
-      if (participant is TeamParticipantModel &&
-          participant.userIds.contains(userId)) {
-        teamIndex = i;
-        team = participant;
-        break;
-      }
-    }
-
-    if (teamIndex == -1 || team == null) {
-      throw ServerException('Utente non trovato in nessun team della lega');
-    }
-
-    // Se è l'ultimo membro del team, rimuovi il team
-    if (team.userIds.length == 1) {
-      // Se è anche l'ultimo team, elimina la lega
-      if (league.participants.length == 1) {
-        await deleteLeague(league.id);
-        return; // Early return if we delete the league
+      for (int i = 0; i < league.participants.length; i++) {
+        final participant = league.participants[i];
+        if (participant is TeamParticipantModel &&
+            participant.userIds.contains(userId)) {
+          teamIndex = i;
+          team = participant;
+          break;
+        }
       }
 
-      // Altrimenti rimuovi solo il team
-      final updatedParticipants = List<dynamic>.from(league.participants)
-        ..removeAt(teamIndex);
+      if (teamIndex == -1 || team == null) {
+        throw ServerException('Utente non trovato in nessun team della lega');
+      }
+
+      // Se è l'ultimo membro del team, rimuovi il team
+      if (team.userIds.length == 1) {
+        // Se è anche l'ultimo team, elimina la lega
+        if (league.participants.length == 1) {
+          await deleteLeague(league.id);
+          return; // Early return if we delete the league
+        }
+
+        // Altrimenti rimuovi solo il team
+        final updatedParticipants = List<dynamic>.from(league.participants)
+          ..removeAt(teamIndex);
+
+        await _updateLeagueInDb(
+          leagueId: league.id,
+          updateData: {
+            'participants': updatedParticipants
+                .map((p) => (p as ParticipantModel).toJson())
+                .toList(),
+          },
+        );
+        return;
+      }
+
+      // Se ci sono altri membri nel team, rimuovi solo l'utente
+      final updatedUserIds = List<String>.from(team.userIds)..remove(userId);
+
+      // Crea il team aggiornato
+      final updatedTeam = TeamParticipantModel(
+        userIds: updatedUserIds,
+        captainId: team.captainId,
+        name: team.name,
+        points: team.points,
+        malusTotal: team.malusTotal,
+        bonusTotal: team.bonusTotal,
+        teamLogoUrl: team.teamLogoUrl,
+      );
+
+      // Aggiorna la lista dei partecipanti
+      final updatedParticipants = List<dynamic>.from(league.participants);
+      updatedParticipants[teamIndex] = updatedTeam;
 
       await _updateLeagueInDb(
         leagueId: league.id,
@@ -393,35 +462,11 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
               .toList(),
         },
       );
-      return;
+    } catch (e) {
+      if (e is ServerException) rethrow;
+      throw ServerException(
+          "Si è verificato un errore durante l'uscita: ${e.toString()}");
     }
-
-    // Se ci sono altri membri nel team, rimuovi solo l'utente
-    final updatedUserIds = List<String>.from(team.userIds)..remove(userId);
-
-    // Crea il team aggiornato
-    final updatedTeam = TeamParticipantModel(
-      userIds: updatedUserIds,
-      captainId: team.captainId,
-      name: team.name,
-      points: team.points,
-      malusTotal: team.malusTotal,
-      bonusTotal: team.bonusTotal,
-      teamLogoUrl: team.teamLogoUrl,
-    );
-
-    // Aggiorna la lista dei partecipanti
-    final updatedParticipants = List<dynamic>.from(league.participants);
-    updatedParticipants[teamIndex] = updatedTeam;
-
-    await _updateLeagueInDb(
-      leagueId: league.id,
-      updateData: {
-        'participants': updatedParticipants
-            .map((p) => (p as ParticipantModel).toJson())
-            .toList(),
-      },
-    );
   }
 
   // ------------------------------------------------
@@ -508,10 +553,9 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
           'participants': updatedParticipants,
         },
       );
-    } on PostgrestException catch (e) {
-      throw ServerException('Errore: ${e.message}');
     } catch (e) {
-      throw ServerException('Si è verificato un errore: ${e.toString()}');
+      if (e is ServerException) rethrow;
+      throw ServerException("Si è verificato un errore: ${e.toString()}");
     }
   }
 
@@ -586,8 +630,6 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
           'memories': updatedMemories.map((m) => m.toJson()).toList()
         },
       );
-    } on PostgrestException catch (e) {
-      throw ServerException('Errore: ${e.message}');
     } catch (e) {
       throw ServerException('Si è verificato un errore: ${e.toString()}');
     }
@@ -739,8 +781,6 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
           'rules': updatedRules.map((r) => r.toJson()).toList(),
         },
       );
-    } on PostgrestException catch (e) {
-      throw ServerException('Errore: ${e.message}');
     } catch (e) {
       if (e is ServerException) rethrow;
       throw ServerException('Si è verificato un errore: ${e.toString()}');
@@ -845,9 +885,6 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
 
       // Convert response to list of maps
       return List<Map<String, dynamic>>.from(response);
-    } on PostgrestException catch (e) {
-      throw ServerException(
-          'Errore nel recupero dei dettagli utenti: ${e.message}');
     } catch (e) {
       throw ServerException('Si è verificato un errore: ${e.toString()}');
     }
@@ -899,8 +936,6 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
           .single();
 
       return _convertResponseToModel(response);
-    } on PostgrestException catch (e) {
-      throw ServerException('Errore: ${e.message}');
     } catch (e) {
       throw ServerException('Si è verificato un errore: ${e.toString()}');
     }
@@ -927,9 +962,6 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
     required Map<String, dynamic> updateData,
   }) async {
     try {
-      debugPrint(
-          "🔄 _updateLeagueInDb: Starting update for league -> $leagueId");
-
       final updatedResponse = await supabaseClient
           .from('leagues')
           .update(updateData)
@@ -944,12 +976,7 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
       }
 
       return _convertResponseToModel(updatedResponse.first);
-    } on PostgrestException catch (e) {
-      debugPrint("❌ _updateLeagueInDb: PostgrestException -> ${e.message}");
-      throw ServerException('Errore PostgreSQL: ${e.message}');
     } catch (e) {
-      debugPrint("❌ _updateLeagueInDb: Error type: ${e.runtimeType}");
-      debugPrint("❌ _updateLeagueInDb: Detailed error -> ${e.toString()}");
       throw ServerException('Errore generico: ${e.toString()}');
     }
   }

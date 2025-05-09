@@ -1,9 +1,13 @@
+import 'package:fantavacanze_official/core/constants/constants.dart';
 import 'package:fantavacanze_official/core/cubits/app_theme/app_theme_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit.dart';
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/extensions/context_extension.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
+import 'package:fantavacanze_official/core/theme/theme.dart';
+import 'package:fantavacanze_official/features/auth/presentation/pages/social_login.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/dashboard.dart';
+import 'package:fantavacanze_official/features/league/presentation/widgets/core/confirmation_dialog.dart';
 import 'package:fantavacanze_official/features/league/presentation/widgets/core/divider.dart';
 import 'package:fantavacanze_official/features/league/presentation/widgets/settings/settings_widgets.dart';
 import 'package:flutter/material.dart';
@@ -19,15 +23,10 @@ class SettingsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<AppThemeCubit, AppThemeState>(
       builder: (context, state) {
-        // Utilizziamo il metodo isDarkMode direttamente dal cubit
-        final isDark = context.read<AppThemeCubit>().isDarkMode(context);
-        final ThemeData currentTheme =
-            isDark ? ThemeData.dark() : ThemeData.light();
-
         return AnimatedTheme(
-            data: currentTheme,
-            duration: const Duration(milliseconds: 500),
-            curve: Curves.easeInOut,
+            data: AppTheme.getTheme(context),
+            duration: const Duration(milliseconds: 700),
+            curve: Curves.easeInOutQuart,
             child: Scaffold(
               backgroundColor: context.bgColor,
               body: CustomScrollView(
@@ -80,7 +79,7 @@ class SettingsPage extends StatelessWidget {
                           const SizedBox(height: ThemeSizes.md),
                           _buildAboutSection(context),
                           const SizedBox(height: ThemeSizes.spaceBtwSections),
-                          LogoutButton(onPressed: () => _handleLogout(context)),
+                          _buildLogoutButton(context),
                           const SizedBox(
                               height: ThemeSizes.spaceBtwSections + 8),
                         ],
@@ -91,6 +90,30 @@ class SettingsPage extends StatelessWidget {
               ),
             ));
       },
+    );
+  }
+
+  Widget _buildLogoutButton(BuildContext context) {
+    return Center(
+      child: ElevatedButton(
+        onPressed: () => _handleLogout(context),
+        style: Theme.of(context).elevatedButtonTheme.style?.copyWith(
+              // Mantieni lo stesso stile ma cambia solo dimensioni o altre proprietà specifiche
+              maximumSize: WidgetStatePropertyAll(
+                Size.fromWidth(
+                  Constants.getWidth(context) * 0.5,
+                ),
+              ),
+            ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.logout),
+            const SizedBox(width: ThemeSizes.sm),
+            const Text('Disconnetti'),
+          ],
+        ),
+      ),
     );
   }
 
@@ -225,11 +248,22 @@ class SettingsPage extends StatelessWidget {
   }
 
   void _handleLogout(BuildContext context) {
-    showLogoutDialog(
-      context,
-      onConfirm: () async {
-        await context.read<AppUserCubit>().signOut();
-      },
+    showDialog(
+      context: context,
+      builder: (context) => ConfirmationDialog.logOut(
+        onExit: () async {
+          Navigator.of(context).pop();
+
+          Navigator.pushAndRemoveUntil(
+            context,
+            SocialLoginPage.route,
+            (route) => false,
+          );
+
+          // esci dall'account
+          await context.read<AppUserCubit>().signOut();
+        },
+      ),
     );
   }
 }

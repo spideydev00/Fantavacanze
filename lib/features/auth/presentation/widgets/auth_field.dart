@@ -39,6 +39,7 @@ class _AuthFieldState extends State<AuthField> {
       ),
       controller: widget.controller,
       decoration: InputDecoration(
+        fillColor: Colors.white,
         hintText: widget.hintText,
         prefixIcon: widget.icon,
         suffixIcon: widget.isPassword
