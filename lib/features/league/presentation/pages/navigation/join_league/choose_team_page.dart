@@ -287,11 +287,11 @@ class _ChooseTeamPageState extends State<ChooseTeamPage>
                     width: 90,
                     height: 130,
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.8),
+                      color: Colors.white.withValues(alpha: 0.8),
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.1),
+                          color: Colors.black.withValues(alpha: 0.1),
                           blurRadius: 10,
                           spreadRadius: 0,
                           offset: const Offset(0, 5),
@@ -342,7 +342,7 @@ class _ChooseTeamPageState extends State<ChooseTeamPage>
                     vertical: ThemeSizes.xs,
                   ),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
+                    color: Colors.white.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: const Row(
@@ -378,7 +378,7 @@ class _ChooseTeamPageState extends State<ChooseTeamPage>
         borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusLg),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 15,
             spreadRadius: 1,
             offset: const Offset(0, 5),
@@ -396,7 +396,7 @@ class _ChooseTeamPageState extends State<ChooseTeamPage>
                 Container(
                   padding: const EdgeInsets.all(ThemeSizes.sm),
                   decoration: BoxDecoration(
-                    color: context.primaryColor.withOpacity(0.1),
+                    color: context.primaryColor.withValues(alpha: 0.1),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
@@ -436,7 +436,7 @@ class _ChooseTeamPageState extends State<ChooseTeamPage>
           Divider(
             height: 5,
             thickness: 1,
-            color: ColorPalette.darkGrey.withOpacity(0.1),
+            color: ColorPalette.darkGrey.withValues(alpha: 0.1),
           ),
 
           // Teams list with proper handling for many teams
@@ -498,7 +498,7 @@ class _ChooseTeamPageState extends State<ChooseTeamPage>
         borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusLg),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 15,
             spreadRadius: 1,
             offset: const Offset(0, 5),
@@ -516,7 +516,7 @@ class _ChooseTeamPageState extends State<ChooseTeamPage>
                 Container(
                   padding: const EdgeInsets.all(ThemeSizes.sm),
                   decoration: BoxDecoration(
-                    color: ColorPalette.warning.withOpacity(0.1),
+                    color: ColorPalette.warning.withValues(alpha: 0.1),
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(
@@ -555,7 +555,7 @@ class _ChooseTeamPageState extends State<ChooseTeamPage>
           Divider(
             height: 5,
             thickness: 1,
-            color: ColorPalette.darkGrey.withOpacity(0.1),
+            color: ColorPalette.darkGrey.withValues(alpha: 0.1),
           ),
 
           // Team name field
@@ -603,8 +603,9 @@ class _ChooseTeamPageState extends State<ChooseTeamPage>
                     backgroundColor: ColorPalette.warning,
                     foregroundColor: Colors.white,
                     disabledBackgroundColor:
-                        ColorPalette.warning.withOpacity(0.3),
-                    disabledForegroundColor: Colors.white.withOpacity(0.7),
+                        ColorPalette.warning.withValues(alpha: 0.3),
+                    disabledForegroundColor:
+                        Colors.white.withValues(alpha: 0.7),
                     elevation: 0,
                     shape: RoundedRectangleBorder(
                       borderRadius:
@@ -642,7 +643,7 @@ class _ChooseTeamPageState extends State<ChooseTeamPage>
               Icon(
                 Icons.groups_outlined,
                 size: 64,
-                color: context.textSecondaryColor.withOpacity(0.3),
+                color: context.textSecondaryColor.withValues(alpha: 0.3),
               ),
               const SizedBox(height: ThemeSizes.md),
               Text(
@@ -674,7 +675,7 @@ class _ChooseTeamPageState extends State<ChooseTeamPage>
       separatorBuilder: (_, __) => Divider(
         height: 1,
         thickness: 1,
-        color: context.borderColor.withOpacity(0.1),
+        color: context.borderColor.withValues(alpha: 0.1),
         indent: ThemeSizes.lg,
         endIndent: ThemeSizes.lg,
       ),
@@ -695,7 +696,7 @@ class _ChooseTeamPageState extends State<ChooseTeamPage>
               curve: Curves.easeInOut,
               decoration: BoxDecoration(
                 color: isSelected
-                    ? context.primaryColor.withOpacity(0.05)
+                    ? context.primaryColor.withValues(alpha: 0.05)
                     : Colors.transparent,
                 borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusMd),
               ),
@@ -714,8 +715,8 @@ class _ChooseTeamPageState extends State<ChooseTeamPage>
                       height: 56,
                       decoration: BoxDecoration(
                         color: isSelected
-                            ? context.primaryColor.withOpacity(0.2)
-                            : context.primaryColor.withOpacity(0.05),
+                            ? context.primaryColor.withValues(alpha: 0.2)
+                            : context.primaryColor.withValues(alpha: 0.05),
                         shape: BoxShape.circle,
                         border: Border.all(
                           color: isSelected
@@ -729,7 +730,7 @@ class _ChooseTeamPageState extends State<ChooseTeamPage>
                           Icons.group_rounded,
                           color: isSelected
                               ? context.primaryColor
-                              : context.primaryColor.withOpacity(0.5),
+                              : context.primaryColor.withValues(alpha: 0.5),
                           size: 26,
                         ),
                       ),
@@ -786,7 +787,8 @@ class _ChooseTeamPageState extends State<ChooseTeamPage>
                         border: Border.all(
                           color: isSelected
                               ? context.primaryColor
-                              : context.textSecondaryColor.withOpacity(0.3),
+                              : context.textSecondaryColor
+                                  .withValues(alpha: 0.3),
                           width: 2,
                         ),
                       ),
