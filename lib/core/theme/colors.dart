@@ -61,15 +61,6 @@ class ColorPalette {
   static const Color apple = Colors.black;
   static const Color facebook = Color.fromARGB(255, 32, 71, 134);
 
-  // Button colors
-  static Color buttonPrimary(ThemeMode themeMode) => getColor(
-      const Color.fromARGB(255, 194, 34, 34),
-      const Color.fromARGB(255, 214, 54, 54),
-      themeMode);
-
-  static Color buttonSecondary(ThemeMode themeMode) =>
-      getColor(const Color(0xFF6C757D), const Color(0xFF8C959D), themeMode);
-
   static const Color buttonDisabled = Color(0xFFC4C4C4);
 
   // Border colors

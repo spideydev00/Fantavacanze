@@ -169,6 +169,24 @@ class LeagueRepositoryImpl implements LeagueRepository {
   }
 
   @override
+  Future<Either<Failure, List<League>>> searchLeague(
+      {required String inviteCode}) async {
+    try {
+      if (!await connectionChecker.isConnected) {
+        return Left(
+          Failure(
+              "Nessuna connessione ad internet, riprova appena sarai connesso."),
+        );
+      }
+      final leagues =
+          await remoteDataSource.searchLeague(inviteCode: inviteCode);
+      return Right(leagues);
+    } on ServerException catch (e) {
+      return Left(Failure(e.message));
+    }
+  }
+
+  @override
   Future<Either<Failure, League>> joinLeague({
     required String inviteCode,
     String? teamName,

@@ -6,6 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class LeaderboardPage extends StatelessWidget {
+  static Route get route =>
+      MaterialPageRoute(builder: (context) => const LeaderboardPage());
   const LeaderboardPage({super.key});
 
   @override

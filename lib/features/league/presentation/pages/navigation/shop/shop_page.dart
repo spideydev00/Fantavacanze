@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 class ShopPage extends StatelessWidget {
+  static Route get route =>
+      MaterialPageRoute(builder: (context) => const ShopPage());
   const ShopPage({super.key});
 
   @override

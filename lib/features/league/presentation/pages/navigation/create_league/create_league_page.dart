@@ -19,6 +19,8 @@ import 'package:fantavacanze_official/features/league/presentation/widgets/core/
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/create_league/league_created_page.dart';
 
 class CreateLeaguePage extends StatefulWidget {
+  static get route =>
+      MaterialPageRoute(builder: (context) => const CreateLeaguePage());
   const CreateLeaguePage({super.key});
 
   @override

@@ -6,6 +6,7 @@ import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:fantavacanze_official/core/widgets/modern_icon_button.dart';
 import 'package:fantavacanze_official/features/blog/presentation/widgets/article_card.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc.dart';
+import 'package:fantavacanze_official/features/league/presentation/pages/navigation/join_league/search_league_page.dart';
 import 'package:fantavacanze_official/features/league/presentation/widgets/core/divider.dart';
 import 'package:fantavacanze_official/features/league/presentation/widgets/homepage/daily_goals.dart';
 import 'package:fantavacanze_official/features/league/presentation/widgets/core/page_redirection_card.dart';
@@ -13,7 +14,6 @@ import 'package:fantavacanze_official/features/league/domain/entities/league.dar
 import 'package:fantavacanze_official/features/league/domain/entities/rule.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/events/add_event.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/create_league/create_league_page.dart';
-import 'package:fantavacanze_official/features/league/presentation/pages/navigation/join_league/join_league_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
@@ -261,7 +261,7 @@ class HomePage extends StatelessWidget {
   void _navigateToAddEvent(BuildContext context) {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => const AddEventPage()),
+      AddEventPage.route,
     );
   }
 
@@ -273,8 +273,10 @@ class HomePage extends StatelessWidget {
           title: "Crea Lega",
           icon: Icons.add_circle_outline_sharp,
           onPressed: () {
-            Navigator.push(context,
-                MaterialPageRoute(builder: (context) => CreateLeaguePage()));
+            Navigator.push(
+              context,
+              CreateLeaguePage.route,
+            );
           },
         ),
         const SizedBox(width: 20),
@@ -282,8 +284,10 @@ class HomePage extends StatelessWidget {
           title: "Cerca Lega",
           icon: Icons.search_rounded,
           onPressed: () {
-            Navigator.push(context,
-                MaterialPageRoute(builder: (context) => JoinLeaguePage()));
+            Navigator.push(
+              context,
+              SearchLeaguePage.route,
+            );
           },
         ),
       ],

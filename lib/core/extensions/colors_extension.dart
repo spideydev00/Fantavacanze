@@ -24,11 +24,6 @@ extension ThemeColorsExtension on BuildContext {
   Color get secondaryBgColor =>
       ColorPalette.secondaryBgColor(_currentThemeMode);
 
-  /// Button colors
-  Color get buttonPrimaryColor => ColorPalette.buttonPrimary(_currentThemeMode);
-  Color get buttonSecondaryColor =>
-      ColorPalette.buttonSecondary(_currentThemeMode);
-
   /// Border colors
   Color get borderColor => ColorPalette.borderColor(_currentThemeMode);
 }

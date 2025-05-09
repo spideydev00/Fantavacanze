@@ -1,5 +1,4 @@
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
-import 'package:fantavacanze_official/core/extensions/context_extension.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:flutter/material.dart';
@@ -35,6 +34,10 @@ class ConfirmationDialog extends StatelessWidget {
   /// Whether the confirm button should be highlighted as primary
   final bool isPrimaryAction;
 
+  final ButtonStyle? outlinedButtonStyle;
+
+  final ButtonStyle? elevatedButtonStyle;
+
   const ConfirmationDialog({
     super.key,
     required this.title,
@@ -47,22 +50,9 @@ class ConfirmationDialog extends StatelessWidget {
     this.useIconBackground = true,
     this.additionalContent,
     this.isPrimaryAction = true,
+    this.outlinedButtonStyle,
+    this.elevatedButtonStyle,
   });
-
-  /// Factory constructor for creating a join league confirmation dialog
-  factory ConfirmationDialog.joinLeague({
-    required String leagueName,
-    required VoidCallback onJoin,
-  }) {
-    return ConfirmationDialog(
-      title: 'Unisciti alla Lega',
-      message: 'Vuoi unirti a $leagueName?',
-      confirmText: 'Unisciti',
-      icon: Icons.group_add,
-      iconColor: Colors.blue,
-      onConfirm: onJoin,
-    );
-  }
 
   /// Factory constructor for creating an exit league confirmation dialog
   factory ConfirmationDialog.exitLeague({
@@ -72,6 +62,20 @@ class ConfirmationDialog extends StatelessWidget {
       title: 'Lascia la Lega',
       message:
           'Sei sicuro di voler uscire da questa lega? Questa azione non può essere annullata.',
+      confirmText: 'Esci',
+      icon: Icons.warning_amber_rounded,
+      iconColor: Colors.red,
+      onConfirm: onExit,
+    );
+  }
+
+  /// Factory constructor for creating an logout confirmation dialog
+  factory ConfirmationDialog.logOut({
+    required VoidCallback onExit,
+  }) {
+    return ConfirmationDialog(
+      title: 'Esci',
+      message: 'Sei sicuro di voler uscire dal tuo account?',
       confirmText: 'Esci',
       icon: Icons.warning_amber_rounded,
       iconColor: Colors.red,
@@ -127,6 +131,31 @@ class ConfirmationDialog extends StatelessWidget {
     );
   }
 
+  /// Factory constructor for creating a "league found" confirmation dialog
+  factory ConfirmationDialog.leagueFound({
+    required String leagueName,
+    required VoidCallback onConfirm,
+    required VoidCallback onCancel,
+    String? description,
+    Color? iconColor,
+    IconData? icon,
+    ButtonStyle? outlinedButtonStyle,
+    ButtonStyle? elevatedButtonStyle,
+  }) {
+    return ConfirmationDialog(
+      title: 'Lega Trovata',
+      message: 'È "$leagueName" la lega che stavi cercando?',
+      confirmText: 'Sì',
+      cancelText: 'No',
+      icon: icon ?? Icons.emoji_events_rounded,
+      iconColor: iconColor ?? ColorPalette.info,
+      onConfirm: onConfirm,
+      outlinedButtonStyle: outlinedButtonStyle,
+      elevatedButtonStyle: elevatedButtonStyle,
+      isPrimaryAction: true,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Dialog(
@@ -138,7 +167,7 @@ class ConfirmationDialog extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(ThemeSizes.lg),
         decoration: BoxDecoration(
-          color: context.secondaryBgColor,
+          color: context.bgColor,
           borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusLg),
           boxShadow: [
             BoxShadow(
@@ -198,6 +227,7 @@ class ConfirmationDialog extends StatelessWidget {
               children: [
                 Expanded(
                   child: OutlinedButton(
+                    style: outlinedButtonStyle,
                     onPressed: () => Navigator.pop(context),
                     child: Text(cancelText),
                   ),
@@ -205,16 +235,11 @@ class ConfirmationDialog extends StatelessWidget {
                 const SizedBox(width: ThemeSizes.md),
                 Expanded(
                   child: ElevatedButton(
+                    style: elevatedButtonStyle,
                     onPressed: () {
                       Navigator.pop(context);
                       onConfirm();
                     },
-                    style: isPrimaryAction
-                        ? context.elevatedButtonThemeData.style!.copyWith(
-                            backgroundColor:
-                                WidgetStatePropertyAll(context.primaryColor),
-                          )
-                        : null,
                     child: Text(confirmText),
                   ),
                 ),

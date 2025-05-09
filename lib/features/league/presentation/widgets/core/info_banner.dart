@@ -6,7 +6,7 @@ import 'package:fantavacanze_official/core/theme/sizes.dart';
 ///
 /// This component is used to display contextual information about
 /// rule types (bonus or malus) with consistent styling.
-class RuleInfoBanner extends StatelessWidget {
+class InfoBanner extends StatelessWidget {
   /// The message to display in the banner
   final String message;
 
@@ -28,7 +28,7 @@ class RuleInfoBanner extends StatelessWidget {
   /// Optional font size for the text
   final double fontSize;
 
-  const RuleInfoBanner({
+  const InfoBanner({
     super.key,
     required this.message,
     required this.color,

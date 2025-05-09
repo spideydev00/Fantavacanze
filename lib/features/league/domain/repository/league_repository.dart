@@ -24,6 +24,9 @@ abstract class LeagueRepository {
   Future<Either<Failure, void>> deleteLeague(String leagueId);
 
   // Participant operations
+  Future<Either<Failure, List<League>>> searchLeague(
+      {required String inviteCode});
+
   Future<Either<Failure, League>> joinLeague({
     required String inviteCode,
     String? teamName,

@@ -31,6 +31,7 @@ import 'package:fantavacanze_official/features/league/domain/use_cases/get_users
 import 'package:fantavacanze_official/features/league/domain/use_cases/join_league.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/remove_memory.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/remove_team_participants.dart';
+import 'package:fantavacanze_official/features/league/domain/use_cases/search_league.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/update_rule.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/update_team_name.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc.dart';

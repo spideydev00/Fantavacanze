@@ -204,9 +204,9 @@ void _initLeague() {
     ..registerFactory(
       () => RemoveTeamParticipants(leagueRepository: serviceLocator()),
     )
-    // ..registerFactory(
-    //   () => ClearLocalCache(leagueRepository: serviceLocator()),
-    // )
+    ..registerFactory(
+      () => SearchLeague(leagueRepository: serviceLocator()),
+    )
 
     // bloc
     ..registerFactory(
@@ -227,6 +227,7 @@ void _initLeague() {
         appLeagueCubit: serviceLocator(),
         getUsersDetails: serviceLocator(),
         removeTeamParticipants: serviceLocator(),
+        searchLeague: serviceLocator(),
       ),
     );
 }

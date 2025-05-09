@@ -11,6 +11,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class RulesPage extends StatefulWidget {
+  static Route get route =>
+      MaterialPageRoute(builder: (context) => const RulesPage());
   const RulesPage({super.key});
 
   @override
