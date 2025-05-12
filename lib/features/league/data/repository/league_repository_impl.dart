@@ -1,5 +1,6 @@
 import 'package:fantavacanze_official/core/errors/exceptions.dart';
 import 'package:fantavacanze_official/features/league/data/models/league_model.dart';
+import 'package:fantavacanze_official/features/league/data/models/note_model.dart';
 import 'package:fantavacanze_official/features/league/data/models/rule_model.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:fantavacanze_official/core/errors/failure.dart';
@@ -531,26 +532,6 @@ class LeagueRepositoryImpl implements LeagueRepository {
   }
 
   @override
-  Future<Either<Failure, List<Map<String, dynamic>>>> getUsersDetails(
-      List<String> userIds) async {
-    try {
-      if (!await connectionChecker.isConnected) {
-        return Left(
-          Failure(
-              "Nessuna connessione ad internet, riprova appena sarai connesso."),
-        );
-      }
-
-      final usersDetails = await remoteDataSource.getUsersDetails(userIds);
-      return Right(usersDetails);
-    } on ServerException catch (e) {
-      return Left(Failure(e.message));
-    } catch (e) {
-      return Left(Failure(e.toString()));
-    }
-  }
-
-  @override
   Future<Either<Failure, League>> removeTeamParticipants({
     required League league,
     required String teamName,
@@ -591,6 +572,39 @@ class LeagueRepositoryImpl implements LeagueRepository {
       return const Right(null);
     } on CacheException catch (e) {
       return Left(Failure('Errore nella pulizia della cache: ${e.toString()}'));
+    }
+  }
+
+  // Note operations
+  @override
+  Future<Either<Failure, List<NoteModel>>> getNotes(String leagueId) async {
+    try {
+      final notes = await localDataSource.getNotes(leagueId);
+      return Right(notes);
+    } on CacheException catch (e) {
+      return Left(Failure('Errore nel recuperare le note: ${e.message}'));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> saveNote(
+      String leagueId, NoteModel note) async {
+    try {
+      await localDataSource.saveNote(leagueId, note);
+      return const Right(null);
+    } on CacheException catch (e) {
+      return Left(Failure('Errore nel salvare la nota: ${e.message}'));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> deleteNote(
+      String leagueId, String noteId) async {
+    try {
+      await localDataSource.deleteNote(leagueId, noteId);
+      return const Right(null);
+    } on CacheException catch (e) {
+      return Left(Failure('Errore nel cancellare la nota: ${e.message}'));
     }
   }
 }

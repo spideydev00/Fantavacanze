@@ -41,7 +41,7 @@ class TeamInfoPage extends StatelessWidget {
 
           final isAdmin = context.read<LeagueBloc>().isAdmin();
 
-          late bool isCaptain = false; // Initialize with a default value
+          late bool isCaptain = false;
 
           if (league.isTeamBased) {
             // Find if user is a captain of any team
@@ -60,7 +60,8 @@ class TeamInfoPage extends StatelessWidget {
           for (final participant in league.participants) {
             if (league.isTeamBased) {
               if (participant is TeamParticipant &&
-                  participant.userIds.contains(userId)) {
+                  participant.members
+                      .any((member) => member.userId == userId)) {
                 userParticipant = participant;
                 break;
               }
@@ -88,14 +89,16 @@ class TeamInfoPage extends StatelessWidget {
                 );
         }
 
-        return const Center(
-          child: CircularProgressIndicator(),
+        return Center(
+          child: Loader(color: context.primaryColor),
         );
       },
     );
   }
 }
 
+// D I S P L A Y   I N F O R M A T I O N
+// for Team Participants
 class _TeamBasedInfo extends StatefulWidget {
   final League league;
   final TeamParticipant team;
@@ -477,6 +480,8 @@ class _TeamBasedInfoState extends State<_TeamBasedInfo>
   }
 }
 
+// D I S P L A Y   I N F O R M A T I O N
+// for Individual Participants
 class _IndividualInfo extends StatefulWidget {
   final League league;
   final IndividualParticipant participant;
@@ -694,7 +699,9 @@ class _IndividualInfoState extends State<_IndividualInfo> {
   }
 }
 
-// Shared utility function for showing exit confirmation dialog
+// S H O W   E X I T   C O N F I R M A T I O N   D I A L O G
+// Function to show exit confirmation dialog
+// and handle exit logic
 Future<void> _showExitConfirmationDialog(
   BuildContext context,
   League league,
@@ -704,9 +711,6 @@ Future<void> _showExitConfirmationDialog(
     context: context,
     builder: (context) => ConfirmationDialog.exitLeague(
       onExit: () async {
-        // Chiudi il dialog di conferma
-        Navigator.pop(context);
-
         final leagueBloc = context.read<LeagueBloc>();
         final appNavigationCubit = context.read<AppNavigationCubit>();
 

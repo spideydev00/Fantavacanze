@@ -14,14 +14,14 @@ class TeamMembersList extends StatefulWidget {
   final TeamParticipant team;
   final List<String> admins;
   final String currentUserId;
-  final bool isCaptain; // Add this parameter
+  final bool isCaptain;
 
   const TeamMembersList({
     super.key,
     required this.team,
     required this.admins,
     required this.currentUserId,
-    this.isCaptain = false, // Default to false
+    this.isCaptain = false,
   });
 
   @override
@@ -40,29 +40,12 @@ class TeamMembersList extends StatefulWidget {
 }
 
 class _TeamMembersListState extends State<TeamMembersList> {
-  bool _isLoading = true;
-  List<Map<String, dynamic>>? _memberDetails;
   bool _isRemovingMembers = false;
   final Set<String> _selectedMembersToRemove = {};
 
   @override
   void initState() {
     super.initState();
-    _fetchMemberDetails();
-  }
-
-  void _fetchMemberDetails() {
-    if (widget.team.userIds.isEmpty) {
-      setState(() {
-        _isLoading = false;
-      });
-      return;
-    }
-
-    // Recupera i dettagli degli utenti tramite il bloc
-    context.read<LeagueBloc>().add(
-          GetUsersDetailsEvent(userIds: widget.team.userIds),
-        );
   }
 
   void _toggleRemovalMode() {
@@ -111,33 +94,20 @@ class _TeamMembersListState extends State<TeamMembersList> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocListener<LeagueBloc, LeagueState>(
-      listener: (context, state) {
-        if (state is UsersDetailsLoaded) {
-          setState(() {
-            _memberDetails = state.usersDetails;
-            _isLoading = false;
-          });
-        } else if (state is LeagueError) {
-          setState(() {
-            _isLoading = false;
-          });
-          showSnackBar(context, 'Errore: ${state.message}');
-        }
+    return BlocBuilder<LeagueBloc, LeagueState>(
+      builder: (context, state) {
+        return TeamMembersListContent(
+          team: widget.team,
+          admins: widget.admins,
+          currentUserId: widget.currentUserId,
+          isCaptain: widget.isCaptain,
+          isRemovingMembers: _isRemovingMembers,
+          selectedMembersToRemove: _selectedMembersToRemove,
+          onToggleRemovalMode: _toggleRemovalMode,
+          onToggleMemberSelection: _toggleMemberSelection,
+          onRemoveSelectedMembers: _removeSelectedMembers,
+        );
       },
-      child: TeamMembersListContent(
-        team: widget.team,
-        admins: widget.admins,
-        currentUserId: widget.currentUserId,
-        isCaptain: widget.isCaptain, // Pass this parameter
-        isLoadingMembers: _isLoading,
-        memberDetails: _memberDetails,
-        isRemovingMembers: _isRemovingMembers,
-        selectedMembersToRemove: _selectedMembersToRemove,
-        onToggleRemovalMode: _toggleRemovalMode,
-        onToggleMemberSelection: _toggleMemberSelection,
-        onRemoveSelectedMembers: _removeSelectedMembers,
-      ),
     );
   }
 }
@@ -146,9 +116,7 @@ class TeamMembersListContent extends StatelessWidget {
   final TeamParticipant team;
   final List<String> admins;
   final String currentUserId;
-  final bool isCaptain; // Add this parameter
-  final bool isLoadingMembers;
-  final List<Map<String, dynamic>>? memberDetails;
+  final bool isCaptain;
   final bool isRemovingMembers;
   final Set<String> selectedMembersToRemove;
   final VoidCallback onToggleRemovalMode;
@@ -160,9 +128,7 @@ class TeamMembersListContent extends StatelessWidget {
     required this.team,
     required this.admins,
     required this.currentUserId,
-    this.isCaptain = false, // Default to false
-    this.isLoadingMembers = false,
-    this.memberDetails,
+    this.isCaptain = false,
     this.isRemovingMembers = false,
     required this.selectedMembersToRemove,
     required this.onToggleRemovalMode,
@@ -175,16 +141,7 @@ class TeamMembersListContent extends StatelessWidget {
     final isAdmin = admins.contains(currentUserId);
     final canManageMembers = isAdmin || isCaptain;
 
-    if (isLoadingMembers) {
-      return const Center(
-        child: Padding(
-          padding: EdgeInsets.all(ThemeSizes.md),
-          child: CircularProgressIndicator(),
-        ),
-      );
-    }
-
-    if (team.userIds.isEmpty) {
+    if (team.members.isEmpty) {
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(ThemeSizes.md),
@@ -217,33 +174,23 @@ class TeamMembersListContent extends StatelessWidget {
           ),
 
         // Lista dei membri
-        ...List.generate(team.userIds.length, (index) {
-          final userId = team.userIds[index];
+        ...List.generate(team.members.length, (index) {
+          final member = team.members[index];
+          final userId = member.userId;
+          final name = member.name;
           final isUserAdmin = admins.contains(userId);
           final isCurrentUser = userId == currentUserId;
-          final isUserCaptain =
-              userId == team.captainId; // Check if user is the team captain
+          final isUserCaptain = userId == team.captainId;
 
           // Se siamo in modalità rimozione e l'utente è l'admin corrente,
           // non permettere la selezione
           final canBeRemoved =
               !isRemovingMembers || (!isCurrentUser && canManageMembers);
 
-          String? userName;
-
-          if (memberDetails != null) {
-            final userDetail = memberDetails!.firstWhere(
-              (member) => member['id'] == userId,
-              orElse: () => {'name': 'Utente ${index + 1}'},
-            );
-
-            userName = userDetail['name'];
-          }
-
           return _buildMemberItem(
             context,
             userId: userId,
-            name: userName ?? 'Utente ${index + 1}',
+            name: name,
             isAdmin: isUserAdmin,
             isCurrentUser: isCurrentUser,
             isCaptain: isUserCaptain,

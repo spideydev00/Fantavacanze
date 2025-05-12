@@ -1,4 +1,6 @@
+import 'package:fantavacanze_official/core/constants/constants.dart';
 import 'package:fantavacanze_official/core/cubits/app_navigation/app_navigation_cubit.dart';
+import 'package:fantavacanze_official/core/cubits/app_theme/app_theme_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit.dart';
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/extensions/context_extension.dart';
@@ -15,12 +17,18 @@ import 'package:fantavacanze_official/features/league/presentation/widgets/core/
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+/// ------------------------------
+/// Stato delle azioni di join/creazione squadra
+/// ------------------------------
 enum JoiningAction {
   none,
   joiningTeam,
   creatingTeam,
 }
 
+/// ------------------------------
+/// Pagina per scegliere o creare squadra in una lega a squadre
+/// ------------------------------
 class ChooseTeamPage extends StatefulWidget {
   final League league;
   final String inviteCode;
@@ -56,6 +64,9 @@ class _ChooseTeamPageState extends State<ChooseTeamPage>
   late AnimationController _animationController;
   late Animation<double> _headerAnimation;
 
+  /// ------------------------------
+  /// initState: recupera userId e avvia animazione header
+  /// ------------------------------
   @override
   void initState() {
     super.initState();
@@ -68,20 +79,20 @@ class _ChooseTeamPageState extends State<ChooseTeamPage>
       setState(() {});
     });
 
-    // Initialize animation controller
     _animationController = AnimationController(
       duration: const Duration(milliseconds: 800),
       vsync: this,
     );
-
     _headerAnimation = CurvedAnimation(
       parent: _animationController,
       curve: Curves.easeInOut,
     );
-
     _animationController.forward();
   }
 
+  /// ------------------------------
+  /// dispose: libera controller text e animazione
+  /// ------------------------------
   @override
   void dispose() {
     _teamNameController.dispose();
@@ -89,10 +100,11 @@ class _ChooseTeamPageState extends State<ChooseTeamPage>
     super.dispose();
   }
 
-  // Join an existing team
+  /// ------------------------------
+  /// _joinExistingTeam: aggiunge utente a squadra esistente
+  /// ------------------------------
   void _joinExistingTeam(int teamIndex) {
     if (_userId == null) return;
-
     setState(() => _joiningAction = JoiningAction.joiningTeam);
 
     final team = widget.league.participants[teamIndex] as TeamParticipant;
@@ -105,11 +117,12 @@ class _ChooseTeamPageState extends State<ChooseTeamPage>
     );
   }
 
-  // Create a new team with the current user as captain
+  /// ------------------------------
+  /// _createNewTeam: crea nuova squadra e diventa capitano
+  /// ------------------------------
   void _createNewTeam() {
     final trimmedName = _teamNameController.text.trim();
     if (_userId == null || trimmedName.isEmpty) return;
-
     setState(() => _joiningAction = JoiningAction.creatingTeam);
 
     _joinLeague(
@@ -118,14 +131,15 @@ class _ChooseTeamPageState extends State<ChooseTeamPage>
     );
   }
 
-  // Join the league after selecting/creating a team
+  /// ------------------------------
+  /// _joinLeague: invia evento di join/creazione al bloc
+  /// ------------------------------
   void _joinLeague({
     String? teamName,
     List<String>? teamMembers,
     String? specificLeagueId,
   }) {
     if (_userId == null) return;
-
     context.read<LeagueBloc>().add(
           JoinLeagueEvent(
             inviteCode: widget.inviteCode,
@@ -136,6 +150,9 @@ class _ChooseTeamPageState extends State<ChooseTeamPage>
         );
   }
 
+  /// ------------------------------
+  /// build: struttura principale con listener Bloc e scroll view
+  /// ------------------------------
   @override
   Widget build(BuildContext context) {
     final bool isJoiningTeam = _joiningAction == JoiningAction.joiningTeam;
@@ -149,7 +166,6 @@ class _ChooseTeamPageState extends State<ChooseTeamPage>
             setState(() => _joiningAction = JoiningAction.none);
           } else if (state is LeagueSuccess &&
               state.operation == 'join_league') {
-            // Navigate to home page and clear previous routes
             Navigator.of(context).popUntil((route) => route.isFirst);
             context.read<AppNavigationCubit>().setIndex(0);
           }
@@ -157,21 +173,12 @@ class _ChooseTeamPageState extends State<ChooseTeamPage>
         builder: (context, state) {
           return Stack(
             children: [
-              // // Background decoration - subtle patterns or shapes
-              // Positioned.fill(
-              //   child: Container(
-              //     decoration: BoxDecoration(
-              //       color: context.bgColor,
-              //       // Add subtle pattern here if desired
-              //     ),
-              //   ),
-              // ),
-
-              // Main content
               CustomScrollView(
                 physics: const BouncingScrollPhysics(),
                 slivers: [
-                  // Animated App Bar with League Info
+                  /// ------------------------------
+                  /// SliverAppBar animato con header lega
+                  /// ------------------------------
                   SliverAppBar(
                     expandedHeight: 300,
                     floating: false,
@@ -186,7 +193,9 @@ class _ChooseTeamPageState extends State<ChooseTeamPage>
                     ),
                   ),
 
-                  // Main content
+                  /// ------------------------------
+                  /// SliverToBoxAdapter con selezione e creazione torneo
+                  /// ------------------------------
                   SliverToBoxAdapter(
                     child: Padding(
                       padding: const EdgeInsets.symmetric(
@@ -195,24 +204,16 @@ class _ChooseTeamPageState extends State<ChooseTeamPage>
                       ),
                       child: Column(
                         children: [
-                          // Info banner
                           InfoBanner(
                             message:
                                 "Unisciti a una squadra esistente o creane una nuova per partecipare alla lega",
                             color: ColorPalette.warning,
                           ),
-
                           const SizedBox(height: ThemeSizes.xl),
-
-                          // Existing teams card - significantly improved
                           if (widget.league.participants.isNotEmpty)
                             _buildExistingTeamsCard(isJoiningTeam),
-
                           const SizedBox(height: ThemeSizes.lg),
-
-                          // Create new team card - significantly improved
                           _buildCreateTeamCard(isCreatingTeam),
-
                           const SizedBox(height: ThemeSizes.xl),
                         ],
                       ),
@@ -227,12 +228,16 @@ class _ChooseTeamPageState extends State<ChooseTeamPage>
     );
   }
 
-  // Advanced league header with parallax effect and visual enhancements
+  /// ------------------------------
+  /// _buildLeagueHeader: header con parallax e gradient
+  /// ------------------------------
   Widget _buildLeagueHeader() {
+    final appThemeCubit = context.read<AppThemeCubit>();
+    final appThemeState = appThemeCubit.state;
+
     return Stack(
       fit: StackFit.expand,
       children: [
-        // Gradient background
         Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(
@@ -246,17 +251,6 @@ class _ChooseTeamPageState extends State<ChooseTeamPage>
             ),
           ),
         ),
-
-        // // Pattern overlay (optional)
-        // Opacity(
-        //   opacity: 0.1,
-        //   child: Image.asset(
-        //     "assets/images/pattern.png",
-        //     fit: BoxFit.cover,
-        //   ),
-        // ),
-
-        // Content
         Positioned(
           bottom: 0,
           left: 0,
@@ -272,7 +266,6 @@ class _ChooseTeamPageState extends State<ChooseTeamPage>
             ),
           ),
         ),
-
         Positioned.fill(
           top: MediaQuery.of(context).padding.top,
           child: Padding(
@@ -280,7 +273,6 @@ class _ChooseTeamPageState extends State<ChooseTeamPage>
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // League icon/avatar
                 Hero(
                   tag: 'league_icon_${widget.league.id}',
                   child: Container(
@@ -293,7 +285,6 @@ class _ChooseTeamPageState extends State<ChooseTeamPage>
                         BoxShadow(
                           color: Colors.black.withValues(alpha: 0.1),
                           blurRadius: 10,
-                          spreadRadius: 0,
                           offset: const Offset(0, 5),
                         ),
                       ],
@@ -305,19 +296,15 @@ class _ChooseTeamPageState extends State<ChooseTeamPage>
                     ),
                   ),
                 ),
-
                 const SizedBox(height: ThemeSizes.md),
-
-                // League name
                 Text(
                   widget.league.name,
                   style: context.textTheme.headlineSmall!.copyWith(
                     fontWeight: FontWeight.bold,
+                    color: Colors.white,
                   ),
                   textAlign: TextAlign.center,
                 ),
-
-                // League description
                 if (widget.league.description != null)
                   Padding(
                     padding: const EdgeInsets.symmetric(
@@ -326,36 +313,40 @@ class _ChooseTeamPageState extends State<ChooseTeamPage>
                     ),
                     child: Text(
                       widget.league.description!,
-                      style: context.textTheme.bodyLarge,
+                      style: context.textTheme.bodyLarge!.copyWith(
+                        color: Colors.white,
+                      ),
                       textAlign: TextAlign.center,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
-
                 const SizedBox(height: ThemeSizes.xl),
-
-                // League type badge
                 Container(
                   padding: const EdgeInsets.symmetric(
                     horizontal: ThemeSizes.md,
                     vertical: ThemeSizes.xs,
                   ),
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.2),
+                    color: appThemeState.themeMode == ThemeMode.light
+                        ? ColorPalette.bgColor(ThemeMode.dark)
+                            .withValues(alpha: 0.8)
+                        : ColorPalette.bgColor(ThemeMode.light)
+                            .withValues(alpha: 0.8),
                     borderRadius: BorderRadius.circular(20),
                   ),
-                  child: const Row(
+                  child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(
-                        Icons.groups_rounded,
-                        color: Colors.white,
-                        size: 16,
-                      ),
+                      Icon(Icons.groups_rounded, color: Colors.white, size: 16),
                       SizedBox(width: 4),
                       Text(
                         'Lega a Squadre',
+                        style: context.textTheme.labelMedium!.copyWith(
+                          color: appThemeState.themeMode == ThemeMode.light
+                              ? ColorPalette.textPrimary(ThemeMode.dark)
+                              : ColorPalette.textPrimary(ThemeMode.light),
+                        ),
                       ),
                     ],
                   ),
@@ -368,7 +359,9 @@ class _ChooseTeamPageState extends State<ChooseTeamPage>
     );
   }
 
-  // Significantly improved existing teams card
+  /// ------------------------------
+  /// _buildExistingTeamsCard: visualizza lista squadre esistenti e bottone
+  /// ------------------------------
   Widget _buildExistingTeamsCard(bool isJoiningTeam) {
     return AnimatedContainer(
       duration: const Duration(milliseconds: 300),
@@ -380,7 +373,6 @@ class _ChooseTeamPageState extends State<ChooseTeamPage>
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 15,
-            spreadRadius: 1,
             offset: const Offset(0, 5),
           ),
         ],
@@ -388,7 +380,7 @@ class _ChooseTeamPageState extends State<ChooseTeamPage>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Card header
+          // header card
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: Row(
@@ -399,11 +391,8 @@ class _ChooseTeamPageState extends State<ChooseTeamPage>
                     color: context.primaryColor.withValues(alpha: 0.1),
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(
-                    Icons.groups,
-                    color: context.primaryColor,
-                    size: 20,
-                  ),
+                  child:
+                      Icon(Icons.groups, color: context.primaryColor, size: 20),
                 ),
                 const SizedBox(width: ThemeSizes.md),
                 Expanded(
@@ -412,80 +401,48 @@ class _ChooseTeamPageState extends State<ChooseTeamPage>
                     children: [
                       Text(
                         'Squadre Esistenti',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: context.textPrimaryColor,
-                        ),
+                        style: context.textTheme.bodyLarge!.copyWith(
+                            fontSize: 18, fontWeight: FontWeight.bold),
                       ),
-                      Text(
-                        'Seleziona una squadra per unirti',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: context.textSecondaryColor,
-                        ),
-                      ),
+                      const Text('Seleziona una squadra per unirti'),
                     ],
                   ),
                 ),
               ],
             ),
           ),
-
-          // Divider
           Divider(
             height: 5,
             thickness: 1,
             color: ColorPalette.darkGrey.withValues(alpha: 0.1),
           ),
-
-          // Teams list with proper handling for many teams
           Container(
-            constraints: const BoxConstraints(
-              maxHeight: 300, // Limit height to avoid too much scrolling
-            ),
-            decoration: const BoxDecoration(
-              borderRadius: BorderRadius.only(
-                bottomLeft: Radius.circular(ThemeSizes.borderRadiusLg - 1),
-                bottomRight: Radius.circular(ThemeSizes.borderRadiusLg - 1),
-              ),
-            ),
+            constraints: const BoxConstraints(maxHeight: 300),
             child: _buildTeamsList(),
           ),
-
-          // Add join button when a team is selected
-          if (_selectedTeamIndex != null)
-            Padding(
-              padding: const EdgeInsets.all(ThemeSizes.md),
-              child: ElevatedButton(
-                onPressed: isJoiningTeam
-                    ? null
-                    : () => _joinExistingTeam(_selectedTeamIndex!),
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: ThemeSizes.md),
-                ),
-                child: isJoiningTeam
-                    ? const Loader(color: Colors.white)
-                    : const Text('Unisciti alla squadra'),
+          // pulsante unisciti
+          Padding(
+            padding: const EdgeInsets.all(ThemeSizes.md),
+            child: ElevatedButton(
+              onPressed: _selectedTeamIndex != null && !isJoiningTeam
+                  ? () => _joinExistingTeam(_selectedTeamIndex!)
+                  : null,
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: ThemeSizes.md),
               ),
-            )
-          else
-            Padding(
-              padding: const EdgeInsets.all(ThemeSizes.md),
-              child: ElevatedButton(
-                onPressed: null,
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: ThemeSizes.md),
-                ),
-                child: const Text('Seleziona una squadra'),
-              ),
+              child: isJoiningTeam
+                  ? const Loader(color: Colors.white)
+                  : const Text('Unisciti alla squadra'),
             ),
+          ),
         ],
       ),
     );
   }
 
-  // Significantly improved create team card
+  /// ------------------------------
+  /// _buildCreateTeamCard: form per nome nuova squadra e bottone crea
+  /// ------------------------------
   Widget _buildCreateTeamCard(bool isCreatingTeam) {
     bool canCreateTeam =
         _teamNameController.text.trim().isNotEmpty && !isCreatingTeam;
@@ -500,7 +457,6 @@ class _ChooseTeamPageState extends State<ChooseTeamPage>
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 15,
-            spreadRadius: 1,
             offset: const Offset(0, 5),
           ),
         ],
@@ -508,7 +464,7 @@ class _ChooseTeamPageState extends State<ChooseTeamPage>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Card header
+          // header crea squadra
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: Row(
@@ -519,107 +475,77 @@ class _ChooseTeamPageState extends State<ChooseTeamPage>
                     color: ColorPalette.warning.withValues(alpha: 0.1),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(
-                    Icons.add_circle_outline,
-                    color: ColorPalette.warning,
-                    size: 20,
-                  ),
+                  child: const Icon(Icons.add_circle_outline,
+                      color: ColorPalette.warning, size: 20),
                 ),
                 const SizedBox(width: ThemeSizes.md),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        'Crea una Nuova Squadra',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
                       Text(
-                        'Diventa capitano della tua squadra',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: context.textSecondaryColor,
-                        ),
+                        'Crea una Nuova Squadra',
+                        style: context.textTheme.bodyLarge!.copyWith(
+                            fontSize: 18, fontWeight: FontWeight.bold),
                       ),
+                      const Text('Diventa capitano!'),
                     ],
                   ),
                 ),
               ],
             ),
           ),
-
-          // Divider
           Divider(
             height: 5,
             thickness: 1,
             color: ColorPalette.darkGrey.withValues(alpha: 0.1),
           ),
-
-          // Team name field
+          // campo nome squadra e bottone crea
           Padding(
             padding: const EdgeInsets.all(ThemeSizes.md),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  'Nome della Squadra',
-                  style: TextStyle(
-                    fontWeight: FontWeight.w500,
-                    color: context.textPrimaryColor,
-                  ),
-                ),
+                const Text('Nome della Squadra'),
                 const SizedBox(height: ThemeSizes.sm),
                 TextField(
                   controller: _teamNameController,
                   decoration: InputDecoration(
-                    hintText: 'Inserisci il nome della tua nuova squadra',
+                    hintText: 'Los chiavadores...',
+                    fillColor: context.bgColor,
                     prefixIcon: Icon(
                       Icons.group_add,
                       color: _teamNameController.text.isEmpty
                           ? context.textSecondaryColor
                           : ColorPalette.warning,
                     ),
-                    fillColor: context.bgColor,
                     border: InputBorder.none,
                     contentPadding: const EdgeInsets.symmetric(
-                      vertical: ThemeSizes.md,
-                      horizontal: ThemeSizes.sm,
-                    ),
+                        vertical: ThemeSizes.md, horizontal: ThemeSizes.sm),
                   ),
                   onChanged: (_) => setState(() {}),
                 ),
-
                 const SizedBox(height: ThemeSizes.md),
-
-                // Create button
                 ElevatedButton(
                   onPressed: canCreateTeam ? _createNewTeam : null,
-                  style: ElevatedButton.styleFrom(
-                    padding:
-                        const EdgeInsets.symmetric(vertical: ThemeSizes.md),
-                    backgroundColor: ColorPalette.warning,
-                    foregroundColor: Colors.white,
-                    disabledBackgroundColor:
-                        ColorPalette.warning.withValues(alpha: 0.3),
-                    disabledForegroundColor:
-                        Colors.white.withValues(alpha: 0.7),
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius:
-                          BorderRadius.circular(ThemeSizes.borderRadiusLg),
-                    ),
+                  style: context.elevatedButtonThemeData.style!.copyWith(
+                    padding: const WidgetStatePropertyAll(
+                        EdgeInsets.symmetric(vertical: ThemeSizes.md)),
+                    backgroundColor: WidgetStatePropertyAll(
+                        ColorPalette.warning.withValues(alpha: 0.60)),
+                    foregroundColor: const WidgetStatePropertyAll(Colors.white),
+                    elevation: const WidgetStatePropertyAll(0),
+                    fixedSize: WidgetStatePropertyAll(
+                        Size.fromWidth(Constants.getWidth(context) * 0.8)),
                   ),
                   child: isCreatingTeam
                       ? const Loader(color: Colors.white)
                       : Row(
                           mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Icon(Icons.add),
-                            const SizedBox(width: ThemeSizes.sm),
-                            const Text('Crea nuova squadra'),
+                          children: const [
+                            Icon(Icons.add),
+                            SizedBox(width: ThemeSizes.sm),
+                            Text('Crea nuova squadra'),
                           ],
                         ),
                 ),
@@ -631,7 +557,9 @@ class _ChooseTeamPageState extends State<ChooseTeamPage>
     );
   }
 
-  // Advanced teams list with improved visuals for the team items
+  /// ------------------------------
+  /// _buildTeamsList: lista interattiva di team con selezione
+  /// ------------------------------
   Widget _buildTeamsList() {
     if (widget.league.participants.isEmpty) {
       return Center(
@@ -640,25 +568,15 @@ class _ChooseTeamPageState extends State<ChooseTeamPage>
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
-                Icons.groups_outlined,
-                size: 64,
-                color: context.textSecondaryColor.withValues(alpha: 0.3),
-              ),
+              Icon(Icons.groups_outlined,
+                  size: 64,
+                  color: context.textSecondaryColor.withValues(alpha: 0.3)),
               const SizedBox(height: ThemeSizes.md),
-              Text(
-                'Nessuna squadra disponibile',
-                style: context.textTheme.titleMedium,
-                textAlign: TextAlign.center,
-              ),
+              Text('Nessuna squadra disponibile',
+                  style: context.textTheme.titleMedium),
               const SizedBox(height: ThemeSizes.sm),
-              Text(
-                'Sii il primo a creare una squadra!',
-                style: TextStyle(
-                  color: context.textSecondaryColor,
-                ),
-                textAlign: TextAlign.center,
-              ),
+              Text('Sii il primo a creare una squadra!',
+                  style: TextStyle(color: context.textSecondaryColor)),
             ],
           ),
         ),
@@ -683,14 +601,10 @@ class _ChooseTeamPageState extends State<ChooseTeamPage>
         final participant = widget.league.participants[index];
         if (participant is TeamParticipant) {
           final isSelected = _selectedTeamIndex == index;
-
           return InkWell(
-            onTap: () {
-              setState(() {
-                // Toggle selection - deselect if already selected
-                _selectedTeamIndex = isSelected ? null : index;
-              });
-            },
+            onTap: () => setState(() {
+              _selectedTeamIndex = isSelected ? null : index;
+            }),
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 300),
               curve: Curves.easeInOut,
@@ -701,14 +615,12 @@ class _ChooseTeamPageState extends State<ChooseTeamPage>
                 borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusMd),
               ),
               margin: const EdgeInsets.symmetric(
-                horizontal: ThemeSizes.xs,
-                vertical: ThemeSizes.xs,
-              ),
+                  horizontal: ThemeSizes.xs, vertical: ThemeSizes.xs),
               child: Padding(
                 padding: const EdgeInsets.all(ThemeSizes.md),
                 child: Row(
                   children: [
-                    // Team icon with animated selection state
+                    // icona squadra con stato animato
                     AnimatedContainer(
                       duration: const Duration(milliseconds: 300),
                       width: 56,
@@ -726,56 +638,44 @@ class _ChooseTeamPageState extends State<ChooseTeamPage>
                         ),
                       ),
                       child: Center(
-                        child: Icon(
-                          Icons.group_rounded,
-                          color: isSelected
-                              ? context.primaryColor
-                              : context.primaryColor.withValues(alpha: 0.5),
-                          size: 26,
-                        ),
+                        child: Icon(Icons.group_rounded,
+                            color: isSelected
+                                ? context.primaryColor
+                                : context.primaryColor.withValues(alpha: 0.5),
+                            size: 26),
                       ),
                     ),
-
                     const SizedBox(width: ThemeSizes.md),
-
-                    // Team details
+                    // dettagli squadra
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            participant.name,
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: isSelected
-                                  ? FontWeight.bold
-                                  : FontWeight.normal,
-                              color: context.textPrimaryColor,
-                            ),
-                          ),
+                          Text(participant.name,
+                              style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: isSelected
+                                      ? FontWeight.bold
+                                      : FontWeight.normal,
+                                  color: context.textPrimaryColor)),
                           const SizedBox(height: 4),
                           Row(
                             children: [
-                              Icon(
-                                Icons.person,
-                                size: 14,
-                                color: context.textSecondaryColor,
-                              ),
+                              Icon(Icons.person,
+                                  size: 14, color: context.textSecondaryColor),
                               const SizedBox(width: 4),
                               Text(
                                 '${participant.userIds.length} ${participant.userIds.length == 1 ? 'membro' : 'membri'}',
                                 style: TextStyle(
-                                  fontSize: 14,
-                                  color: context.textSecondaryColor,
-                                ),
+                                    fontSize: 14,
+                                    color: context.textSecondaryColor),
                               ),
                             ],
                           ),
                         ],
                       ),
                     ),
-
-                    // Selection indicator
+                    // indicatore di selezione
                     AnimatedContainer(
                       duration: const Duration(milliseconds: 300),
                       width: 24,
@@ -793,11 +693,8 @@ class _ChooseTeamPageState extends State<ChooseTeamPage>
                         ),
                       ),
                       child: isSelected
-                          ? const Icon(
-                              Icons.check,
-                              color: Colors.white,
-                              size: 16,
-                            )
+                          ? const Icon(Icons.check,
+                              color: Colors.white, size: 16)
                           : null,
                     ),
                   ],

@@ -2,19 +2,21 @@ import 'package:fantavacanze_official/core/cubits/app_league/app_league_cubit.da
 import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/add_event.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/add_memory.dart';
+import 'package:fantavacanze_official/features/league/domain/use_cases/add_rule.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/create_league.dart';
+import 'package:fantavacanze_official/features/league/domain/use_cases/delete_note.dart';
+import 'package:fantavacanze_official/features/league/domain/use_cases/delete_rule.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/exit_league.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/get_league.dart';
+import 'package:fantavacanze_official/features/league/domain/use_cases/get_notes.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/get_rules.dart';
-import 'package:fantavacanze_official/features/league/domain/use_cases/get_users_details.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/join_league.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/remove_memory.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/remove_team_participants.dart';
-import 'package:fantavacanze_official/features/league/domain/use_cases/update_team_name.dart';
-import 'package:fantavacanze_official/features/league/domain/use_cases/update_rule.dart';
-import 'package:fantavacanze_official/features/league/domain/use_cases/delete_rule.dart';
-import 'package:fantavacanze_official/features/league/domain/use_cases/add_rule.dart';
+import 'package:fantavacanze_official/features/league/domain/use_cases/save_note.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/search_league.dart';
+import 'package:fantavacanze_official/features/league/domain/use_cases/update_rule.dart';
+import 'package:fantavacanze_official/features/league/domain/use_cases/update_team_name.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_event.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -33,8 +35,10 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
   final UpdateRule updateRule;
   final DeleteRule deleteRule;
   final AddRule addRule;
-  final GetUsersDetails getUsersDetails;
   final SearchLeague searchLeague;
+  final GetNotes getNotes;
+  final SaveNote saveNote;
+  final DeleteNote deleteNote;
   final AppUserCubit appUserCubit;
   final AppLeagueCubit appLeagueCubit;
 
@@ -51,8 +55,10 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
     required this.updateRule,
     required this.deleteRule,
     required this.addRule,
-    required this.getUsersDetails,
     required this.searchLeague,
+    required this.getNotes,
+    required this.saveNote,
+    required this.deleteNote,
     required this.appUserCubit,
     required this.appLeagueCubit,
     required this.removeTeamParticipants,
@@ -69,8 +75,10 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
     on<UpdateRuleEvent>(_onUpdateRule);
     on<DeleteRuleEvent>(_onDeleteRule);
     on<AddRuleEvent>(_onAddRule);
-    on<GetUsersDetailsEvent>(_onGetUsersDetails);
     on<RemoveTeamParticipantsEvent>(_handleRemoveTeamParticipants);
+    on<GetNotesEvent>(_onGetNotes);
+    on<SaveNoteEvent>(_onSaveNote);
+    on<DeleteNoteEvent>(_onDeleteNote);
   }
 
   // -----------------------------------------------------------
@@ -461,25 +469,6 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
     }
   }
 
-  // G E T   U S E R S   D E T A I L S
-  Future<void> _onGetUsersDetails(
-    GetUsersDetailsEvent event,
-    Emitter<LeagueState> emit,
-  ) async {
-    try {
-      emit(LeagueLoading());
-
-      final result = await getUsersDetails(event.userIds);
-
-      result.fold(
-        (failure) => emit(LeagueError(message: failure.message)),
-        (usersDetails) => emit(UsersDetailsLoaded(usersDetails: usersDetails)),
-      );
-    } catch (e) {
-      emit(LeagueError(message: e.toString()));
-    }
-  }
-
   // R E M O V E   T E A M   P A R T I C I P A N T S
   Future<void> _handleRemoveTeamParticipants(
     RemoveTeamParticipantsEvent event,
@@ -532,6 +521,74 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
     } catch (e) {
       emit(LeagueError(message: e.toString()));
     }
+  }
+
+  // -----------------------------------------------------------
+  // N O T E S   M A N A G E M E N T
+  // -----------------------------------------------------------
+
+  // G E T   N O T E S
+  Future<void> _onGetNotes(
+    GetNotesEvent event,
+    Emitter<LeagueState> emit,
+  ) async {
+    emit(LeagueLoading());
+
+    final result = await getNotes(event.leagueId);
+
+    result.fold(
+      (failure) => emit(LeagueError(message: failure.message)),
+      (notes) => emit(NoteSuccess(
+        operation: 'get',
+        leagueId: event.leagueId,
+        notes: notes,
+      )),
+    );
+  }
+
+  // S A V E   N O T E
+  Future<void> _onSaveNote(
+    SaveNoteEvent event,
+    Emitter<LeagueState> emit,
+  ) async {
+    emit(LeagueLoading());
+
+    // Make sure the note's leagueId matches the event leagueId
+    final noteWithLeagueId = event.note;
+
+    final result = await saveNote(SaveNoteParams(
+      leagueId: event.leagueId,
+      note: noteWithLeagueId,
+    ));
+
+    result.fold(
+      (failure) => emit(LeagueError(message: failure.message)),
+      (_) => emit(NoteSuccess(
+        operation: 'save',
+        leagueId: event.leagueId,
+      )),
+    );
+  }
+
+  // D E L E T E   N O T E
+  Future<void> _onDeleteNote(
+    DeleteNoteEvent event,
+    Emitter<LeagueState> emit,
+  ) async {
+    emit(LeagueLoading());
+
+    final result = await deleteNote(DeleteNoteParams(
+      leagueId: event.leagueId,
+      noteId: event.noteId,
+    ));
+
+    result.fold(
+      (failure) => emit(LeagueError(message: failure.message)),
+      (_) => emit(NoteSuccess(
+        operation: 'delete',
+        leagueId: event.leagueId,
+      )),
+    );
   }
 
   // -----------------------------------------------------------

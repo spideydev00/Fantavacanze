@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:fantavacanze_official/features/league/data/models/note_model.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/rule.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/league.dart';
 
@@ -187,15 +188,6 @@ class AddRuleEvent extends LeagueEvent {
   List<Object?> get props => [league, rule];
 }
 
-class GetUsersDetailsEvent extends LeagueEvent {
-  final List<String> userIds;
-
-  const GetUsersDetailsEvent({required this.userIds});
-
-  @override
-  List<Object?> get props => [userIds];
-}
-
 class RemoveTeamParticipantsEvent extends LeagueEvent {
   final League league;
   final String teamName;
@@ -218,4 +210,39 @@ class SearchLeagueEvent extends LeagueEvent {
 
   @override
   List<Object?> get props => [inviteCode];
+}
+
+class GetNotesEvent extends LeagueEvent {
+  final String leagueId;
+
+  const GetNotesEvent({required this.leagueId});
+
+  @override
+  List<Object?> get props => [leagueId];
+}
+
+class SaveNoteEvent extends LeagueEvent {
+  final String leagueId;
+  final NoteModel note;
+
+  const SaveNoteEvent({
+    required this.leagueId,
+    required this.note,
+  });
+
+  @override
+  List<Object?> get props => [leagueId, note];
+}
+
+class DeleteNoteEvent extends LeagueEvent {
+  final String leagueId;
+  final String noteId;
+
+  const DeleteNoteEvent({
+    required this.leagueId,
+    required this.noteId,
+  });
+
+  @override
+  List<Object?> get props => [leagueId, noteId];
 }

@@ -24,6 +24,10 @@ Future<void> initDependencies() async {
       ..registerLazySingleton<Box<Map<dynamic, dynamic>>>(
         () => Hive.box<Map<dynamic, dynamic>>(),
         instanceName: 'rules_box',
+      )
+      ..registerLazySingleton<Box<Map<dynamic, dynamic>>>(
+        () => Hive.box<Map<dynamic, dynamic>>(),
+        instanceName: 'notes_box',
       );
 
     serviceLocator.registerFactory(
@@ -146,6 +150,8 @@ void _initLeague() {
             instanceName: 'leagues_box'),
         rulesBox: serviceLocator<Box<Map<dynamic, dynamic>>>(
             instanceName: 'rules_box'),
+        notesBox: serviceLocator<Box<Map<dynamic, dynamic>>>(
+            instanceName: 'notes_box'),
       ),
     )
 
@@ -199,13 +205,19 @@ void _initLeague() {
       () => DeleteRule(leagueRepository: serviceLocator()),
     )
     ..registerFactory(
-      () => GetUsersDetails(leagueRepository: serviceLocator()),
-    )
-    ..registerFactory(
       () => RemoveTeamParticipants(leagueRepository: serviceLocator()),
     )
     ..registerFactory(
       () => SearchLeague(leagueRepository: serviceLocator()),
+    )
+    ..registerFactory(
+      () => GetNotes(leagueRepository: serviceLocator()),
+    )
+    ..registerFactory(
+      () => SaveNote(leagueRepository: serviceLocator()),
+    )
+    ..registerFactory(
+      () => DeleteNote(leagueRepository: serviceLocator()),
     )
 
     // bloc
@@ -225,9 +237,11 @@ void _initLeague() {
         deleteRule: serviceLocator(),
         appUserCubit: serviceLocator(),
         appLeagueCubit: serviceLocator(),
-        getUsersDetails: serviceLocator(),
         removeTeamParticipants: serviceLocator(),
         searchLeague: serviceLocator(),
+        getNotes: serviceLocator(),
+        saveNote: serviceLocator(),
+        deleteNote: serviceLocator(),
       ),
     );
 }

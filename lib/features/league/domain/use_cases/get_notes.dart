@@ -1,17 +1,16 @@
 import 'package:fantavacanze_official/core/errors/failure.dart';
 import 'package:fantavacanze_official/core/use-case/usecase.dart';
+import 'package:fantavacanze_official/features/league/data/models/note_model.dart';
 import 'package:fantavacanze_official/features/league/domain/repository/league_repository.dart';
 import 'package:fpdart/fpdart.dart';
 
-class GetUsersDetails
-    implements Usecase<List<Map<String, dynamic>>, List<String>> {
+class GetNotes implements Usecase<List<NoteModel>, String> {
   final LeagueRepository leagueRepository;
 
-  GetUsersDetails({required this.leagueRepository});
+  GetNotes({required this.leagueRepository});
 
   @override
-  Future<Either<Failure, List<Map<String, dynamic>>>> call(
-      List<String> userIds) async {
-    return leagueRepository.getUsersDetails(userIds);
+  Future<Either<Failure, List<NoteModel>>> call(String leagueId) async {
+    return leagueRepository.getNotes(leagueId);
   }
 }
