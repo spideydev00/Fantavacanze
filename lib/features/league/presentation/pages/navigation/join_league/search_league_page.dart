@@ -17,11 +17,17 @@ import 'package:fantavacanze_official/features/league/presentation/widgets/core/
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+/// ------------------------------
+/// Definisce lo stato della ricerca (iniziale o in corso)
+/// ------------------------------
 enum SearchingStatus {
   initial,
   searching,
 }
 
+/// ------------------------------
+/// Widget di pagina per cercare una lega tramite codice invito
+/// ------------------------------
 class SearchLeaguePage extends StatefulWidget {
   static Route get route => MaterialPageRoute(
         builder: (context) => const SearchLeaguePage(),
@@ -37,8 +43,11 @@ class _SearchLeaguePageState extends State<SearchLeaguePage> {
   final TextEditingController _inviteCodeController = TextEditingController();
   SearchingStatus _searchingStatus = SearchingStatus.initial;
   String? _userId;
-  bool _isJoiningLeague = false; // Track joining state separately
+  bool _isJoiningLeague = false;
 
+  /// ------------------------------
+  /// Inizializza lo stato recuperando l'userId dal cubit
+  /// ------------------------------
   @override
   void initState() {
     super.initState();
@@ -48,15 +57,19 @@ class _SearchLeaguePageState extends State<SearchLeaguePage> {
     }
   }
 
+  /// ------------------------------
+  /// Pulisce il TextEditingController quando il widget viene smontato
+  /// ------------------------------
   @override
   void dispose() {
     _inviteCodeController.dispose();
     super.dispose();
   }
 
-  // Search for a league with the provided invite code
+  /// ------------------------------
+  /// Metodo che scatta la ricerca di una lega tramite codice invito
+  /// ------------------------------
   void _searchLeague() {
-    // Dismiss keyboard
     FocusScope.of(context).unfocus();
 
     if (_inviteCodeController.text.isEmpty || _userId == null) return;
@@ -66,20 +79,18 @@ class _SearchLeaguePageState extends State<SearchLeaguePage> {
     });
 
     context.read<LeagueBloc>().add(
-          SearchLeagueEvent(
-            inviteCode: _inviteCodeController.text,
-          ),
+          SearchLeagueEvent(inviteCode: _inviteCodeController.text),
         );
   }
 
+  /// ------------------------------
+  /// Costruisce la UI principale con AppBar, BlocConsumer e overlay di loading
+  /// ------------------------------
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          'Cerca Lega',
-          style: context.textTheme.headlineSmall,
-        ),
+        title: Text('Cerca Lega', style: context.textTheme.headlineSmall),
         centerTitle: true,
       ),
       body: Stack(
@@ -87,28 +98,27 @@ class _SearchLeaguePageState extends State<SearchLeaguePage> {
           BlocConsumer<LeagueBloc, LeagueState>(
             listener: (context, state) {
               if (state is LeagueError) {
-                showSnackBar(
-                  context,
-                  state.message,
-                  color: ColorPalette.error,
-                );
+                showSnackBar(context, state.message, color: ColorPalette.error);
                 setState(() {
                   _searchingStatus = SearchingStatus.initial;
-                  _isJoiningLeague = false; // Reset joining state
+                  _isJoiningLeague = false;
                 });
               } else if (state is MultiplePossibleLeagues) {
                 setState(() => _searchingStatus = SearchingStatus.initial);
                 _showMultipleLeaguesDialog(
-                    state.possibleLeagues, state.inviteCode);
+                  state.possibleLeagues,
+                  state.inviteCode,
+                );
               } else if (state is LeagueWithInviteCode) {
                 setState(() => _searchingStatus = SearchingStatus.initial);
                 _showLeagueFoundConfirmation(
-                    context, state.league, state.inviteCode);
+                  context,
+                  state.league,
+                  state.inviteCode,
+                );
               } else if (state is LeagueSuccess &&
                   state.operation == 'join_league') {
-                setState(() => _isJoiningLeague = false); // Reset joining state
-
-                // Navigate to home screen first
+                setState(() => _isJoiningLeague = false);
                 Navigator.of(context).popUntil((route) => route.isFirst);
                 context.read<AppNavigationCubit>().setIndex(0);
               }
@@ -117,9 +127,10 @@ class _SearchLeaguePageState extends State<SearchLeaguePage> {
               return _buildSearchView();
             },
           ),
-
-          // Full-screen loading overlay using our own tracked state
           if (_isJoiningLeague)
+            // ------------------------------
+            // Overlay full-screen di attesa durante l'unione alla lega
+            // ------------------------------
             Container(
               color: Colors.black.withValues(alpha: 0.5),
               child: Center(
@@ -163,14 +174,17 @@ class _SearchLeaguePageState extends State<SearchLeaguePage> {
     );
   }
 
+  /// ------------------------------
+  /// Widget contenente il campo di input e il pulsante per cercare
+  /// ------------------------------
   Widget _buildSearchView() {
     return Container(
       decoration: BoxDecoration(
         color: context.colorScheme.surface,
         borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusMd),
       ),
-      margin: const EdgeInsets.all(ThemeSizes.lg),
-      padding: const EdgeInsets.all(ThemeSizes.lg),
+      margin: const EdgeInsets.all(ThemeSizes.md),
+      padding: const EdgeInsets.all(ThemeSizes.md),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -209,64 +223,235 @@ class _SearchLeaguePageState extends State<SearchLeaguePage> {
                 : const Text('Cerca Lega'),
             icon: _searchingStatus == SearchingStatus.searching
                 ? null
-                : const Icon(
-                    Icons.search,
-                    size: 24,
-                  ),
+                : const Icon(Icons.search, size: 24),
           ),
         ],
       ),
     );
   }
 
-  // Show dialog for selecting between multiple leagues with the same invite code
+  // --------------------------------------------------
+  /// ------------------------------
+  /// Mostra un dialog per scegliere tra più leghe con lo stesso codice
+  /// ------------------------------
   void _showMultipleLeaguesDialog(
     List<League> possibleLeagues,
     String inviteCode,
   ) {
+    final parentContext = context; // contesto della pagina, rimane valido
+
     showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Seleziona una Lega'),
-        content: SizedBox(
+      context: parentContext,
+      barrierDismissible: false,
+      builder: (dialogContext) => Dialog(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+        child: Container(
           width: double.maxFinite,
-          height: 300,
-          child: ListView.builder(
-            shrinkWrap: true,
-            itemCount: possibleLeagues.length,
-            itemBuilder: (context, index) {
-              final league = possibleLeagues[index];
-              return ListTile(
-                title: Text(league.name),
-                subtitle: Text(league.description ?? 'Nessuna descrizione'),
-                onTap: () {
-                  Navigator.pop(context);
-                  // Show confirmation for the selected league
-                  _showLeagueFoundConfirmation(context, league, inviteCode);
-                },
-              );
-            },
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.of(parentContext).size.height * 0.7,
+          ),
+          decoration: BoxDecoration(
+            color: parentContext.bgColor,
+            borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusLg),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.1),
+                blurRadius: 10,
+                spreadRadius: 1,
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // ------------------------------
+              // Header del dialog di selezione leghe
+              // ------------------------------
+              Container(
+                padding: const EdgeInsets.all(ThemeSizes.lg),
+                decoration: BoxDecoration(
+                  color: ColorPalette.info.withValues(alpha: 0.1),
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(ThemeSizes.borderRadiusLg),
+                    topRight: Radius.circular(ThemeSizes.borderRadiusLg),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(ThemeSizes.xs),
+                      decoration: BoxDecoration(
+                        color: ColorPalette.info.withValues(alpha: 0.2),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.groups_rounded,
+                        color: ColorPalette.info,
+                        size: 24,
+                      ),
+                    ),
+                    const SizedBox(width: ThemeSizes.md),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Seleziona una Lega',
+                            style: parentContext.textTheme.bodyLarge!
+                                .copyWith(fontWeight: FontWeight.bold),
+                          ),
+                          const SizedBox(height: 4),
+                          const Text(
+                            'Abbiamo trovato più leghe con lo stesso codice',
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              // ------------------------------
+              // Lista scrollabile delle leghe disponibili
+              // ------------------------------
+              Flexible(
+                child: ListView.separated(
+                  padding: const EdgeInsets.symmetric(
+                    vertical: ThemeSizes.md,
+                    horizontal: ThemeSizes.md,
+                  ),
+                  itemCount: possibleLeagues.length,
+                  separatorBuilder: (_, __) => Divider(
+                    color: ColorPalette.darkGrey.withValues(alpha: 0.2),
+                    height: 1,
+                  ),
+                  itemBuilder: (_, index) {
+                    final league = possibleLeagues[index];
+                    return InkWell(
+                      borderRadius:
+                          BorderRadius.circular(ThemeSizes.borderRadiusMd),
+                      onTap: () {
+                        // chiudo il dialog corrente con il dialogContext
+                        Navigator.of(dialogContext).pop();
+                        // riapro il confirmation dialog usando il context della pagina
+                        _showLeagueFoundConfirmation(
+                          parentContext,
+                          league,
+                          inviteCode,
+                        );
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          vertical: ThemeSizes.md,
+                          horizontal: ThemeSizes.xs,
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 50,
+                              height: 50,
+                              decoration: BoxDecoration(
+                                color: parentContext.accentColor
+                                    .withValues(alpha: 0.1),
+                                shape: BoxShape.circle,
+                              ),
+                              child: Center(
+                                child: Text(
+                                  league.name.substring(0, 1).toUpperCase(),
+                                  style: TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                    color: parentContext.accentColor,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: ThemeSizes.md),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    league.name,
+                                    style: parentContext.textTheme.bodyLarge!
+                                        .copyWith(fontWeight: FontWeight.bold),
+                                  ),
+                                  if (league.description != null &&
+                                      league.description!.isNotEmpty)
+                                    Text(
+                                      league.description!,
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: parentContext.textTheme.labelLarge,
+                                    ),
+                                ],
+                              ),
+                            ),
+                            Icon(
+                              Icons.arrow_forward_ios_rounded,
+                              size: 14,
+                              color: parentContext.textSecondaryColor,
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+
+              // ------------------------------
+              // Pulsante per annullare la selezione e chiudere il dialog
+              // ------------------------------
+              Container(
+                padding: const EdgeInsets.all(ThemeSizes.md),
+                child: ElevatedButton(
+                  onPressed: () => Navigator.of(dialogContext).pop(),
+                  style: parentContext.outlinedButtonThemeData.style!.copyWith(
+                    foregroundColor: WidgetStatePropertyAll(
+                      parentContext.textPrimaryColor,
+                    ),
+                    minimumSize: const WidgetStatePropertyAll(
+                      Size(double.infinity, 50),
+                    ),
+                  ),
+                  child: const Text('Annulla'),
+                ),
+              ),
+            ],
           ),
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Annulla'),
-          ),
-        ],
+      ),
+    );
+  }
+  // --------------------------------------------------
+
+  /// ------------------------------
+  /// Naviga alla pagina per scegliere la squadra nella lega team-based
+  /// ------------------------------
+  void _navigateToChooseTeamPage(
+    League league,
+    String inviteCode,
+  ) {
+    Navigator.push(
+      context,
+      ChooseTeamPage.route(
+        league: league,
+        inviteCode: inviteCode,
       ),
     );
   }
 
-  // Navigate to team selection page
-  void _navigateToChooseTeamPage(League league, String inviteCode) {
-    Navigator.push(
-        context, ChooseTeamPage.route(league: league, inviteCode: inviteCode));
-  }
-
-  // Show initial confirmation dialog when a league is found
+  /// ------------------------------
+  /// Mostra dialog di conferma per la lega trovata (Sì/No)
+  /// ------------------------------
   void _showLeagueFoundConfirmation(
-      BuildContext context, League league, String inviteCode) {
+    BuildContext context,
+    League league,
+    String inviteCode,
+  ) {
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -291,35 +476,30 @@ class _SearchLeaguePageState extends State<SearchLeaguePage> {
         ),
         onCancel: () => Navigator.of(dialogContext).pop(),
         onConfirm: () {
-          if (!league.isTeamBased) {
-            FocusScope.of(context).unfocus();
-            // Add a small delay for smoother transition
-            Future.delayed(const Duration(milliseconds: 200), () {
-              if (context.mounted) {
-                // Show confirmation dialog for joining the league
-                _showJoinIndividualLeagueConfirmation(
-                  context,
-                  league,
-                  inviteCode,
-                );
-              }
-            });
-          } else {
-            Navigator.of(dialogContext).pop();
-            _navigateToChooseTeamPage(league, inviteCode);
-          }
+          Future.microtask(() {
+            if (!league.isTeamBased && context.mounted) {
+              _showJoinIndividualLeagueConfirmationWithAnimation(
+                context,
+                league,
+                inviteCode,
+              );
+            } else {
+              _navigateToChooseTeamPage(league, inviteCode);
+            }
+          });
         },
       ),
     );
   }
 
-  // Completely redesigned method that simplifies the flow
+  /// ------------------------------
+  /// Mostra dialog animato “rimbalzo” per conferma unione leghe individuali
+  /// ------------------------------
   void _showJoinIndividualLeagueConfirmationWithAnimation(
     BuildContext context,
     League league,
     String inviteCode,
   ) {
-    // Show a bouncy dialog for joining the league
     showGeneralDialog(
       context: context,
       barrierDismissible: false,
@@ -327,12 +507,10 @@ class _SearchLeaguePageState extends State<SearchLeaguePage> {
       transitionDuration: const Duration(milliseconds: 400),
       pageBuilder: (_, __, ___) => const SizedBox.shrink(),
       transitionBuilder: (dialogContext, animation, secondaryAnimation, child) {
-        // Create bounce animation
         final curvedAnimation = CurvedAnimation(
           parent: animation,
           curve: Curves.elasticOut,
         );
-
         return ScaleTransition(
           scale: Tween<double>(begin: 0.5, end: 1.0).animate(curvedAnimation),
           child: FadeTransition(
@@ -421,13 +599,8 @@ class _SearchLeaguePageState extends State<SearchLeaguePage> {
                               ),
                             ),
                             onPressed: () {
-                              // Close this dialog
                               Navigator.of(dialogContext).pop();
-
-                              // Set loading state
                               setState(() => _isJoiningLeague = true);
-
-                              // Directly trigger the join league event
                               context.read<LeagueBloc>().add(
                                     JoinLeagueEvent(
                                       inviteCode: inviteCode,
@@ -447,16 +620,6 @@ class _SearchLeaguePageState extends State<SearchLeaguePage> {
           ),
         );
       },
-    );
-  }
-
-  // Show confirmation dialog for joining an individual league (original version - kept for reference)
-  void _showJoinIndividualLeagueConfirmation(
-      BuildContext context, League league, String inviteCode) {
-    _showJoinIndividualLeagueConfirmationWithAnimation(
-      context,
-      league,
-      inviteCode,
     );
   }
 }

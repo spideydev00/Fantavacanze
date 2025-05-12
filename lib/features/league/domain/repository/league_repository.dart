@@ -1,4 +1,5 @@
 import 'package:fantavacanze_official/core/errors/failure.dart';
+import 'package:fantavacanze_official/features/league/data/models/note_model.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/league.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/rule.dart';
 import 'package:fpdart/fpdart.dart';
@@ -101,10 +102,11 @@ abstract class LeagueRepository {
     required String ruleName,
   });
 
-  // User operations
-  Future<Either<Failure, List<Map<String, dynamic>>>> getUsersDetails(
-      List<String> userIds);
-
   // Cache operations
   Future<Either<Failure, void>> clearLocalCache();
+
+  // Note operations
+  Future<Either<Failure, List<NoteModel>>> getNotes(String leagueId);
+  Future<Either<Failure, void>> saveNote(String leagueId, NoteModel note);
+  Future<Either<Failure, void>> deleteNote(String leagueId, String noteId);
 }

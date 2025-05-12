@@ -88,4 +88,87 @@ class ColorPalette {
   // Extra
   static const Color darkerGreen = Color.fromARGB(255, 28, 60, 49);
   static const Color premiumUser = Color.fromARGB(255, 197, 127, 6);
+
+  // Gradient collections for notes - improved for better white text readability
+  static List<LinearGradient> noteGradients = [
+    // Deep blue to purple
+    LinearGradient(
+      colors: [
+        const Color(0xFF3A1C71),
+        const Color(0xFFD76D77),
+      ],
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+    ),
+    // Dark teal to emerald
+    LinearGradient(
+      colors: [
+        const Color(0xFF1A2980),
+        const Color(0xFF26D0CE),
+      ],
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+    ),
+    // Dark pink to orange
+    LinearGradient(
+      colors: [
+        const Color(0xFF833ab4),
+        const Color(0xFFfd1d1d),
+      ],
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+    ),
+    // Dark purple to pink
+    LinearGradient(
+      colors: [
+        const Color(0xFF6A11CB),
+        const Color(0xFF2575FC),
+      ],
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+    ),
+    // Deep orange to amber
+    LinearGradient(
+      colors: [
+        const Color(0xFFEB3349),
+        const Color(0xFFF45C43),
+      ],
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+    ),
+    // Dark green to light green
+    LinearGradient(
+      colors: [
+        const Color(0xFF134E5E),
+        const Color(0xFF71B280),
+      ],
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+    ),
+    // Indigo to cyan
+    LinearGradient(
+      colors: [
+        const Color(0xFF0F2027),
+        const Color(0xFF203A43),
+      ],
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+    ),
+    // Dark magenta to purple
+    LinearGradient(
+      colors: [
+        const Color(0xFF614385),
+        const Color(0xFF516395),
+      ],
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+    ),
+  ];
+
+  // Method to get a gradient based on a string (like an ID)
+  static LinearGradient getGradientFromId(String id) {
+    // Use the hash code of the string to get a consistent gradient for the same ID
+    final index = id.hashCode.abs() % noteGradients.length;
+    return noteGradients[index];
+  }
 }

@@ -1,5 +1,6 @@
 import 'package:fantavacanze_official/core/errors/exceptions.dart';
 import 'package:fantavacanze_official/features/league/data/models/league_model.dart';
+import 'package:fantavacanze_official/features/league/data/models/note_model.dart';
 import 'package:fantavacanze_official/features/league/data/models/rule_model.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
@@ -16,15 +17,22 @@ abstract interface class LeagueLocalDataSource {
   Future<List<RuleModel>> getCachedRules(String mode);
 
   Future<void> clearCache();
+
+  // Notes methods
+  Future<List<NoteModel>> getNotes(String leagueId);
+  Future<void> saveNote(String leagueId, NoteModel note);
+  Future<void> deleteNote(String leagueId, String noteId);
 }
 
 class LeagueLocalDataSourceImpl implements LeagueLocalDataSource {
   final Box<Map<dynamic, dynamic>> leaguesBox;
   final Box<Map<dynamic, dynamic>> rulesBox;
+  final Box<Map<dynamic, dynamic>> notesBox;
 
   LeagueLocalDataSourceImpl({
     required this.leaguesBox,
     required this.rulesBox,
+    required this.notesBox,
   });
 
   @override
@@ -195,14 +203,113 @@ class LeagueLocalDataSourceImpl implements LeagueLocalDataSource {
   }
 
   @override
+  Future<List<NoteModel>> getNotes(String leagueId) async {
+    try {
+      final List<NoteModel> notes = [];
+
+      notesBox.read(() {
+        final notesData = notesBox.get('notes');
+        if (notesData != null) {
+          final List<dynamic> notesList = notesData['data'] as List;
+          notes.addAll(notesList
+              .map(
+                  (note) => NoteModel.fromJson(Map<String, dynamic>.from(note)))
+              .where((note) => note.leagueId == leagueId) // Filter by leagueId
+              .toList());
+
+          debugPrint(
+              "📤 Loaded ${notes.length} notes for league [$leagueId] from cache");
+        } else {
+          debugPrint("📤 No cached notes found.");
+        }
+      });
+
+      return notes;
+    } catch (e) {
+      throw CacheException(
+          'Error retrieving notes from cache: ${e.toString()}');
+    }
+  }
+
+  @override
+  Future<void> saveNote(String leagueId, NoteModel note) async {
+    try {
+      // Get all existing notes
+      List<NoteModel> allNotes = [];
+
+      notesBox.read(() {
+        final notesData = notesBox.get('notes');
+        if (notesData != null) {
+          final List<dynamic> notesList = notesData['data'] as List;
+          allNotes = notesList
+              .map(
+                  (note) => NoteModel.fromJson(Map<String, dynamic>.from(note)))
+              .toList();
+        }
+      });
+
+      // Add the new note
+      allNotes = [note, ...allNotes];
+
+      final updatedNotesData = {
+        'timestamp': DateTime.now().toIso8601String(),
+        'data': allNotes.map((note) => note.toJson()).toList(),
+      };
+
+      notesBox.write(() {
+        notesBox.put('notes', updatedNotesData);
+      });
+
+      debugPrint("📦 Saved note [${note.id}] for league [$leagueId]");
+    } catch (e) {
+      throw CacheException('Error saving note to cache: ${e.toString()}');
+    }
+  }
+
+  @override
+  Future<void> deleteNote(String leagueId, String noteId) async {
+    try {
+      // Get all existing notes
+      List<NoteModel> allNotes = [];
+
+      notesBox.read(() {
+        final notesData = notesBox.get('notes');
+        if (notesData != null) {
+          final List<dynamic> notesList = notesData['data'] as List;
+          allNotes = notesList
+              .map(
+                  (note) => NoteModel.fromJson(Map<String, dynamic>.from(note)))
+              .toList();
+        }
+      });
+
+      // Remove the note with the specified ID
+      allNotes.removeWhere((note) => note.id == noteId);
+
+      final updatedNotesData = {
+        'timestamp': DateTime.now().toIso8601String(),
+        'data': allNotes.map((note) => note.toJson()).toList(),
+      };
+
+      notesBox.write(() {
+        notesBox.put('notes', updatedNotesData);
+      });
+
+      debugPrint("🗑️ Deleted note [$noteId] for league [$leagueId]");
+    } catch (e) {
+      throw CacheException('Error deleting note from cache: ${e.toString()}');
+    }
+  }
+
+  @override
   Future<void> clearCache() async {
     try {
       leaguesBox.clear();
       rulesBox.clear();
-      debugPrint("🧹 Cleared all league and rules cache");
+      notesBox.clear();
+      debugPrint("🧹 Cleared all league, rules, and notes cache");
     } catch (e) {
-      throw CacheException(
-          'Errore nella pulizia della cache locale: ${e.toString()}');
+      throw CacheException('Error cleaning local cache: ${e.toString()}');
     }
   }
 }

@@ -2,8 +2,10 @@ import 'package:fantavacanze_official/core/cubits/app_league/app_league_cubit.da
 import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit.dart';
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
+import 'package:fantavacanze_official/features/league/domain/entities/individual_participant.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/league.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/memory.dart';
+import 'package:fantavacanze_official/features/league/domain/entities/team_participant.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_event.dart';
 import 'package:fantavacanze_official/features/league/presentation/widgets/core/confirmation_dialog.dart';
@@ -330,6 +332,34 @@ class MemoriesPage extends StatelessWidget {
         },
       ),
     );
+  }
+
+  // Helper method to get user name from SimpleParticipant
+  String getUserNameFromId(BuildContext context, String userId) {
+    final leagueState = context.read<AppLeagueCubit>().state;
+    if (leagueState is AppLeagueExists) {
+      final league = leagueState.selectedLeague;
+      if (league.isTeamBased) {
+        for (final participant in league.participants) {
+          if (participant is TeamParticipant) {
+            final member = participant.findMemberById(userId);
+            if (member != null) {
+              return member.name;
+            }
+          }
+        }
+      } else {
+        for (final participant in league.participants) {
+          if (participant is IndividualParticipant &&
+              participant.userId == userId) {
+            return participant.name;
+          }
+        }
+      }
+    }
+
+    // Fallback
+    return 'Utente';
   }
 }
 

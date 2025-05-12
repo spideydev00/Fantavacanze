@@ -7,6 +7,7 @@ import 'package:fantavacanze_official/features/league/data/models/memory_model.d
 import 'package:fantavacanze_official/features/league/data/models/participant_model.dart';
 import 'package:fantavacanze_official/features/league/data/models/rule_model.dart';
 import 'package:fantavacanze_official/features/league/data/models/team_participant_model.dart';
+import 'package:fantavacanze_official/features/league/data/models/simple_participant_model.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/rule.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -104,8 +105,6 @@ abstract class LeagueRemoteDataSource {
     required LeagueModel league,
     required RuleModel rule,
   });
-
-  Future<List<Map<String, dynamic>>> getUsersDetails(List<String> userIds);
 }
 
 class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
@@ -267,8 +266,11 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
             // Team-based: check userIds, Individual: check userId
             final json = (participant as ParticipantModel).toJson();
             if (league.isTeamBased) {
-              final userIds = (json['userIds'] as List?)?.cast<String>() ?? [];
-              return userIds.contains(currentUserId);
+              final members = (json['members'] as List?)
+                      ?.map((member) => SimpleParticipantModel.fromJson(member))
+                      .toList() ??
+                  [];
+              return members.any((member) => member.userId == currentUserId);
             } else {
               return json['userId'] == currentUserId;
             }
@@ -301,7 +303,13 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
       final currentUserId = _checkAuthentication();
       final currentUserName = _getCurrentUserName() ?? "Utente";
 
-      // Call the RPC function with parameters in correct order
+      // Create a SimpleParticipantModel for the current user
+      final currentUserParticipant = SimpleParticipantModel(
+        userId: currentUserId,
+        name: currentUserName,
+      );
+
+      // Call the RPC function
       final response = await supabaseClient.rpc(
         'join_league',
         params: {
@@ -310,6 +318,7 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
           'p_invite_code': inviteCode,
           'p_team_name': teamName,
           'p_specific_league_id': specificLeagueId,
+          'p_member_details': currentUserParticipant.toJson(),
         },
       );
 
@@ -402,7 +411,7 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
       for (int i = 0; i < league.participants.length; i++) {
         final participant = league.participants[i];
         if (participant is TeamParticipantModel &&
-            participant.userIds.contains(userId)) {
+            participant.members.any((member) => member.userId == userId)) {
           teamIndex = i;
           team = participant;
           break;
@@ -414,7 +423,7 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
       }
 
       // Se è l'ultimo membro del team, rimuovi il team
-      if (team.userIds.length == 1) {
+      if (team.members.length == 1) {
         // Se è anche l'ultimo team, elimina la lega
         if (league.participants.length == 1) {
           await deleteLeague(league.id);
@@ -437,11 +446,12 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
       }
 
       // Se ci sono altri membri nel team, rimuovi solo l'utente
-      final updatedUserIds = List<String>.from(team.userIds)..remove(userId);
+      final updatedMembers =
+          team.members.where((member) => member.userId != userId).toList();
 
       // Crea il team aggiornato
       final updatedTeam = TeamParticipantModel(
-        userIds: updatedUserIds,
+        members: updatedMembers,
         captainId: team.captainId,
         name: team.name,
         points: team.points,
@@ -826,19 +836,18 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
         throw ServerException('Team non trovato');
       }
 
-      // Ottiene il team e i suoi membri attuali
+      // Ottiene il team partecipante
       final teamParticipant =
           league.participants[teamIndex] as TeamParticipantModel;
-      final List<String> currentMembers =
-          List<String>.from(teamParticipant.userIds);
 
-      // Rimuove gli utenti dal team
-      final List<String> updatedMembers =
-          currentMembers.where((id) => !userIdsToRemove.contains(id)).toList();
+      // Filtra i membri per creare la lista aggiornata senza quelli da rimuovere
+      final updatedMembers = teamParticipant.members
+          .where((member) => !userIdsToRemove.contains(member.userId))
+          .toList();
 
       // Crea il team aggiornato
       final updatedTeam = TeamParticipantModel(
-        userIds: updatedMembers,
+        members: updatedMembers,
         captainId: teamParticipant.captainId,
         name: teamParticipant.name,
         points: teamParticipant.points,
@@ -863,29 +872,6 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
       );
     } catch (e) {
       if (e is ServerException) rethrow;
-      throw ServerException('Si è verificato un errore: ${e.toString()}');
-    }
-  }
-
-  // ------------------------------------------------
-  // G E T   U S E R S   D E T A I L S
-  @override
-  Future<List<Map<String, dynamic>>> getUsersDetails(
-      List<String> userIds) async {
-    try {
-      if (userIds.isEmpty) {
-        return [];
-      }
-
-      // Call the Supabase RPC function
-      final response = await supabaseClient.rpc(
-        'get_users_details',
-        params: {'user_ids': userIds},
-      );
-
-      // Convert response to list of maps
-      return List<Map<String, dynamic>>.from(response);
-    } catch (e) {
       throw ServerException('Si è verificato un errore: ${e.toString()}');
     }
   }
@@ -990,7 +976,12 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
   }) {
     if (isTeamBased) {
       return TeamParticipantModel(
-        userIds: [creatorId],
+        members: [
+          SimpleParticipantModel(
+            userId: creatorId,
+            name: creatorName,
+          )
+        ],
         captainId: creatorId,
         name: 'Squadra di $creatorName',
         points: 0,
@@ -1161,8 +1152,9 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
       if ((participantJson['type'] == 'individual' &&
               participantJson['userId'] == eventToRemove.targetUser) ||
           (participantJson['type'] == 'team' &&
-              (participantJson['userIds'] as List<dynamic>)
-                  .contains(eventToRemove.targetUser))) {
+              (participantJson['members'] as List<dynamic>).any((member) =>
+                  SimpleParticipantModel.fromJson(member).userId ==
+                  eventToRemove.targetUser))) {
         final updatedScore = p.points - eventToRemove.points;
 
         // Update bonus or malus totals
@@ -1201,11 +1193,12 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
   int _findUserTeamIndex(LeagueModel league, String userId) {
     for (int i = 0; i < league.participants.length; i++) {
       final participant = league.participants[i] as ParticipantModel;
-      final participantJson = participant.toJson();
 
-      if (participantJson['type'] == 'team' &&
-          (participantJson['userIds'] as List<dynamic>).contains(userId)) {
-        return i;
+      if (participant is TeamParticipantModel) {
+        // Check if userId is in the members list
+        if (participant.members.any((member) => member.userId == userId)) {
+          return i;
+        }
       }
     }
     return -1;
@@ -1216,15 +1209,16 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
   List<dynamic> _getUpdatedParticipantsWithNewTeamName(
       LeagueModel league, String userId, String newName) {
     return league.participants.map((p) {
-      final participantJson = (p as ParticipantModel).toJson();
-      if (participantJson['type'] == 'team' &&
-          (participantJson['userIds'] as List<dynamic>).contains(userId)) {
+      final participant = p as ParticipantModel;
+
+      if (participant is TeamParticipantModel &&
+          participant.members.any((member) => member.userId == userId)) {
         return {
-          ...participantJson,
+          ...participant.toJson(),
           'name': newName,
         };
       }
-      return participantJson;
+      return participant.toJson();
     }).toList();
   }
 

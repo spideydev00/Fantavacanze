@@ -85,6 +85,9 @@ class _DashboardScreenState extends State<DashboardScreen>
 
   @override
   Widget build(BuildContext context) {
+    // Check if keyboard is visible
+    final bool isKeyboardVisible = MediaQuery.of(context).viewInsets.bottom > 0;
+
     return Scaffold(
       // Use a background color matching the SideMenu
       backgroundColor: context.secondaryBgColor,
@@ -230,7 +233,10 @@ class _DashboardScreenState extends State<DashboardScreen>
                           );
                         },
                       ),
-                      bottomNavigationBar: CustomBottomNavigationBar(),
+                      // Hide the bottom navigation bar when keyboard is visible
+                      bottomNavigationBar: isKeyboardVisible
+                          ? null
+                          : const CustomBottomNavigationBar(),
                     ),
                   ),
                 ),

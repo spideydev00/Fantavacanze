@@ -92,22 +92,23 @@ class RuleItem extends StatelessWidget {
               ),
               const SizedBox(width: ThemeSizes.sm),
 
-              // Rule name - modified to allow wrapping
+              // Rule name
               Expanded(
                 child: Container(
+                  padding: const EdgeInsets.all(
+                    ThemeSizes.xs,
+                  ),
                   constraints: const BoxConstraints(minHeight: 36),
-                  child: Center(
-                    child: Text(
-                      rule.name,
-                      style: context.textTheme.labelSmall?.copyWith(
-                        fontWeight: FontWeight.w500,
-                        fontSize: 11,
-                      ),
-                      // Allow up to 2 lines
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      textAlign: TextAlign.left,
+                  child: Text(
+                    rule.name,
+                    style: context.textTheme.labelSmall?.copyWith(
+                      fontWeight: FontWeight.w500,
+                      fontSize: 11,
                     ),
+                    // Allow up to 2 lines
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.left,
                   ),
                 ),
               ),

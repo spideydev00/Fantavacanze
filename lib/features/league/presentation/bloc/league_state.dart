@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:fantavacanze_official/features/league/data/models/note_model.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/league.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/rule.dart';
 
@@ -81,17 +82,6 @@ class RulesLoaded extends LeagueState {
   List<Object?> get props => [rules, mode];
 }
 
-class UsersDetailsLoaded extends LeagueState {
-  final List<Map<String, dynamic>> usersDetails;
-
-  const UsersDetailsLoaded({
-    required this.usersDetails,
-  });
-
-  @override
-  List<Object?> get props => [usersDetails];
-}
-
 class TeammatesRemovedState extends LeagueState {
   final League league;
 
@@ -99,4 +89,20 @@ class TeammatesRemovedState extends LeagueState {
 
   @override
   List<Object?> get props => [league];
+}
+
+// Replace the three note-specific states with a single success state
+class NoteSuccess extends LeagueState {
+  final String operation; // "get", "save", or "delete"
+  final List<NoteModel>? notes;
+  final String leagueId;
+
+  const NoteSuccess({
+    required this.operation,
+    required this.leagueId,
+    this.notes,
+  });
+
+  @override
+  List<Object?> get props => [operation, leagueId, notes];
 }

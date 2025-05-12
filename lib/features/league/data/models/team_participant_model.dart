@@ -1,9 +1,11 @@
+import 'package:fantavacanze_official/features/league/domain/entities/simple_participant.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/team_participant.dart';
 import 'package:fantavacanze_official/features/league/data/models/participant_model.dart';
+import 'package:fantavacanze_official/features/league/data/models/simple_participant_model.dart';
 
 class TeamParticipantModel extends TeamParticipant implements ParticipantModel {
   const TeamParticipantModel({
-    required super.userIds,
+    required super.members,
     required super.name,
     required super.points,
     required super.malusTotal,
@@ -23,8 +25,17 @@ class TeamParticipantModel extends TeamParticipant implements ParticipantModel {
     final int bonusTotalValue =
         json['bonusTotal'] != null ? json['bonusTotal'] as int : 0;
 
+    // Parse members
+    List<SimpleParticipantModel> members = [];
+    if (json['members'] != null) {
+      members = (json['members'] as List)
+          .map((memberJson) => SimpleParticipantModel.fromJson(
+              memberJson as Map<String, dynamic>))
+          .toList();
+    }
+
     return TeamParticipantModel(
-      userIds: List<String>.from(json['userIds']),
+      members: members,
       name: json['name'] as String,
       points: scoreValue,
       captainId: json['captainId'] as String,
@@ -38,7 +49,11 @@ class TeamParticipantModel extends TeamParticipant implements ParticipantModel {
   Map<String, dynamic> toJson() {
     return {
       'type': 'team',
-      'userIds': userIds,
+      'members': members
+          .map((member) => (member is SimpleParticipantModel)
+              ? member.toJson()
+              : {'userId': member.userId, 'name': member.name})
+          .toList(),
       'name': name,
       'points': points,
       'captainId': captainId,
@@ -49,7 +64,7 @@ class TeamParticipantModel extends TeamParticipant implements ParticipantModel {
   }
 
   TeamParticipantModel copyWith({
-    List<String>? userIds,
+    List<SimpleParticipant>? members,
     String? name,
     double? points,
     int? malusTotal,
@@ -58,7 +73,7 @@ class TeamParticipantModel extends TeamParticipant implements ParticipantModel {
     String? captainId,
   }) {
     return TeamParticipantModel(
-      userIds: userIds ?? this.userIds,
+      members: members ?? this.members,
       name: name ?? this.name,
       points: points ?? this.points,
       malusTotal: malusTotal ?? this.malusTotal,

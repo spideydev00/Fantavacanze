@@ -61,7 +61,7 @@ class LeaderboardList extends StatelessWidget {
     return Padding(
       padding: padding ?? const EdgeInsets.symmetric(horizontal: 16.0),
       child: ListView.builder(
-        itemCount: sortedParticipants.length + 1, // +1 for header
+        itemCount: sortedParticipants.length + 1,
         itemBuilder: (context, index) {
           if (index == 0) {
             // Header
