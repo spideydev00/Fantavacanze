@@ -15,6 +15,7 @@ class TeamMembersList extends StatefulWidget {
   final List<String> admins;
   final String currentUserId;
   final bool isCaptain;
+  final Function(bool isRemoving)? onRemovalModeChanged;
 
   const TeamMembersList({
     super.key,
@@ -22,37 +23,29 @@ class TeamMembersList extends StatefulWidget {
     required this.admins,
     required this.currentUserId,
     this.isCaptain = false,
+    this.onRemovalModeChanged,
   });
 
   @override
-  State<TeamMembersList> createState() => _TeamMembersListState();
-
-  // Add public method that can be called from parent
-  void toggleRemovalMode() {
-    // Create a key and access the state
-    if (key != null && key is GlobalKey) {
-      final state = (key as GlobalKey).currentState as _TeamMembersListState?;
-      if (state != null) {
-        state._toggleRemovalMode();
-      }
-    }
-  }
+  State<TeamMembersList> createState() => TeamMembersListState();
 }
 
-class _TeamMembersListState extends State<TeamMembersList> {
+class TeamMembersListState extends State<TeamMembersList> {
   bool _isRemovingMembers = false;
   final Set<String> _selectedMembersToRemove = {};
 
-  @override
-  void initState() {
-    super.initState();
-  }
+  bool get isRemovingMembers => _isRemovingMembers;
 
-  void _toggleRemovalMode() {
+  void toggleRemovalMode() {
     setState(() {
       _isRemovingMembers = !_isRemovingMembers;
       _selectedMembersToRemove.clear();
     });
+
+    // Notify parent about the change
+    if (widget.onRemovalModeChanged != null) {
+      widget.onRemovalModeChanged!(_isRemovingMembers);
+    }
   }
 
   void _toggleMemberSelection(String userId) {
@@ -89,6 +82,11 @@ class _TeamMembersListState extends State<TeamMembersList> {
         _isRemovingMembers = false;
         _selectedMembersToRemove.clear();
       });
+
+      // Notify parent about the change
+      if (widget.onRemovalModeChanged != null) {
+        widget.onRemovalModeChanged!(false);
+      }
     }
   }
 
@@ -103,7 +101,7 @@ class _TeamMembersListState extends State<TeamMembersList> {
           isCaptain: widget.isCaptain,
           isRemovingMembers: _isRemovingMembers,
           selectedMembersToRemove: _selectedMembersToRemove,
-          onToggleRemovalMode: _toggleRemovalMode,
+          onToggleRemovalMode: toggleRemovalMode,
           onToggleMemberSelection: _toggleMemberSelection,
           onRemoveSelectedMembers: _removeSelectedMembers,
         );

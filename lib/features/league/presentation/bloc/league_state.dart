@@ -106,3 +106,26 @@ class NoteSuccess extends LeagueState {
   @override
   List<Object?> get props => [operation, leagueId, notes];
 }
+
+// Add new state for image upload success
+class ImageUploadSuccess extends LeagueState {
+  final String imageUrl;
+
+  const ImageUploadSuccess({required this.imageUrl});
+
+  @override
+  List<Object?> get props => [imageUrl];
+}
+
+class TeamLogoUploadSuccess extends LeagueState {
+  final String logoUrl;
+  final String teamName;
+
+  const TeamLogoUploadSuccess({
+    required this.logoUrl,
+    required this.teamName,
+  });
+
+  @override
+  List<Object?> get props => [logoUrl, teamName];
+}

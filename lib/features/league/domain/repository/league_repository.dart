@@ -3,6 +3,7 @@ import 'package:fantavacanze_official/features/league/data/models/note_model.dar
 import 'package:fantavacanze_official/features/league/domain/entities/league.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/rule.dart';
 import 'package:fpdart/fpdart.dart';
+import 'dart:io';
 
 abstract class LeagueRepository {
   Future<Either<Failure, League>> createLeague({
@@ -69,13 +70,13 @@ abstract class LeagueRepository {
     required String eventId,
   });
 
-  // Memory operations
   Future<Either<Failure, League>> addMemory({
     required League league,
     required String imageUrl,
     required String text,
     required String userId,
     String? relatedEventId,
+    String? eventName,
   });
 
   Future<Either<Failure, League>> removeMemory({
@@ -109,4 +110,22 @@ abstract class LeagueRepository {
   Future<Either<Failure, List<NoteModel>>> getNotes(String leagueId);
   Future<Either<Failure, void>> saveNote(String leagueId, NoteModel note);
   Future<Either<Failure, void>> deleteNote(String leagueId, String noteId);
+
+  // Image operations
+  Future<Either<Failure, String>> uploadImage({
+    required String leagueId,
+    required File imageFile,
+  });
+
+  Future<Either<Failure, String>> uploadTeamLogo({
+    required String leagueId,
+    required String teamName,
+    required File imageFile,
+  });
+
+  Future<Either<Failure, League>> updateTeamLogo({
+    required League league,
+    required String teamName,
+    required String logoUrl,
+  });
 }
