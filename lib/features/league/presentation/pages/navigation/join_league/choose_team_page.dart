@@ -338,7 +338,11 @@ class _ChooseTeamPageState extends State<ChooseTeamPage>
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.groups_rounded, color: Colors.white, size: 16),
+                      Icon(Icons.groups_rounded,
+                          color: appThemeState.themeMode == ThemeMode.light
+                              ? ColorPalette.textPrimary(ThemeMode.dark)
+                              : ColorPalette.textPrimary(ThemeMode.light),
+                          size: 16),
                       SizedBox(width: 4),
                       Text(
                         'Lega a Squadre',

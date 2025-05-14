@@ -18,6 +18,7 @@ class AddMemory implements Usecase<League, AddMemoryParams> {
       text: params.text,
       userId: params.userId,
       relatedEventId: params.relatedEventId,
+      eventName: params.eventName,
     );
   }
 }
@@ -29,6 +30,7 @@ class AddMemoryParams {
   final String text;
   final String userId;
   final String? relatedEventId;
+  final String? eventName;
 
   const AddMemoryParams({
     required this.league,
@@ -36,5 +38,6 @@ class AddMemoryParams {
     required this.text,
     required this.userId,
     this.relatedEventId,
+    this.eventName,
   });
 }

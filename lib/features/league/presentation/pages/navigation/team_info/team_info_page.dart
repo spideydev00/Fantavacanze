@@ -7,6 +7,8 @@ import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/extensions/context_extension.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
+import 'package:fantavacanze_official/core/utils/show_snackbar.dart';
+import 'package:fantavacanze_official/core/utils/image_picker_util.dart';
 import 'package:fantavacanze_official/core/widgets/loader.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/individual_participant.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/league.dart';
@@ -14,6 +16,7 @@ import 'package:fantavacanze_official/features/league/domain/entities/participan
 import 'package:fantavacanze_official/features/league/domain/entities/team_participant.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_event.dart';
+import 'package:fantavacanze_official/features/league/presentation/bloc/league_state.dart';
 import 'package:fantavacanze_official/features/league/presentation/widgets/team_info/events_list.dart';
 import 'package:fantavacanze_official/features/league/presentation/widgets/core/confirmation_dialog.dart';
 import 'package:fantavacanze_official/features/league/presentation/widgets/team_info/leave_league_button.dart';
@@ -23,6 +26,7 @@ import 'package:fantavacanze_official/features/league/presentation/widgets/team_
 import 'package:fantavacanze_official/features/league/presentation/widgets/team_info/team_members_list.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 class TeamInfoPage extends StatelessWidget {
   static Route get route =>
@@ -31,68 +35,78 @@ class TeamInfoPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<AppLeagueCubit, AppLeagueState>(
-      builder: (context, state) {
-        if (state is AppLeagueExists) {
-          final league = state.selectedLeague;
+    return BlocListener<LeagueBloc, LeagueState>(
+      listener: (context, state) {
+        if (state is LeagueError) {
+          // Show error message in a snackbar
+          showSnackBar(context, state.message);
+        }
+      },
+      child: BlocBuilder<AppLeagueCubit, AppLeagueState>(
+        builder: (context, state) {
+          if (state is AppLeagueExists) {
+            final league = state.selectedLeague;
 
-          final userId =
-              (context.read<AppUserCubit>().state as AppUserIsLoggedIn).user.id;
+            final userId =
+                (context.read<AppUserCubit>().state as AppUserIsLoggedIn)
+                    .user
+                    .id;
 
-          final isAdmin = context.read<LeagueBloc>().isAdmin();
+            final isAdmin = context.read<LeagueBloc>().isAdmin();
 
-          late bool isCaptain = false;
+            late bool isCaptain = false;
 
-          if (league.isTeamBased) {
-            // Find if user is a captain of any team
+            if (league.isTeamBased) {
+              // Find if user is a captain of any team
+              for (final participant in league.participants) {
+                if (participant is TeamParticipant) {
+                  if (participant.captainId == userId) {
+                    isCaptain = true;
+                    break;
+                  }
+                }
+              }
+            }
+
+            // Find user's participant entry
+            Participant? userParticipant;
             for (final participant in league.participants) {
-              if (participant is TeamParticipant) {
-                if (participant.captainId == userId) {
-                  isCaptain = true;
+              if (league.isTeamBased) {
+                if (participant is TeamParticipant &&
+                    participant.members
+                        .any((member) => member.userId == userId)) {
+                  userParticipant = participant;
+                  break;
+                }
+              } else {
+                if (participant is IndividualParticipant &&
+                    participant.userId == userId) {
+                  userParticipant = participant;
                   break;
                 }
               }
             }
+
+            return league.isTeamBased
+                ? _TeamBasedInfo(
+                    league: league,
+                    team: userParticipant as TeamParticipant,
+                    isCaptain: isCaptain,
+                    userId: userId,
+                  )
+                : _IndividualInfo(
+                    league: league,
+                    participant: userParticipant as IndividualParticipant,
+                    isAdmin: isAdmin,
+                    userId: userId,
+                  );
           }
 
-          // Find user's participant entry
-          Participant? userParticipant;
-          for (final participant in league.participants) {
-            if (league.isTeamBased) {
-              if (participant is TeamParticipant &&
-                  participant.members
-                      .any((member) => member.userId == userId)) {
-                userParticipant = participant;
-                break;
-              }
-            } else {
-              if (participant is IndividualParticipant &&
-                  participant.userId == userId) {
-                userParticipant = participant;
-                break;
-              }
-            }
-          }
-
-          return league.isTeamBased
-              ? _TeamBasedInfo(
-                  league: league,
-                  team: userParticipant as TeamParticipant,
-                  isCaptain: isCaptain,
-                  userId: userId,
-                )
-              : _IndividualInfo(
-                  league: league,
-                  participant: userParticipant as IndividualParticipant,
-                  isAdmin: isAdmin,
-                  userId: userId,
-                );
-        }
-
-        return Center(
-          child: Loader(color: context.primaryColor),
-        );
-      },
+          return Center(
+            child: Loader(color: context.primaryColor),
+          );
+        },
+      ),
     );
   }
 }
@@ -121,8 +135,11 @@ class _TeamBasedInfoState extends State<_TeamBasedInfo>
   final _teamNameController = TextEditingController();
   bool _isEditing = false;
   bool _isRemovingMembers = false;
-  final GlobalKey _teamMembersListKey = GlobalKey();
+  final GlobalKey<TeamMembersListState> _teamMembersListKey =
+      GlobalKey<TeamMembersListState>();
   late AnimationController _animationController;
+  String? _pendingTeamLogoUrl;
+  bool _isUploadingLogo = false;
 
   @override
   void initState() {
@@ -168,314 +185,476 @@ class _TeamBasedInfoState extends State<_TeamBasedInfo>
     _toggleEdit();
   }
 
+  void _toggleRemovalMode() {
+    setState(() {
+      _isRemovingMembers = !_isRemovingMembers;
+      if (_teamMembersListKey.currentState != null) {
+        _teamMembersListKey.currentState!.toggleRemovalMode();
+      }
+    });
+  }
+
+  void _onRemovalModeChanged(bool isRemoving) {
+    if (_isRemovingMembers != isRemoving) {
+      setState(() {
+        _isRemovingMembers = isRemoving;
+      });
+    }
+  }
+
+  void _handleTeamLogoUpdate() async {
+    final isAdmin = widget.league.admins.contains(widget.userId);
+    final canEdit = widget.isCaptain || isAdmin;
+
+    if (!canEdit) {
+      showSnackBar(
+          context, 'Solo il capitano o gli admin possono modificare il logo');
+      return;
+    }
+
+    final imageFile = await ImagePickerUtil.pickImage(
+      context: context,
+      enableCropping: true,
+      isCircular: true,
+      aspectRatio: 1.0,
+    );
+
+    if (imageFile == null) return;
+
+    setState(() {
+      _isUploadingLogo = true;
+    });
+
+    // First upload the image file using team name instead of ID
+    if (mounted) {
+      context.read<LeagueBloc>().add(
+            UploadTeamLogoEvent(
+              leagueId: widget.league.id,
+              teamName: widget.team.name,
+              imageFile: imageFile,
+            ),
+          );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final isAdmin = widget.league.admins.contains(widget.userId);
     final canEdit = widget.isCaptain || isAdmin;
     final members = widget.team.userIds.length;
 
-    return Scaffold(
-      backgroundColor: context.bgColor,
-      body: CustomScrollView(
-        physics: const BouncingScrollPhysics(),
-        slivers: [
-          // Custom app bar with edit buttons
-          SliverAppBar(
-            expandedHeight: 250,
-            floating: true,
-            pinned: true,
-            stretch: true,
-            backgroundColor: context.bgColor,
-            flexibleSpace: FlexibleSpaceBar(
-              background: Container(
-                color: context.bgColor,
-                child: Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    // Team avatar positioned properly to avoid overlap
-                    Positioned(
-                      top: 50,
-                      child: Hero(
-                        tag: 'team_avatar_${widget.team.name}',
-                        child: Container(
-                          width: 90,
-                          height: 90,
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: [
-                                context.primaryColor.withValues(alpha: 0.4),
-                                context.primaryColor.withValues(alpha: 0.8),
-                                context.primaryColor.withValues(alpha: 0.9),
-                              ],
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
+    return BlocListener<LeagueBloc, LeagueState>(
+      listener: (context, state) {
+        if (state is TeamLogoUploadSuccess) {
+          if (state.teamName == widget.team.name) {
+            // Check team name instead of ID
+            _pendingTeamLogoUrl = state.logoUrl;
+
+            // Update the team with the new logo URL
+            context.read<LeagueBloc>().add(
+                  UpdateTeamLogoEvent(
+                    league: widget.league,
+                    teamName: widget.team.name,
+                    logoUrl: state.logoUrl,
+                  ),
+                );
+          }
+        } else if (state is LeagueSuccess &&
+            state.operation == 'update_team_logo') {
+          setState(() {
+            _isUploadingLogo = false;
+            _pendingTeamLogoUrl = null;
+          });
+
+          showSnackBar(
+            context,
+            'Logo del team aggiornato con successo',
+            color: ColorPalette.success,
+          );
+        } else if (state is LeagueError) {
+          setState(() {
+            _isUploadingLogo = false;
+            _pendingTeamLogoUrl = null;
+          });
+          showSnackBar(context, state.message);
+        }
+      },
+      child: Scaffold(
+        backgroundColor: context.bgColor,
+        body: CustomScrollView(
+          physics: const BouncingScrollPhysics(),
+          slivers: [
+            // Custom app bar with edit buttons
+            SliverAppBar(
+              expandedHeight: 250,
+              floating: true,
+              pinned: true,
+              stretch: true,
+              backgroundColor: context.bgColor,
+              flexibleSpace: FlexibleSpaceBar(
+                background: Container(
+                  color: context.bgColor,
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      // Team avatar positioned properly to avoid overlap
+                      Positioned(
+                        top: 50,
+                        child: GestureDetector(
+                          onTap: _isEditing && canEdit
+                              ? _handleTeamLogoUpdate
+                              : null, // Only allow editing when in edit mode
+                          child: Hero(
+                            tag: 'team_avatar_${widget.team.name}',
+                            child: _buildTeamAvatar(context),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                title: Padding(
+                  padding: const EdgeInsets.only(bottom: ThemeSizes.sm),
+                  child: _isEditing
+                      ? SizedBox(
+                          height: 40,
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: ThemeSizes.md,
                             ),
-                            shape: BoxShape.circle,
-                            boxShadow: [
-                              BoxShadow(
-                                color:
-                                    context.primaryColor.withValues(alpha: 0.3),
-                                blurRadius: 15,
-                                spreadRadius: 2,
+                            child: TextField(
+                              controller: _teamNameController,
+                              textAlign: TextAlign.center,
+                              style: context.textTheme.bodyLarge!.copyWith(
+                                fontWeight: FontWeight.w600,
                               ),
-                            ],
-                          ),
-                          child: const Center(
-                            child: Icon(
-                              Icons.group,
-                              size: 48,
-                              color: Colors.white,
+                              decoration: InputDecoration(
+                                contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: ThemeSizes.md,
+                                  vertical: ThemeSizes.xs,
+                                ),
+                                filled: true,
+                                fillColor: context.secondaryBgColor,
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(
+                                      ThemeSizes.borderRadiusMd),
+                                  borderSide: BorderSide(
+                                    color: context.primaryColor
+                                        .withValues(alpha: 0.5),
+                                  ),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(
+                                      ThemeSizes.borderRadiusMd),
+                                  borderSide: BorderSide(
+                                    color: context.primaryColor,
+                                    width: 2,
+                                  ),
+                                ),
+                              ),
                             ),
                           ),
+                        )
+                      : Text(
+                          widget.team.name,
+                          style: context.textTheme.bodyLarge!.copyWith(
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                ),
+                centerTitle: true,
+                titlePadding: EdgeInsets.only(
+                  bottom: _isEditing ? 5 : 16,
+                  top: 50,
+                ), // Increased top padding to avoid overlap with icon
+              ),
+              actions: [
+                if (canEdit && !_isEditing)
+                  Padding(
+                    padding: const EdgeInsets.only(right: 16.0),
+                    child: IconButton(
+                      icon: Icon(Icons.edit),
+                      onPressed: _toggleEdit,
+                      tooltip: 'Modifica nome',
+                    ),
+                  ),
+                if (_isEditing) ...[
+                  IconButton(
+                    icon: const Icon(Icons.check, color: ColorPalette.success),
+                    onPressed: _updateTeamName,
+                    tooltip: 'Salva',
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close, color: ColorPalette.error),
+                    onPressed: _toggleEdit,
+                    tooltip: 'Annulla',
+                  ),
+                ],
+              ],
+            ),
+
+            // Team info content
+            SliverToBoxAdapter(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // Team badge with member count
+                  Container(
+                    padding: const EdgeInsets.all(ThemeSizes.md),
+                    child: Center(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: ThemeSizes.md,
+                          vertical: ThemeSizes.xs,
+                        ),
+                        decoration: BoxDecoration(
+                          color: context.primaryColor.withValues(alpha: 0.1),
+                          borderRadius:
+                              BorderRadius.circular(ThemeSizes.borderRadiusLg),
+                          border: Border.all(
+                            color: context.primaryColor.withValues(alpha: 0.2),
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.people_outline,
+                              size: 16,
+                              color: context.primaryColor,
+                            ),
+                            const SizedBox(width: ThemeSizes.xs),
+                            Text(
+                              '$members membri',
+                              style: TextStyle(
+                                color: context.primaryColor,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ),
-                  ],
-                ),
-              ),
-              title: Padding(
-                padding: const EdgeInsets.only(bottom: ThemeSizes.sm),
-                child: _isEditing
-                    ? SizedBox(
-                        height: 40,
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: ThemeSizes.md,
-                          ),
-                          child: TextField(
-                            controller: _teamNameController,
-                            textAlign: TextAlign.center,
-                            style: context.textTheme.bodyLarge!.copyWith(
-                              fontWeight: FontWeight.w600,
-                            ),
-                            decoration: InputDecoration(
-                              contentPadding: const EdgeInsets.symmetric(
-                                horizontal: ThemeSizes.md,
-                                vertical: ThemeSizes.xs,
-                              ),
-                              filled: true,
-                              fillColor: context.secondaryBgColor,
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(
-                                    ThemeSizes.borderRadiusMd),
-                                borderSide: BorderSide(
-                                  color: context.primaryColor
-                                      .withValues(alpha: 0.5),
-                                ),
-                              ),
-                              focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(
-                                    ThemeSizes.borderRadiusMd),
-                                borderSide: BorderSide(
-                                  color: context.primaryColor,
-                                  width: 2,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      )
-                    : Text(
-                        widget.team.name,
-                        style: context.textTheme.bodyLarge!.copyWith(
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-              ),
-              centerTitle: true,
-              titlePadding: EdgeInsets.only(
-                bottom: _isEditing ? 5 : 16,
-                top: 50,
-              ), // Increased top padding to avoid overlap with icon
-            ),
-            actions: [
-              if (canEdit && !_isEditing)
-                Padding(
-                  padding: const EdgeInsets.only(right: 16.0),
-                  child: IconButton(
-                    icon: Icon(Icons.edit),
-                    onPressed: _toggleEdit,
-                    tooltip: 'Modifica nome',
                   ),
-                ),
-              if (_isEditing) ...[
-                IconButton(
-                  icon: const Icon(Icons.check, color: ColorPalette.success),
-                  onPressed: _updateTeamName,
-                  tooltip: 'Salva',
-                ),
-                IconButton(
-                  icon: const Icon(Icons.close, color: ColorPalette.error),
-                  onPressed: _toggleEdit,
-                  tooltip: 'Annulla',
-                ),
-              ],
-            ],
-          ),
 
-          // Team info content
-          SliverToBoxAdapter(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                // Team badge with member count
-                Container(
-                  padding: const EdgeInsets.all(ThemeSizes.md),
-                  child: Center(
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: ThemeSizes.md,
-                        vertical: ThemeSizes.xs,
-                      ),
-                      decoration: BoxDecoration(
-                        color: context.primaryColor.withValues(alpha: 0.1),
-                        borderRadius:
-                            BorderRadius.circular(ThemeSizes.borderRadiusLg),
-                        border: Border.all(
-                          color: context.primaryColor.withValues(alpha: 0.2),
-                        ),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
+                  // Statistics section
+                  SectionCard(
+                    title: 'Statistiche',
+                    icon: Icons.bar_chart_rounded,
+                    child: Padding(
+                      padding: const EdgeInsets.all(ThemeSizes.md),
+                      child: Column(
                         children: [
-                          Icon(
-                            Icons.people_outline,
-                            size: 16,
+                          // Score card
+                          ScoreCard(
+                            score: widget.team.points.toInt(),
                             color: context.primaryColor,
                           ),
-                          const SizedBox(width: ThemeSizes.xs),
-                          Text(
-                            '$members membri',
-                            style: TextStyle(
-                              color: context.primaryColor,
-                              fontWeight: FontWeight.w500,
-                            ),
+
+                          const SizedBox(height: ThemeSizes.md),
+
+                          // Bonus and malus stats
+                          Row(
+                            children: [
+                              Expanded(
+                                child: StatCard(
+                                  icon: Icons.arrow_upward_rounded,
+                                  label: 'Bonus',
+                                  value: '${widget.team.bonusTotal}',
+                                  isBonus: true,
+                                ),
+                              ),
+                              const SizedBox(width: ThemeSizes.md),
+                              Expanded(
+                                child: StatCard(
+                                  icon: Icons.arrow_downward_rounded,
+                                  label: 'Malus',
+                                  value: '${widget.team.malusTotal}',
+                                  isBonus: false,
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),
                     ),
                   ),
-                ),
 
-                // Statistics section
-                SectionCard(
-                  title: 'Statistiche',
-                  icon: Icons.bar_chart_rounded,
-                  child: Padding(
-                    padding: const EdgeInsets.all(ThemeSizes.md),
-                    child: Column(
-                      children: [
-                        // Score card
-                        ScoreCard(
-                          score: widget.team.points.toInt(),
-                          color: context.primaryColor,
-                        ),
-
-                        const SizedBox(height: ThemeSizes.md),
-
-                        // Bonus and malus stats
-                        Row(
-                          children: [
-                            Expanded(
-                              child: StatCard(
-                                icon: Icons.arrow_upward_rounded,
-                                label: 'Bonus',
-                                value: '${widget.team.bonusTotal}',
-                                isBonus: true,
-                              ),
+                  // Members section
+                  SectionCard(
+                    title: 'Membri del Team',
+                    icon: Icons.people_alt_rounded,
+                    // Add trash icon action for captain or admin
+                    actionButton: canEdit
+                        ? GestureDetector(
+                            onTap: _toggleRemovalMode,
+                            child: Icon(
+                              _isRemovingMembers
+                                  ? Icons.close
+                                  : Icons.delete_outline,
+                              color: _isRemovingMembers
+                                  ? ColorPalette.error
+                                  : context.textSecondaryColor,
                             ),
-                            const SizedBox(width: ThemeSizes.md),
-                            Expanded(
-                              child: StatCard(
-                                icon: Icons.arrow_downward_rounded,
-                                label: 'Malus',
-                                value: '${widget.team.malusTotal}',
-                                isBonus: false,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
+                          )
+                        : null,
+                    child: Padding(
+                      padding: const EdgeInsets.all(ThemeSizes.md),
+                      child: TeamMembersList(
+                        key: _teamMembersListKey,
+                        team: widget.team,
+                        admins: widget.league.admins,
+                        currentUserId: widget.userId,
+                        isCaptain: widget.isCaptain,
+                        onRemovalModeChanged: _onRemovalModeChanged,
+                      ),
                     ),
                   ),
-                ),
 
-                // Members section
-                SectionCard(
-                  title: 'Membri del Team',
-                  icon: Icons.people_alt_rounded,
-                  // Add trash icon action for captain or admin
-                  actionButton: canEdit
-                      ? GestureDetector(
-                          onTap: () {
-                            if (_teamMembersListKey.currentWidget != null) {
-                              // Call the public method on the widget instance
-                              final teamMembersList = _teamMembersListKey
-                                  .currentWidget as TeamMembersList;
-                              teamMembersList.toggleRemovalMode();
-                              // Update state to reflect the icon change
-                              setState(() {
-                                _isRemovingMembers = !_isRemovingMembers;
-                              });
-                            }
-                          },
-                          child: Icon(
-                            _isRemovingMembers
-                                ? Icons.close
-                                : Icons.delete_outline,
-                            color: _isRemovingMembers
-                                ? ColorPalette.error
-                                : context.textSecondaryColor,
-                          ),
-                        )
-                      : null,
-                  child: Padding(
-                    padding: const EdgeInsets.all(ThemeSizes.md),
-                    child: TeamMembersList(
-                      key: _teamMembersListKey,
-                      team: widget.team,
-                      admins: widget.league.admins,
-                      currentUserId: widget.userId,
-                      isCaptain: widget.isCaptain,
+                  // Recent events section
+                  SectionCard(
+                    title: 'Eventi Recenti',
+                    icon: Icons.event_note_outlined,
+                    child: Padding(
+                      padding: const EdgeInsets.all(ThemeSizes.md),
+                      child: EventsList(
+                        league: widget.league,
+                        participant: widget.team,
+                        isTeamBased: true,
+                      ),
                     ),
                   ),
-                ),
 
-                // Recent events section
-                SectionCard(
-                  title: 'Eventi Recenti',
-                  icon: Icons.event_note_outlined,
-                  child: Padding(
-                    padding: const EdgeInsets.all(ThemeSizes.md),
-                    child: EventsList(
-                      league: widget.league,
-                      participant: widget.team,
-                      isTeamBased: true,
+                  // Leave league button
+                  const SizedBox(height: ThemeSizes.lg),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: ThemeSizes.lg,
+                      vertical: ThemeSizes.md,
+                    ),
+                    child: LeaveLeagueButton(
+                      onPressed: () => _showExitConfirmationDialog(
+                        context,
+                        widget.league,
+                        widget.userId,
+                      ),
                     ),
                   ),
-                ),
+                  const SizedBox(height: ThemeSizes.lg),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
-                // Leave league button
-                const SizedBox(height: ThemeSizes.lg),
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: ThemeSizes.lg,
-                    vertical: ThemeSizes.md,
+  Widget _buildTeamAvatar(BuildContext context) {
+    // Check if team has a logo or if we have a pending logo
+    final hasLogo =
+        widget.team.teamLogoUrl != null || _pendingTeamLogoUrl != null;
+    final logoUrl = _pendingTeamLogoUrl ?? widget.team.teamLogoUrl;
+    final isAdmin = widget.league.admins.contains(widget.userId);
+    final canEdit = widget.isCaptain || isAdmin;
+
+    return Stack(
+      children: [
+        Container(
+          width: 90,
+          height: 90,
+          decoration: BoxDecoration(
+            gradient: hasLogo
+                ? null
+                : LinearGradient(
+                    colors: [
+                      context.primaryColor.withValues(alpha: 0.4),
+                      context.primaryColor.withValues(alpha: 0.8),
+                      context.primaryColor.withValues(alpha: 0.9),
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
                   ),
-                  child: LeaveLeagueButton(
-                    onPressed: () => _showExitConfirmationDialog(
-                      context,
-                      widget.league,
-                      widget.userId,
+            shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(
+                color: context.primaryColor.withValues(alpha: 0.3),
+                blurRadius: 15,
+                spreadRadius: 2,
+              ),
+            ],
+          ),
+          child: ClipOval(
+            child: hasLogo
+                ? CachedNetworkImage(
+                    imageUrl: logoUrl!,
+                    fit: BoxFit.cover,
+                    placeholder: (context, url) => Container(
+                      color: context.primaryColor.withValues(alpha: 0.2),
+                      child: const Center(
+                        child: CircularProgressIndicator(),
+                      ),
+                    ),
+                    errorWidget: (context, url, error) => Container(
+                      color: context.primaryColor.withValues(alpha: 0.2),
+                      child: const Icon(
+                        Icons.group,
+                        size: 48,
+                        color: Colors.white,
+                      ),
+                    ),
+                  )
+                : const Center(
+                    child: Icon(
+                      Icons.group,
+                      size: 48,
+                      color: Colors.white,
                     ),
                   ),
+          ),
+        ),
+
+        // Show loading indicator when uploading
+        if (_isUploadingLogo)
+          Positioned.fill(
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.black.withOpacity(0.5),
+                shape: BoxShape.circle,
+              ),
+              child: const Center(
+                child: CircularProgressIndicator(
+                  color: Colors.white,
                 ),
-                const SizedBox(height: ThemeSizes.lg),
-              ],
+              ),
             ),
           ),
-        ],
-      ),
+
+        if (canEdit && _isEditing && !_isUploadingLogo)
+          Positioned(
+            bottom: 0,
+            right: 0,
+            child: Container(
+              padding: const EdgeInsets.all(4),
+              decoration: BoxDecoration(
+                color: context.textPrimaryColor,
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.2),
+                    blurRadius: 4,
+                    spreadRadius: 1,
+                  ),
+                ],
+              ),
+              child: Icon(
+                Icons.edit,
+                color: context.primaryColor,
+                size: 16,
+              ),
+            ),
+          ),
+      ],
     );
   }
 }

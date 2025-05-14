@@ -89,5 +89,12 @@
 		</array>
 		<key>UIStatusBarHidden</key>
 		<false/>
+		<!-- Image Picker Permissions -->
+		<key>NSPhotoLibraryUsageDescription</key>
+		<string>L'app richiede l'accesso alla galleria fotografica per permetterti di selezionare immagini da salvare come ricordi.</string>
+		<key>NSCameraUsageDescription</key>
+		<string>L'app richiede l'accesso alla fotocamera per permetterti di scattare foto da salvare come ricordi.</string>
+		<key>NSMicrophoneUsageDescription</key>
+		<string>L'app richiede l'accesso al microfono per permetterti di registrare video con audio.</string>
 	</dict>
 </plist>

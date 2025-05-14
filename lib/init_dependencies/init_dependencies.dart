@@ -36,7 +36,10 @@ import 'package:fantavacanze_official/features/league/domain/use_cases/remove_te
 import 'package:fantavacanze_official/features/league/domain/use_cases/save_note.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/search_league.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/update_rule.dart';
+import 'package:fantavacanze_official/features/league/domain/use_cases/update_team_logo.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/update_team_name.dart';
+import 'package:fantavacanze_official/features/league/domain/use_cases/upload_image.dart';
+import 'package:fantavacanze_official/features/league/domain/use_cases/upload_team_logo.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';

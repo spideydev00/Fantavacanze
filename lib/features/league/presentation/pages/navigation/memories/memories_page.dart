@@ -1,480 +1,394 @@
+import 'dart:io';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fantavacanze_official/core/cubits/app_league/app_league_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit.dart';
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
+import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
-import 'package:fantavacanze_official/features/league/domain/entities/individual_participant.dart';
+import 'package:fantavacanze_official/core/utils/show_snackbar.dart';
+import 'package:fantavacanze_official/features/league/domain/entities/event.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/league.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/memory.dart';
-import 'package:fantavacanze_official/features/league/domain/entities/team_participant.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_event.dart';
-import 'package:fantavacanze_official/features/league/presentation/widgets/core/confirmation_dialog.dart';
+import 'package:fantavacanze_official/features/league/presentation/bloc/league_state.dart';
+import 'package:fantavacanze_official/features/league/presentation/widgets/common/empty_state.dart';
+import 'package:fantavacanze_official/features/league/presentation/widgets/memories/add_memory_bottom_sheet.dart';
+import 'package:fantavacanze_official/features/league/presentation/widgets/memories/memory_card.dart';
+import 'package:fantavacanze_official/features/league/presentation/widgets/memories/memory_detail_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:intl/intl.dart';
+import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 
-class MemoriesPage extends StatelessWidget {
+class MemoriesPage extends StatefulWidget {
   static Route get route =>
       MaterialPageRoute(builder: (context) => const MemoriesPage());
   const MemoriesPage({super.key});
 
   @override
+  State<MemoriesPage> createState() => _MemoriesPageState();
+}
+
+class _MemoriesPageState extends State<MemoriesPage>
+    with AutomaticKeepAliveClientMixin {
+  League? _currentLeague;
+  String? _currentUserId;
+  bool _isAdmin = false;
+  bool _isLoading = false;
+
+  // Add these new variables to store form data
+  String _pendingMemoryText = '';
+  String? _pendingEventId;
+  String? _pendingEventName;
+
+  @override
+  bool get wantKeepAlive => true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserInfo();
+  }
+
+  void _loadUserInfo() {
+    final userState = context.read<AppUserCubit>().state;
+    if (userState is AppUserIsLoggedIn) {
+      _currentUserId = userState.user.id;
+    }
+
+    final leagueState = context.read<AppLeagueCubit>().state;
+    if (leagueState is AppLeagueExists) {
+      _currentLeague = leagueState.selectedLeague;
+      _isAdmin = _currentLeague!.admins.contains(_currentUserId);
+    }
+  }
+
+  void _showAddMemoryBottomSheet() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: context.bgColor,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(ThemeSizes.borderRadiusLg),
+        ),
+      ),
+      builder: (context) => AddMemoryBottomSheet(
+        league: _currentLeague!,
+        events: _currentLeague!.events,
+        onSave: _handleSaveMemory,
+      ),
+    );
+  }
+
+  void _handleSaveMemory(
+      File imageFile, String text, Event? event, String? eventName) {
+    if (_currentLeague == null || _currentUserId == null) return;
+
+    // Store the form values for later use
+    _pendingMemoryText = text;
+    _pendingEventId = event?.id;
+    _pendingEventName = eventName;
+
+    // First upload the image
+    context.read<LeagueBloc>().add(UploadImageEvent(
+          leagueId: _currentLeague!.id,
+          imageFile: imageFile,
+        ));
+
+    setState(() {
+      _isLoading = true;
+    });
+  }
+
+  void _deleteMemory(String memoryId) {
+    if (_currentLeague == null) return;
+
+    // Confirmation dialog
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Conferma eliminazione'),
+        content: const Text('Sei sicuro di voler eliminare questo ricordo?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Annulla'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              context.read<LeagueBloc>().add(
+                    RemoveMemoryEvent(
+                      league: _currentLeague!,
+                      memoryId: memoryId,
+                    ),
+                  );
+            },
+            style: TextButton.styleFrom(
+              foregroundColor: ColorPalette.error,
+            ),
+            child: const Text('Elimina'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _openMemoryDetail(Memory memory) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => MemoryDetailScreen(
+          memory: memory,
+          isCurrentUserAuthor: memory.userId == _currentUserId || _isAdmin,
+          onDelete: () => _deleteMemory(memory.id),
+        ),
+      ),
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return BlocBuilder<AppLeagueCubit, AppLeagueState>(
-      builder: (context, state) {
-        if (state is AppLeagueExists) {
-          final league = state.selectedLeague;
-          final memories = league.memories;
-          final isAdmin = context.read<LeagueBloc>().isAdmin();
+    super.build(context);
 
-          final userId =
-              (context.read<AppUserCubit>().state as AppUserIsLoggedIn).user.id;
+    return BlocConsumer<LeagueBloc, LeagueState>(
+      listener: (context, state) {
+        if (state is LeagueError) {
+          showSnackBar(context, state.message);
+          setState(() {
+            _isLoading = false;
+          });
+        } else if (state is ImageUploadSuccess) {
+          // After image upload, add the memory
+          if (_currentLeague != null && _currentUserId != null) {
+            context.read<LeagueBloc>().add(AddMemoryEvent(
+                  league: _currentLeague!,
+                  imageUrl: state.imageUrl,
+                  text: _pendingMemoryText,
+                  userId: _currentUserId!,
+                  relatedEventId: _pendingEventId,
+                  eventName: _pendingEventName,
+                ));
+          }
+        } else if (state is LeagueSuccess && state.operation == 'add_memory') {
+          setState(() {
+            _isLoading = false;
+          });
+          // Update the current league reference
+          _currentLeague = state.league;
 
-          return Scaffold(
-            appBar: AppBar(
-              title: const Text('Ricordi'),
-            ),
-            floatingActionButton: FloatingActionButton(
-              onPressed: () {
-                // Navigate to add memory page or show dialog
-                _showAddMemoryDialog(context, league.id, userId);
-              },
-              child: const Icon(Icons.add_photo_alternate),
-            ),
-            body: memories.isEmpty
-                ? Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.photo_album_outlined,
-                          size: 64,
-                          color:
-                              context.textSecondaryColor.withValues(alpha: 0.5),
-                        ),
-                        const SizedBox(height: ThemeSizes.md),
-                        Text(
-                          'Nessun ricordo ancora',
-                          style: TextStyle(
-                            fontSize: 18,
-                            color: context.textSecondaryColor,
-                          ),
-                        ),
-                        const SizedBox(height: ThemeSizes.lg),
-                        ElevatedButton.icon(
-                          onPressed: () {
-                            _showAddMemoryDialog(context, league.id, userId);
-                          },
-                          icon: const Icon(Icons.add),
-                          label: const Text('Aggiungi un ricordo'),
-                        ),
-                      ],
-                    ),
-                  )
-                : GridView.builder(
-                    padding: const EdgeInsets.all(ThemeSizes.md),
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
-                      childAspectRatio: 0.75,
-                      crossAxisSpacing: ThemeSizes.md,
-                      mainAxisSpacing: ThemeSizes.md,
-                    ),
-                    itemCount: memories.length,
-                    itemBuilder: (context, index) {
-                      final memory = memories[index];
-                      final canDelete = isAdmin || memory.userId == userId;
+          // Clear the pending data
+          _pendingMemoryText = '';
+          _pendingEventId = null;
+          _pendingEventName = null;
 
-                      return _MemoryCard(
-                        memory: memory,
-                        onTap: () => _showMemoryDetails(context, memory),
-                        onDelete: canDelete
-                            ? () =>
-                                _confirmDeleteMemory(context, league, memory.id)
-                            : null,
-                      );
-                    },
-                  ),
+          // Close bottom sheet if it's open
+          if (Navigator.canPop(context)) {
+            Navigator.pop(context);
+          }
+
+          showSnackBar(
+            context,
+            'Ricordo aggiunto con successo!',
+            color: ColorPalette.success,
           );
         }
+      },
+      builder: (context, state) {
+        return BlocBuilder<AppLeagueCubit, AppLeagueState>(
+          builder: (context, leagueState) {
+            if (leagueState is AppLeagueExists) {
+              _currentLeague = leagueState.selectedLeague;
+              _isAdmin = _currentLeague!.admins.contains(_currentUserId);
 
-        return const Center(child: Text('Nessuna lega selezionata'));
+              final memories = _currentLeague!.memories;
+
+              return Scaffold(
+                floatingActionButton: FloatingActionButton(
+                  onPressed: _isLoading ? null : _showAddMemoryBottomSheet,
+                  child: _isLoading
+                      ? const CircularProgressIndicator(color: Colors.white)
+                      : const Icon(Icons.add_photo_alternate),
+                ),
+                body: memories.isEmpty
+                    ? const EmptyState(
+                        icon: Icons.photo_album_outlined,
+                        title: 'Nessun ricordo',
+                        subtitle: 'Aggiungi dei ricordi della tua vacanza',
+                      )
+                    : RefreshIndicator(
+                        onRefresh: () async {
+                          if (_currentLeague != null) {
+                            context.read<LeagueBloc>().add(
+                                GetLeagueEvent(leagueId: _currentLeague!.id));
+                          }
+                        },
+                        child: CustomScrollView(
+                          slivers: [
+                            // Recent memories in horizontal list
+                            SliverToBoxAdapter(
+                              child: _buildRecentMemories(memories),
+                            ),
+
+                            // All memories in staggered grid
+                            SliverPadding(
+                              padding: const EdgeInsets.all(ThemeSizes.md),
+                              sliver: SliverMasonryGrid.count(
+                                crossAxisCount: 2,
+                                mainAxisSpacing: ThemeSizes.md,
+                                crossAxisSpacing: ThemeSizes.md,
+                                childCount: memories.length,
+                                itemBuilder: (context, index) {
+                                  final memory = memories[index];
+                                  return MemoryCard(
+                                    memory: memory,
+                                    isCurrentUserAuthor:
+                                        memory.userId == _currentUserId ||
+                                            _isAdmin,
+                                    onTap: () => _openMemoryDetail(memory),
+                                    onDelete: () => _deleteMemory(memory.id),
+                                  );
+                                },
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+              );
+            }
+
+            return const Center(child: Text('Nessuna lega selezionata'));
+          },
+        );
       },
     );
   }
 
-  void _showMemoryDetails(BuildContext context, Memory memory) {
-    showDialog(
-      context: context,
-      builder: (context) => Dialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusLg),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ClipRRect(
-              borderRadius: const BorderRadius.vertical(
-                top: Radius.circular(ThemeSizes.borderRadiusLg),
-              ),
-              child: Image.network(
-                memory.imageUrl,
-                fit: BoxFit.cover,
-                width: double.infinity,
-                height: 250,
-                errorBuilder: (context, error, stackTrace) => Container(
-                  height: 250,
-                  color: Colors.grey.shade300,
-                  child: Icon(
-                    Icons.broken_image,
-                    size: 64,
-                    color: Colors.grey.shade600,
-                  ),
-                ),
-                loadingBuilder: (context, child, loadingProgress) {
-                  if (loadingProgress == null) return child;
-                  return Container(
-                    height: 250,
-                    color: Colors.grey.shade200,
-                    child: Center(
-                      child: CircularProgressIndicator(
-                        value: loadingProgress.expectedTotalBytes != null
-                            ? loadingProgress.cumulativeBytesLoaded /
-                                loadingProgress.expectedTotalBytes!
-                            : null,
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(ThemeSizes.lg),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    memory.text,
-                    style: const TextStyle(
-                      fontSize: 16,
-                    ),
-                  ),
-                  const SizedBox(height: ThemeSizes.md),
-                  Text(
-                    'Aggiunto il ${DateFormat('dd/MM/yyyy').format(memory.createdAt)}',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: context.textSecondaryColor,
-                    ),
-                  ),
-                  const SizedBox(height: ThemeSizes.lg),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: () => Navigator.pop(context),
-                      child: const Text('Chiudi'),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+  Widget _buildRecentMemories(List<Memory> memories) {
+    if (memories.length <= 3) return const SizedBox.shrink();
 
-  void _showAddMemoryDialog(
-      BuildContext context, String leagueId, String userId) {
-    final textController = TextEditingController();
-    final imageUrlController = TextEditingController();
-    final formKey = GlobalKey<FormState>();
-    String? selectedEventId;
+    // Take the 5 most recent memories for the horizontal list
+    final recentMemories = List<Memory>.from(memories)
+      ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    final topMemories = recentMemories.take(5).toList();
 
-    // Get current league to access events
-    final state = context.read<AppLeagueCubit>().state;
-    final league = (state as AppLeagueExists).selectedLeague;
-
-    final recentEvents = league.events.take(5).toList();
-
-    showDialog(
-      context: context,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setState) => Dialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusLg),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Padding(
+          padding: EdgeInsets.only(
+            left: ThemeSizes.md,
+            right: ThemeSizes.md,
+            top: ThemeSizes.md,
           ),
-          child: Padding(
-            padding: const EdgeInsets.all(ThemeSizes.lg),
-            child: Form(
-              key: formKey,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Aggiungi un ricordo',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: context.primaryColor,
-                    ),
-                  ),
-                  const SizedBox(height: ThemeSizes.lg),
-                  TextFormField(
-                    controller: imageUrlController,
-                    decoration: const InputDecoration(
-                      labelText: 'URL Immagine',
-                      hintText: 'Inserisci l\'URL dell\'immagine',
-                    ),
-                    validator: (value) {
-                      if (value == null || value.trim().isEmpty) {
-                        return 'Inserisci un URL';
-                      }
-                      if (!Uri.tryParse(value)!.isAbsolute) {
-                        return 'Inserisci un URL valido';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: ThemeSizes.md),
-                  TextFormField(
-                    controller: textController,
-                    decoration: const InputDecoration(
-                      labelText: 'Descrizione',
-                      hintText: 'Descrivi questo ricordo',
-                    ),
-                    maxLines: 3,
-                    validator: (value) {
-                      if (value == null || value.trim().isEmpty) {
-                        return 'Inserisci una descrizione';
-                      }
-                      return null;
-                    },
-                  ),
-
-                  // Add dropdown for related events if available
-                  if (recentEvents.isNotEmpty) ...[
-                    const SizedBox(height: ThemeSizes.md),
-                    DropdownButtonFormField<String?>(
-                      decoration: const InputDecoration(
-                        labelText: 'Collega a un evento (opzionale)',
-                        hintText: 'Seleziona un evento recente',
-                      ),
-                      value: selectedEventId,
-                      items: [
-                        const DropdownMenuItem<String?>(
-                          value: null,
-                          child: Text('Nessun evento'),
+          child: Text(
+            'Ricordi recenti',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+        const SizedBox(height: ThemeSizes.sm),
+        SizedBox(
+          height: 140,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: ThemeSizes.sm),
+            itemCount: topMemories.length,
+            itemBuilder: (context, index) {
+              final memory = topMemories[index];
+              return Padding(
+                padding: const EdgeInsets.symmetric(horizontal: ThemeSizes.sm),
+                child: GestureDetector(
+                  onTap: () => _openMemoryDetail(memory),
+                  child: Container(
+                    width: 140,
+                    decoration: BoxDecoration(
+                      borderRadius:
+                          BorderRadius.circular(ThemeSizes.borderRadiusMd),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.1),
+                          blurRadius: 4,
+                          offset: const Offset(0, 2),
                         ),
-                        ...recentEvents.map(
-                          (event) => DropdownMenuItem<String?>(
-                            value: event.id,
-                            child: Text(event.name),
-                          ),
-                        )
                       ],
-                      onChanged: (value) {
-                        setState(() {
-                          selectedEventId = value;
-                        });
-                      },
                     ),
-                  ],
+                    clipBehavior: Clip.antiAlias,
+                    child: Stack(
+                      fit: StackFit.expand,
+                      children: [
+                        // Memory image
+                        CachedNetworkImage(
+                          imageUrl: memory.imageUrl,
+                          fit: BoxFit.cover,
+                          placeholder: (context, url) => Container(
+                            color: context.secondaryBgColor,
+                            child: const Center(
+                              child: CircularProgressIndicator(),
+                            ),
+                          ),
+                          errorWidget: (context, url, error) => Container(
+                            color: context.secondaryBgColor,
+                            child: const Icon(Icons.error),
+                          ),
+                        ),
 
-                  const SizedBox(height: ThemeSizes.lg),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      TextButton(
-                        onPressed: () => Navigator.pop(context),
-                        child: const Text('Annulla'),
-                      ),
-                      const SizedBox(width: ThemeSizes.md),
-                      ElevatedButton(
-                        onPressed: () {
-                          context.read<LeagueBloc>().add(
-                                AddMemoryEvent(
-                                  league: league,
-                                  imageUrl: imageUrlController.text.trim(),
-                                  text: textController.text.trim(),
-                                  userId: userId,
-                                  relatedEventId: selectedEventId,
-                                ),
-                              );
-                          Navigator.pop(context);
-                        },
-                        child: const Text('Salva'),
-                      ),
-                    ],
+                        // Gradient overlay for text readability
+                        Positioned.fill(
+                          child: Container(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                                colors: [
+                                  Colors.transparent,
+                                  Colors.black.withValues(alpha: 0.7),
+                                ],
+                                stops: const [0.6, 1.0],
+                              ),
+                            ),
+                          ),
+                        ),
+
+                        // User name at bottom
+                        Positioned(
+                          bottom: 8,
+                          left: 8,
+                          right: 8,
+                          child: Text(
+                            memory.participantName,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 12,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  void _confirmDeleteMemory(
-      BuildContext context, League league, String memoryId) {
-    showDialog(
-      context: context,
-      builder: (context) => ConfirmationDialog.deleteMemory(
-        onDelete: () {
-          context.read<LeagueBloc>().add(
-                RemoveMemoryEvent(
-                  league: league,
-                  memoryId: memoryId,
                 ),
               );
-        },
-      ),
-    );
-  }
-
-  // Helper method to get user name from SimpleParticipant
-  String getUserNameFromId(BuildContext context, String userId) {
-    final leagueState = context.read<AppLeagueCubit>().state;
-    if (leagueState is AppLeagueExists) {
-      final league = leagueState.selectedLeague;
-      if (league.isTeamBased) {
-        for (final participant in league.participants) {
-          if (participant is TeamParticipant) {
-            final member = participant.findMemberById(userId);
-            if (member != null) {
-              return member.name;
-            }
-          }
-        }
-      } else {
-        for (final participant in league.participants) {
-          if (participant is IndividualParticipant &&
-              participant.userId == userId) {
-            return participant.name;
-          }
-        }
-      }
-    }
-
-    // Fallback
-    return 'Utente';
-  }
-}
-
-class _MemoryCard extends StatelessWidget {
-  final Memory memory;
-  final VoidCallback onTap;
-  final VoidCallback? onDelete;
-
-  const _MemoryCard({
-    required this.memory,
-    required this.onTap,
-    this.onDelete,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Card(
-        clipBehavior: Clip.antiAlias,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusMd),
+            },
+          ),
         ),
-        elevation: 3,
-        child: Stack(
-          children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  flex: 3,
-                  child: Image.network(
-                    memory.imageUrl,
-                    fit: BoxFit.cover,
-                    width: double.infinity,
-                    errorBuilder: (context, error, stackTrace) => Container(
-                      color: Colors.grey.shade300,
-                      child: Icon(
-                        Icons.broken_image,
-                        size: 48,
-                        color: Colors.grey.shade600,
-                      ),
-                    ),
-                    loadingBuilder: (context, child, loadingProgress) {
-                      if (loadingProgress == null) return child;
-                      return Container(
-                        color: Colors.grey.shade200,
-                        child: Center(
-                          child: CircularProgressIndicator(
-                            value: loadingProgress.expectedTotalBytes != null
-                                ? loadingProgress.cumulativeBytesLoaded /
-                                    loadingProgress.expectedTotalBytes!
-                                : null,
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-                Expanded(
-                  flex: 2,
-                  child: Padding(
-                    padding: const EdgeInsets.all(ThemeSizes.sm),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          memory.text,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        const Spacer(),
-                        Text(
-                          DateFormat('dd/MM/yyyy').format(memory.createdAt),
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: context.textSecondaryColor,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
+        const SizedBox(height: ThemeSizes.md),
+        const Padding(
+          padding: EdgeInsets.symmetric(horizontal: ThemeSizes.md),
+          child: Text(
+            'Tutti i ricordi',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
             ),
-            if (onDelete != null)
-              Positioned(
-                top: 8,
-                right: 8,
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Colors.black.withValues(alpha: 0.5),
-                    shape: BoxShape.circle,
-                  ),
-                  child: IconButton(
-                    icon: const Icon(
-                      Icons.delete,
-                      color: Colors.white,
-                      size: 20,
-                    ),
-                    onPressed: onDelete,
-                    constraints: const BoxConstraints(
-                      minWidth: 36,
-                      minHeight: 36,
-                    ),
-                    padding: EdgeInsets.zero,
-                  ),
-                ),
-              ),
-          ],
+          ),
         ),
-      ),
+      ],
     );
   }
 }

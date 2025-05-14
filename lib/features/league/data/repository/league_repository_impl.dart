@@ -10,6 +10,7 @@ import 'package:fantavacanze_official/features/league/data/datasources/league_re
 import 'package:fantavacanze_official/features/league/domain/entities/league.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/rule.dart';
 import 'package:fantavacanze_official/features/league/domain/repository/league_repository.dart';
+import 'dart:io';
 
 class LeagueRepositoryImpl implements LeagueRepository {
   final LeagueRemoteDataSource remoteDataSource;
@@ -109,11 +110,6 @@ class LeagueRepositoryImpl implements LeagueRepository {
 
       return Right(leagues);
     } on ServerException catch (e) {
-      // If server error, try to get from cache
-      try {
-        final cachedLeagues = await localDataSource.getCachedLeagues();
-        return Right(cachedLeagues);
-      } catch (_) {}
       return Left(Failure(e.message));
     }
   }
@@ -348,6 +344,7 @@ class LeagueRepositoryImpl implements LeagueRepository {
     required String text,
     required String userId,
     String? relatedEventId,
+    String? eventName,
   }) async {
     try {
       if (!await connectionChecker.isConnected) {
@@ -363,6 +360,7 @@ class LeagueRepositoryImpl implements LeagueRepository {
         text: text,
         userId: userId,
         relatedEventId: relatedEventId,
+        eventName: eventName,
       );
 
       // Update cache
@@ -605,6 +603,94 @@ class LeagueRepositoryImpl implements LeagueRepository {
       return const Right(null);
     } on CacheException catch (e) {
       return Left(Failure('Errore nel cancellare la nota: ${e.message}'));
+    }
+  }
+
+  @override
+  Future<Either<Failure, String>> uploadImage({
+    required String leagueId,
+    required File imageFile,
+  }) async {
+    try {
+      if (!await connectionChecker.isConnected) {
+        return Left(
+          Failure(
+              "Nessuna connessione ad internet, riprova appena sarai connesso."),
+        );
+      }
+
+      final imageUrl = await remoteDataSource.uploadImage(
+        leagueId: leagueId,
+        imageFile: imageFile,
+      );
+
+      return Right(imageUrl);
+    } on ServerException catch (e) {
+      return Left(Failure(e.message));
+    } catch (e) {
+      return Left(Failure(
+          'Errore durante il caricamento dell\'immagine: ${e.toString()}'));
+    }
+  }
+
+  @override
+  Future<Either<Failure, String>> uploadTeamLogo({
+    required String leagueId,
+    required String teamName,
+    required File imageFile,
+  }) async {
+    try {
+      if (!await connectionChecker.isConnected) {
+        return Left(
+          Failure(
+              "Nessuna connessione ad internet, riprova appena sarai connesso."),
+        );
+      }
+
+      final logoUrl = await remoteDataSource.uploadTeamLogo(
+        leagueId: leagueId,
+        teamName: teamName,
+        imageFile: imageFile,
+      );
+
+      return Right(logoUrl);
+    } on ServerException catch (e) {
+      return Left(Failure(e.message));
+    } catch (e) {
+      return Left(
+          Failure('Errore durante il caricamento del logo: ${e.toString()}'));
+    }
+  }
+
+  @override
+  Future<Either<Failure, League>> updateTeamLogo({
+    required League league,
+    required String teamName,
+    required String logoUrl,
+  }) async {
+    try {
+      if (!await connectionChecker.isConnected) {
+        return Left(
+          Failure(
+              "Nessuna connessione ad internet, riprova appena sarai connesso."),
+        );
+      }
+
+      final updatedLeague = await remoteDataSource.updateTeamLogo(
+        league: league as LeagueModel,
+        teamName: teamName,
+        logoUrl: logoUrl,
+      );
+
+      // Update cache
+      await localDataSource.cacheLeague(updatedLeague);
+
+      return Right(updatedLeague);
+    } on ServerException catch (e) {
+      return Left(Failure(e.message));
+    } catch (e) {
+      return Left(
+          Failure('Errore durante l\'aggiornamento del logo: ${e.toString()}'));
     }
   }
 }

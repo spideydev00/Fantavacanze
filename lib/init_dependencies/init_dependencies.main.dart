@@ -219,6 +219,15 @@ void _initLeague() {
     ..registerFactory(
       () => DeleteNote(leagueRepository: serviceLocator()),
     )
+    ..registerFactory(
+      () => UploadImage(leagueRepository: serviceLocator()),
+    )
+    ..registerFactory(
+      () => UploadTeamLogo(leagueRepository: serviceLocator()),
+    )
+    ..registerFactory(
+      () => UpdateTeamLogo(leagueRepository: serviceLocator()),
+    )
 
     // bloc
     ..registerFactory(
@@ -242,6 +251,9 @@ void _initLeague() {
         getNotes: serviceLocator(),
         saveNote: serviceLocator(),
         deleteNote: serviceLocator(),
+        uploadImage: serviceLocator(),
+        uploadTeamLogo: serviceLocator(),
+        updateTeamLogo: serviceLocator(),
       ),
     );
 }

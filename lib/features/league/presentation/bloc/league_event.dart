@@ -2,6 +2,7 @@ import 'package:equatable/equatable.dart';
 import 'package:fantavacanze_official/features/league/data/models/note_model.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/rule.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/league.dart';
+import 'dart:io';
 
 abstract class LeagueEvent extends Equatable {
   const LeagueEvent();
@@ -112,6 +113,7 @@ class AddMemoryEvent extends LeagueEvent {
   final String text;
   final String userId;
   final String? relatedEventId;
+  final String? eventName;
 
   const AddMemoryEvent({
     required this.league,
@@ -119,10 +121,12 @@ class AddMemoryEvent extends LeagueEvent {
     required this.text,
     required this.userId,
     this.relatedEventId,
+    this.eventName,
   });
 
   @override
-  List<Object?> get props => [league, imageUrl, text, userId, relatedEventId];
+  List<Object?> get props =>
+      [league, imageUrl, text, userId, relatedEventId, eventName];
 }
 
 class RemoveMemoryEvent extends LeagueEvent {
@@ -245,4 +249,47 @@ class DeleteNoteEvent extends LeagueEvent {
 
   @override
   List<Object?> get props => [leagueId, noteId];
+}
+
+class UploadImageEvent extends LeagueEvent {
+  final String leagueId;
+  final File imageFile;
+
+  const UploadImageEvent({
+    required this.leagueId,
+    required this.imageFile,
+  });
+
+  @override
+  List<Object?> get props => [leagueId, imageFile];
+}
+
+class UploadTeamLogoEvent extends LeagueEvent {
+  final String leagueId;
+  final String teamName;
+  final File imageFile;
+
+  const UploadTeamLogoEvent({
+    required this.leagueId,
+    required this.teamName,
+    required this.imageFile,
+  });
+
+  @override
+  List<Object?> get props => [leagueId, teamName, imageFile];
+}
+
+class UpdateTeamLogoEvent extends LeagueEvent {
+  final League league;
+  final String teamName;
+  final String logoUrl;
+
+  const UpdateTeamLogoEvent({
+    required this.league,
+    required this.teamName,
+    required this.logoUrl,
+  });
+
+  @override
+  List<Object?> get props => [league, teamName, logoUrl];
 }

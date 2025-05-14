@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit.dart';
 import 'package:fantavacanze_official/core/errors/exceptions.dart';
 import 'package:fantavacanze_official/features/league/data/models/event_model.dart';
@@ -81,6 +82,7 @@ abstract class LeagueRemoteDataSource {
     required String text,
     required String userId,
     String? relatedEventId,
+    String? eventName,
   });
 
   Future<LeagueModel> removeMemory({
@@ -104,6 +106,23 @@ abstract class LeagueRemoteDataSource {
   Future<LeagueModel> addRule({
     required LeagueModel league,
     required RuleModel rule,
+  });
+
+  Future<String> uploadImage({
+    required String leagueId,
+    required File imageFile,
+  });
+
+  Future<String> uploadTeamLogo({
+    required String leagueId,
+    required String teamName,
+    required File imageFile,
+  });
+
+  Future<LeagueModel> updateTeamLogo({
+    required LeagueModel league,
+    required String teamName,
+    required String logoUrl,
   });
 }
 
@@ -617,14 +636,20 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
     required String text,
     required String userId,
     String? relatedEventId,
+    String? eventName,
   }) async {
     try {
-      // Create new memory
+      // Get the participant name based on userId
+      final participantName = _getParticipantNameByUserId(league, userId);
+
+      // Create new memory with participant name
       final memoryData = _createMemoryData(
         imageUrl: imageUrl,
         text: text,
         userId: userId,
+        participantName: participantName,
         relatedEventId: relatedEventId,
+        eventName: eventName,
       );
 
       // Add new memory to the list
@@ -807,18 +832,6 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
     required String requestingUserId,
   }) async {
     try {
-      // Verifica che l'utente che richiede l'operazione sia un admin
-      if (!league.admins.contains(requestingUserId)) {
-        throw ServerException(
-            'Solo gli amministratori possono rimuovere membri dal team');
-      }
-
-      // Controllo che la lega sia a squadre
-      if (!league.isTeamBased) {
-        throw ServerException(
-            'Questa operazione è valida solo per leghe a squadre');
-      }
-
       // Trova il team
       int teamIndex = -1;
       for (int i = 0; i < league.participants.length; i++) {
@@ -840,10 +853,31 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
       final teamParticipant =
           league.participants[teamIndex] as TeamParticipantModel;
 
+      // Verifica che l'utente che richiede l'operazione sia un admin o il capitano del team
+      final bool isAdmin = league.admins.contains(requestingUserId);
+      final bool isCaptain = teamParticipant.captainId == requestingUserId;
+
+      if (!isAdmin && !isCaptain) {
+        throw ServerException(
+            'Solo gli amministratori o il capitano del team possono rimuovere membri');
+      }
+
+      // Assicurati che il capitano non venga rimosso
+      if (userIdsToRemove.contains(teamParticipant.captainId)) {
+        throw ServerException(
+            'Il capitano non può essere rimosso dal team. Trasferisci prima il ruolo di capitano a un altro membro.');
+      }
+
       // Filtra i membri per creare la lista aggiornata senza quelli da rimuovere
       final updatedMembers = teamParticipant.members
           .where((member) => !userIdsToRemove.contains(member.userId))
           .toList();
+
+      // Verifica che rimanga almeno un membro nel team
+      if (updatedMembers.isEmpty) {
+        throw ServerException(
+            'Non puoi rimuovere tutti i membri del team. Il team deve avere almeno un membro.');
+      }
 
       // Crea il team aggiornato
       final updatedTeam = TeamParticipantModel(
@@ -869,6 +903,132 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
       return await _updateLeagueInDb(
         leagueId: league.id,
         updateData: {'participants': participantsJson},
+      );
+    } catch (e) {
+      if (e is ServerException) rethrow;
+      throw ServerException('Si è verificato un errore: ${e.toString()}');
+    }
+  }
+
+  // ------------------------------------------------
+  // U P L O A D   I M A G E   H E L P E R
+  Future<String> _uploadImageToStorage({
+    required String bucket,
+    required String path,
+    required File imageFile,
+    required int expiresIn,
+  }) async {
+    try {
+      final currentTime = DateTime.now().millisecondsSinceEpoch;
+      final fileName = '$currentTime.jpg';
+      final fullPath =
+          path.endsWith('/') ? '$path$fileName' : '$path/$fileName';
+
+      await supabaseClient.storage.from(bucket).upload(
+            fullPath,
+            imageFile,
+            fileOptions: const FileOptions(
+              cacheControl: '3600',
+              upsert: true,
+            ),
+          );
+
+      // Create a signed URL
+      final signedUrl = await supabaseClient.storage
+          .from(bucket)
+          .createSignedUrl(fullPath, expiresIn);
+
+      return signedUrl;
+    } catch (e) {
+      throw ServerException(
+          'Errore durante l\'upload dell\'immagine: ${e.toString()}');
+    }
+  }
+
+  // ------------------------------------------------
+  // U P L O A D   I M A G E
+  @override
+  Future<String> uploadImage({
+    required String leagueId,
+    required File imageFile,
+  }) async {
+    try {
+      final path = leagueId;
+      return await _uploadImageToStorage(
+        bucket: 'memories',
+        path: path,
+        imageFile: imageFile,
+        expiresIn: 60 * 60 * 24 * 365, // 1 year
+      );
+    } catch (e) {
+      throw ServerException(
+          'Errore durante l\'upload dell\'immagine: ${e.toString()}');
+    }
+  }
+
+  // ------------------------------------------------
+  // U P L O A D   T E A M   L O G O
+  @override
+  Future<String> uploadTeamLogo({
+    required String leagueId,
+    required String teamName,
+    required File imageFile,
+  }) async {
+    try {
+      final path = '$leagueId/$teamName';
+      return await _uploadImageToStorage(
+        bucket: 'team-logos',
+        path: path,
+        imageFile: imageFile,
+        expiresIn: 60 * 60 * 24 * 365, // 1 year
+      );
+    } catch (e) {
+      throw ServerException(
+          'Errore durante l\'upload del logo: ${e.toString()}');
+    }
+  }
+
+  // ------------------------------------------------
+  // U P D A T E   T E A M   L O G O
+  @override
+  Future<LeagueModel> updateTeamLogo({
+    required LeagueModel league,
+    required String teamName,
+    required String logoUrl,
+  }) async {
+    try {
+      // Find the team participant by name instead of ID
+      int targetIndex = -1;
+      for (int i = 0; i < league.participants.length; i++) {
+        final participant = league.participants[i];
+        if (participant is TeamParticipantModel &&
+            participant.name == teamName) {
+          targetIndex = i;
+          break;
+        }
+      }
+
+      if (targetIndex == -1) {
+        throw ServerException('Team non trovato');
+      }
+
+      // Get and update the team participant
+      final teamParticipant =
+          league.participants[targetIndex] as TeamParticipantModel;
+      final updatedTeam = teamParticipant.copyWith(teamLogoUrl: logoUrl);
+
+      // Update the participants list
+      final updatedParticipants = List<dynamic>.from(league.participants);
+      updatedParticipants[targetIndex] = updatedTeam;
+
+      // Update the league
+      return await _updateLeagueInDb(
+        leagueId: league.id,
+        updateData: {
+          'participants': updatedParticipants
+              .map((p) => (p as ParticipantModel).toJson())
+              .toList()
+        },
       );
     } catch (e) {
       if (e is ServerException) rethrow;
@@ -1120,7 +1280,9 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
     required String imageUrl,
     required String text,
     required String userId,
+    required String participantName,
     String? relatedEventId,
+    String? eventName,
   }) {
     final memoryId = uuid.v4();
     return MemoryModel(
@@ -1129,7 +1291,9 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
       text: text,
       createdAt: DateTime.now(),
       userId: userId,
+      participantName: participantName,
       relatedEventId: relatedEventId,
+      eventName: eventName,
     );
   }
 
@@ -1181,7 +1345,9 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
   // ------------------------------------------------
   // H E L P E R  -  G E T   U P D A T E D   M E M O R I E S   A F T E R   R E M O V A L
   List<Map<String, dynamic>> _getUpdatedMemoriesAfterRemoval(
-      LeagueModel league, String memoryId) {
+    LeagueModel league,
+    String memoryId,
+  ) {
     return league.memories
         .where((m) => (m as MemoryModel).id != memoryId)
         .map((m) => (m as MemoryModel).toJson())
@@ -1245,5 +1411,26 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
 
     // Combine the rules in the right order (bonus first, then malus)
     return [...bonusRules, ...malusRules];
+  }
+
+  // ------------------------------------------------
+  // H E L P E R  -  G E T   P A R T I C I P A N T   N A M E   B Y   U S E R   I D
+  String _getParticipantNameByUserId(LeagueModel league, String userId) {
+    for (final participant in league.participants) {
+      final participantJson = (participant as ParticipantModel).toJson();
+
+      if (participantJson['type'] == 'individual' &&
+          participantJson['userId'] == userId) {
+        return participantJson['name'] as String;
+      } else if (participantJson['type'] == 'team') {
+        final members = (participantJson['members'] as List<dynamic>?) ?? [];
+        for (final memberJson in members) {
+          if (memberJson['userId'] == userId) {
+            return "${participantJson['name']} - ${memberJson['name']}";
+          }
+        }
+      }
+    }
+    return "Utente";
   }
 }

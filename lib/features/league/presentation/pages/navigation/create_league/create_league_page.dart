@@ -1,5 +1,4 @@
 import 'package:fantavacanze_official/core/constants/game_mode.dart';
-import 'package:fantavacanze_official/core/cubits/app_league/app_league_cubit.dart';
 import 'package:fantavacanze_official/core/extensions/context_extension.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/utils/show_snackbar.dart';
@@ -439,9 +438,6 @@ class _CreateLeaguePageState extends State<CreateLeaguePage> {
     return BlocConsumer<LeagueBloc, LeagueState>(
       listener: (context, state) {
         if (state is LeagueSuccess) {
-          // After successful league creation, refresh the leagues
-          context.read<AppLeagueCubit>().getUserLeagues();
-
           // Clear cached rules after successful league creation
           _cachedRules['hard'] = [];
           _cachedRules['soft'] = [];
