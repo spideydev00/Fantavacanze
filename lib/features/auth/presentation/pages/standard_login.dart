@@ -3,13 +3,13 @@ import 'package:fantavacanze_official/core/widgets/loader.dart';
 import 'package:fantavacanze_official/core/pages/empty_branded_page.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
-import 'package:fantavacanze_official/core/widgets/custom_dialog_box.dart';
+import 'package:fantavacanze_official/core/widgets/auth_dialog_box.dart';
 import 'package:fantavacanze_official/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:fantavacanze_official/features/auth/presentation/pages/signup.dart';
 import 'package:fantavacanze_official/features/auth/presentation/widgets/auth_field.dart';
 import 'package:fantavacanze_official/features/auth/presentation/widgets/cloudflare_turnstile_widget.dart';
 import 'package:fantavacanze_official/features/auth/presentation/widgets/rich_text.dart';
-import 'package:fantavacanze_official/features/league/presentation/pages/dashboard.dart';
+import 'package:fantavacanze_official/features/league/presentation/pages/dashboard/sections/dashboard.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
@@ -98,7 +98,7 @@ class _StandardLoginPageState extends State<StandardLoginPage> {
                     if (state is AuthFailure) {
                       showDialog(
                         context: context,
-                        builder: (context) => CustomDialogBox(
+                        builder: (context) => AuthDialogBox(
                           title: "Errore Login!",
                           description: state.message,
                           type: DialogType.error,
@@ -124,7 +124,7 @@ class _StandardLoginPageState extends State<StandardLoginPage> {
                         if (turnstileToken.isEmpty) {
                           showDialog(
                             context: context,
-                            builder: (context) => CustomDialogBox(
+                            builder: (context) => AuthDialogBox(
                               title: "hCaptcha Error..",
                               description: "Dimostra di essere un umano!",
                               type: DialogType.error,

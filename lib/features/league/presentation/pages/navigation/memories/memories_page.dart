@@ -12,10 +12,10 @@ import 'package:fantavacanze_official/features/league/domain/entities/memory.dar
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_event.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_state.dart';
-import 'package:fantavacanze_official/features/league/presentation/widgets/common/empty_state.dart';
-import 'package:fantavacanze_official/features/league/presentation/widgets/memories/add_memory_bottom_sheet.dart';
-import 'package:fantavacanze_official/features/league/presentation/widgets/memories/memory_card.dart';
-import 'package:fantavacanze_official/features/league/presentation/widgets/memories/memory_detail_screen.dart';
+import 'package:fantavacanze_official/core/widgets/empty_state.dart';
+import 'package:fantavacanze_official/features/league/presentation/pages/navigation/memories/widgets/add_memory_bottom_sheet.dart';
+import 'package:fantavacanze_official/features/league/presentation/pages/navigation/memories/widgets/memory_card.dart';
+import 'package:fantavacanze_official/features/league/presentation/pages/navigation/memories/widgets/memory_detail_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
@@ -212,10 +212,13 @@ class _MemoriesPageState extends State<MemoriesPage>
                       : const Icon(Icons.add_photo_alternate),
                 ),
                 body: memories.isEmpty
-                    ? const EmptyState(
-                        icon: Icons.photo_album_outlined,
-                        title: 'Nessun ricordo',
-                        subtitle: 'Aggiungi dei ricordi della tua vacanza',
+                    ? Padding(
+                        padding: const EdgeInsets.all(ThemeSizes.md),
+                        child: const EmptyState(
+                          icon: Icons.sports_kabaddi_rounded,
+                          title: 'Nessun ricordo...',
+                          subtitle: 'Aggiungi dei ricordi della tua vacanza :)',
+                        ),
                       )
                     : RefreshIndicator(
                         onRefresh: () async {

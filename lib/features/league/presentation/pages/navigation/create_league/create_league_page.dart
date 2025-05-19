@@ -11,10 +11,10 @@ import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_event.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_state.dart';
-import 'package:fantavacanze_official/features/league/presentation/widgets/create_league/basic_info_step.dart';
-import 'package:fantavacanze_official/features/league/presentation/widgets/create_league/team_type_step.dart';
-import 'package:fantavacanze_official/features/league/presentation/widgets/create_league/rules_step.dart';
-import 'package:fantavacanze_official/features/league/presentation/widgets/core/form_dialog.dart';
+import 'package:fantavacanze_official/features/league/presentation/pages/navigation/create_league/widgets/basic_info_step.dart';
+import 'package:fantavacanze_official/features/league/presentation/pages/navigation/create_league/widgets/team_type_step.dart';
+import 'package:fantavacanze_official/features/league/presentation/pages/navigation/create_league/widgets/rules_step.dart';
+import 'package:fantavacanze_official/core/widgets/form_dialog.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/create_league/league_created_page.dart';
 
 class CreateLeaguePage extends StatefulWidget {

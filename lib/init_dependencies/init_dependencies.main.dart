@@ -228,6 +228,18 @@ void _initLeague() {
     ..registerFactory(
       () => UpdateTeamLogo(leagueRepository: serviceLocator()),
     )
+    ..registerFactory(
+      () => AddAdministrators(leagueRepository: serviceLocator()),
+    )
+    ..registerFactory(
+      () => UpdateLeagueInfo(leagueRepository: serviceLocator()),
+    )
+    ..registerFactory(
+      () => RemoveParticipants(leagueRepository: serviceLocator()),
+    )
+    ..registerFactory(
+      () => DeleteLeague(leagueRepository: serviceLocator()),
+    )
 
     // bloc
     ..registerFactory(
@@ -254,6 +266,10 @@ void _initLeague() {
         uploadImage: serviceLocator(),
         uploadTeamLogo: serviceLocator(),
         updateTeamLogo: serviceLocator(),
+        addAdministrators: serviceLocator(),
+        removeParticipants: serviceLocator(),
+        updateLeagueInfo: serviceLocator(),
+        deleteLeague: serviceLocator(),
       ),
     );
 }

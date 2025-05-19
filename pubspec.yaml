@@ -143,6 +143,8 @@ flutter:
   - assets/images/icons/homepage_icons/notes-icon-dark.svg
   - assets/images/icons/homepage_icons/articles-icon.svg
   - assets/images/icons/homepage_icons/articles-icon-dark.svg
+  - assets/images/icons/homepage_icons/admin-icon.svg
+  - assets/images/icons/homepage_icons/admin-icon-dark.svg
   
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-assets/images

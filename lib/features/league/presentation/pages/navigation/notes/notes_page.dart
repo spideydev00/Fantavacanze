@@ -10,11 +10,11 @@ import 'package:fantavacanze_official/features/league/domain/entities/team_parti
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_event.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_state.dart';
-import 'package:fantavacanze_official/features/league/presentation/widgets/core/divider.dart';
-import 'package:fantavacanze_official/features/league/presentation/widgets/notes/empty_notes_state.dart';
-import 'package:fantavacanze_official/features/league/presentation/widgets/notes/note_input.dart';
-import 'package:fantavacanze_official/features/league/presentation/widgets/notes/notes_list.dart';
-import 'package:fantavacanze_official/features/league/presentation/widgets/notes/participant_selector.dart';
+import 'package:fantavacanze_official/core/widgets/empty_state.dart';
+import 'package:fantavacanze_official/core/widgets/divider.dart';
+import 'package:fantavacanze_official/features/league/presentation/pages/navigation/notes/widgets/note_input.dart';
+import 'package:fantavacanze_official/features/league/presentation/pages/navigation/notes/widgets/notes_list.dart';
+import 'package:fantavacanze_official/features/league/presentation/pages/navigation/notes/widgets/participant_selector.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:uuid/uuid.dart';
@@ -262,7 +262,12 @@ class _NotesPageState extends State<NotesPage> {
                             notes: _notes,
                             onDeleteNote: _deleteNote,
                             isLoading: state is LeagueLoading && _notes.isEmpty,
-                            emptyStateWidget: const EmptyNotesState(),
+                            emptyStateWidget: const EmptyState(
+                              icon: Icons.edit_note_sharp,
+                              title: "Nessuna nota salvata...",
+                              subtitle:
+                                  "Non hai tempo per assegnare un evento? Crea qui un reminder!",
+                            ),
                           ),
                         ],
                       ),

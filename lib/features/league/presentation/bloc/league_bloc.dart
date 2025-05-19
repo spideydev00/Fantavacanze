@@ -20,9 +20,13 @@ import 'package:fantavacanze_official/features/league/domain/use_cases/update_te
 import 'package:fantavacanze_official/features/league/domain/use_cases/upload_image.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/upload_team_logo.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/update_team_logo.dart';
+import 'package:fantavacanze_official/features/league/domain/use_cases/add_administrators.dart';
+import 'package:fantavacanze_official/features/league/domain/use_cases/remove_participants.dart';
+import 'package:fantavacanze_official/features/league/domain/use_cases/update_league_info.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:fantavacanze_official/features/league/domain/use_cases/delete_league.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_event.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_state.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 
 class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
   final CreateLeague createLeague;
@@ -45,6 +49,10 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
   final UploadImage uploadImage;
   final UploadTeamLogo uploadTeamLogo;
   final UpdateTeamLogo updateTeamLogo;
+  final AddAdministrators addAdministrators;
+  final RemoveParticipants removeParticipants;
+  final UpdateLeagueInfo updateLeagueInfo;
+  final DeleteLeague deleteLeague;
   final AppUserCubit appUserCubit;
   final AppLeagueCubit appLeagueCubit;
 
@@ -71,6 +79,10 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
     required this.appUserCubit,
     required this.appLeagueCubit,
     required this.removeTeamParticipants,
+    required this.addAdministrators,
+    required this.removeParticipants,
+    required this.updateLeagueInfo,
+    required this.deleteLeague,
   }) : super(LeagueInitial()) {
     on<CreateLeagueEvent>(_onCreateLeague);
     on<GetLeagueEvent>(_onGetLeague);
@@ -92,6 +104,10 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
     on<UploadImageEvent>(_onUploadImage);
     on<UploadTeamLogoEvent>(_onUploadTeamLogo);
     on<UpdateTeamLogoEvent>(_onUpdateTeamLogo);
+    on<AddAdministratorsEvent>(_onAddAdministrators);
+    on<RemoveParticipantsEvent>(_onRemoveParticipants);
+    on<UpdateLeagueInfoEvent>(_onUpdateLeagueInfo);
+    on<DeleteLeagueEvent>(_onDeleteLeague);
   }
 
   // -----------------------------------------------------------
@@ -257,6 +273,30 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
     } catch (e) {
       emit(LeagueError(message: e.toString()));
     }
+  }
+
+  // D E L E T E   L E A G U E
+  Future<void> _onDeleteLeague(
+    DeleteLeagueEvent event,
+    Emitter<LeagueState> emit,
+  ) async {
+    emit(LeagueLoading());
+
+    final result =
+        await deleteLeague(DeleteLeagueParams(leagueId: event.leagueId));
+
+    result.fold(
+      (failure) => emit(LeagueError(message: failure.message)),
+      (_) {
+        emit(DeleteLeagueSuccess());
+
+        // Remove selected league from shared preferences
+        appLeagueCubit.clearSelectedLeague();
+
+        // Refresh app league cubit after exiting
+        appLeagueCubit.getUserLeagues();
+      },
+    );
   }
 
   // -----------------------------------------------------------
@@ -667,6 +707,97 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
       (league) {
         emit(LeagueSuccess(league: league, operation: 'update_team_logo'));
         appLeagueCubit.selectLeague(league);
+      },
+    );
+  }
+
+  // -----------------------------------------------------------
+  // A D M I N   O P E R A T I O N S
+  // -----------------------------------------------------------
+
+  // Add Administrators
+  Future<void> _onAddAdministrators(
+    AddAdministratorsEvent event,
+    Emitter<LeagueState> emit,
+  ) async {
+    emit(LeagueLoading());
+
+    final result = await addAdministrators(
+      AddAdministratorsParams(
+        league: event.league,
+        userIds: event.userIds,
+      ),
+    );
+
+    result.fold(
+      (failure) => emit(LeagueError(message: failure.message)),
+      (league) {
+        emit(AdminOperationSuccess(
+          league: league,
+          operation: 'add_administrators',
+        ));
+
+        appLeagueCubit.selectLeague(league);
+      },
+    );
+  }
+
+  // Remove Participants
+  Future<void> _onRemoveParticipants(
+    RemoveParticipantsEvent event,
+    Emitter<LeagueState> emit,
+  ) async {
+    emit(LeagueLoading());
+
+    final result = await removeParticipants(
+      RemoveParticipantsParams(
+        league: event.league,
+        participantIds: event.participantIds,
+        newCaptainId: event.newCaptainId,
+      ),
+    );
+
+    result.fold(
+      (failure) => emit(LeagueError(message: failure.message)),
+      (league) {
+        emit(AdminOperationSuccess(
+          league: league,
+          operation: 'remove_participants',
+        ));
+
+        // Update the current selected league
+        appLeagueCubit.selectLeague(league);
+      },
+    );
+  }
+
+  // Update League Info
+  Future<void> _onUpdateLeagueInfo(
+    UpdateLeagueInfoEvent event,
+    Emitter<LeagueState> emit,
+  ) async {
+    emit(LeagueLoading());
+
+    final result = await updateLeagueInfo(
+      UpdateLeagueInfoParams(
+        league: event.league,
+        name: event.name,
+        description: event.description,
+      ),
+    );
+
+    result.fold(
+      (failure) => emit(LeagueError(message: failure.message)),
+      (league) {
+        emit(AdminOperationSuccess(
+          league: league,
+          operation: 'update_league_info',
+        ));
+
+        final updatedLeague = league;
+
+        // Use the existing selectLeague method to ensure persistence is maintained
+        appLeagueCubit.updateLeagues(updatedLeague);
       },
     );
   }

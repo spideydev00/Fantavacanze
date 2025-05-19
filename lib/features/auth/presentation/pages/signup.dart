@@ -3,7 +3,7 @@ import 'package:fantavacanze_official/core/widgets/loader.dart';
 import 'package:fantavacanze_official/core/pages/empty_branded_page.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
-import 'package:fantavacanze_official/core/widgets/custom_dialog_box.dart';
+import 'package:fantavacanze_official/core/widgets/auth_dialog_box.dart';
 import 'package:fantavacanze_official/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:fantavacanze_official/features/auth/presentation/pages/standard_login.dart';
 import 'package:fantavacanze_official/features/auth/presentation/widgets/auth_field.dart';
@@ -114,7 +114,7 @@ class _SignUpPageState extends State<SignUpPage> {
                     if (state is AuthFailure) {
                       showDialog(
                         context: context,
-                        builder: (context) => CustomDialogBox(
+                        builder: (context) => AuthDialogBox(
                           title: "Errore!",
                           description: state.message,
                           type: DialogType.error,
@@ -127,7 +127,7 @@ class _SignUpPageState extends State<SignUpPage> {
                           StandardLoginPage.route, (route) => false);
                       showDialog(
                         context: context,
-                        builder: (context) => CustomDialogBox(
+                        builder: (context) => AuthDialogBox(
                           title: "Ottimo!",
                           description:
                               "Attiva l'account cliccando sul link che ti è stato inviato per e-mail",
@@ -151,7 +151,7 @@ class _SignUpPageState extends State<SignUpPage> {
                         if (turnstileToken.isEmpty) {
                           showDialog(
                             context: context,
-                            builder: (context) => CustomDialogBox(
+                            builder: (context) => AuthDialogBox(
                               title: "hCaptcha Error..",
                               description: "Dimostra di essere un umano!",
                               type: DialogType.error,

@@ -7,7 +7,7 @@ import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/features/league/data/models/league_model.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/league.dart';
 import 'package:fantavacanze_official/core/widgets/info_container.dart';
-import 'package:fantavacanze_official/features/league/presentation/widgets/create_league/invite_code_card.dart';
+import 'package:fantavacanze_official/features/league/presentation/pages/navigation/create_league/widgets/invite_code_card.dart';
 
 class LeagueCreatedPage extends StatefulWidget {
   final League league;

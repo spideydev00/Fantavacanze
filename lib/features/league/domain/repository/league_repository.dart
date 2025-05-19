@@ -128,4 +128,22 @@ abstract class LeagueRepository {
     required String teamName,
     required String logoUrl,
   });
+
+  // New admin operations
+  Future<Either<Failure, League>> addAdministrators({
+    required League league,
+    required List<String> userIds,
+  });
+
+  Future<Either<Failure, League>> removeParticipants({
+    required League league,
+    required List<String> participantIds,
+    String? newCaptainId,
+  });
+
+  Future<Either<Failure, League>> updateLeagueInfo({
+    required League league,
+    String? name,
+    String? description,
+  });
 }

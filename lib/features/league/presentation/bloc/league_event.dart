@@ -293,3 +293,55 @@ class UpdateTeamLogoEvent extends LeagueEvent {
   @override
   List<Object?> get props => [league, teamName, logoUrl];
 }
+
+class AddAdministratorsEvent extends LeagueEvent {
+  final League league;
+  final List<String> userIds;
+
+  const AddAdministratorsEvent({
+    required this.league,
+    required this.userIds,
+  });
+
+  @override
+  List<Object?> get props => [league, userIds];
+}
+
+class RemoveParticipantsEvent extends LeagueEvent {
+  final League league;
+  final List<String> participantIds;
+  final String? newCaptainId;
+
+  const RemoveParticipantsEvent({
+    required this.league,
+    required this.participantIds,
+    this.newCaptainId,
+  });
+
+  @override
+  List<Object?> get props => [league, participantIds, newCaptainId];
+}
+
+class UpdateLeagueInfoEvent extends LeagueEvent {
+  final League league;
+  final String? name;
+  final String? description;
+
+  const UpdateLeagueInfoEvent({
+    required this.league,
+    this.name,
+    this.description,
+  });
+
+  @override
+  List<Object?> get props => [league, name, description];
+}
+
+class DeleteLeagueEvent extends LeagueEvent {
+  final String leagueId;
+
+  const DeleteLeagueEvent({required this.leagueId});
+
+  @override
+  List<Object?> get props => [leagueId];
+}

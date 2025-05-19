@@ -124,6 +124,23 @@ abstract class LeagueRemoteDataSource {
     required String teamName,
     required String logoUrl,
   });
+
+  Future<LeagueModel> addAdministrators({
+    required LeagueModel league,
+    required List<String> userIds,
+  });
+
+  Future<LeagueModel> removeParticipants({
+    required LeagueModel league,
+    required List<String> participantIds,
+    String? newCaptainId,
+  });
+
+  Future<LeagueModel> updateLeagueInfo({
+    required LeagueModel league,
+    String? name,
+    String? description,
+  });
 }
 
 class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
@@ -696,7 +713,13 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
             'Puoi rimuovere solo i tuoi ricordi a meno che tu non sia un amministratore');
       }
 
-      // Remove the memory
+      // Delete the image from storage
+      await _deleteFileFromStorage(
+        bucket: 'memories',
+        url: memoryToRemove.imageUrl,
+      );
+
+      // Remove the memory from the league
       final updatedMemories = _getUpdatedMemoriesAfterRemoval(league, memoryId);
 
       // Update in Supabase
@@ -862,6 +885,14 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
             'Solo gli amministratori o il capitano del team possono rimuovere membri');
       }
 
+      // Check if any of the users to remove are admins
+      for (final userId in userIdsToRemove) {
+        if (league.admins.contains(userId)) {
+          throw ServerException(
+              'Non puoi rimuovere un amministratore. Gli amministratori possono solo uscire autonomamente dalla lega.');
+        }
+      }
+
       // Assicurati che il capitano non venga rimosso
       if (userIdsToRemove.contains(teamParticipant.captainId)) {
         throw ServerException(
@@ -903,6 +934,153 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
       return await _updateLeagueInDb(
         leagueId: league.id,
         updateData: {'participants': participantsJson},
+      );
+    } catch (e) {
+      if (e is ServerException) rethrow;
+      throw ServerException('Si è verificato un errore: ${e.toString()}');
+    }
+  }
+
+  // ------------------------------------------------
+  // A D D   A D M I N I S T R A T O R S
+  @override
+  Future<LeagueModel> addAdministrators({
+    required LeagueModel league,
+    required List<String> userIds,
+  }) async {
+    try {
+      _checkAuthentication();
+
+      // Get current admins and add new ones
+      final List<String> updatedAdmins = [...league.admins, ...userIds];
+
+      // Remove duplicates
+      final List<String> uniqueAdmins = updatedAdmins.toSet().toList();
+
+      // Update in Supabase
+      return await _updateLeagueInDb(
+        leagueId: league.id,
+        updateData: {'admins': uniqueAdmins},
+      );
+    } catch (e) {
+      if (e is ServerException) rethrow;
+      throw ServerException('Si è verificato un errore: ${e.toString()}');
+    }
+  }
+
+  // ------------------------------------------------
+  // R E M O V E   P A R T I C I P A N T S
+  @override
+  Future<LeagueModel> removeParticipants({
+    required LeagueModel league,
+    required List<String> participantIds,
+    String? newCaptainId,
+  }) async {
+    try {
+      _checkAuthentication();
+
+      // Check if any of the users to remove are admins
+      for (final userId in participantIds) {
+        if (league.admins.contains(userId)) {
+          throw ServerException(
+              'Non puoi rimuovere un amministratore. Gli amministratori possono solo uscire autonomamente dalla lega.');
+        }
+      }
+
+      // Handle both team and individual participants
+      List<dynamic> updatedParticipants = [];
+
+      for (final participant in league.participants) {
+        if (participant is IndividualParticipantModel) {
+          // For individual participants, check if their userId is in the remove list
+          if (!participantIds.contains(participant.userId)) {
+            updatedParticipants.add(participant);
+          }
+        } else if (participant is TeamParticipantModel) {
+          // For team participants, check if captain is being removed
+          final isCaptainBeingRemoved =
+              participantIds.contains(participant.captainId);
+
+          // Filter out members to remove
+          final updatedMembers = participant.members
+              .where((member) => !participantIds.contains(member.userId))
+              .toList();
+
+          // Check if the team will be left with at least one member
+          if (updatedMembers.isEmpty) {
+            throw ServerException(
+                'Non puoi rimuovere tutti i membri del team. Il team deve avere almeno un membro.');
+          }
+
+          // If captain is being removed, validate that new captain exists in members
+          String captainId = participant.captainId;
+
+          if (isCaptainBeingRemoved) {
+            // Ensure the new captain is in the updated members list
+            final isNewCaptainValid = updatedMembers.any(
+              (member) => member.userId == newCaptainId,
+            );
+
+            if (!isNewCaptainValid) {
+              throw ServerException(
+                  'Il nuovo capitano specificato non è un membro valido del team.');
+            }
+
+            captainId = newCaptainId!;
+          }
+
+          // If team still has members, add it with updated members
+          updatedParticipants.add(TeamParticipantModel(
+            members: updatedMembers,
+            name: participant.name,
+            points: participant.points,
+            malusTotal: participant.malusTotal,
+            bonusTotal: participant.bonusTotal,
+            captainId: captainId,
+            teamLogoUrl: participant.teamLogoUrl,
+          ));
+        }
+      }
+
+      // Update in Supabase
+      return await _updateLeagueInDb(
+        leagueId: league.id,
+        updateData: {
+          'participants': updatedParticipants
+              .map((p) => (p as ParticipantModel).toJson())
+              .toList(),
+        },
+      );
+    } catch (e) {
+      if (e is ServerException) rethrow;
+      throw ServerException('Si è verificato un errore: ${e.toString()}');
+    }
+  }
+
+  // ------------------------------------------------
+  // U P D A T E   L E A G U E   I N F O
+  @override
+  Future<LeagueModel> updateLeagueInfo({
+    required LeagueModel league,
+    String? name,
+    String? description,
+  }) async {
+    try {
+      _checkAuthentication();
+
+      final Map<String, dynamic> updateData = {};
+      if (name != null) updateData['name'] = name;
+      if (description != null) updateData['description'] = description;
+
+      if (updateData.isEmpty) {
+        // Nothing to update, return current league
+        return league;
+      }
+
+      // Update in Supabase
+      return await _updateLeagueInDb(
+        leagueId: league.id,
+        updateData: updateData,
       );
     } catch (e) {
       if (e is ServerException) rethrow;
@@ -997,7 +1175,7 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
     required String logoUrl,
   }) async {
     try {
-      // Find the team participant by name instead of ID
+      // Find the team participant by name
       int targetIndex = -1;
       for (int i = 0; i < league.participants.length; i++) {
         final participant = league.participants[i];
@@ -1012,9 +1190,20 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
         throw ServerException('Team non trovato');
       }
 
-      // Get and update the team participant
+      // Get team participant and check if it already has a logo
       final teamParticipant =
           league.participants[targetIndex] as TeamParticipantModel;
+
+      // If the team already has a logo, delete it from storage
+      if (teamParticipant.teamLogoUrl != null &&
+          teamParticipant.teamLogoUrl!.isNotEmpty) {
+        await _deleteFileFromStorage(
+          bucket: 'team-logos',
+          url: teamParticipant.teamLogoUrl!,
+        );
+      }
+
+      // Update the team with the new logo URL
       final updatedTeam = teamParticipant.copyWith(teamLogoUrl: logoUrl);
 
       // Update the participants list
@@ -1033,6 +1222,40 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
     } catch (e) {
       if (e is ServerException) rethrow;
       throw ServerException('Si è verificato un errore: ${e.toString()}');
+    }
+  }
+
+  // ------------------------------------------------
+  // H E L P E R  -  D E L E T E   F I L E   F R O M   S T O R A G E
+  Future<void> _deleteFileFromStorage({
+    required String bucket,
+    required String url,
+  }) async {
+    try {
+      // Extract the file path from the URL
+      // URLs typically look like: https://xxx.supabase.co/storage/v1/object/public/bucket-name/path/to/file.jpg
+      final uri = Uri.parse(url);
+      final pathSegments = uri.pathSegments;
+
+      // Find the bucket name in the path segments
+      int bucketIndex = pathSegments.indexOf(bucket);
+      if (bucketIndex == -1 || bucketIndex + 1 >= pathSegments.length) {
+        debugPrint('⚠️ Could not extract file path from URL: $url');
+        return;
+      }
+
+      // The file path is everything after the bucket name
+      final filePath = pathSegments.sublist(bucketIndex + 1).join('/');
+
+      debugPrint('🗑️ Deleting file from storage: $bucket/$filePath');
+
+      // Delete the file
+      await supabaseClient.storage.from(bucket).remove([filePath]);
+
+      debugPrint('✅ File deleted successfully from storage');
+    } catch (e) {
+      // We don't want to throw an exception if this fails, just log it
+      debugPrint('⚠️ Error deleting file from storage: ${e.toString()}');
     }
   }
 
@@ -1112,50 +1335,12 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
           .from('leagues')
           .update(updateData)
           .eq('id', leagueId)
-          .select();
+          .select()
+          .single();
 
-      debugPrint(
-          "✅ _updateLeagueInDb: Update successful, response size: ${updatedResponse.length}");
-
-      if (updatedResponse.isEmpty) {
-        throw ServerException('Nessun dato restituito dopo l\'aggiornamento');
-      }
-
-      return _convertResponseToModel(updatedResponse.first);
+      return _convertResponseToModel(updatedResponse);
     } catch (e) {
-      throw ServerException('Errore generico: ${e.toString()}');
-    }
-  }
-
-  // ------------------------------------------------
-  // H E L P E R  -  C R E A T E   I N I T I A L   P A R T I C I P A N T
-  ParticipantModel _createInitialParticipant({
-    required bool isTeamBased,
-    required String creatorId,
-    required String creatorName,
-  }) {
-    if (isTeamBased) {
-      return TeamParticipantModel(
-        members: [
-          SimpleParticipantModel(
-            userId: creatorId,
-            name: creatorName,
-          )
-        ],
-        captainId: creatorId,
-        name: 'Squadra di $creatorName',
-        points: 0,
-        malusTotal: 0,
-        bonusTotal: 0,
-      );
-    } else {
-      return IndividualParticipantModel(
-        userId: creatorId,
-        name: creatorName,
-        points: 0,
-        malusTotal: 0,
-        bonusTotal: 0,
-      );
+      throw ServerException('Si è verificato un errore: ${e.toString()}');
     }
   }
 
@@ -1169,7 +1354,6 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
       if (p is! ParticipantModel) continue;
       final participant = p;
       final json = participant.toJson();
-
       if (league.isTeamBased) {
         // For team-based leagues, targetUser is the team name
         if (json['type'] == 'team' && json['name'] == targetUser) {
@@ -1186,6 +1370,39 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
   }
 
   // ------------------------------------------------
+  // H E L P E R  -  C R E A T E   I N I T I A L   P A R T I C I P A N T
+  ParticipantModel _createInitialParticipant({
+    required bool isTeamBased,
+    required String creatorId,
+    required String creatorName,
+  }) {
+    if (isTeamBased) {
+      return TeamParticipantModel(
+        members: [
+          SimpleParticipantModel(
+            userId: creatorId,
+            name: creatorName,
+          ),
+        ],
+        captainId: creatorId,
+        name: 'Team di $creatorName',
+        points: 0,
+        malusTotal: 0,
+        bonusTotal: 0,
+        teamLogoUrl: null,
+      );
+    } else {
+      return IndividualParticipantModel(
+        userId: creatorId,
+        name: creatorName,
+        points: 0,
+        malusTotal: 0,
+        bonusTotal: 0,
+      );
+    }
+  }
+
+  // ------------------------------------------------
   // H E L P E R  -  C R E A T E   E V E N T   D A T A
   EventModel _createEventData({
     required String name,
@@ -1196,7 +1413,6 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
     String? description,
   }) {
     final eventId = uuid.v4();
-
     return EventModel(
       id: eventId,
       name: name,
@@ -1241,7 +1457,6 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
     // Update bonus or malus totals
     int updatedBonusTotal = participantJson['bonusTotal'] ?? 0;
     int updatedMalusTotal = participantJson['malusTotal'] ?? 0;
-
     if (points > 0) {
       updatedBonusTotal += points;
     } else if (points < 0) {
@@ -1324,7 +1539,6 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
         // Update bonus or malus totals
         int updatedBonusTotal = participantJson['bonusTotal'] ?? 0;
         int updatedMalusTotal = participantJson['malusTotal'] ?? 0;
-
         if (eventToRemove.points > 0) {
           updatedBonusTotal -= eventToRemove.points;
         } else if (eventToRemove.points < 0) {
@@ -1359,7 +1573,6 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
   int _findUserTeamIndex(LeagueModel league, String userId) {
     for (int i = 0; i < league.participants.length; i++) {
       final participant = league.participants[i] as ParticipantModel;
-
       if (participant is TeamParticipantModel) {
         // Check if userId is in the members list
         if (participant.members.any((member) => member.userId == userId)) {
@@ -1376,7 +1589,6 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
       LeagueModel league, String userId, String newName) {
     return league.participants.map((p) {
       final participant = p as ParticipantModel;
-
       if (participant is TeamParticipantModel &&
           participant.members.any((member) => member.userId == userId)) {
         return {

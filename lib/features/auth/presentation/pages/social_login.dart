@@ -9,7 +9,7 @@ import 'package:fantavacanze_official/features/auth/presentation/pages/standard_
 import 'package:fantavacanze_official/features/auth/presentation/widgets/promo_text.dart';
 import 'package:fantavacanze_official/features/auth/presentation/widgets/rich_text.dart';
 import 'package:fantavacanze_official/features/auth/presentation/widgets/social_button.dart';
-import 'package:fantavacanze_official/core/widgets/custom_dialog_box.dart';
+import 'package:fantavacanze_official/core/widgets/auth_dialog_box.dart';
 import 'package:fantavacanze_official/initial_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -32,7 +32,7 @@ class _SocialLoginPageState extends State<SocialLoginPage> {
         if (state is AuthFailure) {
           showDialog(
             context: context,
-            builder: (context) => CustomDialogBox(
+            builder: (context) => AuthDialogBox(
               title: "Login Error!",
               description: state.message,
               type: DialogType.error,

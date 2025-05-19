@@ -16,6 +16,7 @@ class League {
   final List<Event> events;
   final List<Memory> memories;
   final bool isTeamBased;
+  final String inviteCode; // Now required
 
   const League({
     required this.id,
@@ -28,5 +29,6 @@ class League {
     required this.events,
     required this.memories,
     required this.isTeamBased,
+    required this.inviteCode, // Required parameter
   });
 }
