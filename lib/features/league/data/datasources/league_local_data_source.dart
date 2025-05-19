@@ -93,7 +93,7 @@ class LeagueLocalDataSourceImpl implements LeagueLocalDataSource {
         leaguesBox.put(league.id, leagueData);
       });
 
-      debugPrint("📦 Cached single league [${league.id}]");
+      debugPrint("📦 Cached league [${league.id}]");
     } catch (e) {
       throw CacheException(
           'Errore nel salvare la lega in cache: ${e.toString()}');

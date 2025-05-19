@@ -5,8 +5,8 @@ import 'package:fantavacanze_official/features/league/domain/entities/league.dar
 import 'package:fantavacanze_official/features/league/domain/entities/rule.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_event.dart';
-import 'package:fantavacanze_official/features/league/presentation/widgets/core/confirmation_dialog.dart';
-import 'package:fantavacanze_official/features/league/presentation/widgets/rules/index.dart';
+import 'package:fantavacanze_official/core/widgets/confirmation_dialog.dart';
+import 'package:fantavacanze_official/features/league/presentation/pages/navigation/rules/widgets/index.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 

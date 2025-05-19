@@ -9,8 +9,6 @@ import 'package:fantavacanze_official/features/league/domain/entities/participan
 import 'package:fantavacanze_official/features/league/domain/entities/rule.dart';
 
 class LeagueModel extends League {
-  final String? inviteCode;
-
   const LeagueModel({
     required super.id,
     required super.admins,
@@ -22,10 +20,14 @@ class LeagueModel extends League {
     required super.events,
     required super.memories,
     required super.isTeamBased,
-    this.inviteCode,
+    required super.inviteCode, // Now required
   });
 
   factory LeagueModel.fromJson(Map<String, dynamic> json) {
+    // Get inviteCode from either inviteCode or invite_code field in JSON
+    final String inviteCode =
+        (json['inviteCode'] ?? json['invite_code']) as String;
+
     return LeagueModel(
       id: json['id'] as String,
       admins: List<String>.from(json['admins']),
@@ -45,8 +47,7 @@ class LeagueModel extends League {
           .map((e) => MemoryModel.fromJson(e as Map<String, dynamic>))
           .toList(),
       isTeamBased: json['isTeamBased'] as bool,
-      inviteCode:
-          json['inviteCode'] as String? ?? json['invite_code'] as String?,
+      inviteCode: inviteCode,
     );
   }
 

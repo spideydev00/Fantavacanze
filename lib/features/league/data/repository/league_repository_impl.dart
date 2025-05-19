@@ -148,16 +148,14 @@ class LeagueRepositoryImpl implements LeagueRepository {
   Future<Either<Failure, void>> deleteLeague(String leagueId) async {
     try {
       if (!await connectionChecker.isConnected) {
-        return Left(
-          Failure(
-              "Nessuna connessione ad internet, riprova appena sarai connesso."),
-        );
+        return Left(Failure(
+            "Nessuna connessione ad internet, riprova appena sarai connesso."));
       }
 
       await remoteDataSource.deleteLeague(leagueId);
 
-      // Remove from cache
-      // We might need to add a method to remove a specific league from cache
+      // Remove the league from cache as well
+      await localDataSource.removeLeagueFromCache(leagueId);
 
       return const Right(null);
     } on ServerException catch (e) {
@@ -691,6 +689,89 @@ class LeagueRepositoryImpl implements LeagueRepository {
     } catch (e) {
       return Left(
           Failure('Errore durante l\'aggiornamento del logo: ${e.toString()}'));
+    }
+  }
+
+  @override
+  Future<Either<Failure, League>> addAdministrators({
+    required League league,
+    required List<String> userIds,
+  }) async {
+    try {
+      if (!await connectionChecker.isConnected) {
+        return Left(
+          Failure(
+              "Nessuna connessione ad internet, riprova appena sarai connesso."),
+        );
+      }
+
+      final updatedLeague = await remoteDataSource.addAdministrators(
+        league: league as LeagueModel,
+        userIds: userIds,
+      );
+
+      // Update cache
+      await localDataSource.cacheLeague(updatedLeague);
+
+      return Right(updatedLeague);
+    } on ServerException catch (e) {
+      return Left(Failure(e.message));
+    }
+  }
+
+  @override
+  Future<Either<Failure, League>> removeParticipants({
+    required League league,
+    required List<String> participantIds,
+    String? newCaptainId,
+  }) async {
+    try {
+      if (!await connectionChecker.isConnected) {
+        return Left(Failure(
+            "Nessuna connessione ad internet, riprova appena sarai connesso."));
+      }
+
+      final updatedLeague = await remoteDataSource.removeParticipants(
+        league: league as LeagueModel,
+        participantIds: participantIds,
+        newCaptainId: newCaptainId,
+      );
+
+      // Update cache
+      await localDataSource.cacheLeague(updatedLeague);
+
+      return Right(updatedLeague);
+    } on ServerException catch (e) {
+      return Left(Failure(e.message));
+    }
+  }
+
+  @override
+  Future<Either<Failure, League>> updateLeagueInfo({
+    required League league,
+    String? name,
+    String? description,
+  }) async {
+    try {
+      if (!await connectionChecker.isConnected) {
+        return Left(
+          Failure(
+              "Nessuna connessione ad internet, riprova appena sarai connesso."),
+        );
+      }
+
+      final updatedLeague = await remoteDataSource.updateLeagueInfo(
+        league: league as LeagueModel,
+        name: name,
+        description: description,
+      );
+
+      // Update cache
+      await localDataSource.cacheLeague(updatedLeague);
+
+      return Right(updatedLeague);
+    } on ServerException catch (e) {
+      return Left(Failure(e.message));
     }
   }
 }

@@ -3,7 +3,7 @@ import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:fantavacanze_official/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:fantavacanze_official/features/auth/presentation/widgets/on_boarding_page_content.dart';
-import 'package:fantavacanze_official/features/league/presentation/pages/dashboard.dart';
+import 'package:fantavacanze_official/features/league/presentation/pages/dashboard/sections/dashboard.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';

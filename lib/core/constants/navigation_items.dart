@@ -1,5 +1,6 @@
 import 'package:fantavacanze_official/core/navigation/navigation_item.dart';
-import 'package:fantavacanze_official/features/league/presentation/pages/home.dart';
+import 'package:fantavacanze_official/features/league/presentation/pages/navigation/admin/admin_page.dart';
+import 'package:fantavacanze_official/features/league/presentation/pages/navigation/homepage/home.dart';
 import 'package:fantavacanze_official/features/blog/presentation/pages/articles_page.dart';
 import 'package:fantavacanze_official/features/games/presentation/pages/drink_games.dart';
 import 'package:fantavacanze_official/features/games/presentation/pages/quick_challenge.dart';
@@ -133,6 +134,14 @@ List<NavigationItem> participantNavbarItems = [
         'assets/images/icons/homepage_icons/search-league-icon-dark.svg',
     screen: const SearchLeaguePage(),
     subsection: "Nuova Lega",
+  ),
+  NavigationItem(
+    title: "Admin",
+    darkSvgIcon: 'assets/images/icons/homepage_icons/admin-icon.svg',
+    lightSvgIcon: 'assets/images/icons/homepage_icons/admin-icon-dark.svg',
+    screen: const AdminPage(),
+    subsection: "Gestione Lega",
+    isAdminOnly: true,
   ),
   NavigationItem(
     title: "Articoli",

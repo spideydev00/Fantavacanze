@@ -5,7 +5,10 @@ class DateFormatter {
     final now = DateTime.now();
     final difference = now.difference(date);
 
-    if (difference.inDays > 0) {
+    if (difference.inDays > 30) {
+      // Return formatted date for dates older than a month
+      return '${date.day}/${date.month}/${date.year} ${_formatHourMinute(date)}';
+    } else if (difference.inDays > 0) {
       return "${difference.inDays} ${difference.inDays == 1 ? 'giorno' : 'giorni'} fa";
     } else if (difference.inHours > 0) {
       return "${difference.inHours} ${difference.inHours == 1 ? 'ora' : 'ore'} fa";
@@ -14,5 +17,15 @@ class DateFormatter {
     } else {
       return "poco fa";
     }
+  }
+
+  /// Formats a date in the standard Italian format "dd/MM/yyyy HH:mm"
+  static String formatDate(DateTime date) {
+    return '${date.day}/${date.month}/${date.year} ${_formatHourMinute(date)}';
+  }
+
+  /// Helper to format hour and minute with leading zeros
+  static String _formatHourMinute(DateTime date) {
+    return '${date.hour}:${date.minute < 10 ? '0${date.minute}' : date.minute}';
   }
 }

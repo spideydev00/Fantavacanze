@@ -85,6 +85,30 @@ class AppLeagueCubit extends Cubit<AppLeagueState> {
       // Save selection to SharedPreferences
       _prefs.setString(_selectedLeagueKey, league.id);
       emit(currentState.copyWith(selectedLeague: league));
+
+      debugPrint(
+          "✅ AppLeagueCubit: Selected League changed/updated to ${league.name}");
+    }
+  }
+
+  // ---------------------------------
+  // S E L E C T S   A   L E A G U E
+  // ---------------------------------
+  void updateLeagues(League league) {
+    if (state is AppLeagueExists) {
+      // Create a new list with the updated league replacing the old one
+      final currentState = state as AppLeagueExists;
+
+      final updatedLeagues = currentState.leagues.map((existingLeague) {
+        return existingLeague.id == league.id ? league : existingLeague;
+      }).toList();
+
+      // Call the existing implementation which should include persistence code
+      emit(AppLeagueExists(leagues: updatedLeagues, selectedLeague: league));
+
+      _prefs.setString(_selectedLeagueKey, league.id);
+
+      debugPrint('✅ AppLeagueCubit: Updated ${league.name} information');
     }
   }
 

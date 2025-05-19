@@ -1,16 +1,19 @@
 import 'package:flutter/material.dart';
 
 class NavigationItem {
-  final String? title, subsection;
-  final String lightSvgIcon;
+  final String title;
   final String darkSvgIcon;
+  final String lightSvgIcon;
   final Widget screen;
+  final String subsection;
+  final bool isAdminOnly;
 
-  NavigationItem({
-    this.title,
-    this.subsection,
+  const NavigationItem({
+    required this.title,
     required this.lightSvgIcon,
     required this.darkSvgIcon,
     required this.screen,
+    required this.subsection,
+    this.isAdminOnly = false,
   });
 }

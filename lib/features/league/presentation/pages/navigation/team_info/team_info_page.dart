@@ -17,13 +17,13 @@ import 'package:fantavacanze_official/features/league/domain/entities/team_parti
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_event.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_state.dart';
-import 'package:fantavacanze_official/features/league/presentation/widgets/team_info/events_list.dart';
-import 'package:fantavacanze_official/features/league/presentation/widgets/core/confirmation_dialog.dart';
-import 'package:fantavacanze_official/features/league/presentation/widgets/team_info/leave_league_button.dart';
-import 'package:fantavacanze_official/features/league/presentation/widgets/team_info/score_card.dart';
-import 'package:fantavacanze_official/features/league/presentation/widgets/team_info/section_card.dart';
-import 'package:fantavacanze_official/features/league/presentation/widgets/team_info/stat_card.dart';
-import 'package:fantavacanze_official/features/league/presentation/widgets/team_info/team_members_list.dart';
+import 'package:fantavacanze_official/features/league/presentation/pages/navigation/team_info/widgets/events_list.dart';
+import 'package:fantavacanze_official/core/widgets/confirmation_dialog.dart';
+import 'package:fantavacanze_official/features/league/presentation/pages/navigation/team_info/widgets/leave_league_button.dart';
+import 'package:fantavacanze_official/features/league/presentation/pages/navigation/team_info/widgets/score_card.dart';
+import 'package:fantavacanze_official/features/league/presentation/pages/navigation/team_info/widgets/section_card.dart';
+import 'package:fantavacanze_official/features/league/presentation/pages/navigation/team_info/widgets/stat_card.dart';
+import 'package:fantavacanze_official/features/league/presentation/pages/navigation/team_info/widgets/team_members_list.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -619,7 +619,7 @@ class _TeamBasedInfoState extends State<_TeamBasedInfo>
           Positioned.fill(
             child: Container(
               decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.5),
+                color: Colors.black.withValues(alpha: 0.5),
                 shape: BoxShape.circle,
               ),
               child: const Center(
@@ -641,7 +641,7 @@ class _TeamBasedInfoState extends State<_TeamBasedInfo>
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.2),
+                    color: Colors.black.withValues(alpha: 0.2),
                     blurRadius: 4,
                     spreadRadius: 1,
                   ),

@@ -43,6 +43,8 @@ class LeagueSuccess extends LeagueState {
 
 class ExitLeagueSuccess extends LeagueState {}
 
+class DeleteLeagueSuccess extends LeagueState {}
+
 class LeagueWithInviteCode extends LeagueState {
   final League league;
   final String inviteCode;
@@ -128,4 +130,17 @@ class TeamLogoUploadSuccess extends LeagueState {
 
   @override
   List<Object?> get props => [logoUrl, teamName];
+}
+
+class AdminOperationSuccess extends LeagueState {
+  final League league;
+  final String operation;
+
+  const AdminOperationSuccess({
+    required this.league,
+    required this.operation,
+  });
+
+  @override
+  List<Object> get props => [league, operation];
 }
