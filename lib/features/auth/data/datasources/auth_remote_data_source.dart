@@ -10,16 +10,25 @@ import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 abstract interface class AuthRemoteDataSource {
-  // void signInWithPhone();
-  Future<UserModel> signInWithGoogle();
-  Future<UserModel> signInWithApple();
-  // Future<UserModel> signInWithFacebook();
+  Future<UserModel> signInWithGoogle({
+    required bool isAdult,
+    required bool isTermsAccepted,
+  });
 
-  Future<UserModel> signUpWithEmailPassword(
-      {required String name,
-      required String email,
-      required String password,
-      required String hCaptcha});
+  Future<UserModel> signInWithApple({
+    required bool isAdult,
+    required bool isTermsAccepted,
+  });
+
+  Future<void> signUpWithEmailPassword({
+    required String name,
+    required String email,
+    required String password,
+    required String hCaptcha,
+    required bool isAdult,
+    required bool isTermsAccepted,
+  });
+
   Future<UserModel> loginWithEmailPassword(
       {required String email,
       required String password,
@@ -66,7 +75,10 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
 
   // ------------------ APPLE ------------------ //
   @override
-  Future<UserModel> signInWithApple() async {
+  Future<UserModel> signInWithApple({
+    required bool isAdult,
+    required bool isTermsAccepted,
+  }) async {
     try {
       final rawNonce = supabaseClient.auth.generateRawNonce();
       final hashedNonce = sha256.convert(utf8.encode(rawNonce)).toString();
@@ -94,19 +106,26 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         throw ServerException("Errore nella creazione dell'utente.");
       }
 
-      final userId = response.user!.id;
-      final givenName = credential.givenName;
-
       // Primo accesso → aggiorna profilo
-      if (!(response.user!.userMetadata?.containsKey('full_name') ?? false)) {
-        await supabaseClient.auth
-            .updateUser(UserAttributes(data: {'full_name': givenName}));
-        await supabaseClient
-            .from('profiles')
-            .update({'name': givenName}).eq('id', userId);
+      if (!(response.user!.userMetadata?.containsKey('full_name') ?? false) ||
+          !(response.user!.userMetadata?.containsKey('is_adult') ?? false) ||
+          !(response.user!.userMetadata?.containsKey('is_terms_accepted') ??
+              false)) {
+        final givenName = credential.givenName;
+
+        await supabaseClient.auth.updateUser(
+          UserAttributes(
+            data: {
+              'full_name': givenName,
+              'is_adult': isAdult,
+              'is_terms_accepted': isTermsAccepted,
+            },
+          ),
+        );
       }
 
       final user = await getCurrentUserData();
+
       return user!;
     } on AuthException catch (e) {
       throw ServerException(e.toString());
@@ -125,14 +144,18 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       required String hCaptcha}) async {
     try {
       final response = await supabaseClient.auth.signInWithPassword(
-          password: password, email: email, captchaToken: hCaptcha);
+        password: password,
+        email: email,
+        captchaToken: hCaptcha,
+      );
+
       if (response.user == null) {
         throw ServerException('User is null!');
       }
 
-      final profileResponse = await getCurrentUserData();
+      final user = await getCurrentUserData();
 
-      return profileResponse!;
+      return user!.copyWith(email: response.user!.email ?? '');
     } on AuthException catch (e) {
       throw ServerException(e.message);
     } catch (e) {
@@ -142,7 +165,10 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
 
   // ------------------ GOOGLE ------------------ //
   @override
-  Future<UserModel> signInWithGoogle() async {
+  Future<UserModel> signInWithGoogle({
+    required bool isAdult,
+    required bool isTermsAccepted,
+  }) async {
     try {
       const iosClientId = AppSecrets.iosClientId;
       const webClientId = AppSecrets.webClientId;
@@ -172,6 +198,20 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         throw ServerException("Errore nella creazione dell'utente.");
       }
 
+      // Primo accesso → aggiorna profilo
+      if (!(response.user!.userMetadata?.containsKey('is_adult') ?? false) ||
+          !(response.user!.userMetadata?.containsKey('is_terms_accepted') ??
+              false)) {
+        await supabaseClient.auth.updateUser(
+          UserAttributes(
+            data: {
+              'is_adult': isAdult,
+              'is_terms_accepted': isTermsAccepted,
+            },
+          ),
+        );
+      }
+
       final user = await getCurrentUserData();
       return user!;
     } on AuthException catch (e) {
@@ -183,18 +223,24 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
 
   // ------------------ EMAIL SIGNUP ------------------ //
   @override
-  Future<UserModel> signUpWithEmailPassword({
+  Future<void> signUpWithEmailPassword({
     required String name,
     required String email,
     required String password,
     required String hCaptcha,
+    required bool isAdult,
+    required bool isTermsAccepted,
   }) async {
     try {
       final response = await supabaseClient.auth.signUp(
         password: password,
         email: email,
         captchaToken: hCaptcha,
-        data: {'name': name},
+        data: {
+          'name': name,
+          'is_adult': isAdult,
+          'is_terms_accepted': isTermsAccepted,
+        },
         emailRedirectTo: "https://fantavacanze.it/",
       );
 
@@ -202,9 +248,8 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         throw ServerException('User is null!');
       }
 
-      // Recupera i dati utente aggiornati
-      final user = await getCurrentUserData();
-      return user!;
+      // No need to return anything - user needs to verify email
+      return;
     } on AuthException catch (e) {
       throw ServerException(e.message);
     } catch (e) {
@@ -233,7 +278,9 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
           .select()
           .single();
 
-      return UserModel.fromJson(response);
+      return UserModel.fromJson(response).copyWith(
+        email: currentSession!.user.email,
+      );
     } catch (e) {
       throw ServerException(e.toString());
     }

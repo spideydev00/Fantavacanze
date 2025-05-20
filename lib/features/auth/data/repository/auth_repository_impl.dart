@@ -17,14 +17,26 @@ class AuthRepositoryImpl implements AuthRepository {
 
   //Google
   @override
-  Future<Either<Failure, User>> googleSignIn() async {
+  Future<Either<Failure, User>> googleSignIn({
+    required bool isAdult,
+    required bool isTermsAccepted,
+  }) async {
     try {
       if (!await connectionChecker.isConnected) {
         return left(
             Failure("Connessione a internet assente. Riprova più tardi."));
       }
 
-      final user = await authRemoteDataSource.signInWithGoogle();
+      // Verify age/terms
+      if (!isAdult || !isTermsAccepted) {
+        return left(Failure(
+            "Devi avere almeno 18 anni e accettare i termini e condizioni."));
+      }
+
+      final user = await authRemoteDataSource.signInWithGoogle(
+        isAdult: isAdult,
+        isTermsAccepted: isTermsAccepted,
+      );
       return right(user);
     } on ServerException catch (e) {
       return left(Failure(e.message));
@@ -33,14 +45,26 @@ class AuthRepositoryImpl implements AuthRepository {
 
   //Apple
   @override
-  Future<Either<Failure, User>> appleSignIn() async {
+  Future<Either<Failure, User>> appleSignIn({
+    required bool isAdult,
+    required bool isTermsAccepted,
+  }) async {
     try {
       if (!await connectionChecker.isConnected) {
         return left(
             Failure("Connessione a internet assente. Riprova più tardi."));
       }
 
-      final user = await authRemoteDataSource.signInWithApple();
+      // Verify age/terms
+      if (!isAdult || !isTermsAccepted) {
+        return left(Failure(
+            "Devi avere almeno 18 anni e accettare i termini e condizioni."));
+      }
+
+      final user = await authRemoteDataSource.signInWithApple(
+        isAdult: isAdult,
+        isTermsAccepted: isTermsAccepted,
+      );
       return right(user);
     } on ServerException catch (e) {
       return left(Failure(e.message));
@@ -68,20 +92,36 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<Either<Failure, User>> signUpWithEmailPassword(
-      {required String name,
-      required String email,
-      required String password,
-      required String hCaptcha}) async {
+  Future<Either<Failure, void>> signUpWithEmailPassword({
+    required String name,
+    required String email,
+    required String password,
+    required String hCaptcha,
+    required bool isAdult,
+    required bool isTermsAccepted,
+  }) async {
     try {
       if (!await connectionChecker.isConnected) {
         return left(
             Failure("Connessione a internet assente. Riprova più tardi."));
       }
 
-      final user = await authRemoteDataSource.signUpWithEmailPassword(
-          name: name, email: email, password: password, hCaptcha: hCaptcha);
-      return right(user);
+      // Verify age/terms
+      if (!isAdult || !isTermsAccepted) {
+        return left(Failure(
+            "Devi avere almeno 18 anni e accettare i termini e condizioni."));
+      }
+
+      await authRemoteDataSource.signUpWithEmailPassword(
+        name: name,
+        email: email,
+        password: password,
+        hCaptcha: hCaptcha,
+        isAdult: isAdult,
+        isTermsAccepted: isTermsAccepted,
+      );
+
+      return right(null);
     } on ServerException catch (e) {
       return left(Failure(e.message));
     }
@@ -123,6 +163,8 @@ class AuthRepositoryImpl implements AuthRepository {
             email: session.user.email ?? 'No email found.',
             name: 'No name found.',
             isOnboarded: true,
+            isAdult: true,
+            isTermsAccepted: true,
           ),
         );
       }

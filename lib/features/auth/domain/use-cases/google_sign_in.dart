@@ -4,13 +4,26 @@ import 'package:fantavacanze_official/features/auth/domain/entities/user.dart';
 import 'package:fantavacanze_official/features/auth/domain/repository/auth_repository.dart';
 import 'package:fpdart/fpdart.dart';
 
-class GoogleSignIn implements Usecase<User, NoParams> {
+class GoogleSignInParams {
+  final bool isAdult;
+  final bool isTermsAccepted;
+
+  GoogleSignInParams({
+    required this.isAdult,
+    required this.isTermsAccepted,
+  });
+}
+
+class GoogleSignIn implements Usecase<User, GoogleSignInParams> {
   final AuthRepository authRepository;
 
   GoogleSignIn({required this.authRepository});
 
   @override
-  Future<Either<Failure, User>> call(NoParams params) async {
-    return await authRepository.googleSignIn();
+  Future<Either<Failure, User>> call(GoogleSignInParams params) async {
+    return await authRepository.googleSignIn(
+      isAdult: params.isAdult,
+      isTermsAccepted: params.isTermsAccepted,
+    );
   }
 }

@@ -24,3 +24,10 @@ final class AuthSuccess extends AuthState {
 
   AuthSuccess(this.loggedUser);
 }
+
+// New state for successful signup
+final class AuthSignUpSuccess extends AuthState {
+  final String email;
+
+  AuthSignUpSuccess(this.email);
+}

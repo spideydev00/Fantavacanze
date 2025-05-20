@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit.dart';
 import 'package:fantavacanze_official/core/use-case/usecase.dart';
 import 'package:fantavacanze_official/core/utils/sort_leagues_by_date.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/league.dart';
@@ -12,6 +13,7 @@ part 'app_league_state.dart';
 class AppLeagueCubit extends Cubit<AppLeagueState> {
   final GetUserLeagues _getUserLeagues;
   final SharedPreferences _prefs;
+  final AppUserCubit _appUserCubit; // Add AppUserCubit dependency
 
   // Key for storing selected league ID in shared preferences
   static const String _selectedLeagueKey = 'selected_league_id';
@@ -19,19 +21,32 @@ class AppLeagueCubit extends Cubit<AppLeagueState> {
   AppLeagueCubit({
     required GetUserLeagues getUserLeagues,
     required SharedPreferences prefs,
+    required AppUserCubit appUserCubit, // Add this parameter
   })  : _getUserLeagues = getUserLeagues,
         _prefs = prefs,
+        _appUserCubit = appUserCubit, // Store the reference
         super(AppLeagueInitial());
 
   // -----------------------------------------
   // F E T C H E S   U S E R   L E A G U E S
   // -----------------------------------------
   Future<void> getUserLeagues() async {
+    // Check authentication state before trying to fetch leagues
+    final userState = _appUserCubit.state;
+    if (userState is! AppUserIsLoggedIn) {
+      // User is not logged in or is in onboarding
+      // Silently maintain the initial state without showing error
+      debugPrint(
+          "🧊 AppLeagueCubit - Skipping league fetch: User not fully authenticated yet");
+      return;
+    }
+
     final res = await _getUserLeagues.call(NoParams());
 
     res.fold(
       (l) {
         debugPrint("🧊 AppLeagueCubit - Error fetching leagues - ${l.message}");
+
         emit(AppLeagueInitial());
       },
       (leagues) {

@@ -5,17 +5,28 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 
 class AuthField extends StatefulWidget {
-  const AuthField(
-      {super.key,
-      required this.controller,
-      required this.hintText,
-      this.icon,
-      this.isPassword = false});
+  const AuthField({
+    super.key,
+    required this.controller,
+    required this.hintText,
+    this.icon,
+    this.isPassword = false,
+    this.validator,
+    this.keyboardType,
+    this.autovalidateMode,
+    this.onChanged,
+  });
 
   final TextEditingController controller;
   final String hintText;
   final Widget? icon;
   final bool isPassword;
+
+  // Nuovi parametri
+  final String? Function(String?)? validator;
+  final TextInputType? keyboardType;
+  final AutovalidateMode? autovalidateMode;
+  final void Function(String)? onChanged;
 
   @override
   State<AuthField> createState() => _AuthFieldState();
@@ -33,11 +44,15 @@ class _AuthFieldState extends State<AuthField> {
   @override
   Widget build(BuildContext context) {
     return TextFormField(
+      controller: widget.controller,
       cursorColor: ColorPalette.softBlack,
       style: context.textTheme.bodyLarge!.copyWith(
         color: ColorPalette.black,
       ),
-      controller: widget.controller,
+      obscureText: widget.isPassword && !showText,
+      keyboardType: widget.keyboardType,
+      autovalidateMode: widget.autovalidateMode,
+      onChanged: widget.onChanged,
       decoration: InputDecoration(
         fillColor: Colors.white,
         hintText: widget.hintText,
@@ -49,28 +64,23 @@ class _AuthFieldState extends State<AuthField> {
                   horizontal: ThemeSizes.md,
                 ),
                 child: GestureDetector(
-                  child: !showText
-                      ? SvgPicture.asset(
-                          "assets/images/icons/auth_field_icons/eye-show.svg")
-                      : SvgPicture.asset(
-                          "assets/images/icons/auth_field_icons/eye-hide.svg"),
-                  onTap: () {
-                    setState(() {
-                      showText = !showText;
-                    });
-                  },
+                  onTap: () => setState(() => showText = !showText),
+                  child: SvgPicture.asset(
+                    showText
+                        ? "assets/images/icons/auth_field_icons/eye-hide.svg"
+                        : "assets/images/icons/auth_field_icons/eye-show.svg",
+                  ),
                 ),
               )
             : null,
       ),
-      obscureText: widget.isPassword && !showText,
-      validator: (value) {
-        if (value!.isEmpty) {
-          return 'Inserisci ${widget.hintText}';
-        }
-
-        return null;
-      },
+      validator: widget.validator ??
+          (value) {
+            if (value == null || value.isEmpty) {
+              return 'Inserisci ${widget.hintText.toLowerCase()}';
+            }
+            return null;
+          },
     );
   }
 }

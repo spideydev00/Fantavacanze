@@ -46,7 +46,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         super(AuthInitial()) {
     //google sign-in
     on<AuthGoogleSignIn>(_onGoogleSignIn);
-    //google sign-in
+    //apple sign-in
     on<AuthAppleSignIn>(_onAppleSignIn);
     //email sign-in
     on<AuthEmailSignIn>(_onEmailSignIn);
@@ -61,7 +61,13 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   Future<void> _onGoogleSignIn(
       AuthGoogleSignIn event, Emitter<AuthState> emit) async {
     emit(AuthGoogleLoading());
-    final res = await _googleSignIn.call(NoParams());
+
+    final res = await _googleSignIn.call(
+      GoogleSignInParams(
+        isAdult: event.isAdult,
+        isTermsAccepted: event.isTermsAccepted,
+      ),
+    );
 
     res.fold((l) => emit(AuthFailure("Google: ${l.message}")),
         (r) => emit(_emitAuthSuccess(r, emit)));
@@ -70,7 +76,13 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   Future<void> _onAppleSignIn(
       AuthAppleSignIn event, Emitter<AuthState> emit) async {
     emit(AuthAppleLoading());
-    final res = await _appleSignIn.call(NoParams());
+
+    final res = await _appleSignIn.call(
+      AppleSignInParams(
+        isAdult: event.isAdult,
+        isTermsAccepted: event.isTermsAccepted,
+      ),
+    );
 
     res.fold((l) => emit(AuthFailure("Apple: ${l.message}")),
         (r) => emit(_emitAuthSuccess(r, emit)));
@@ -80,9 +92,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       AuthEmailSignIn event, Emitter<AuthState> emit) async {
     emit(AuthLoading());
     final res = await _emailSignIn.call(SignInParams(
-        email: event.email,
-        password: event.password,
-        hCaptcha: event.hCaptcha));
+      email: event.email,
+      password: event.password,
+      hCaptcha: event.hCaptcha,
+    ));
 
     res.fold((l) => emit(AuthFailure(l.message)),
         (r) => emit(_emitAuthSuccess(r, emit)));
@@ -91,17 +104,22 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   Future<void> _onEmailSignUp(
       AuthEmailSignUp event, Emitter<AuthState> emit) async {
     emit(AuthLoading());
+
     final res = await _emailSignUp.call(
       SignUpParams(
         name: event.name,
         email: event.email,
         password: event.password,
         hCaptcha: event.hCaptcha,
+        isAdult: event.isAdult,
+        isTermsAccepted: event.isTermsAccepted,
       ),
     );
 
-    res.fold((l) => emit(AuthFailure(l.message)),
-        (r) => emit(_emitAuthSuccess(r, emit)));
+    res.fold(
+      (l) => emit(AuthFailure(l.message)),
+      (_) => emit(AuthSignUpSuccess(event.email)),
+    );
   }
 
   Future<void> _onChangeIsOnboardedValue(
@@ -127,7 +145,11 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   //Save information about user state (logged in or not)
   _emitAuthSuccess(User user, Emitter<AuthState> emit) {
     _appUserCubit.updateUser(user);
-    _appLeagueCubit.getUserLeagues();
+
+    // Only fetch leagues if user is fully onboarded - prevents error during onboarding
+    if (user.isOnboarded) {
+      _appLeagueCubit.getUserLeagues();
+    }
 
     emit(AuthSuccess(user));
   }

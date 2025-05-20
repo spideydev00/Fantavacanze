@@ -1,4 +1,5 @@
 import 'package:fantavacanze_official/core/constants/constants.dart';
+import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/extensions/context_extension.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
@@ -27,7 +28,7 @@ class AuthDialogBox extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Dialog(
-      backgroundColor: bgColor ?? Theme.of(context).dialogTheme.backgroundColor,
+      backgroundColor: bgColor ?? context.bgColor,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusLg),
       ),
