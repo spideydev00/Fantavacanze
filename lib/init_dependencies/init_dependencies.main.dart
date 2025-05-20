@@ -68,6 +68,7 @@ Future<void> initDependencies() async {
         () => AppLeagueCubit(
           getUserLeagues: serviceLocator(),
           prefs: serviceLocator<SharedPreferences>(),
+          appUserCubit: serviceLocator<AppUserCubit>(), // Pass AppUserCubit
         ),
       )
       //5. connection checker

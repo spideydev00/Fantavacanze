@@ -1,4 +1,5 @@
 import 'package:fantavacanze_official/core/extensions/context_extension.dart';
+import 'package:fantavacanze_official/core/widgets/age_verification_form.dart';
 import 'package:fantavacanze_official/core/widgets/loader.dart';
 import 'package:fantavacanze_official/core/pages/empty_branded_page.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
@@ -22,21 +23,41 @@ class SignUpPage extends StatefulWidget {
 }
 
 class _SignUpPageState extends State<SignUpPage> {
-  final GlobalKey<FormState> formKey = GlobalKey<FormState>();
+  final _formKey = GlobalKey<FormState>();
+  final _nameCtrl = TextEditingController();
+  final _emailCtrl = TextEditingController();
+  final _passCtrl = TextEditingController();
 
-  String turnstileToken = "";
+  String _turnstile = "";
+  bool _isAdult = false;
+  bool _isTermsAccepted = false;
 
-  final emailController = TextEditingController();
-  final nameController = TextEditingController();
-  final passwordController = TextEditingController();
+  // Raw validators per-dato (senza toccare formKey.validate qui)
+  bool get _nameValid => _nameCtrl.text.trim().isNotEmpty;
+  bool get _emailValid {
+    final e = _emailCtrl.text.trim();
+    return e.isNotEmpty && RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(e);
+  }
+
+  bool get _passValid => _passCtrl.text.length >= 6;
+
+  bool get _formReady =>
+      _nameValid &&
+      _emailValid &&
+      _passValid &&
+      _turnstile.isNotEmpty &&
+      _isAdult &&
+      _isTermsAccepted;
 
   @override
   void dispose() {
-    nameController.dispose();
-    emailController.dispose();
-    passwordController.dispose();
+    _nameCtrl.dispose();
+    _emailCtrl.dispose();
+    _passCtrl.dispose();
     super.dispose();
   }
+
+  void _rebuild() => setState(() {});
 
   @override
   Widget build(BuildContext context) {
@@ -47,13 +68,16 @@ class _SignUpPageState extends State<SignUpPage> {
       mainColumnAlignment: MainAxisAlignment.start,
       widgets: [
         Form(
-          key: formKey,
+          key: _formKey,
+          // disabilitiamo l'autovalidazione globale
+          autovalidateMode: AutovalidateMode.disabled,
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: ThemeSizes.lg),
             child: Column(
               children: [
+                // Nome
                 AuthField(
-                  controller: nameController,
+                  controller: _nameCtrl,
                   hintText: "Nome",
                   icon: Padding(
                     padding: const EdgeInsets.symmetric(
@@ -65,11 +89,23 @@ class _SignUpPageState extends State<SignUpPage> {
                       width: 35,
                     ),
                   ),
+                  // validazione on user interaction solo per questo campo
+                  autovalidateMode: AutovalidateMode.onUserInteraction,
+                  onChanged: (_) => _rebuild(),
+                  validator: (v) {
+                    if (v == null || v.trim().isEmpty) {
+                      return "Inserisci il tuo nome";
+                    }
+                    return null;
+                  },
                 ),
                 const SizedBox(height: 12),
+
+                // Email
                 AuthField(
-                  controller: emailController,
+                  controller: _emailCtrl,
                   hintText: "E-mail",
+                  keyboardType: TextInputType.emailAddress,
                   icon: Padding(
                     padding: const EdgeInsets.symmetric(
                       vertical: ThemeSizes.sm,
@@ -80,12 +116,25 @@ class _SignUpPageState extends State<SignUpPage> {
                       width: 35,
                     ),
                   ),
+                  autovalidateMode: AutovalidateMode.onUserInteraction,
+                  onChanged: (_) => _rebuild(),
+                  validator: (v) {
+                    if (v == null || v.trim().isEmpty) {
+                      return "Inserisci l'email";
+                    }
+                    if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(v.trim())) {
+                      return "Email non valida";
+                    }
+                    return null;
+                  },
                 ),
                 const SizedBox(height: 12),
+
+                // Password
                 AuthField(
-                  controller: passwordController,
-                  isPassword: true,
+                  controller: _passCtrl,
                   hintText: "Password",
+                  isPassword: true,
                   icon: Padding(
                     padding: const EdgeInsets.symmetric(
                       vertical: ThemeSizes.sm,
@@ -96,25 +145,48 @@ class _SignUpPageState extends State<SignUpPage> {
                       width: 35,
                     ),
                   ),
+                  autovalidateMode: AutovalidateMode.onUserInteraction,
+                  onChanged: (_) => _rebuild(),
+                  validator: (v) {
+                    if (v == null || v.isEmpty) {
+                      return "Inserisci la password";
+                    }
+                    if (v.length < 6) {
+                      return "Almeno 6 caratteri";
+                    }
+                    return null;
+                  },
                 ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: ThemeSizes.lg),
-                  child: CloudflareTurnstileWidget(
-                    onTokenReceived: (token) {
-                      setState(() {
-                        turnstileToken = token;
-                      });
+                const SizedBox(height: ThemeSizes.lg),
 
-                      // print("Token: $turnstileToken");
-                    },
-                  ),
+                // Turnstile
+                CloudflareTurnstileWidget(
+                  onTokenReceived: (token) {
+                    setState(() => _turnstile = token);
+                  },
                 ),
+                const SizedBox(height: 15),
+
+                // Age & Terms
+                AgeVerificationForm(
+                  initialIsAdult: _isAdult,
+                  initialIsTermsAccepted: _isTermsAccepted,
+                  onValueChanged: (adult, terms) {
+                    setState(() {
+                      _isAdult = adult;
+                      _isTermsAccepted = terms;
+                    });
+                  },
+                ),
+                const SizedBox(height: 15),
+
+                // Submit button
                 BlocConsumer<AuthBloc, AuthState>(
                   listener: (context, state) {
                     if (state is AuthFailure) {
                       showDialog(
                         context: context,
-                        builder: (context) => AuthDialogBox(
+                        builder: (_) => AuthDialogBox(
                           title: "Errore!",
                           description: state.message,
                           type: DialogType.error,
@@ -122,15 +194,17 @@ class _SignUpPageState extends State<SignUpPage> {
                         ),
                       );
                     }
-                    if (state is AuthSuccess) {
+                    if (state is AuthSignUpSuccess) {
                       Navigator.of(context).pushAndRemoveUntil(
-                          StandardLoginPage.route, (route) => false);
+                        StandardLoginPage.route,
+                        (_) => false,
+                      );
                       showDialog(
                         context: context,
-                        builder: (context) => AuthDialogBox(
+                        builder: (_) => AuthDialogBox(
                           title: "Ottimo!",
                           description:
-                              "Attiva l'account cliccando sul link che ti è stato inviato per e-mail",
+                              "Attiva l'account cliccando sul link inviato per e-mail",
                           buttonText: "Ok",
                           type: DialogType.success,
                           isMultiButton: false,
@@ -146,46 +220,59 @@ class _SignUpPageState extends State<SignUpPage> {
                         ),
                       );
                     }
-                    return ElevatedButton(
-                      onPressed: () {
-                        if (turnstileToken.isEmpty) {
-                          showDialog(
-                            context: context,
-                            builder: (context) => AuthDialogBox(
-                              title: "hCaptcha Error..",
-                              description: "Dimostra di essere un umano!",
-                              type: DialogType.error,
-                              isMultiButton: false,
-                            ),
-                          );
-                        }
-                        if (formKey.currentState!.validate()) {
-                          context.read<AuthBloc>().add(
-                                AuthEmailSignUp(
-                                  name: nameController.text,
-                                  email: emailController.text,
-                                  password: passwordController.text,
-                                  hCaptcha: turnstileToken,
-                                ),
-                              );
-                        }
-                      },
+
+                    final buttonColor = _formReady
+                        ? ColorPalette.primary(ThemeMode.dark)
+                        : Color.lerp(
+                            ColorPalette.primary(ThemeMode.dark),
+                            Colors.black,
+                            0.3,
+                          )!;
+
+                    return ElevatedButton.icon(
+                      onPressed: _formReady
+                          ? () {
+                              // mostra comunque gli errori se l’utente preme
+                              if (_formKey.currentState!.validate()) {
+                                context.read<AuthBloc>().add(
+                                      AuthEmailSignUp(
+                                        name: _nameCtrl.text.trim(),
+                                        email: _emailCtrl.text.trim(),
+                                        password: _passCtrl.text,
+                                        hCaptcha: _turnstile,
+                                        isAdult: _isAdult,
+                                        isTermsAccepted: _isTermsAccepted,
+                                      ),
+                                    );
+                              }
+                            }
+                          : null,
                       style: context.elevatedButtonThemeData.style!.copyWith(
-                        backgroundColor: WidgetStatePropertyAll(
-                          ColorPalette.primary(ThemeMode.dark),
-                        ),
-                        foregroundColor: WidgetStatePropertyAll(
-                          ColorPalette.textPrimary(ThemeMode.dark),
-                        ),
+                        backgroundColor: WidgetStatePropertyAll(buttonColor),
+                        foregroundColor: WidgetStatePropertyAll(_formReady
+                            ? ColorPalette.textPrimary(ThemeMode.dark)
+                            : ColorPalette.textPrimary(ThemeMode.dark)
+                                .withValues(alpha: 0.7)),
                       ),
-                      child: const Text("Registrati Ora"),
+                      icon: SvgPicture.asset(
+                        "assets/images/icons/auth_icons/sign-up-icon.svg",
+                        width: 25,
+                        colorFilter: _formReady
+                            ? null
+                            : ColorFilter.mode(
+                                ColorPalette.textPrimary(ThemeMode.dark)
+                                    .withValues(alpha: 0.7),
+                                BlendMode.srcIn,
+                              ),
+                      ),
+                      label: const Text("Registrati Ora!"),
                     );
                   },
                 ),
               ],
             ),
           ),
-        )
+        ),
       ],
     );
   }

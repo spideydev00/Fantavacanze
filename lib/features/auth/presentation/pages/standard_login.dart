@@ -9,7 +9,7 @@ import 'package:fantavacanze_official/features/auth/presentation/pages/signup.da
 import 'package:fantavacanze_official/features/auth/presentation/widgets/auth_field.dart';
 import 'package:fantavacanze_official/features/auth/presentation/widgets/cloudflare_turnstile_widget.dart';
 import 'package:fantavacanze_official/features/auth/presentation/widgets/rich_text.dart';
-import 'package:fantavacanze_official/features/league/presentation/pages/dashboard/sections/dashboard.dart';
+import 'package:fantavacanze_official/initial_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
@@ -107,8 +107,12 @@ class _StandardLoginPageState extends State<StandardLoginPage> {
                       );
                     }
                     if (state is AuthSuccess) {
-                      Navigator.of(context).pushAndRemoveUntil(
-                          DashboardScreen.route, (route) => false);
+                      Navigator.pushAndRemoveUntil(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => InitialPage(),
+                          ),
+                          (route) => false);
                     }
                   },
                   builder: (context, state) {
@@ -151,6 +155,10 @@ class _StandardLoginPageState extends State<StandardLoginPage> {
                         ),
                       ),
                       label: const Text("Accedi"),
+                      icon: SvgPicture.asset(
+                        "assets/images/icons/auth_icons/sign-in-icon.svg",
+                        width: 25,
+                      ),
                     );
                   },
                 ),

@@ -192,10 +192,12 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
         'is_team_based': isTeamBased,
       };
 
+      await supabaseClient.from('leagues').insert(leagueData);
+
       final response = await supabaseClient
           .from('leagues')
-          .insert(leagueData)
           .select()
+          .eq('id', leagueId)
           .single();
 
       return _convertResponseToModel(response);
@@ -233,8 +235,9 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
       }
       return leagues;
     } catch (e) {
+      if (e is ServerException) rethrow;
       throw ServerException(
-          'Si è verificato un errore durante il caricamento delle leghe: ${e.toString()}');
+          'Si è verificato un errore durante la ricerca della lega: ${e.toString()}');
     }
   }
 

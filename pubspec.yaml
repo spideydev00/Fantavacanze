@@ -106,6 +106,8 @@ flutter:
   - assets/images/icons/auth_icons/discord.svg
   - assets/images/icons/auth_icons/telefono.svg
   - assets/images/icons/auth_icons/email.svg
+  - assets/images/icons/auth_icons/sign-up-icon.svg
+  - assets/images/icons/auth_icons/sign-in-icon.svg
   - assets/images/icons/other/error-icon.svg
   - assets/images/icons/other/success-icon.svg
   - assets/images/icons/other/mail-notification.svg

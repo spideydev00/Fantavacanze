@@ -24,9 +24,12 @@ class AddEventPage extends StatefulWidget {
 }
 
 class _AddEventPageState extends State<AddEventPage> {
+  int _currentStep = 0;
+  final _formKey = GlobalKey<FormState>();
+
+  // State variables
   bool _isFromRule = true;
   Rule? _selectedRule;
-  final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _pointsController = TextEditingController();
   final _descriptionController = TextEditingController();
@@ -137,6 +140,59 @@ class _AddEventPageState extends State<AddEventPage> {
         );
   }
 
+  bool _validateStep(int step) {
+    if (step == 0) {
+      // No validation for source selection
+      return true;
+    } else if (step == 1) {
+      // Validate event details
+      if (_nameController.text.trim().isEmpty) {
+        showSnackBar(context, 'Inserisci un nome per l\'evento',
+            color: ColorPalette.warning);
+        return false;
+      }
+
+      if (_pointsController.text.trim().isEmpty) {
+        showSnackBar(context, 'Inserisci i punti per l\'evento',
+            color: ColorPalette.warning);
+        return false;
+      }
+
+      try {
+        int.parse(_pointsController.text.trim());
+      } catch (e) {
+        showSnackBar(context, 'Inserisci un valore numerico valido',
+            color: ColorPalette.warning);
+        return false;
+      }
+
+      return true;
+    } else if (step == 2) {
+      // Validate participant selection
+      if (_selectedParticipantId == null) {
+        showSnackBar(context, 'Seleziona un partecipante',
+            color: ColorPalette.warning);
+        return false;
+      }
+      return true;
+    }
+    return true;
+  }
+
+  void _onStepTapped(int step) {
+    // Only allow navigation to steps that we've already visited or the next step
+    if (step <= _currentStep || step == _currentStep + 1) {
+      // Validate current step if moving forward
+      if (step > _currentStep && !_validateStep(_currentStep)) {
+        return;
+      }
+
+      setState(() {
+        _currentStep = step;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final league = _getCurrentLeague();
@@ -167,57 +223,12 @@ class _AddEventPageState extends State<AddEventPage> {
         appBar: AppBar(
           title: const Text('Nuovo Evento'),
           elevation: 0,
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.check),
-              onPressed: _isSubmitting ? null : _submitEvent,
-              tooltip: 'Salva Evento',
-            )
-          ],
         ),
         body: !isAdmin
-            ? Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.admin_panel_settings,
-                      size: 80,
-                      color: context.primaryColor.withValues(alpha: 0.5),
-                    ),
-                    const SizedBox(height: ThemeSizes.md),
-                    Text(
-                      'Accesso Non Autorizzato',
-                      style: context.textTheme.titleLarge,
-                    ),
-                    const SizedBox(height: ThemeSizes.sm),
-                    Text(
-                      'Solo gli amministratori possono aggiungere eventi',
-                      style: context.textTheme.bodyMedium,
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
-                ),
-              )
+            ? _buildUnauthorizedView(context)
             : (league == null
-                ? Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.warning_amber_rounded,
-                          size: 80,
-                          color: ColorPalette.warning.withValues(alpha: 0.5),
-                        ),
-                        const SizedBox(height: ThemeSizes.md),
-                        Text(
-                          'Nessuna Lega Selezionata',
-                          style: context.textTheme.titleLarge,
-                        ),
-                      ],
-                    ),
-                  )
-                : _buildEventForm(context, league)),
+                ? _buildNoLeagueView(context)
+                : _buildEventCreationStepper(context, league)),
         bottomNavigationBar: _isSubmitting
             ? Container(
                 padding: const EdgeInsets.symmetric(vertical: ThemeSizes.sm),
@@ -248,377 +259,354 @@ class _AddEventPageState extends State<AddEventPage> {
     );
   }
 
-  Widget _buildEventForm(BuildContext context, League league) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(ThemeSizes.lg),
-      child: Form(
-        key: _formKey,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Source selection card
-            Card(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusMd),
+  Widget _buildUnauthorizedView(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.admin_panel_settings,
+            size: 80,
+            color: context.primaryColor.withValues(alpha: 0.5),
+          ),
+          const SizedBox(height: ThemeSizes.md),
+          Text(
+            'Accesso Non Autorizzato',
+            style: context.textTheme.titleLarge,
+          ),
+          const SizedBox(height: ThemeSizes.sm),
+          Text(
+            'Solo gli amministratori possono aggiungere eventi',
+            style: context.textTheme.bodyMedium,
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildNoLeagueView(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.warning_amber_rounded,
+            size: 80,
+            color: ColorPalette.warning.withValues(alpha: 0.5),
+          ),
+          const SizedBox(height: ThemeSizes.md),
+          Text(
+            'Nessuna Lega Selezionata',
+            style: context.textTheme.titleLarge,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEventCreationStepper(BuildContext context, League league) {
+    return Form(
+      key: _formKey,
+      child: Column(
+        children: [
+          Expanded(
+            child: Theme(
+              data: Theme.of(context).copyWith(
+                canvasColor: context.secondaryBgColor,
+                colorScheme: Theme.of(context).colorScheme.copyWith(
+                      surface: context.secondaryBgColor,
+                    ),
               ),
-              elevation: 2,
-              child: Padding(
-                padding: const EdgeInsets.all(ThemeSizes.md),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Fonte dell\'evento',
-                      style: context.textTheme.titleMedium!.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
+              child: Stepper(
+                margin: EdgeInsets.zero,
+                type: StepperType.horizontal,
+                connectorThickness: 0,
+                elevation: 0,
+                currentStep: _currentStep,
+                onStepTapped: _onStepTapped,
+                onStepContinue: () {
+                  if (_currentStep < 2) {
+                    if (!_validateStep(_currentStep)) {
+                      return;
+                    }
+                    setState(() {
+                      _currentStep++;
+                    });
+                  } else {
+                    _submitEvent();
+                  }
+                },
+                onStepCancel: () {
+                  if (_currentStep > 0) {
+                    setState(() {
+                      _currentStep--;
+                    });
+                  }
+                },
+                steps: [
+                  Step(
+                    title: Text(
+                      'Origine',
+                      style: context.textTheme.labelLarge,
                     ),
-                    const SizedBox(height: ThemeSizes.md),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _buildSourceButton(
-                            context: context,
-                            isSelected: _isFromRule,
-                            label: 'Da Regola',
-                            icon: Icons.rule_folder,
-                            onTap: () => _toggleEventSource(true),
-                          ),
-                        ),
-                        const SizedBox(width: ThemeSizes.md),
-                        Expanded(
-                          child: _buildSourceButton(
-                            context: context,
-                            isSelected: !_isFromRule,
-                            label: 'Personalizzato',
-                            icon: Icons.create,
-                            onTap: () => _toggleEventSource(false),
-                          ),
-                        ),
-                      ],
+                    content: _buildSourceSelectionStep(context),
+                    isActive: _currentStep >= 0,
+                    state: _currentStep > 0
+                        ? StepState.complete
+                        : (_currentStep == 0
+                            ? StepState.editing
+                            : StepState.indexed),
+                  ),
+                  Step(
+                    title: Text(
+                      'Dettagli',
+                      style: context.textTheme.labelLarge,
                     ),
-                  ],
-                ),
+                    content: _buildEventDetailsStep(context),
+                    isActive: _currentStep >= 1,
+                    state: _currentStep > 1
+                        ? StepState.complete
+                        : (_currentStep == 1
+                            ? StepState.editing
+                            : StepState.indexed),
+                  ),
+                  Step(
+                    title: Text(
+                      'Assegna',
+                      style: context.textTheme.labelLarge,
+                    ),
+                    content: _buildAssignEventStep(context, league),
+                    isActive: _currentStep >= 2,
+                    state: _currentStep == 2
+                        ? StepState.editing
+                        : StepState.indexed,
+                  ),
+                ],
+                controlsBuilder: _buildStepperControls,
               ),
             ),
+          ),
+        ],
+      ),
+    );
+  }
 
-            const SizedBox(height: ThemeSizes.lg),
+  Widget _buildStepperControls(BuildContext context, ControlsDetails details) {
+    return Padding(
+      padding: const EdgeInsets.only(top: ThemeSizes.lg),
+      child: Row(
+        children: [
+          if (_currentStep > 0)
+            Expanded(
+              flex: 3,
+              child: OutlinedButton(
+                onPressed: details.onStepCancel,
+                child: const Text('Indietro'),
+              ),
+            ),
+          if (_currentStep > 0) const SizedBox(width: ThemeSizes.sm),
+          Expanded(
+            flex: 4,
+            child: ElevatedButton(
+              onPressed: _isSubmitting ? null : details.onStepContinue,
+              style: ElevatedButton.styleFrom(
+                fixedSize: null,
+                padding: const EdgeInsets.symmetric(
+                  vertical: ThemeSizes.md,
+                  horizontal: ThemeSizes.sm,
+                ),
+              ),
+              child: Text(
+                _isSubmitting
+                    ? 'Salvataggio...'
+                    : _currentStep < 2
+                        ? 'Continua'
+                        : 'Crea Evento',
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
-            // Rules selection if from rule
-            if (_isFromRule) ...[
-              Card(
+  // STEP 1: Source Selection
+  Widget _buildSourceSelectionStep(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Seleziona l\'origine dell\'evento',
+          style: context.textTheme.titleMedium!.copyWith(
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: ThemeSizes.md),
+        Row(
+          children: [
+            Expanded(
+              child: _buildSourceButton(
+                context: context,
+                isSelected: _isFromRule,
+                label: 'Da Regola',
+                icon: Icons.rule_folder,
+                onTap: () => _toggleEventSource(true),
+              ),
+            ),
+            const SizedBox(width: ThemeSizes.md),
+            Expanded(
+              child: _buildSourceButton(
+                context: context,
+                isSelected: !_isFromRule,
+                label: 'Personalizzato',
+                icon: Icons.create,
+                onTap: () => _toggleEventSource(false),
+              ),
+            ),
+          ],
+        ),
+        if (_isFromRule) ...[
+          const SizedBox(height: ThemeSizes.lg),
+          _buildRuleSelectionSection(context),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildRuleSelectionSection(BuildContext context) {
+    final league = _getCurrentLeague();
+    if (league == null) return const SizedBox.shrink();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Icon(
+              Icons.rule,
+              color: context.primaryColor,
+              size: 22,
+            ),
+            const SizedBox(width: ThemeSizes.sm),
+            Text(
+              'Seleziona una regola',
+              style: context.textTheme.titleMedium!.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: ThemeSizes.md),
+        Container(
+          height: Constants.getHeight(context) * 0.22,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusMd),
+            border: Border.all(color: context.borderColor),
+          ),
+          child: ListView.builder(
+            padding: const EdgeInsets.all(ThemeSizes.sm),
+            itemCount: league.rules.length,
+            itemBuilder: (context, index) {
+              final rule = league.rules[index];
+              final isSelected = (_selectedRule?.name.trim().toLowerCase() ==
+                  rule.name.trim().toLowerCase());
+
+              return Card(
+                color: isSelected
+                    ? context.primaryColor.withValues(alpha: 0.1)
+                    : null,
                 shape: RoundedRectangleBorder(
                   borderRadius:
-                      BorderRadius.circular(ThemeSizes.borderRadiusMd),
+                      BorderRadius.circular(ThemeSizes.borderRadiusSm),
+                  side: isSelected
+                      ? BorderSide(color: context.primaryColor, width: 2)
+                      : BorderSide.none,
                 ),
-                elevation: 2,
-                child: Padding(
-                  padding: const EdgeInsets.all(ThemeSizes.md),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.rule,
-                            color: context.primaryColor,
-                            size: 22,
-                          ),
-                          const SizedBox(width: ThemeSizes.sm),
-                          Text(
-                            'Seleziona una regola',
-                            style: context.textTheme.titleMedium!.copyWith(
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: ThemeSizes.md),
-                      Container(
-                        height: Constants.getHeight(context) * 0.22,
-                        decoration: BoxDecoration(
-                          borderRadius:
-                              BorderRadius.circular(ThemeSizes.borderRadiusMd),
-                          border: Border.all(color: context.borderColor),
-                        ),
-                        child: ListView.builder(
-                          padding: const EdgeInsets.all(ThemeSizes.sm),
-                          itemCount: league.rules.length,
-                          itemBuilder: (context, index) {
-                            final rule = league.rules[index];
-                            final isSelected =
-                                (_selectedRule?.name.trim().toLowerCase() ==
-                                    rule.name.trim().toLowerCase());
+                elevation: isSelected ? 2 : 0,
+                margin: const EdgeInsets.only(bottom: ThemeSizes.sm),
+                child: ListTile(
+                  leading: Icon(
+                    rule.type == RuleType.bonus
+                        ? Icons.arrow_circle_up
+                        : Icons.arrow_circle_down,
+                    color: rule.type == RuleType.bonus
+                        ? ColorPalette.success
+                        : ColorPalette.error,
+                  ),
+                  title: Text(
+                    rule.name,
+                    style: const TextStyle(fontWeight: FontWeight.w500),
+                  ),
+                  subtitle: Text(
+                    '${rule.type == RuleType.bonus ? '+' : '-'}${rule.points} punti',
+                  ),
+                  trailing: isSelected
+                      ? const Icon(Icons.check_circle,
+                          color: ColorPalette.success)
+                      : null,
+                  onTap: () => _selectRule(rule),
+                ),
+              );
+            },
+          ),
+        ),
+        if (_selectedRule != null) ...[
+          const SizedBox(height: ThemeSizes.md),
+          _buildSelectedRuleCard(context),
+        ],
+      ],
+    );
+  }
 
-                            return Card(
-                              color: isSelected
-                                  ? context.primaryColor.withValues(alpha: 0.1)
-                                  : null,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(
-                                    ThemeSizes.borderRadiusSm),
-                                side: isSelected
-                                    ? BorderSide(
-                                        color: context.primaryColor, width: 2)
-                                    : BorderSide.none,
-                              ),
-                              elevation: isSelected ? 2 : 0,
-                              margin:
-                                  const EdgeInsets.only(bottom: ThemeSizes.sm),
-                              child: ListTile(
-                                leading: Icon(
-                                  rule.type == RuleType.bonus
-                                      ? Icons.arrow_circle_up
-                                      : Icons.arrow_circle_down,
-                                  color: rule.type == RuleType.bonus
-                                      ? ColorPalette.success
-                                      : ColorPalette.error,
-                                ),
-                                title: Text(
-                                  rule.name,
-                                  style: const TextStyle(
-                                      fontWeight: FontWeight.w500),
-                                ),
-                                subtitle: Text(
-                                  '${rule.type == RuleType.bonus ? '+' : '-'}${rule.points} punti',
-                                ),
-                                trailing: isSelected
-                                    ? const Icon(Icons.check_circle,
-                                        color: ColorPalette.success)
-                                    : null,
-                                onTap: () => _selectRule(rule),
-                              ),
-                            );
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              if (_selectedRule != null) ...[
-                const SizedBox(height: ThemeSizes.md),
-                Card(
-                  color: _selectedRule!.type == RuleType.bonus
-                      ? ColorPalette.success.withValues(alpha: 0.1)
-                      : ColorPalette.error.withValues(alpha: 0.1),
-                  shape: RoundedRectangleBorder(
-                    borderRadius:
-                        BorderRadius.circular(ThemeSizes.borderRadiusMd),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(ThemeSizes.md),
-                    child: Row(
-                      children: [
-                        Icon(
-                          _selectedRule!.type == RuleType.bonus
-                              ? Icons.check_circle_outline
-                              : Icons.highlight_off,
-                          color: _selectedRule!.type == RuleType.bonus
-                              ? ColorPalette.success
-                              : ColorPalette.error,
-                          size: 36,
-                        ),
-                        const SizedBox(width: ThemeSizes.md),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Regola selezionata',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.w500,
-                                  color: _selectedRule!.type == RuleType.bonus
-                                      ? ColorPalette.success
-                                      : ColorPalette.error,
-                                ),
-                              ),
-                              Text(
-                                _selectedRule!.name,
-                                style: context.textTheme.titleMedium!.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              Text(
-                                '${_selectedRule!.type == RuleType.bonus ? '+' : '-'}${_selectedRule!.points} punti',
-                                style: context.textTheme.bodyLarge,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-              const SizedBox(height: ThemeSizes.lg),
-            ],
+  Widget _buildSelectedRuleCard(BuildContext context) {
+    if (_selectedRule == null) return const SizedBox.shrink();
 
-            // Event details card
-            Card(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusMd),
-              ),
-              elevation: 2,
-              child: Padding(
-                padding: const EdgeInsets.all(ThemeSizes.md),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.event,
-                          color: context.primaryColor,
-                          size: 22,
-                        ),
-                        const SizedBox(width: ThemeSizes.sm),
-                        Text(
-                          'Dettagli Evento',
-                          style: context.textTheme.titleMedium!.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: ThemeSizes.md),
-                    TextFormField(
-                      controller: _nameController,
-                      decoration: InputDecoration(
-                        labelText: 'Nome evento',
-                        hintText: 'Inserisci il nome dell\'evento',
-                        filled: true,
-                        fillColor: context.secondaryBgColor,
-                        border: OutlineInputBorder(
-                          borderRadius:
-                              BorderRadius.circular(ThemeSizes.borderRadiusMd),
-                        ),
-                        prefixIcon: const Icon(Icons.title),
-                      ),
-                      validator: (value) {
-                        if (value == null || value.trim().isEmpty) {
-                          return 'Inserisci un nome per l\'evento';
-                        }
-                        return null;
-                      },
-                      readOnly: _isFromRule && _selectedRule != null,
-                    ),
-                    const SizedBox(height: ThemeSizes.md),
-                    TextFormField(
-                      controller: _pointsController,
-                      decoration: InputDecoration(
-                        labelText: 'Punti',
-                        hintText: 'Inserisci i punti (positivi o negativi)',
-                        filled: true,
-                        fillColor: context.secondaryBgColor,
-                        border: OutlineInputBorder(
-                          borderRadius:
-                              BorderRadius.circular(ThemeSizes.borderRadiusMd),
-                        ),
-                        prefixIcon: const Icon(Icons.score),
-                      ),
-                      keyboardType:
-                          const TextInputType.numberWithOptions(signed: true),
-                      validator: (value) {
-                        if (value == null || value.trim().isEmpty) {
-                          return 'Inserisci un valore';
-                        }
-                        try {
-                          int.parse(value);
-                          return null;
-                        } catch (e) {
-                          return 'Inserisci un numero valido';
-                        }
-                      },
-                      readOnly: _isFromRule && _selectedRule != null,
-                    ),
-                    const SizedBox(height: ThemeSizes.md),
-                    // Dropdown to select participant
-                    DropdownButtonFormField<String>(
-                      decoration: InputDecoration(
-                        labelText: 'Assegna a',
-                        hintText: 'Seleziona un partecipante',
-                        filled: true,
-                        fillColor: context.secondaryBgColor,
-                        border: OutlineInputBorder(
-                          borderRadius:
-                              BorderRadius.circular(ThemeSizes.borderRadiusMd),
-                        ),
-                        prefixIcon: const Icon(Icons.person),
-                      ),
-                      value: _selectedParticipantId,
-                      items: league.participants.map((participant) {
-                        return DropdownMenuItem<String>(
-                          value: league.isTeamBased
-                              ? participant
-                                  .name // For team-based leagues, use team name as ID
-                              : (participant as dynamic)
-                                  .userId, // For individual, use userId
-                          child: Text(participant.name),
-                        );
-                      }).toList(),
-                      onChanged: (value) {
-                        setState(() {
-                          _selectedParticipantId = value;
-                        });
-                      },
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Seleziona un partecipante';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: ThemeSizes.md),
-                    TextFormField(
-                      controller: _descriptionController,
-                      decoration: InputDecoration(
-                        labelText: 'Descrizione (opzionale)',
-                        hintText: 'Inserisci una descrizione',
-                        filled: true,
-                        fillColor: context.secondaryBgColor,
-                        border: OutlineInputBorder(
-                          borderRadius:
-                              BorderRadius.circular(ThemeSizes.borderRadiusMd),
-                        ),
-                        prefixIcon: const Icon(Icons.description),
-                      ),
-                      maxLines: 3,
-                    ),
-                  ],
-                ),
-              ),
+    return Card(
+      color: _selectedRule!.type == RuleType.bonus
+          ? ColorPalette.success.withValues(alpha: 0.1)
+          : ColorPalette.error.withValues(alpha: 0.1),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusMd),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(ThemeSizes.md),
+        child: Row(
+          children: [
+            Icon(
+              _selectedRule!.type == RuleType.bonus
+                  ? Icons.check_circle_outline
+                  : Icons.highlight_off,
+              color: _selectedRule!.type == RuleType.bonus
+                  ? ColorPalette.success
+                  : ColorPalette.error,
+              size: 36,
             ),
-
-            const SizedBox(height: ThemeSizes.xl),
-
-            // Submit button
-            SizedBox(
-              width: double.infinity,
-              height: 55,
-              child: ElevatedButton.icon(
-                onPressed: _isSubmitting ? null : _submitEvent,
-                icon: _isSubmitting
-                    ? Container(
-                        width: 24,
-                        height: 24,
-                        padding: const EdgeInsets.all(2.0),
-                        child: const CircularProgressIndicator(
-                          color: Colors.white,
-                          strokeWidth: 3,
-                        ),
-                      )
-                    : const Icon(Icons.add_circle_outline),
-                label:
-                    Text(_isSubmitting ? 'Salvataggio...' : 'Aggiungi Evento'),
-                style: ElevatedButton.styleFrom(
-                  shape: RoundedRectangleBorder(
-                    borderRadius:
-                        BorderRadius.circular(ThemeSizes.borderRadiusMd),
+            const SizedBox(width: ThemeSizes.md),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Regola selezionata',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w500,
+                      color: _selectedRule!.type == RuleType.bonus
+                          ? ColorPalette.success
+                          : ColorPalette.error,
+                    ),
                   ),
-                  backgroundColor: context.primaryColor,
-                  foregroundColor: Colors.white,
-                ),
+                  Text(
+                    _selectedRule!.name,
+                    style: context.textTheme.titleMedium!.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  Text(
+                    '${_selectedRule!.type == RuleType.bonus ? '+' : '-'}${_selectedRule!.points} punti',
+                    style: context.textTheme.bodyLarge,
+                  ),
+                ],
               ),
             ),
           ],
@@ -627,7 +615,210 @@ class _AddEventPageState extends State<AddEventPage> {
     );
   }
 
-  // Custom widget for source selection buttons
+  // STEP 2: Event Details
+  Widget _buildEventDetailsStep(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Inserisci i dettagli dell\'evento',
+          style: context.textTheme.titleMedium!.copyWith(
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: ThemeSizes.md),
+        TextFormField(
+          controller: _nameController,
+          decoration: InputDecoration(
+            labelText: 'Nome evento',
+            hintText: 'Inserisci il nome dell\'evento',
+            filled: true,
+            fillColor: context.secondaryBgColor,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusMd),
+            ),
+            prefixIcon: const Icon(Icons.title),
+          ),
+          validator: (value) {
+            if (value == null || value.trim().isEmpty) {
+              return 'Inserisci un nome per l\'evento';
+            }
+            return null;
+          },
+          readOnly: _isFromRule && _selectedRule != null,
+        ),
+        const SizedBox(height: ThemeSizes.md),
+        TextFormField(
+          controller: _pointsController,
+          decoration: InputDecoration(
+            labelText: 'Punti',
+            hintText: 'Inserisci i punti (positivi o negativi)',
+            filled: true,
+            fillColor: context.secondaryBgColor,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusMd),
+            ),
+            prefixIcon: const Icon(Icons.score),
+          ),
+          keyboardType: const TextInputType.numberWithOptions(signed: true),
+          validator: (value) {
+            if (value == null || value.trim().isEmpty) {
+              return 'Inserisci un valore';
+            }
+            try {
+              int.parse(value);
+              return null;
+            } catch (e) {
+              return 'Inserisci un numero valido';
+            }
+          },
+          readOnly: _isFromRule && _selectedRule != null,
+        ),
+        const SizedBox(height: ThemeSizes.md),
+        TextFormField(
+          controller: _descriptionController,
+          decoration: InputDecoration(
+            labelText: 'Descrizione (opzionale)',
+            hintText: 'Inserisci una descrizione',
+            filled: true,
+            fillColor: context.secondaryBgColor,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusMd),
+            ),
+            prefixIcon: const Icon(Icons.description),
+          ),
+          maxLines: 3,
+        ),
+      ],
+    );
+  }
+
+  // STEP 3: Assign Event to Participant
+  Widget _buildAssignEventStep(BuildContext context, League league) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Assegna l\'evento a un partecipante',
+          style: context.textTheme.titleMedium!.copyWith(
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: ThemeSizes.md),
+        DropdownButtonFormField<String>(
+          decoration: InputDecoration(
+            labelText: 'Seleziona partecipante',
+            hintText: 'Assegna a',
+            filled: true,
+            fillColor: context.secondaryBgColor,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusMd),
+            ),
+            prefixIcon: const Icon(Icons.person),
+          ),
+          value: _selectedParticipantId,
+          items: league.participants.map((participant) {
+            return DropdownMenuItem<String>(
+              value: league.isTeamBased
+                  ? participant
+                      .name // For team-based leagues, use team name as ID
+                  : (participant as dynamic)
+                      .userId, // For individual, use userId
+              child: Text(participant.name),
+            );
+          }).toList(),
+          onChanged: (value) {
+            setState(() {
+              _selectedParticipantId = value;
+            });
+          },
+          validator: (value) {
+            if (value == null || value.isEmpty) {
+              return 'Seleziona un partecipante';
+            }
+            return null;
+          },
+        ),
+        const SizedBox(height: ThemeSizes.xl),
+        // Event preview card
+        if (_nameController.text.isNotEmpty &&
+            _pointsController.text.isNotEmpty)
+          _buildEventPreviewCard(context),
+      ],
+    );
+  }
+
+  Widget _buildEventPreviewCard(BuildContext context) {
+    final int points = int.tryParse(_pointsController.text) ?? 0;
+    final bool isBonus = points >= 0;
+
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusMd),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(ThemeSizes.md),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Anteprima Evento',
+              style: context.textTheme.titleMedium!.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const Divider(),
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              leading: CircleAvatar(
+                backgroundColor: isBonus
+                    ? ColorPalette.success.withValues(alpha: 0.2)
+                    : ColorPalette.error.withValues(alpha: 0.2),
+                child: Icon(
+                  isBonus ? Icons.add_circle : Icons.remove_circle,
+                  color: isBonus ? ColorPalette.success : ColorPalette.error,
+                ),
+              ),
+              title: Text(
+                _nameController.text,
+                style: context.textTheme.titleMedium,
+              ),
+              subtitle: Text(
+                '${isBonus ? "+" : ""}$points punti',
+                style: TextStyle(
+                  color: isBonus ? ColorPalette.success : ColorPalette.error,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              trailing: Text(
+                _selectedParticipantId != null
+                    ? 'Pronto per l\'assegnazione'
+                    : 'Seleziona un partecipante',
+                style: TextStyle(
+                  color: _selectedParticipantId != null
+                      ? ColorPalette.success
+                      : ColorPalette.warning,
+                  fontSize: ThemeSizes.labelMd,
+                ),
+              ),
+            ),
+            if (_descriptionController.text.isNotEmpty) ...[
+              const Divider(),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: ThemeSizes.sm),
+                child: Text(
+                  'Descrizione: ${_descriptionController.text}',
+                  style: context.textTheme.bodyMedium,
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildSourceButton({
     required BuildContext context,
     required bool isSelected,

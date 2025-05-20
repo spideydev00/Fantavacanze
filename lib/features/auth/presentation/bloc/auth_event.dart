@@ -3,17 +3,36 @@ part of 'auth_bloc.dart';
 @immutable
 sealed class AuthEvent {}
 
-class AuthGoogleSignIn extends AuthEvent {}
+class AuthGoogleSignIn extends AuthEvent {
+  final bool isAdult;
+  final bool isTermsAccepted;
 
-class AuthAppleSignIn extends AuthEvent {}
+  AuthGoogleSignIn({
+    required this.isAdult,
+    required this.isTermsAccepted,
+  });
+}
+
+class AuthAppleSignIn extends AuthEvent {
+  final bool isAdult;
+  final bool isTermsAccepted;
+
+  AuthAppleSignIn({
+    required this.isAdult,
+    required this.isTermsAccepted,
+  });
+}
 
 class AuthEmailSignIn extends AuthEvent {
   final String email;
   final String password;
   final String hCaptcha;
 
-  AuthEmailSignIn(
-      {required this.email, required this.password, required this.hCaptcha});
+  AuthEmailSignIn({
+    required this.email,
+    required this.password,
+    required this.hCaptcha,
+  });
 }
 
 class AuthEmailSignUp extends AuthEvent {
@@ -21,12 +40,17 @@ class AuthEmailSignUp extends AuthEvent {
   final String email;
   final String password;
   final String hCaptcha;
+  final bool isAdult;
+  final bool isTermsAccepted;
 
-  AuthEmailSignUp(
-      {required this.name,
-      required this.email,
-      required this.password,
-      required this.hCaptcha});
+  AuthEmailSignUp({
+    required this.name,
+    required this.email,
+    required this.password,
+    required this.hCaptcha,
+    required this.isAdult,
+    required this.isTermsAccepted,
+  });
 }
 
 class AuthSignOut extends AuthEvent {}
@@ -36,5 +60,3 @@ class AuthChangeIsOnboardedValue extends AuthEvent {
 
   AuthChangeIsOnboardedValue({required this.isOnboarded});
 }
-
-// class AuthFacebookSignIn extends AuthEvent {}

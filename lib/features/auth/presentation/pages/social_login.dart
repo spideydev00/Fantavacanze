@@ -14,6 +14,8 @@ import 'package:fantavacanze_official/initial_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import 'package:fantavacanze_official/core/widgets/age_verification_dialog.dart';
+
 class SocialLoginPage extends StatefulWidget {
   static get route =>
       MaterialPageRoute(builder: (context) => const SocialLoginPage());
@@ -25,6 +27,49 @@ class SocialLoginPage extends StatefulWidget {
 }
 
 class _SocialLoginPageState extends State<SocialLoginPage> {
+  bool isVerificationDialogShown = false;
+
+  void _showAgeVerificationDialog(String provider) {
+    if (isVerificationDialogShown) return;
+
+    setState(() {
+      isVerificationDialogShown = true;
+    });
+
+    AgeVerificationDialog.show(
+      context: context,
+      provider: provider,
+      initialIsAdult: false,
+      initialIsTermsAccepted: false,
+      onConfirm: (isAdult, isTermsAccepted) {
+        setState(() {
+          isVerificationDialogShown = false;
+        });
+
+        if (provider == 'Google') {
+          context.read<AuthBloc>().add(
+                AuthGoogleSignIn(
+                  isAdult: isAdult,
+                  isTermsAccepted: isTermsAccepted,
+                ),
+              );
+        } else if (provider == 'Apple') {
+          context.read<AuthBloc>().add(
+                AuthAppleSignIn(
+                  isAdult: isAdult,
+                  isTermsAccepted: isTermsAccepted,
+                ),
+              );
+        }
+      },
+      onCancel: () {
+        setState(() {
+          isVerificationDialogShown = false;
+        });
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<AuthBloc, AuthState>(
@@ -60,8 +105,7 @@ class _SocialLoginPageState extends State<SocialLoginPage> {
           widgets: [
             Platform.isIOS
                 ? SocialButton(
-                    onPressed: () =>
-                        context.read<AuthBloc>().add(AuthAppleSignIn()),
+                    onPressed: () => _showAgeVerificationDialog('Apple'),
                     socialName: 'Apple',
                     isGradient: false,
                     bgColor: ColorPalette.apple,
@@ -83,7 +127,7 @@ class _SocialLoginPageState extends State<SocialLoginPage> {
                   ),
             const SizedBox(height: 15),
             SocialButton(
-              onPressed: () => context.read<AuthBloc>().add(AuthGoogleSignIn()),
+              onPressed: () => _showAgeVerificationDialog('Google'),
               socialName: 'Google',
               isGradient: true,
               bgGradient: ColorPalette.googleGradientsBg,
