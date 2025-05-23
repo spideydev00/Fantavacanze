@@ -5,12 +5,13 @@ import 'package:flutter/foundation.dart';
 class Event {
   final String id;
   final String name;
-  final int points;
-  final String creatorId; // ID of the admin who created the event
-  final String targetUser; // The user receiving the points
+  final double points;
+  final String creatorId;
+  final String targetUser;
   final DateTime createdAt;
   final RuleType type;
   final String? description;
+  final bool isTeamMember;
 
   const Event({
     required this.id,
@@ -20,6 +21,7 @@ class Event {
     required this.targetUser,
     required this.createdAt,
     required this.type,
+    required this.isTeamMember,
     this.description,
   });
 }

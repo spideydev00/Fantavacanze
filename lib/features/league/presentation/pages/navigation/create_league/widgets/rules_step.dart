@@ -114,10 +114,6 @@ class RulesStep extends StatelessWidget {
       decoration: BoxDecoration(
         color: context.secondaryBgColor,
         borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusLg),
-        border: Border.all(
-          color: context.borderColor,
-          width: 1,
-        ),
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,

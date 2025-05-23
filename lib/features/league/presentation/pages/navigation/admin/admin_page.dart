@@ -15,7 +15,7 @@ import 'package:fantavacanze_official/features/league/presentation/pages/navigat
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/admin/sections/league_info_section.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/admin/sections/participants_section.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/events/add_event.dart';
-import 'package:fantavacanze_official/core/widgets/confirmation_dialog.dart';
+import 'package:fantavacanze_official/core/widgets/dialogs/confirmation_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 

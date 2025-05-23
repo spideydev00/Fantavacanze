@@ -1,4 +1,4 @@
-import 'package:fantavacanze_official/core/widgets/modern_icon_button.dart';
+import 'package:fantavacanze_official/core/widgets/buttons/modern_icon_button.dart';
 import 'package:flutter/material.dart';
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/extensions/context_extension.dart';

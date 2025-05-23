@@ -95,6 +95,7 @@ flutter:
   - assets/images/baddie-bg.jpg
   - assets/images/emotions-bg.jpg
   - assets/images/social-enhance-bg.jpg
+  - assets/images/add-event-bg.jpg
   - assets/images/logo.png
   - assets/images/logo.png
   - assets/images/logo-dark.png
@@ -111,6 +112,7 @@ flutter:
   - assets/images/icons/other/error-icon.svg
   - assets/images/icons/other/success-icon.svg
   - assets/images/icons/other/mail-notification.svg
+  - assets/images/icons/other/arrow-right-circle.svg
   - assets/images/icons/auth_field_icons/eye-hide.svg
   - assets/images/icons/auth_field_icons/eye-show.svg
   - assets/images/icons/auth_field_icons/add-email-icon.svg

@@ -58,16 +58,12 @@ abstract class LeagueRepository {
   Future<Either<Failure, League>> addEvent({
     required League league,
     required String name,
-    required int points,
+    required double points,
     required String creatorId,
     required String targetUser,
     required RuleType type,
+    required bool isTeamMember,
     String? description,
-  });
-
-  Future<Either<Failure, League>> removeEvent({
-    required League league,
-    required String eventId,
   });
 
   Future<Either<Failure, League>> addMemory({

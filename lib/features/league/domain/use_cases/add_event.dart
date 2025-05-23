@@ -21,6 +21,7 @@ class AddEvent implements Usecase<League, AddEventParams> {
       targetUser: params.targetUser,
       type: params.type,
       description: params.description,
+      isTeamMember: params.isTeamMember,
     );
   }
 }
@@ -29,11 +30,12 @@ class AddEvent implements Usecase<League, AddEventParams> {
 class AddEventParams {
   final League league;
   final String name;
-  final int points;
+  final double points;
   final String creatorId;
   final String targetUser;
   final RuleType type;
   final String? description;
+  final bool isTeamMember;
 
   const AddEventParams({
     required this.league,
@@ -42,6 +44,7 @@ class AddEventParams {
     required this.creatorId,
     required this.targetUser,
     required this.type,
+    this.isTeamMember = false,
     this.description,
   });
 }

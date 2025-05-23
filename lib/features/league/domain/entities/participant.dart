@@ -4,8 +4,8 @@ import 'package:flutter/foundation.dart';
 abstract class Participant {
   final String name;
   final double points;
-  final int malusTotal;
-  final int bonusTotal;
+  final double malusTotal;
+  final double bonusTotal;
 
   const Participant({
     required this.name,

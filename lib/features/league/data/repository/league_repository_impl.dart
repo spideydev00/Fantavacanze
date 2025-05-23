@@ -275,10 +275,11 @@ class LeagueRepositoryImpl implements LeagueRepository {
   Future<Either<Failure, League>> addEvent({
     required League league,
     required String name,
-    required int points,
+    required double points,
     required String creatorId,
     required String targetUser,
     required RuleType type,
+    required bool isTeamMember,
     String? description,
   }) async {
     try {
@@ -297,33 +298,7 @@ class LeagueRepositoryImpl implements LeagueRepository {
         targetUser: targetUser,
         type: type,
         description: description,
-      );
-
-      // Update cache
-      await localDataSource.cacheLeague(updatedLeague);
-
-      return Right(updatedLeague);
-    } on ServerException catch (e) {
-      return Left(Failure(e.message));
-    }
-  }
-
-  @override
-  Future<Either<Failure, League>> removeEvent({
-    required League league,
-    required String eventId,
-  }) async {
-    try {
-      if (!await connectionChecker.isConnected) {
-        return Left(
-          Failure(
-              "Nessuna connessione ad internet, riprova appena sarai connesso."),
-        );
-      }
-
-      final updatedLeague = await remoteDataSource.removeEvent(
-        league: league as LeagueModel,
-        eventId: eventId,
+        isTeamMember: isTeamMember,
       );
 
       // Update cache

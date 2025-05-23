@@ -86,11 +86,12 @@ class UpdateTeamNameEvent extends LeagueEvent {
 class AddEventEvent extends LeagueEvent {
   final League league;
   final String name;
-  final int points;
+  final double points;
   final String creatorId;
   final String targetUser;
   final RuleType type;
   final String? description;
+  final bool isTeamMember;
 
   const AddEventEvent({
     required this.league,
@@ -100,11 +101,20 @@ class AddEventEvent extends LeagueEvent {
     required this.targetUser,
     required this.type,
     this.description,
+    this.isTeamMember = false,
   });
 
   @override
-  List<Object?> get props =>
-      [league, name, points, creatorId, targetUser, RuleType, description];
+  List<Object?> get props => [
+        league,
+        name,
+        points,
+        creatorId,
+        targetUser,
+        type,
+        description,
+        isTeamMember,
+      ];
 }
 
 class AddMemoryEvent extends LeagueEvent {

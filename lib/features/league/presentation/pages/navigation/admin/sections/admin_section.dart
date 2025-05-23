@@ -4,7 +4,7 @@ import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:fantavacanze_official/core/utils/find_admin_name.dart';
 import 'package:fantavacanze_official/core/utils/show_snackbar.dart';
-import 'package:fantavacanze_official/core/widgets/confirmation_dialog.dart';
+import 'package:fantavacanze_official/core/widgets/dialogs/confirmation_dialog.dart';
 import 'package:fantavacanze_official/core/widgets/info_container.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/individual_participant.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/league.dart';
@@ -168,7 +168,7 @@ class _AdminSectionState extends State<AdminSection> {
             title: Text(
               adminName,
               style: context.textTheme.bodyLarge!.copyWith(
-                fontWeight: FontWeight.w500,
+                fontWeight: FontWeight.w600,
               ),
             ),
             subtitle: Text(

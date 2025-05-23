@@ -9,7 +9,7 @@ import 'package:fantavacanze_official/features/league/domain/entities/team_parti
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_event.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/admin/widgets/admin_section_card.dart';
-import 'package:fantavacanze_official/core/widgets/confirmation_dialog.dart';
+import 'package:fantavacanze_official/core/widgets/dialogs/confirmation_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -350,10 +350,10 @@ class ParticipantsSectionState extends State<ParticipantsSection> {
                                         setState(() {
                                           if (value == true) {
                                             // If selecting first member, set this as the selected team
-                                            if (_selectedTeamName == null) {
-                                              _selectedTeamName = team.name;
-                                            }
-                                            _selectedParticipantIds.add(userId);
+                                            _selectedTeamName == null
+                                                ? _selectedTeamName = team.name
+                                                : _selectedParticipantIds
+                                                    .add(userId);
                                           } else {
                                             _selectedParticipantIds
                                                 .remove(userId);

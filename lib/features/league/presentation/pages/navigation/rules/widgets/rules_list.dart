@@ -1,5 +1,5 @@
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
-import 'package:fantavacanze_official/core/widgets/form_dialog.dart';
+import 'package:fantavacanze_official/core/widgets/dialogs/form_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';

@@ -9,12 +9,12 @@ import 'package:fantavacanze_official/features/auth/presentation/pages/standard_
 import 'package:fantavacanze_official/features/auth/presentation/widgets/promo_text.dart';
 import 'package:fantavacanze_official/features/auth/presentation/widgets/rich_text.dart';
 import 'package:fantavacanze_official/features/auth/presentation/widgets/social_button.dart';
-import 'package:fantavacanze_official/core/widgets/auth_dialog_box.dart';
+import 'package:fantavacanze_official/core/widgets/dialogs/auth_dialog_box.dart';
 import 'package:fantavacanze_official/initial_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import 'package:fantavacanze_official/core/widgets/age_verification_dialog.dart';
+import 'package:fantavacanze_official/features/auth/presentation/widgets/age_verification_dialog.dart';
 
 class SocialLoginPage extends StatefulWidget {
   static get route =>

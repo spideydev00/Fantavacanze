@@ -64,16 +64,12 @@ abstract class LeagueRemoteDataSource {
   Future<LeagueModel> addEvent({
     required LeagueModel league,
     required String name,
-    required int points,
+    required double points,
     required String creatorId,
     required String targetUser,
     required RuleType type,
+    required bool isTeamMember,
     String? description,
-  });
-
-  Future<LeagueModel> removeEvent({
-    required LeagueModel league,
-    required String eventId,
   });
 
   Future<LeagueModel> addMemory({
@@ -344,9 +340,7 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
 
       // Create a SimpleParticipantModel for the current user
       final currentUserParticipant = SimpleParticipantModel(
-        userId: currentUserId,
-        name: currentUserName,
-      );
+          userId: currentUserId, name: currentUserName, points: 0);
 
       // Call the RPC function
       final response = await supabaseClient.rpc(
@@ -558,16 +552,39 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
   Future<LeagueModel> addEvent({
     required LeagueModel league,
     required String name,
-    required int points,
+    required double points,
     required String creatorId,
     required String targetUser,
     required RuleType type,
+    bool isTeamMember = false,
     String? description,
   }) async {
     try {
       // Find the target participant
-      ParticipantModel? targetParticipant =
-          _findTargetParticipant(league: league, targetUser: targetUser);
+      ParticipantModel? targetParticipant;
+      String actualTargetUser = targetUser;
+
+      if (league.isTeamBased && isTeamMember) {
+        // If targeting a team member, find their team first
+        for (final p in league.participants) {
+          if (p is TeamParticipantModel) {
+            for (final member in p.members) {
+              if (member.userId == targetUser) {
+                targetParticipant = p;
+                actualTargetUser = targetUser; // Keep the member's ID
+                break;
+              }
+            }
+          }
+          if (targetParticipant != null) break;
+        }
+      } else {
+        // Standard target finding (team or individual)
+        targetParticipant = _findTargetParticipant(
+          league: league,
+          targetUser: targetUser,
+        );
+      }
 
       if (targetParticipant == null) {
         throw ServerException('Destinatario non trovato nella lega');
@@ -578,9 +595,10 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
         name: name,
         points: points,
         creatorId: creatorId,
-        targetUser: targetUser,
+        targetUser: actualTargetUser,
         type: type,
         description: description,
+        isTeamMember: isTeamMember,
       );
 
       // Create updated events list
@@ -590,60 +608,22 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
       final updatedParticipants = _updateParticipantScore(
         league: league,
         targetParticipant: targetParticipant,
-        targetUser: targetUser,
+        targetUser: actualTargetUser,
         points: points,
+        isTeamMember: isTeamMember,
       );
 
       // Update in Supabase
       return await _updateLeagueInDb(
         leagueId: league.id,
         updateData: {
-          'events': updatedEvents.map((e) => e.toJson()).toList(),
           'participants': updatedParticipants,
+          'events': updatedEvents.map((e) => e.toJson()).toList(),
         },
       );
     } catch (e) {
       if (e is ServerException) rethrow;
       throw ServerException("Si è verificato un errore: ${e.toString()}");
-    }
-  }
-
-  // ------------------------------------------------
-  // R E M O V E   E V E N T
-  @override
-  Future<LeagueModel> removeEvent({
-    required LeagueModel league,
-    required String eventId,
-  }) async {
-    try {
-      _checkAuthentication();
-
-      // Find the event
-      final eventIndex =
-          league.events.indexWhere((e) => (e as EventModel).id == eventId);
-
-      if (eventIndex == -1) {
-        throw ServerException('Evento non trovato');
-      }
-
-      final EventModel eventToRemove = league.events[eventIndex] as EventModel;
-
-      // Remove the event and update participant scores
-      final updatedEvents = _getUpdatedEventsAfterRemoval(league, eventId);
-      final updatedParticipants =
-          _getUpdatedParticipantsAfterEventRemoval(league, eventToRemove);
-
-      // Update in Supabase
-      return await _updateLeagueInDb(
-        leagueId: league.id,
-        updateData: {
-          'events': updatedEvents,
-          'participants': updatedParticipants,
-        },
-      );
-    } catch (e) {
-      if (e is ServerException) rethrow;
-      throw ServerException('Si è verificato un errore: ${e.toString()}');
     }
   }
 
@@ -1383,9 +1363,7 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
       return TeamParticipantModel(
         members: [
           SimpleParticipantModel(
-            userId: creatorId,
-            name: creatorName,
-          ),
+              userId: creatorId, name: creatorName, points: 0),
         ],
         captainId: creatorId,
         name: 'Team di $creatorName',
@@ -1409,11 +1387,12 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
   // H E L P E R  -  C R E A T E   E V E N T   D A T A
   EventModel _createEventData({
     required String name,
-    required int points,
+    required double points,
     required String creatorId,
     required String targetUser,
     required RuleType type,
     String? description,
+    bool isTeamMember = false,
   }) {
     final eventId = uuid.v4();
     return EventModel(
@@ -1425,6 +1404,7 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
       createdAt: DateTime.now(),
       type: type,
       description: description,
+      isTeamMember: isTeamMember,
     );
   }
 
@@ -1452,14 +1432,27 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
     required LeagueModel league,
     required ParticipantModel targetParticipant,
     required String targetUser,
-    required int points,
+    required double points,
+    bool isTeamMember = false,
   }) {
     final participantJson = targetParticipant.toJson();
-    final updatedScore = targetParticipant.points + points;
 
-    // Update bonus or malus totals
-    int updatedBonusTotal = participantJson['bonusTotal'] ?? 0;
-    int updatedMalusTotal = participantJson['malusTotal'] ?? 0;
+    // Ensure all point values are doubles
+    double currentPoints = participantJson['points'] is int
+        ? (participantJson['points'] as int).toDouble()
+        : (participantJson['points'] as double);
+
+    double updatedScore = currentPoints + points;
+
+    // Update bonus or malus totals - ensure they are doubles
+    double updatedBonusTotal = participantJson['bonusTotal'] is int
+        ? (participantJson['bonusTotal'] as int).toDouble()
+        : (participantJson['bonusTotal'] as double? ?? 0.0);
+
+    double updatedMalusTotal = participantJson['malusTotal'] is int
+        ? (participantJson['malusTotal'] as int).toDouble()
+        : (participantJson['malusTotal'] as double? ?? 0.0);
+
     if (points > 0) {
       updatedBonusTotal += points;
     } else if (points < 0) {
@@ -1474,18 +1467,54 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
       'malusTotal': updatedMalusTotal,
     };
 
+    // Handle individual team member scoring
+    if (league.isTeamBased && targetParticipant is TeamParticipantModel) {
+      if (isTeamMember) {
+        // If targeting a specific team member, only update that member's points
+        final updatedMembers = targetParticipant.members.map((member) {
+          if (member.userId == targetUser) {
+            // Ensure the member points are treated as double
+            double memberPoints = member.points is int
+                ? (member.points as int).toDouble()
+                : member.points;
+
+            return {
+              ...(member as SimpleParticipantModel).toJson(),
+              'points': memberPoints + points,
+            };
+          }
+          return (member as SimpleParticipantModel).toJson();
+        }).toList();
+
+        updatedParticipantData['members'] = updatedMembers;
+      } else {
+        // If targeting the whole team, divide points equally among all members
+        final int memberCount = targetParticipant.members.length;
+        final double pointsPerMember =
+            memberCount > 0 ? points / memberCount : 0;
+
+        final updatedMembers = targetParticipant.members.map((member) {
+          // Ensure the member points are treated as double
+          double memberPoints = member.points is int
+              ? (member.points as int).toDouble()
+              : member.points;
+
+          return {
+            ...(member as SimpleParticipantModel).toJson(),
+            'points': memberPoints + pointsPerMember,
+          };
+        }).toList();
+
+        updatedParticipantData['members'] = updatedMembers;
+      }
+    }
+
     // Replace the participant in the list
     return league.participants.map((p) {
       if (p is ParticipantModel) {
         final pJson = p.toJson();
-        if (league.isTeamBased) {
-          if (pJson['type'] == 'team' && pJson['name'] == targetUser) {
-            return updatedParticipantData;
-          }
-        } else {
-          if (pJson['type'] == 'individual' && pJson['userId'] == targetUser) {
-            return updatedParticipantData;
-          }
+        if (pJson['name'] == participantJson['name']) {
+          return updatedParticipantData;
         }
       }
       return p is ParticipantModel ? p.toJson() : p;
@@ -1513,50 +1542,6 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
       relatedEventId: relatedEventId,
       eventName: eventName,
     );
-  }
-
-  // ------------------------------------------------
-  // H E L P E R  -  G E T   U P D A T E D   E V E N T S   A F T E R   R E M O V A L
-  List<Map<String, dynamic>> _getUpdatedEventsAfterRemoval(
-      LeagueModel league, String eventId) {
-    return league.events
-        .where((e) => (e as EventModel).id != eventId)
-        .map((e) => (e as EventModel).toJson())
-        .toList();
-  }
-
-  // ------------------------------------------------
-  // H E L P E R  -  G E T   U P D A T E D   P A R T I C I P A N T S   A F T E R   E V E N T   R E M O V A L
-  List<dynamic> _getUpdatedParticipantsAfterEventRemoval(
-      LeagueModel league, EventModel eventToRemove) {
-    return league.participants.map((p) {
-      final participantJson = (p as ParticipantModel).toJson();
-      if ((participantJson['type'] == 'individual' &&
-              participantJson['userId'] == eventToRemove.targetUser) ||
-          (participantJson['type'] == 'team' &&
-              (participantJson['members'] as List<dynamic>).any((member) =>
-                  SimpleParticipantModel.fromJson(member).userId ==
-                  eventToRemove.targetUser))) {
-        final updatedScore = p.points - eventToRemove.points;
-
-        // Update bonus or malus totals
-        int updatedBonusTotal = participantJson['bonusTotal'] ?? 0;
-        int updatedMalusTotal = participantJson['malusTotal'] ?? 0;
-        if (eventToRemove.points > 0) {
-          updatedBonusTotal -= eventToRemove.points;
-        } else if (eventToRemove.points < 0) {
-          updatedMalusTotal -= eventToRemove.points.abs();
-        }
-
-        return {
-          ...participantJson,
-          'points': updatedScore,
-          'bonusTotal': updatedBonusTotal,
-          'malusTotal': updatedMalusTotal,
-        };
-      }
-      return participantJson;
-    }).toList();
   }
 
   // ------------------------------------------------

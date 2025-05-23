@@ -1,7 +1,6 @@
-import 'package:fantavacanze_official/features/league/domain/entities/simple_participant.dart';
-import 'package:fantavacanze_official/features/league/domain/entities/team_participant.dart';
 import 'package:fantavacanze_official/features/league/data/models/participant_model.dart';
 import 'package:fantavacanze_official/features/league/data/models/simple_participant_model.dart';
+import 'package:fantavacanze_official/features/league/domain/entities/team_participant.dart';
 
 class TeamParticipantModel extends TeamParticipant implements ParticipantModel {
   const TeamParticipantModel({
@@ -15,33 +14,23 @@ class TeamParticipantModel extends TeamParticipant implements ParticipantModel {
   });
 
   factory TeamParticipantModel.fromJson(Map<String, dynamic> json) {
-    final double scoreValue = json['points'] is int
-        ? (json['points'] as int).toDouble()
-        : (json['points'] as num?)?.toDouble() ?? 0.0;
-
-    final int malusTotalValue =
-        json['malusTotal'] != null ? json['malusTotal'] as int : 0;
-
-    final int bonusTotalValue =
-        json['bonusTotal'] != null ? json['bonusTotal'] as int : 0;
-
-    // Parse members
-    List<SimpleParticipantModel> members = [];
-    if (json['members'] != null) {
-      members = (json['members'] as List)
-          .map((memberJson) => SimpleParticipantModel.fromJson(
-              memberJson as Map<String, dynamic>))
-          .toList();
-    }
-
     return TeamParticipantModel(
-      members: members,
+      members: (json['members'] as List<dynamic>)
+          .map(
+              (e) => SimpleParticipantModel.fromJson(e as Map<String, dynamic>))
+          .toList(),
       name: json['name'] as String,
-      points: scoreValue,
+      points: json['points'] is int
+          ? (json['points'] as int).toDouble()
+          : (json['points'] as num).toDouble(),
+      malusTotal: json['malusTotal'] is int
+          ? (json['malusTotal'] as int).toDouble()
+          : (json['malusTotal'] as num?)?.toDouble() ?? 0.0,
+      bonusTotal: json['bonusTotal'] is int
+          ? (json['bonusTotal'] as int).toDouble()
+          : (json['bonusTotal'] as num?)?.toDouble() ?? 0.0,
       captainId: json['captainId'] as String,
       teamLogoUrl: json['teamLogoUrl'] as String?,
-      malusTotal: malusTotalValue,
-      bonusTotal: bonusTotalValue,
     );
   }
 
@@ -49,37 +38,35 @@ class TeamParticipantModel extends TeamParticipant implements ParticipantModel {
   Map<String, dynamic> toJson() {
     return {
       'type': 'team',
-      'members': members
-          .map((member) => (member is SimpleParticipantModel)
-              ? member.toJson()
-              : {'userId': member.userId, 'name': member.name})
-          .toList(),
+      'members':
+          members.map((e) => (e as SimpleParticipantModel).toJson()).toList(),
       'name': name,
       'points': points,
-      'captainId': captainId,
-      'teamLogoUrl': teamLogoUrl,
       'malusTotal': malusTotal,
       'bonusTotal': bonusTotal,
+      'captainId': captainId,
+      'teamLogoUrl': teamLogoUrl,
     };
   }
 
   TeamParticipantModel copyWith({
-    List<SimpleParticipant>? members,
+    List<SimpleParticipantModel>? members,
     String? name,
     double? points,
-    int? malusTotal,
-    int? bonusTotal,
-    String? teamLogoUrl,
+    double? malusTotal,
+    double? bonusTotal,
     String? captainId,
+    String? teamLogoUrl,
   }) {
     return TeamParticipantModel(
-      members: members ?? this.members,
+      members: members ??
+          this.members.map((e) => e as SimpleParticipantModel).toList(),
       name: name ?? this.name,
       points: points ?? this.points,
       malusTotal: malusTotal ?? this.malusTotal,
       bonusTotal: bonusTotal ?? this.bonusTotal,
-      teamLogoUrl: teamLogoUrl ?? this.teamLogoUrl,
       captainId: captainId ?? this.captainId,
+      teamLogoUrl: teamLogoUrl ?? this.teamLogoUrl,
     );
   }
 }

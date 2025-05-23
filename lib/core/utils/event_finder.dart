@@ -1,6 +1,7 @@
 import 'package:fantavacanze_official/features/league/domain/entities/event.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/league.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/participant.dart';
+import 'package:fantavacanze_official/features/league/domain/entities/team_participant.dart';
 
 /// Utility functions for finding and filtering events in a league
 class EventFinder {
@@ -20,16 +21,25 @@ class EventFinder {
       ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
     if (isTeamBased) {
-      // For team-based leagues: find event where targetUser matches team name
+      // For team-based leagues, we need to handle two cases:
+      // 1. Events targeting the entire team (where targetUser is the team name)
+      // 2. Events targeting specific team members (where targetUser is the member ID)
       for (final event in sortedEvents) {
-        if (event.targetUser == participant.name) {
+        // Case 1: Direct team event
+        if (!event.isTeamMember && event.targetUser == participant.name) {
+          return event;
+        }
+
+        // Case 2: Team member event - check if the member belongs to this team
+        if (event.isTeamMember &&
+            participant is TeamParticipant &&
+            _isEventForTeamMember(event, participant)) {
           return event;
         }
       }
       return null;
     } else {
       // For individual leagues: find event where targetUser matches participant ID
-      // Access the ID based on the participant's structure (from JSON)
       final Map<String, dynamic> participantData =
           (participant as dynamic).toJson();
       final String userId = participantData['userId'];
@@ -56,9 +66,17 @@ class EventFinder {
     final List<Event> participantEvents = [];
 
     if (isTeamBased) {
-      // For team-based leagues: find events where targetUser matches team name
+      // For team-based leagues, collect both direct team events and team member events
       for (final event in league.events) {
-        if (event.targetUser == participant.name) {
+        // Direct team event
+        if (!event.isTeamMember && event.targetUser == participant.name) {
+          participantEvents.add(event);
+        }
+
+        // Team member event
+        if (event.isTeamMember &&
+            participant is TeamParticipant &&
+            _isEventForTeamMember(event, participant)) {
           participantEvents.add(event);
         }
       }
@@ -79,5 +97,10 @@ class EventFinder {
     participantEvents.sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
     return participantEvents;
+  }
+
+  /// Helper method to check if an event is for a member of this team
+  static bool _isEventForTeamMember(Event event, TeamParticipant team) {
+    return team.members.any((member) => member.userId == event.targetUser);
   }
 }

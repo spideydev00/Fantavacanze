@@ -42,7 +42,9 @@ class IconLabel extends StatelessWidget {
           const SizedBox(width: 4),
           Text(
             text,
-            style: context.textTheme.labelMedium,
+            style: context.textTheme.labelMedium!.copyWith(
+              color: Colors.white,
+            ),
           ),
         ],
       ),

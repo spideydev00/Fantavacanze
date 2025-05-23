@@ -2,11 +2,11 @@ import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/extensions/context_extension.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
-import 'package:fantavacanze_official/core/utils/date_formatter.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/event.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/league.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/participant.dart';
 import 'package:fantavacanze_official/core/utils/event_finder.dart';
+import 'package:fantavacanze_official/core/utils/participant_name_resolver.dart';
 import 'package:flutter/material.dart';
 
 /// A flexible component that displays a participant item in a leaderboard
@@ -169,7 +169,7 @@ class _LeaderboardItemState extends State<LeaderboardItem> {
               Expanded(
                 flex: 2,
                 child: Text(
-                  '${widget.participant.points.toInt()}',
+                  '${widget.participant.points}',
                   textAlign: TextAlign.center,
                   style: context.textTheme.labelLarge?.copyWith(
                     fontWeight: FontWeight.bold,
@@ -259,12 +259,17 @@ class _LeaderboardItemState extends State<LeaderboardItem> {
     }
 
     final bool isPositive = lastEvent.points >= 0;
+    final String participantName =
+        ParticipantNameResolver.resolveParticipantName(
+            lastEvent, widget.league);
 
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Icon(
-          isPositive ? Icons.add_circle_outline : Icons.remove_circle_outline,
+          isPositive
+              ? Icons.check_circle_outline_outlined
+              : Icons.remove_circle_outline,
           size: 16,
           color: isPositive ? ColorPalette.success : ColorPalette.error,
         ),
@@ -275,21 +280,21 @@ class _LeaderboardItemState extends State<LeaderboardItem> {
             children: [
               Text(
                 lastEvent.name,
-                style: context.textTheme.bodyMedium?.copyWith(
-                  fontWeight: FontWeight.w500,
+                style: context.textTheme.bodySmall?.copyWith(
+                  fontWeight: FontWeight.w600,
                   color: context.textPrimaryColor,
                 ),
               ),
-              if (lastEvent.description != null &&
-                  lastEvent.description!.isNotEmpty)
-                Text(
-                  lastEvent.description!,
-                  style: context.textTheme.bodySmall?.copyWith(
-                    color: context.textSecondaryColor,
-                  ),
-                ),
+              SizedBox(height: 1.5),
               Text(
-                "${isPositive ? '+' : ''}${lastEvent.points} punti • ${DateFormatter.formatRelativeTime(lastEvent.createdAt)}",
+                participantName,
+                style: context.textTheme.labelSmall?.copyWith(
+                  color: context.textSecondaryColor,
+                ),
+              ),
+              SizedBox(height: 1.5),
+              Text(
+                "${isPositive ? '+' : '-'}${lastEvent.points} punti",
                 style: context.textTheme.bodySmall?.copyWith(
                   color: isPositive ? ColorPalette.success : ColorPalette.error,
                   fontWeight: FontWeight.w500,
