@@ -10,6 +10,7 @@ class EventModel extends Event {
     required super.targetUser,
     required super.createdAt,
     required super.type,
+    required super.isTeamMember,
     super.description,
   });
 
@@ -23,19 +24,20 @@ class EventModel extends Event {
           : RuleType.malus;
     } else {
       // Default behavior: determine by points
-      eventType =
-          (json['points'] as int) >= 0 ? RuleType.bonus : RuleType.malus;
+      final pointsValue = _extractPointsValue(json['points']);
+      eventType = pointsValue >= 0 ? RuleType.bonus : RuleType.malus;
     }
 
     return EventModel(
       id: json['id'] as String,
       name: json['name'] as String,
-      points: json['points'] as int,
+      points: _extractPointsValue(json['points']),
       creatorId: json['creatorId'] as String,
-      targetUser: json['targetUserId'] as String,
+      targetUser: json['targetUser'] as String,
       createdAt: DateTime.parse(json['createdAt'] as String),
       type: eventType,
       description: json['description'] as String?,
+      isTeamMember: json['isTeamMember'] as bool? ?? false,
     );
   }
 
@@ -45,10 +47,23 @@ class EventModel extends Event {
       'name': name,
       'points': points,
       'creatorId': creatorId,
-      'targetUserId': targetUser,
+      'targetUser': targetUser,
       'createdAt': createdAt.toIso8601String(),
       'type': type.toString().split('.').last,
       'description': description,
+      'isTeamMember': isTeamMember,
     };
+  }
+
+  // Helper method to safely extract points value as double
+  static double _extractPointsValue(dynamic pointsData) {
+    if (pointsData is int) {
+      return pointsData.toDouble();
+    } else if (pointsData is double) {
+      return pointsData;
+    } else if (pointsData is String) {
+      return double.tryParse(pointsData) ?? 0.0;
+    }
+    return 0.0;
   }
 }

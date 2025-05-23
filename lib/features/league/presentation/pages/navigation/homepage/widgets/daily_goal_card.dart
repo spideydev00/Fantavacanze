@@ -5,7 +5,7 @@ import 'package:fantavacanze_official/core/theme/colors.dart';
 
 class DailyGoalCard extends StatelessWidget {
   final String name;
-  final int score;
+  final double score;
   final bool isLocked;
   final Color startColor;
   final Color endColor;

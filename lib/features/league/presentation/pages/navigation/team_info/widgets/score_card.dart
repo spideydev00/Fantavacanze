@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class ScoreCard extends StatelessWidget {
-  final int score;
+  final double score;
   final Color color;
 
   const ScoreCard({

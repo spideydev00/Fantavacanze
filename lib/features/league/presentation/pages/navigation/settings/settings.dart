@@ -7,7 +7,7 @@ import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:fantavacanze_official/core/theme/theme.dart';
 import 'package:fantavacanze_official/features/auth/presentation/pages/social_login.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/dashboard/sections/dashboard.dart';
-import 'package:fantavacanze_official/core/widgets/confirmation_dialog.dart';
+import 'package:fantavacanze_official/core/widgets/dialogs/confirmation_dialog.dart';
 import 'package:fantavacanze_official/core/widgets/divider.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/settings/widgets/settings_widgets.dart';
 import 'package:flutter/material.dart';

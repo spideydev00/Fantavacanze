@@ -14,8 +14,9 @@ import 'package:fantavacanze_official/features/league/presentation/bloc/league_s
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/create_league/widgets/basic_info_step.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/create_league/widgets/team_type_step.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/create_league/widgets/rules_step.dart';
-import 'package:fantavacanze_official/core/widgets/form_dialog.dart';
+import 'package:fantavacanze_official/core/widgets/dialogs/form_dialog.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/create_league/league_created_page.dart';
+import 'package:fantavacanze_official/core/widgets/rules/type_selector.dart';
 
 class CreateLeaguePage extends StatefulWidget {
   static get route =>
@@ -190,22 +191,16 @@ class _CreateLeaguePageState extends State<CreateLeaguePage> {
               Row(
                 children: [
                   Expanded(
-                    child: _TypeSelector(
-                      label: 'Bonus',
-                      icon: Icons.add_circle,
-                      color: ColorPalette.success,
-                      isSelected: isBonus,
-                      onTap: null, // Disabled in edit mode
+                    child: TypeSelector(
+                      selectedType: RuleType.bonus,
+                      onTypeChanged: (_) {},
                     ),
                   ),
                   const SizedBox(width: ThemeSizes.sm),
                   Expanded(
-                    child: _TypeSelector(
-                      label: 'Malus',
-                      icon: Icons.remove_circle,
-                      color: ColorPalette.error,
-                      isSelected: !isBonus,
-                      onTap: null, // Disabled in edit mode
+                    child: TypeSelector(
+                      selectedType: RuleType.malus,
+                      onTypeChanged: (_) {},
                     ),
                   ),
                 ],
@@ -701,63 +696,6 @@ class _CreateLeaguePageState extends State<CreateLeaguePage> {
   }
 }
 
-// Helper widget for type selection
-class _TypeSelector extends StatelessWidget {
-  final String label;
-  final IconData icon;
-  final Color color;
-  final bool isSelected;
-  final VoidCallback? onTap;
-
-  const _TypeSelector({
-    required this.label,
-    required this.icon,
-    required this.color,
-    required this.isSelected,
-    this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(
-          vertical: ThemeSizes.md,
-          horizontal: ThemeSizes.sm,
-        ),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? color.withValues(alpha: 0.1)
-              : context.secondaryBgColor.withValues(alpha: 0.5),
-          borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusLg),
-          border: Border.all(
-            color: isSelected ? color : Colors.transparent,
-            width: 1.5,
-          ),
-        ),
-        child: Column(
-          children: [
-            Icon(
-              icon,
-              color: color,
-              size: 32,
-            ),
-            const SizedBox(height: ThemeSizes.xs),
-            Text(
-              label,
-              style: TextStyle(
-                color: isSelected ? color : context.textSecondaryColor,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
 // Widget custom per gestire lo stato del tipo di regola
 class _AddRuleDialog extends StatefulWidget {
   final void Function(RuleModel) onAdd;
@@ -790,22 +728,16 @@ class _AddRuleDialogState extends State<_AddRuleDialog> {
           Row(
             children: [
               Expanded(
-                child: _TypeSelector(
-                  label: 'Bonus',
-                  icon: Icons.add_circle,
-                  color: ColorPalette.success,
-                  isSelected: ruleType == RuleType.bonus,
-                  onTap: () => setState(() => ruleType = RuleType.bonus),
+                child: TypeSelector(
+                  selectedType: RuleType.bonus,
+                  onTypeChanged: (type) => setState(() => ruleType = type),
                 ),
               ),
               const SizedBox(width: ThemeSizes.sm),
               Expanded(
-                child: _TypeSelector(
-                  label: 'Malus',
-                  icon: Icons.remove_circle,
-                  color: ColorPalette.error,
-                  isSelected: ruleType == RuleType.malus,
-                  onTap: () => setState(() => ruleType = RuleType.malus),
+                child: TypeSelector(
+                  selectedType: RuleType.malus,
+                  onTypeChanged: (type) => setState(() => ruleType = type),
                 ),
               ),
             ],

@@ -3,7 +3,7 @@ import 'package:fantavacanze_official/core/widgets/loader.dart';
 import 'package:fantavacanze_official/core/pages/empty_branded_page.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
-import 'package:fantavacanze_official/core/widgets/auth_dialog_box.dart';
+import 'package:fantavacanze_official/core/widgets/dialogs/auth_dialog_box.dart';
 import 'package:fantavacanze_official/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:fantavacanze_official/features/auth/presentation/pages/signup.dart';
 import 'package:fantavacanze_official/features/auth/presentation/widgets/auth_field.dart';

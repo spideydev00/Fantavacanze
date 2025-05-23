@@ -12,7 +12,7 @@ import 'package:fantavacanze_official/features/league/presentation/bloc/league_b
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_event.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_state.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/join_league/choose_team_page.dart';
-import 'package:fantavacanze_official/core/widgets/confirmation_dialog.dart';
+import 'package:fantavacanze_official/core/widgets/dialogs/confirmation_dialog.dart';
 import 'package:fantavacanze_official/core/widgets/info_banner.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';

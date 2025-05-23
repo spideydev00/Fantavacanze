@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 
-/// A reusable tab component for rule types (bonus/malus)
+/// A reusable tab component with icon and label
 ///
-/// This component displays a tab with an icon and a label,
-/// customized for rule types in the app.
-class RuleTypeTab extends StatelessWidget {
+/// This component displays a tab with an icon and a label
+/// for a more attractive UI than the standard Tab.
+class CustomTab extends StatelessWidget {
   /// The label text to display in the tab
   final String label;
 
   /// The icon to display next to the label
   final IconData icon;
 
-  /// The color of the icon (usually green for bonus, red for malus)
+  /// The color of the icon
   final Color color;
 
   /// Optional text style for the label
@@ -24,7 +24,7 @@ class RuleTypeTab extends StatelessWidget {
   /// Optional spacing between icon and label
   final double spacing;
 
-  const RuleTypeTab({
+  const CustomTab({
     super.key,
     required this.label,
     required this.icon,

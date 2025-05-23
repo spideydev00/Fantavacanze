@@ -3,7 +3,7 @@ import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/rule.dart';
-import 'package:fantavacanze_official/core/widgets/rule_dialog_header.dart';
+import 'package:fantavacanze_official/core/widgets/dialogs/rule_dialog_header.dart';
 
 /// A generic form dialog with customizable header, content and actions
 class FormDialog extends StatelessWidget {

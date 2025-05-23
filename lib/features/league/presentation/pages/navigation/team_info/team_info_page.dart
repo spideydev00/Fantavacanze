@@ -17,8 +17,7 @@ import 'package:fantavacanze_official/features/league/domain/entities/team_parti
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_event.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_state.dart';
-import 'package:fantavacanze_official/features/league/presentation/pages/navigation/team_info/widgets/events_list.dart';
-import 'package:fantavacanze_official/core/widgets/confirmation_dialog.dart';
+import 'package:fantavacanze_official/core/widgets/dialogs/confirmation_dialog.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/team_info/widgets/leave_league_button.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/team_info/widgets/score_card.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/team_info/widgets/section_card.dart';
@@ -27,6 +26,7 @@ import 'package:fantavacanze_official/features/league/presentation/pages/navigat
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:fantavacanze_official/core/widgets/events/events_list_widget.dart';
 
 class TeamInfoPage extends StatelessWidget {
   static Route get route =>
@@ -447,7 +447,7 @@ class _TeamBasedInfoState extends State<_TeamBasedInfo>
                         children: [
                           // Score card
                           ScoreCard(
-                            score: widget.team.points.toInt(),
+                            score: widget.team.points,
                             color: context.primaryColor,
                           ),
 
@@ -513,15 +513,12 @@ class _TeamBasedInfoState extends State<_TeamBasedInfo>
 
                   // Recent events section
                   SectionCard(
-                    title: 'Eventi Recenti',
-                    icon: Icons.event_note_outlined,
-                    child: Padding(
-                      padding: const EdgeInsets.all(ThemeSizes.md),
-                      child: EventsList(
-                        league: widget.league,
-                        participant: widget.team,
-                        isTeamBased: true,
-                      ),
+                    title: 'Eventi recenti',
+                    icon: Icons.event_note,
+                    child: EventsListWidget(
+                      league: widget.league,
+                      participant: widget.team,
+                      limit: 5,
                     ),
                   ),
 
@@ -803,7 +800,7 @@ class _IndividualInfoState extends State<_IndividualInfo> {
                       children: [
                         // Score card
                         ScoreCard(
-                          score: widget.participant.points.toInt(),
+                          score: widget.participant.points,
                           color: context.primaryColor,
                         ),
 
@@ -838,15 +835,12 @@ class _IndividualInfoState extends State<_IndividualInfo> {
 
                 // Recent events section
                 SectionCard(
-                  title: 'Eventi Recenti',
-                  icon: Icons.event_note_outlined,
-                  child: Padding(
-                    padding: const EdgeInsets.all(ThemeSizes.md),
-                    child: EventsList(
-                      league: widget.league,
-                      participant: widget.participant,
-                      isTeamBased: false,
-                    ),
+                  title: 'Eventi recenti',
+                  icon: Icons.event_note,
+                  child: EventsListWidget(
+                    league: widget.league,
+                    participant: widget.participant,
+                    limit: 5,
                   ),
                 ),
 

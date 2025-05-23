@@ -90,7 +90,7 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
     on<JoinLeagueEvent>(_handleJoinLeague);
     on<ExitLeagueEvent>(_onExitLeague);
     on<UpdateTeamNameEvent>(_onUpdateTeamName);
-    on<AddEventEvent>(_onAddEvent);
+    on<AddEventEvent>(_onAddEventEvent);
     on<AddMemoryEvent>(_onAddMemory);
     on<RemoveMemoryEvent>(_onRemoveMemory);
     on<GetRulesEvent>(_onGetRules);
@@ -439,36 +439,32 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
   // -----------------------------------------------------------
 
   // A D D   E V E N T
-  Future<void> _onAddEvent(
+  Future<void> _onAddEventEvent(
     AddEventEvent event,
     Emitter<LeagueState> emit,
   ) async {
-    try {
-      emit(LeagueLoading());
+    emit(LeagueLoading());
+    final result = await addEvent(
+      AddEventParams(
+        league: event.league,
+        name: event.name,
+        points: event.points,
+        creatorId: event.creatorId,
+        targetUser: event.targetUser,
+        type: event.type,
+        description: event.description,
+        isTeamMember: event.isTeamMember,
+      ),
+    );
 
-      final result = await addEvent(
-        AddEventParams(
-          league: event.league,
-          name: event.name,
-          points: event.points,
-          creatorId: event.creatorId,
-          targetUser: event.targetUser,
-          type: event.type,
-          description: event.description,
-        ),
-      );
+    result.fold(
+      (failure) => emit(LeagueError(message: failure.message)),
+      (league) {
+        emit(LeagueSuccess(league: league, operation: 'add_event'));
 
-      result.fold(
-        (failure) => emit(LeagueError(message: failure.message)),
-        (league) {
-          emit(LeagueSuccess(league: league, operation: 'add_event'));
-
-          appLeagueCubit.selectLeague(league);
-        },
-      );
-    } catch (e) {
-      emit(LeagueError(message: e.toString()));
-    }
+        appLeagueCubit.selectLeague(league);
+      },
+    );
   }
 
   // A D D   M E M O R Y

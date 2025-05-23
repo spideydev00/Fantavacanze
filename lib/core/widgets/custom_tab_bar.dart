@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 
-/// A customizable tab bar for rule types
+/// A customizable tab bar with custom indicator
 ///
-/// This component displays a tab bar with custom indicator
-/// for switching between bonus and malus rules.
-class RuleTypeTabBar extends StatelessWidget {
+/// This component displays a tab bar with custom indicator colors
+/// for a more attractive UI than the standard TabBar.
+class CustomTabBar extends StatelessWidget {
   /// The tab controller
   final TabController controller;
 
   /// The tab widgets to display
   final List<Widget> tabs;
 
-  /// The colors for the indicator (usually [green, red] for bonus/malus)
+  /// The colors for the indicator (one per tab)
   final List<Color> indicatorColors;
 
   /// Optional indicator weight
@@ -28,7 +28,7 @@ class RuleTypeTabBar extends StatelessWidget {
   /// Optional background color (defaults to context.secondaryBgColor)
   final Color? backgroundColor;
 
-  const RuleTypeTabBar({
+  const CustomTabBar({
     super.key,
     required this.controller,
     required this.tabs,

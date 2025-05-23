@@ -1,11 +1,12 @@
 import 'package:fantavacanze_official/core/cubits/app_league/app_league_cubit.dart';
-import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
+import 'package:fantavacanze_official/core/widgets/custom_tab.dart';
+import 'package:fantavacanze_official/core/widgets/custom_tab_bar.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/league.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/rule.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_event.dart';
-import 'package:fantavacanze_official/core/widgets/confirmation_dialog.dart';
+import 'package:fantavacanze_official/core/widgets/dialogs/confirmation_dialog.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/rules/widgets/index.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -60,28 +61,25 @@ class _RulesPageState extends State<RulesPage>
           return Scaffold(
             body: Column(
               children: [
-                // Fixed header with tabs
-                Container(
-                  color: context.secondaryBgColor,
-                  child: RuleTypeTabBar(
-                    controller: _tabController,
-                    indicatorColors: const [
-                      ColorPalette.success,
-                      ColorPalette.error
-                    ],
-                    tabs: const [
-                      RuleTypeTab(
-                        label: "BONUS",
-                        icon: Icons.arrow_upward_rounded,
-                        color: ColorPalette.success,
-                      ),
-                      RuleTypeTab(
-                        label: "MALUS",
-                        icon: Icons.arrow_downward_rounded,
-                        color: ColorPalette.error,
-                      ),
-                    ],
-                  ),
+                // Fixed header with tabs - using our new custom tab bar
+                CustomTabBar(
+                  controller: _tabController,
+                  indicatorColors: const [
+                    ColorPalette.success,
+                    ColorPalette.error
+                  ],
+                  tabs: const [
+                    CustomTab(
+                      label: "BONUS",
+                      icon: Icons.arrow_upward_rounded,
+                      color: ColorPalette.success,
+                    ),
+                    CustomTab(
+                      label: "MALUS",
+                      icon: Icons.arrow_downward_rounded,
+                      color: ColorPalette.error,
+                    ),
+                  ],
                 ),
 
                 // Scrollable content area

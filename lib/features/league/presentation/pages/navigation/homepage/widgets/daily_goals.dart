@@ -32,7 +32,7 @@ class DailyGoals extends StatelessWidget {
     final List<Map<String, dynamic>> objectives = [
       {
         'name': 'Bevi 3 shot in 10 minuti',
-        'score': 5,
+        'score': 5.toDouble().abs(),
         'colors': [
           const Color(0xFF6C72CB), // Purple-ish
           const Color(0xFFCB69C1),
@@ -40,7 +40,7 @@ class DailyGoals extends StatelessWidget {
       },
       {
         'name': 'Fai un selfie con uno sconosciuto',
-        'score': 2,
+        'score': 2.toDouble().abs(),
         'colors': [
           const Color.fromARGB(255, 69, 167, 253), // Blue gradient
           const Color.fromARGB(255, 91, 197, 202),
@@ -48,7 +48,7 @@ class DailyGoals extends StatelessWidget {
       },
       {
         'name': 'Canta una canzone in pubblico',
-        'score': 10,
+        'score': 10.toDouble().abs(),
         'colors': [
           const Color(0xFFFF8008), // Orange gradient
           const Color.fromARGB(255, 228, 190, 92),
