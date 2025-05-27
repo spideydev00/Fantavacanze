@@ -1,6 +1,8 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
+import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
+import 'package:fantavacanze_official/core/widgets/dialogs/confirmation_dialog.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/memory.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -28,15 +30,50 @@ class MemoryDetailScreen extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.white),
+        leading: BackButton(
+          color: Colors.white,
+          style: ButtonStyle(
+            backgroundColor: WidgetStatePropertyAll(
+              Colors.black.withValues(alpha: 0.4),
+            ),
+            shape: WidgetStatePropertyAll(
+              RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusMd),
+              ),
+            ),
+          ),
+        ),
         actions: [
           if (isCurrentUserAuthor && onDelete != null)
-            IconButton(
-              icon: const Icon(Icons.delete_outline),
-              onPressed: () {
-                Navigator.pop(context);
-                onDelete!();
-              },
+            Padding(
+              padding: const EdgeInsets.only(right: ThemeSizes.sm),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.black.withValues(alpha: 0.4),
+                  borderRadius:
+                      BorderRadius.circular(ThemeSizes.borderRadiusMd),
+                ),
+                child: IconButton(
+                  icon: const Icon(Icons.delete_outline_rounded),
+                  color: Colors.white,
+                  onPressed: () {
+                    // Show the confirmation dialog
+                    showDialog(
+                      context: context,
+                      builder: (dialogContext) =>
+                          ConfirmationDialog.deleteMemory(
+                        onDelete: () {
+                          // First navigate back from the detail screen
+                          Navigator.pop(context); // Close the detail screen
+
+                          // Then call the delete operation
+                          onDelete!();
+                        },
+                      ),
+                    );
+                  },
+                ),
+              ),
             ),
         ],
       ),
@@ -48,71 +85,127 @@ class MemoryDetailScreen extends StatelessWidget {
             child: Center(
               child: Hero(
                 tag: 'memory_image_${memory.id}',
-                child: CachedNetworkImage(
-                  imageUrl: memory.imageUrl,
-                  fit: BoxFit.contain,
-                  placeholder: (context, url) => const Center(
-                    child: CircularProgressIndicator(),
-                  ),
-                  errorWidget: (context, url, error) => const Center(
-                    child:
-                        Icon(Icons.error_outline, color: Colors.red, size: 50),
+                child: InteractiveViewer(
+                  minScale: 0.5,
+                  maxScale: 3.0,
+                  child: CachedNetworkImage(
+                    imageUrl: memory.imageUrl,
+                    fit: BoxFit.contain,
+                    placeholder: (context, url) => Center(
+                      child: CircularProgressIndicator(
+                        valueColor:
+                            AlwaysStoppedAnimation<Color>(context.primaryColor),
+                      ),
+                    ),
+                    errorWidget: (context, url, error) => Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.broken_image_rounded,
+                            color: ColorPalette.error,
+                            size: 60,
+                          ),
+                          const SizedBox(height: ThemeSizes.sm),
+                          const Text(
+                            "Impossibile caricare l'immagine",
+                            style: TextStyle(color: Colors.white70),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
                 ),
               ),
             ),
           ),
 
-          // Details panel at the bottom
+          // Details panel at the bottom with enhanced design
           Expanded(
-            flex: 1,
+            flex: 2,
             child: Container(
               width: double.infinity,
-              padding: const EdgeInsets.all(ThemeSizes.md),
+              padding: const EdgeInsets.all(ThemeSizes.lg),
               decoration: BoxDecoration(
                 color: context.bgColor,
                 borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(ThemeSizes.borderRadiusLg),
+                  top: Radius.circular(ThemeSizes.borderRadiusXlg),
                 ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.2),
+                    blurRadius: 20,
+                    offset: const Offset(0, -5),
+                  ),
+                ],
               ),
               child: SingleChildScrollView(
+                physics: const BouncingScrollPhysics(),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Author and date
+                    // Author info with enhanced styling
                     Row(
                       children: [
-                        CircleAvatar(
-                          radius: 18,
-                          backgroundColor: context.primaryColor,
-                          child: Text(
-                            memory.participantName
-                                .substring(0, 1)
-                                .toUpperCase(),
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
+                        Container(
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.1),
+                                blurRadius: 8,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: CircleAvatar(
+                            radius: 24,
+                            backgroundColor:
+                                ColorPalette.getGradientFromId(memory.userId)
+                                    .colors
+                                    .first,
+                            child: Text(
+                              memory.participantName
+                                  .substring(0, 1)
+                                  .toUpperCase(),
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 20,
+                              ),
                             ),
                           ),
                         ),
-                        const SizedBox(width: ThemeSizes.sm),
+                        const SizedBox(width: ThemeSizes.md),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
                                 memory.participantName,
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontWeight: FontWeight.bold,
-                                  fontSize: 16,
+                                  fontSize: 18,
+                                  color: context.textPrimaryColor,
                                 ),
                               ),
-                              Text(
-                                formattedDate,
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  color: context.textSecondaryColor,
-                                ),
+                              const SizedBox(height: 2),
+                              Row(
+                                children: [
+                                  Icon(
+                                    Icons.access_time_rounded,
+                                    size: 14,
+                                    color: context.textSecondaryColor,
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    formattedDate,
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color: context.textSecondaryColor,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ],
                           ),
@@ -120,37 +213,67 @@ class MemoryDetailScreen extends StatelessWidget {
                       ],
                     ),
 
-                    // Related event (if any)
+                    // Divider
+                    Padding(
+                      padding:
+                          const EdgeInsets.symmetric(vertical: ThemeSizes.md),
+                      child: Divider(
+                        color: context.borderColor.withValues(alpha: 0.3),
+                        height: 1,
+                      ),
+                    ),
+
+                    // Related event with modern badge styling
                     if (memory.eventName != null)
                       Padding(
-                        padding: const EdgeInsets.only(top: ThemeSizes.md),
+                        padding: const EdgeInsets.only(bottom: ThemeSizes.md),
                         child: Container(
                           padding: const EdgeInsets.symmetric(
-                              horizontal: ThemeSizes.md,
-                              vertical: ThemeSizes.sm),
+                            horizontal: ThemeSizes.md,
+                            vertical: ThemeSizes.sm,
+                          ),
                           decoration: BoxDecoration(
                             color: context.primaryColor.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(
-                                ThemeSizes.borderRadiusMd),
+                                ThemeSizes.borderRadiusLg),
                           ),
-                          child: Text(
-                            'Evento: ${memory.eventName!}',
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: context.primaryColor,
-                              fontWeight: FontWeight.bold,
-                            ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.event_available_rounded,
+                                size: 16,
+                                color: context.primaryColor,
+                              ),
+                              const SizedBox(width: ThemeSizes.sm),
+                              Expanded(
+                                child: Text(
+                                  memory.eventName!,
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: context.primaryColor,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                  maxLines: 5,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ),
 
-                    // Memory description
+                    // Memory description with improved typography
                     if (memory.text.isNotEmpty)
                       Padding(
-                        padding: const EdgeInsets.only(top: ThemeSizes.md),
+                        padding: const EdgeInsets.only(bottom: ThemeSizes.md),
                         child: Text(
                           memory.text,
-                          style: const TextStyle(fontSize: 16),
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: context.textPrimaryColor,
+                            height: 1.4,
+                            letterSpacing: 0.2,
+                          ),
                         ),
                       ),
                   ],

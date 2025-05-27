@@ -7,6 +7,8 @@ import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
+/// Dialog that shows age verification and terms acceptance UI
+/// This is used in the authentication flow when consents are required
 class AgeVerificationDialog extends StatefulWidget {
   final Function(bool, bool) onConfirm;
   final VoidCallback onCancel;

@@ -90,7 +90,12 @@ class _SearchLeaguePageState extends State<SearchLeaguePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Cerca Lega', style: context.textTheme.headlineSmall),
+        title: Text(
+          'Cerca Lega',
+          style: context.textTheme.titleMedium!.copyWith(
+            fontWeight: FontWeight.bold,
+          ),
+        ),
         centerTitle: true,
       ),
       body: Stack(
@@ -98,7 +103,7 @@ class _SearchLeaguePageState extends State<SearchLeaguePage> {
           BlocConsumer<LeagueBloc, LeagueState>(
             listener: (context, state) {
               if (state is LeagueError) {
-                showSnackBar(context, state.message, color: ColorPalette.error);
+                showSnackBar(state.message, color: ColorPalette.error);
                 setState(() {
                   _searchingStatus = SearchingStatus.initial;
                   _isJoiningLeague = false;

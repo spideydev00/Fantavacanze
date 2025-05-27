@@ -4,7 +4,7 @@ import 'package:fantavacanze_official/features/league/domain/entities/league.dar
 import 'package:fantavacanze_official/features/league/domain/entities/participant.dart';
 import 'package:fantavacanze_official/core/utils/event_finder.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/rule.dart';
-import 'package:fantavacanze_official/features/league/presentation/pages/navigation/homepage/widgets/event_card.dart';
+import 'package:fantavacanze_official/core/widgets/events/event_card.dart';
 import 'package:fantavacanze_official/core/widgets/empty_state.dart';
 import 'package:flutter/material.dart';
 

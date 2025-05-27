@@ -16,10 +16,12 @@ class ImagePickerUtil {
     bool enableCropping = true,
     bool isCircular = false,
     double? aspectRatio,
+    ImageSource source =
+        ImageSource.gallery, // Using image_picker's ImageSource
   }) async {
     try {
       final XFile? pickedFile = await _picker.pickImage(
-        source: ImageSource.gallery,
+        source: source,
         imageQuality: 85, // Slight compression to reduce file size
       );
 
@@ -43,8 +45,9 @@ class ImagePickerUtil {
       return imageFile;
     } catch (e) {
       if (context.mounted) {
-        showSnackBar(context,
-            'Si è verificato un errore durante la selezione dell\'immagine');
+        showSnackBar(
+          'Si è verificato un errore durante la selezione dell\'immagine',
+        );
       }
 
       return null;

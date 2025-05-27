@@ -1,4 +1,3 @@
-import 'package:fantavacanze_official/core/constants/constants.dart';
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
@@ -165,10 +164,13 @@ class ConfirmationDialog extends StatelessWidget {
       ),
       elevation: 0,
       backgroundColor: Colors.transparent,
+      insetPadding: const EdgeInsets.symmetric(
+        horizontal: ThemeSizes.lg,
+        vertical: ThemeSizes.md,
+      ),
       child: Container(
-        padding: const EdgeInsets.all(ThemeSizes.lg),
         decoration: BoxDecoration(
-          color: context.bgColor,
+          color: context.secondaryBgColor,
           borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusLg),
           boxShadow: [
             BoxShadow(
@@ -178,80 +180,81 @@ class ConfirmationDialog extends StatelessWidget {
             ),
           ],
         ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (useIconBackground)
-              Container(
-                padding: const EdgeInsets.all(ThemeSizes.md),
-                decoration: BoxDecoration(
-                  color: iconColor.withValues(alpha: 0.1),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  icon,
-                  color: iconColor,
-                  size: 38,
-                ),
-              )
-            else
-              Icon(
-                icon,
-                color: iconColor,
-                size: 48,
-              ),
-            const SizedBox(height: ThemeSizes.md),
-            Text(
-              title,
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: context.textPrimaryColor,
-              ),
-            ),
-            const SizedBox(height: ThemeSizes.sm),
-            Text(
-              message,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: context.textSecondaryColor,
-                fontSize: 14,
-              ),
-            ),
-            if (additionalContent != null) ...[
-              const SizedBox(height: ThemeSizes.md),
-              ConstrainedBox(
-                constraints: BoxConstraints(
-                  maxHeight: Constants.getHeight(context) * 0.35,
-                ),
-                child: additionalContent!,
-              ),
-            ],
-            const SizedBox(height: ThemeSizes.lg),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(ThemeSizes.lg),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                Expanded(
-                  child: OutlinedButton(
-                    style: outlinedButtonStyle,
-                    onPressed: () => Navigator.pop(context),
-                    child: Text(cancelText),
+                if (useIconBackground)
+                  Container(
+                    padding: const EdgeInsets.all(ThemeSizes.md),
+                    decoration: BoxDecoration(
+                      color: iconColor.withValues(alpha: 0.1),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      icon,
+                      color: iconColor,
+                      size: 38,
+                    ),
+                  )
+                else
+                  Icon(
+                    icon,
+                    color: iconColor,
+                    size: 48,
+                  ),
+                const SizedBox(height: ThemeSizes.md),
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: context.textPrimaryColor,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: ThemeSizes.sm),
+                Text(
+                  message,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: context.textSecondaryColor,
+                    fontSize: 14,
                   ),
                 ),
-                const SizedBox(width: ThemeSizes.md),
-                Expanded(
-                  child: ElevatedButton(
-                    style: elevatedButtonStyle,
-                    onPressed: () {
-                      Navigator.pop(context);
-                      onConfirm();
-                    },
-                    child: Text(confirmText),
-                  ),
+                if (additionalContent != null) ...[
+                  const SizedBox(height: ThemeSizes.md),
+                  additionalContent!,
+                ],
+                const SizedBox(height: ThemeSizes.lg),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                        style: outlinedButtonStyle,
+                        onPressed: () => Navigator.pop(context),
+                        child: Text(cancelText),
+                      ),
+                    ),
+                    const SizedBox(width: ThemeSizes.md),
+                    Expanded(
+                      child: ElevatedButton(
+                        style: elevatedButtonStyle,
+                        onPressed: () {
+                          Navigator.pop(context);
+                          onConfirm();
+                        },
+                        child: Text(confirmText),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
-          ],
+          ),
         ),
       ),
     );

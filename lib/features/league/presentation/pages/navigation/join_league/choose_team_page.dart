@@ -162,7 +162,7 @@ class _ChooseTeamPageState extends State<ChooseTeamPage>
       body: BlocConsumer<LeagueBloc, LeagueState>(
         listener: (context, state) {
           if (state is LeagueError) {
-            showSnackBar(context, state.message);
+            showSnackBar(state.message);
             setState(() => _joiningAction = JoiningAction.none);
           } else if (state is LeagueSuccess &&
               state.operation == 'join_league') {

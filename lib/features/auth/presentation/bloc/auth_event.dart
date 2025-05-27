@@ -3,25 +3,9 @@ part of 'auth_bloc.dart';
 @immutable
 sealed class AuthEvent {}
 
-class AuthGoogleSignIn extends AuthEvent {
-  final bool isAdult;
-  final bool isTermsAccepted;
+class AuthGoogleSignIn extends AuthEvent {}
 
-  AuthGoogleSignIn({
-    required this.isAdult,
-    required this.isTermsAccepted,
-  });
-}
-
-class AuthAppleSignIn extends AuthEvent {
-  final bool isAdult;
-  final bool isTermsAccepted;
-
-  AuthAppleSignIn({
-    required this.isAdult,
-    required this.isTermsAccepted,
-  });
-}
+class AuthAppleSignIn extends AuthEvent {}
 
 class AuthEmailSignIn extends AuthEvent {
   final String email;
@@ -59,4 +43,14 @@ class AuthChangeIsOnboardedValue extends AuthEvent {
   final bool isOnboarded;
 
   AuthChangeIsOnboardedValue({required this.isOnboarded});
+}
+
+class AuthUpdateConsents extends AuthEvent {
+  final bool isAdult;
+  final bool isTermsAccepted;
+
+  AuthUpdateConsents({
+    required this.isAdult,
+    required this.isTermsAccepted,
+  });
 }

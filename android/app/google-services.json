@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "713063915358",
+    "project_id": "fantavacanze-official",
+    "storage_bucket": "fantavacanze-official.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:713063915358:android:47ba575caf35f68a8239cf",
+        "android_client_info": {
+          "package_name": "com.spideyDev.fantavacanze"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCeRMEsWA6tVtOznMKkxEAtC26clbYAC6Q"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

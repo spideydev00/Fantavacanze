@@ -10,6 +10,7 @@ import 'package:fantavacanze_official/features/auth/domain/use-cases/email_sign_
 import 'package:fantavacanze_official/features/auth/domain/use-cases/email_sign_up.dart';
 import 'package:fantavacanze_official/features/auth/domain/use-cases/google_sign_in.dart';
 import 'package:fantavacanze_official/features/auth/domain/use-cases/sign_out.dart';
+import 'package:fantavacanze_official/features/auth/domain/use-cases/update_consents.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -25,6 +26,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final AppUserCubit _appUserCubit;
   final AppLeagueCubit _appLeagueCubit;
   final ChangeIsOnboardedValue _changeIsOnboardedValue;
+  final UpdateConsents _updateConsents;
+
+  /// Qui salviamo qual è l'evento di login pendente (Email/Google/Apple)
+  AuthEvent? _pendingAuthEvent;
 
   AuthBloc({
     required GoogleSignIn googleSignIn,
@@ -35,6 +40,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     required AppUserCubit appUserCubit,
     required AppLeagueCubit appLeagueCubit,
     required ChangeIsOnboardedValue changeIsOnboardedValue,
+    required UpdateConsents updateConsents,
   })  : _googleSignIn = googleSignIn,
         _appleSignIn = appleSignIn,
         _emailSignIn = emailSignIn,
@@ -43,62 +49,85 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         _appUserCubit = appUserCubit,
         _appLeagueCubit = appLeagueCubit,
         _changeIsOnboardedValue = changeIsOnboardedValue,
+        _updateConsents = updateConsents,
         super(AuthInitial()) {
-    //google sign-in
     on<AuthGoogleSignIn>(_onGoogleSignIn);
-    //apple sign-in
     on<AuthAppleSignIn>(_onAppleSignIn);
-    //email sign-in
     on<AuthEmailSignIn>(_onEmailSignIn);
-    //email sign_up
     on<AuthEmailSignUp>(_onEmailSignUp);
-    //sign out
     on<AuthSignOut>(_onSignOut);
-    //change isOnboarded value
     on<AuthChangeIsOnboardedValue>(_onChangeIsOnboardedValue);
+    on<AuthUpdateConsents>(_onUpdateConsents);
   }
 
   Future<void> _onGoogleSignIn(
       AuthGoogleSignIn event, Emitter<AuthState> emit) async {
     emit(AuthGoogleLoading());
+    _pendingAuthEvent = event;
+    final res = await _googleSignIn.call(NoParams());
 
-    final res = await _googleSignIn.call(
-      GoogleSignInParams(
-        isAdult: event.isAdult,
-        isTermsAccepted: event.isTermsAccepted,
-      ),
+    res.fold(
+      (failure) {
+        if (failure.message == 'consent_required') {
+          emit(AuthNeedsConsent(provider: 'Google'));
+        } else {
+          _pendingAuthEvent = null;
+          emit(AuthFailure(failure.message));
+        }
+      },
+      (user) {
+        _pendingAuthEvent = null;
+        _emitAuthSuccess(user, emit);
+      },
     );
-
-    res.fold((l) => emit(AuthFailure("Google: ${l.message}")),
-        (r) => emit(_emitAuthSuccess(r, emit)));
   }
 
   Future<void> _onAppleSignIn(
       AuthAppleSignIn event, Emitter<AuthState> emit) async {
     emit(AuthAppleLoading());
+    _pendingAuthEvent = event;
+    final res = await _appleSignIn.call(NoParams());
 
-    final res = await _appleSignIn.call(
-      AppleSignInParams(
-        isAdult: event.isAdult,
-        isTermsAccepted: event.isTermsAccepted,
-      ),
+    res.fold(
+      (failure) {
+        if (failure.message == 'consent_required') {
+          emit(AuthNeedsConsent(provider: 'Apple'));
+        } else {
+          _pendingAuthEvent = null;
+          emit(AuthFailure(failure.message));
+        }
+      },
+      (user) {
+        _pendingAuthEvent = null;
+        _emitAuthSuccess(user, emit);
+      },
     );
-
-    res.fold((l) => emit(AuthFailure("Apple: ${l.message}")),
-        (r) => emit(_emitAuthSuccess(r, emit)));
   }
 
   Future<void> _onEmailSignIn(
       AuthEmailSignIn event, Emitter<AuthState> emit) async {
     emit(AuthLoading());
-    final res = await _emailSignIn.call(SignInParams(
+    _pendingAuthEvent = event;
+    final result = await _emailSignIn.call(SignInParams(
       email: event.email,
       password: event.password,
       hCaptcha: event.hCaptcha,
     ));
 
-    res.fold((l) => emit(AuthFailure(l.message)),
-        (r) => emit(_emitAuthSuccess(r, emit)));
+    result.fold(
+      (failure) {
+        if (failure.message == 'consent_required') {
+          emit(AuthNeedsConsent(provider: 'Email'));
+        } else {
+          _pendingAuthEvent = null;
+          emit(AuthFailure(failure.message));
+        }
+      },
+      (user) {
+        _pendingAuthEvent = null;
+        _emitAuthSuccess(user, emit);
+      },
+    );
   }
 
   Future<void> _onEmailSignUp(
@@ -139,6 +168,30 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
     res.fold((l) => emit(AuthFailure(l.message)), (_) {
       _emitLogoutSuccess(emit);
+    });
+  }
+
+  Future<void> _onUpdateConsents(
+      AuthUpdateConsents event, Emitter<AuthState> emit) async {
+    emit(AuthLoading());
+    final result = await _updateConsents.call(UpdateConsentsParams(
+      isAdult: event.isAdult,
+      isTermsAccepted: event.isTermsAccepted,
+    ));
+
+    result.fold((failure) => emit(AuthFailure(failure.message)), (user) {
+      // Get the pending event before clearing it
+      final pending = _pendingAuthEvent;
+      _pendingAuthEvent = null;
+
+      if (pending != null && pending is! AuthEmailSignIn) {
+        // → social login: automatically retry
+        add(pending);
+      } else {
+        // → email login: just show consents updated state
+        // and let user retry manually
+        emit(AuthConsentsUpdated(user));
+      }
     });
   }
 

@@ -60,7 +60,7 @@ class TeamMembersListState extends State<TeamMembersList> {
 
   void _removeSelectedMembers() {
     if (_selectedMembersToRemove.isEmpty) {
-      showSnackBar(context, 'Seleziona almeno un membro da rimuovere');
+      showSnackBar('Seleziona almeno un membro da rimuovere');
       return;
     }
 

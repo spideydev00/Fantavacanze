@@ -1,7 +1,13 @@
+import 'dart:async';
+
 import 'package:fantavacanze_official/core/use-case/usecase.dart';
 import 'package:fantavacanze_official/features/auth/domain/entities/user.dart';
 import 'package:fantavacanze_official/features/auth/domain/use-cases/get_current_user.dart';
 import 'package:fantavacanze_official/features/auth/domain/use-cases/sign_out.dart';
+import 'package:fantavacanze_official/features/auth/domain/use-cases/update_display_name.dart';
+import 'package:fantavacanze_official/features/auth/domain/use-cases/update_password.dart';
+import 'package:fantavacanze_official/features/auth/domain/use-cases/delete_account.dart';
+import 'package:fantavacanze_official/features/auth/domain/use-cases/remove_consents.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -10,22 +16,39 @@ part 'app_user_state.dart';
 class AppUserCubit extends Cubit<AppUserState> {
   final GetCurrentUser _getCurrentUser;
   final SignOut _signOut;
+  final UpdateDisplayName _updateDisplayName;
+  final UpdatePassword _updatePassword;
+  final DeleteAccount _deleteAccount;
+  final RemoveConsents _removeConsents;
 
   AppUserCubit({
     required GetCurrentUser getCurrentUser,
     required SignOut signOut,
+    required UpdateDisplayName updateDisplayName,
+    required UpdatePassword updatePassword,
+    required DeleteAccount deleteAccount,
+    required RemoveConsents removeConsents,
   })  : _getCurrentUser = getCurrentUser,
         _signOut = signOut,
+        _updateDisplayName = updateDisplayName,
+        _updatePassword = updatePassword,
+        _deleteAccount = deleteAccount,
+        _removeConsents = removeConsents,
         super(AppUserInitial());
 
+  // Gets current user when app starts
   Future<void> getCurrentUser() async {
-    final res = await _getCurrentUser.call(NoParams());
+    final result = await _getCurrentUser(NoParams());
 
-    res.fold(
-      (l) => emit(
-        AppUserInitial(),
-      ),
-      (r) => updateUser(r),
+    result.fold(
+      (failure) => emit(AppUserInitial()),
+      (user) {
+        if (user.isOnboarded) {
+          emit(AppUserIsLoggedIn(user: user));
+        } else {
+          emit(AppUserNeedsOnboarding(user: user));
+        }
+      },
     );
   }
 
@@ -39,16 +62,135 @@ class AppUserCubit extends Cubit<AppUserState> {
     }
   }
 
-  Future<bool> signOut() async {
-    final res = await _signOut.call(NoParams());
+  Future<void> signOut() async {
+    if (state is AppUserIsLoggedIn) {
+      final currentState = state as AppUserIsLoggedIn;
 
-    return res.fold((failure) {
-      // Mantiene lo stato attuale in caso di errore
-      return false;
-    }, (_) {
-      // Aggiorna lo stato a utente non loggato
-      updateUser(null);
-      return true;
-    });
+      final res = await _signOut.call(NoParams());
+
+      return res.fold(
+        (failure) {
+          emit(currentState);
+        },
+        (_) {
+          emit(AppUserInitial());
+        },
+      );
+    }
+  }
+
+  // Updates display name
+  Future<void> updateDisplayName(String newName) async {
+    if (state is AppUserIsLoggedIn) {
+      final currentState = state as AppUserIsLoggedIn;
+
+      final res = await _updateDisplayName(newName);
+
+      res.fold(
+        (failure) => emit(AppUserIsLoggedIn(
+          user: currentState.user,
+          errorMessage: failure.message,
+        )),
+        (user) => emit(AppUserIsLoggedIn(user: user)),
+      );
+    }
+  }
+
+  // Update password method
+  Future<void> updatePassword(
+    String oldPassword,
+    String newPassword,
+    String captchaToken,
+  ) async {
+    if (state is AppUserIsLoggedIn) {
+      final currentState = state as AppUserIsLoggedIn;
+
+      // Pass the captcha token to the repository
+      final res = await _updatePassword(UpdatePasswordParams(
+        oldPassword: oldPassword,
+        newPassword: newPassword,
+        captchaToken: captchaToken,
+      ));
+
+      res.fold(
+        (failure) => emit(AppUserIsLoggedIn(
+          user: currentState.user,
+          errorMessage: failure.message,
+        )),
+        (_) => emit(AppUserInitial()),
+      );
+    }
+  }
+
+  // Deletes user account - returns true if successful, false otherwise
+  Future<bool> deleteAccount() async {
+    if (state is AppUserIsLoggedIn) {
+      final currentState = state as AppUserIsLoggedIn;
+
+      final res = await _deleteAccount(NoParams());
+
+      return res.fold(
+        (failure) {
+          emit(AppUserIsLoggedIn(
+            user: currentState.user,
+            errorMessage: failure.message,
+          ));
+          return false;
+        },
+        (_) async {
+          await signOut();
+          emit(AppUserInitial());
+          return true;
+        },
+      );
+    }
+    return false;
+  }
+
+  // Removes user consents and then signs out
+  Future<void> removeConsents({
+    required bool isAdult,
+    required bool isTermsAccepted,
+  }) async {
+    if (state is AppUserIsLoggedIn) {
+      final currentState = state as AppUserIsLoggedIn;
+
+      final res = await _removeConsents(RemoveConsentsParams(
+        isAdult: isAdult,
+        isTermsAccepted: isTermsAccepted,
+      ));
+
+      res.fold(
+        (failure) => emit(AppUserIsLoggedIn(
+          user: currentState.user,
+          errorMessage: failure.message,
+        )),
+        (_) async {
+          // After removing consents, sign out
+          await signOut();
+        },
+      );
+    }
+  }
+
+  // Helper method to update user state with an error message
+  void setErrorMessage(String message) {
+    if (state is AppUserIsLoggedIn) {
+      final currentState = state as AppUserIsLoggedIn;
+      emit(AppUserIsLoggedIn(
+        user: currentState.user,
+        errorMessage: message,
+      ));
+    }
+  }
+
+  // Helper method to clear error message
+  void clearErrorMessage() {
+    if (state is AppUserIsLoggedIn) {
+      final currentState = state as AppUserIsLoggedIn;
+      if (currentState.errorMessage != null) {
+        emit(AppUserIsLoggedIn(user: currentState.user));
+      }
+    }
   }
 }

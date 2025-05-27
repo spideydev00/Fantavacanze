@@ -29,8 +29,9 @@ class CustomBottomNavigationBar extends StatelessWidget {
               return BlocBuilder<AppLeagueCubit, AppLeagueState>(
                 builder: (context, state) {
                   if (state is AppLeagueExists) {
-                    return _buildNavbarRow(
-                      4,
+                    // Use the updated navigation row builder for participants
+                    return _buildFixedWidthNavbarRow(
+                      3,
                       (index) {
                         return BottomNavigationAsset(
                           svgIcon:
@@ -46,8 +47,10 @@ class CustomBottomNavigationBar extends StatelessWidget {
                       },
                     );
                   }
-                  return _buildNavbarRow(
-                    3,
+
+                  // For non-participants, use the same fixed-width layout
+                  return _buildFixedWidthNavbarRow(
+                    2,
                     (index) {
                       return BottomNavigationAsset(
                         svgIcon:
@@ -72,13 +75,18 @@ class CustomBottomNavigationBar extends StatelessWidget {
   }
 }
 
-Widget _buildNavbarRow(int elements, Widget Function(int) generator) {
+// New fixed-width layout function to ensure equal spacing
+Widget _buildFixedWidthNavbarRow(int elements, Widget Function(int) generator) {
   return Row(
+    mainAxisAlignment: MainAxisAlignment.center,
     crossAxisAlignment: CrossAxisAlignment.end,
-    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-    children: List.generate(
-      elements,
-      generator,
-    ),
+    children: List.generate(elements, (index) {
+      // Wrap each navigation item in a fixed-width container
+      return Container(
+        width: 85,
+        margin: const EdgeInsets.symmetric(horizontal: ThemeSizes.sm),
+        child: generator(index),
+      );
+    }),
   );
 }

@@ -49,6 +49,28 @@ class AppTheme {
       primaryColor: context.primaryColor,
       canvasColor: context.secondaryBgColor, // This affects Stepper background
       /* ---------------------------------------------------------------- */
+      // SWITCH THEME
+      switchTheme: SwitchThemeData(
+        thumbColor: WidgetStateProperty.resolveWith<Color>((states) {
+          if (states.contains(WidgetState.selected)) {
+            return context.primaryColor;
+          }
+          return isDark ? ColorPalette.grey : ColorPalette.white;
+        }),
+        trackColor: WidgetStateProperty.resolveWith<Color>((states) {
+          if (states.contains(WidgetState.selected)) {
+            return context.primaryColor.withValues(alpha: 0.5);
+          }
+          return isDark ? ColorPalette.darkerGrey : ColorPalette.grey;
+        }),
+        trackOutlineColor: WidgetStateProperty.resolveWith<Color>((states) {
+          if (states.contains(WidgetState.selected)) {
+            return Colors.transparent;
+          }
+          return isDark ? ColorPalette.darkGrey : ColorPalette.grey;
+        }),
+      ),
+      /* ---------------------------------------------------------------- */
       //TEXT FORM
       //form fields theming
       inputDecorationTheme: InputDecorationTheme(
@@ -136,9 +158,13 @@ class AppTheme {
       //SCAFFOLD
       scaffoldBackgroundColor: context.bgColor,
       appBarTheme: AppBarTheme(
-        foregroundColor: isDark ? ColorPalette.white : ColorPalette.black,
+        foregroundColor: context.textPrimaryColor,
         backgroundColor: Colors.transparent,
-        scrolledUnderElevation: 0, // Prevent color change when scrolling
+        scrolledUnderElevation: 0,
+        iconTheme: IconThemeData(
+          color: context.textPrimaryColor,
+          size: 15,
+        ),
       ),
       /* ---------------------------------------------------------------- */
       //TEXT THEME

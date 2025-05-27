@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:fantavacanze_official/core/errors/exceptions.dart';
 import 'package:fantavacanze_official/core/errors/failure.dart';
 import 'package:fantavacanze_official/core/network/connection_checker.dart';
@@ -17,26 +19,14 @@ class AuthRepositoryImpl implements AuthRepository {
 
   //Google
   @override
-  Future<Either<Failure, User>> googleSignIn({
-    required bool isAdult,
-    required bool isTermsAccepted,
-  }) async {
+  Future<Either<Failure, User>> googleSignIn() async {
     try {
       if (!await connectionChecker.isConnected) {
         return left(
             Failure("Connessione a internet assente. Riprova più tardi."));
       }
 
-      // Verify age/terms
-      if (!isAdult || !isTermsAccepted) {
-        return left(Failure(
-            "Devi avere almeno 18 anni e accettare i termini e condizioni."));
-      }
-
-      final user = await authRemoteDataSource.signInWithGoogle(
-        isAdult: isAdult,
-        isTermsAccepted: isTermsAccepted,
-      );
+      final user = await authRemoteDataSource.signInWithGoogle();
       return right(user);
     } on ServerException catch (e) {
       return left(Failure(e.message));
@@ -45,7 +35,22 @@ class AuthRepositoryImpl implements AuthRepository {
 
   //Apple
   @override
-  Future<Either<Failure, User>> appleSignIn({
+  Future<Either<Failure, User>> appleSignIn() async {
+    try {
+      if (!await connectionChecker.isConnected) {
+        return left(
+            Failure("Connessione a internet assente. Riprova più tardi."));
+      }
+
+      final user = await authRemoteDataSource.signInWithApple();
+      return right(user);
+    } on ServerException catch (e) {
+      return left(Failure(e.message));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> removeConsents({
     required bool isAdult,
     required bool isTermsAccepted,
   }) async {
@@ -55,17 +60,11 @@ class AuthRepositoryImpl implements AuthRepository {
             Failure("Connessione a internet assente. Riprova più tardi."));
       }
 
-      // Verify age/terms
-      if (!isAdult || !isTermsAccepted) {
-        return left(Failure(
-            "Devi avere almeno 18 anni e accettare i termini e condizioni."));
-      }
-
-      final user = await authRemoteDataSource.signInWithApple(
+      await authRemoteDataSource.removeConsents(
         isAdult: isAdult,
         isTermsAccepted: isTermsAccepted,
       );
-      return right(user);
+      return right(null);
     } on ServerException catch (e) {
       return left(Failure(e.message));
     }
@@ -73,10 +72,13 @@ class AuthRepositoryImpl implements AuthRepository {
 
   //E-mail
   @override
-  Future<Either<Failure, User>> loginWithEmailPassword(
-      {required String email,
-      required String password,
-      required String hCaptcha}) async {
+  Future<Either<Failure, User>> loginWithEmailPassword({
+    required String email,
+    required String password,
+    required String hCaptcha,
+    bool? isAdult,
+    bool? isTermsAccepted,
+  }) async {
     try {
       if (!await connectionChecker.isConnected) {
         return left(
@@ -84,7 +86,10 @@ class AuthRepositoryImpl implements AuthRepository {
       }
 
       final user = await authRemoteDataSource.loginWithEmailPassword(
-          email: email, password: password, hCaptcha: hCaptcha);
+        email: email,
+        password: password,
+        hCaptcha: hCaptcha,
+      );
       return right(user);
     } on ServerException catch (e) {
       return left(Failure(e.message));
@@ -150,30 +155,10 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<Either<Failure, User>> currentUser() async {
     try {
-      if (!await connectionChecker.isConnected) {
-        final session = authRemoteDataSource.currentSession;
-
-        if (session == null) {
-          return left(Failure("Nessun utente autenticato."));
-        }
-
-        return right(
-          User(
-            id: session.user.id,
-            email: session.user.email ?? 'No email found.',
-            name: 'No name found.',
-            isOnboarded: true,
-            isAdult: true,
-            isTermsAccepted: true,
-          ),
-        );
-      }
-
       final user = await authRemoteDataSource.getCurrentUserData();
       if (user == null) {
-        return left(Failure("Nessun utente autenticato."));
+        return left(Failure("No user logged in"));
       }
-
       return right(user);
     } on ServerException catch (e) {
       return left(Failure(e.message));
@@ -183,13 +168,75 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<Either<Failure, void>> signOut() async {
     try {
+      await authRemoteDataSource.signOut();
+      return right(null);
+    } on ServerException catch (e) {
+      return left(Failure(e.message));
+    }
+  }
+
+  // New methods for user profile management
+  @override
+  Future<Either<Failure, User>> updateDisplayName(String newName) async {
+    try {
+      if (!await connectionChecker.isConnected) {
+        return left(Failure(
+            "Nessuna connessione ad internet, riprova appena sarai connesso."));
+      }
+
+      final user = await authRemoteDataSource.updateDisplayName(newName);
+      return right(user);
+    } on ServerException catch (e) {
+      return left(Failure(e.message));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> updatePassword(
+    String oldPassword,
+    String newPassword,
+    String captchaToken,
+  ) async {
+    try {
+      await authRemoteDataSource.updatePassword(
+          oldPassword, newPassword, captchaToken);
+      return const Right(null);
+    } on ServerException catch (e) {
+      return Left(Failure(e.message));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> deleteAccount() async {
+    try {
+      if (!await connectionChecker.isConnected) {
+        return left(Failure(
+            "Nessuna connessione ad internet, riprova appena sarai connesso."));
+      }
+
+      await authRemoteDataSource.deleteAccount();
+      return right(null);
+    } on ServerException catch (e) {
+      return left(Failure(e.message));
+    }
+  }
+
+  @override
+  Future<Either<Failure, User>> updateConsents({
+    required bool isAdult,
+    required bool isTermsAccepted,
+  }) async {
+    try {
       if (!await connectionChecker.isConnected) {
         return left(
             Failure("Connessione a internet assente. Riprova più tardi."));
       }
 
-      await authRemoteDataSource.signOut();
-      return right(null);
+      final user = await authRemoteDataSource.updateConsents(
+        isAdult: isAdult,
+        isTermsAccepted: isTermsAccepted,
+      );
+      return right(user);
     } on ServerException catch (e) {
       return left(Failure(e.message));
     }

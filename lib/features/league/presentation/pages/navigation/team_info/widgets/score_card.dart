@@ -1,5 +1,6 @@
 import 'package:fantavacanze_official/core/cubits/app_theme/app_theme_cubit.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
+import 'package:fantavacanze_official/core/utils/number_formatter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -18,6 +19,7 @@ class ScoreCard extends StatelessWidget {
     // Check if we're in dark mode
     final isDark = context.read<AppThemeCubit>().isDarkMode(context);
     final baseColor = color;
+    final formattedScore = NumberFormatter.formatPoints(score);
 
     // Adjust colors based on theme
     final startColor = isDark
@@ -64,7 +66,7 @@ class ScoreCard extends StatelessWidget {
                 ),
               ),
               Text(
-                '$score',
+                formattedScore,
                 style: const TextStyle(
                   color: Colors.white,
                   fontSize: 32,

@@ -64,6 +64,9 @@ dependencies:
   image_picker: ^1.1.2
   shimmer: ^3.0.0
   image_cropper: ^9.1.0
+  timeago: ^3.7.1
+  firebase_core: ^3.13.1
+  firebase_messaging: ^15.2.6
   
 dev_dependencies:
   flutter_test:
@@ -133,6 +136,7 @@ flutter:
   - assets/images/icons/homepage_icons/premium-icon.svg
   - assets/images/icons/homepage_icons/create-league-icon-dark.svg
   - assets/images/icons/homepage_icons/drink-games-icon-dark.svg
+  - assets/images/icons/homepage_icons/drink-games-icon-red.svg
   - assets/images/icons/homepage_icons/search-league-icon-dark.svg
   - assets/images/icons/homepage_icons/home-icon-dark.svg
   - assets/images/icons/homepage_icons/rankings-icon.svg

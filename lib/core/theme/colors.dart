@@ -165,6 +165,27 @@ class ColorPalette {
     ),
   ];
 
+  // Gradient collections for daily challenge cards
+  static List<List<Color>> challengeGradients = [
+    [const Color(0xFF6C72CB), const Color(0xFFCB69C1)], // Purple gradient
+    [
+      const Color.fromARGB(255, 69, 167, 253),
+      const Color.fromARGB(255, 91, 197, 202)
+    ], // Blue gradient
+    [
+      const Color(0xFFFF8008),
+      const Color.fromARGB(255, 228, 190, 92)
+    ], // Orange gradient
+    [const Color(0xFF8E2DE2), const Color(0xFF4A00E0)], // Deep purple gradient
+    [const Color(0xFF00B4DB), const Color(0xFF0083B0)], // Cyan gradient
+    [const Color(0xFFf85032), const Color(0xFFe73827)], // Red gradient
+  ];
+
+  // Method to get a gradient pair for challenge by index
+  static List<Color> getChallengeGradient(int index) {
+    return challengeGradients[index % challengeGradients.length];
+  }
+
   // Method to get a gradient based on a string (like an ID)
   static LinearGradient getGradientFromId(String id) {
     // Use the hash code of the string to get a consistent gradient for the same ID

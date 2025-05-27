@@ -1,11 +1,13 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
+import 'package:fantavacanze_official/core/utils/number_formatter.dart';
 import 'package:flutter/material.dart';
 
 class ParticipantCard extends StatelessWidget {
   final String name;
   final double points;
+  final String? formattedPoints; // Add this parameter
   final bool isSelected;
   final bool showPoints;
   final bool isFullWidth;
@@ -21,6 +23,7 @@ class ParticipantCard extends StatelessWidget {
     super.key,
     required this.name,
     required this.points,
+    this.formattedPoints, // Optional formatted points
     this.isSelected = false,
     this.showPoints = false,
     this.isFullWidth = false,
@@ -35,6 +38,10 @@ class ParticipantCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Format points if not already provided
+    final displayPoints =
+        formattedPoints ?? NumberFormatter.formatPoints(points);
+
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
@@ -125,7 +132,7 @@ class ParticipantCard extends StatelessWidget {
                       ),
                     ),
                     child: Text(
-                      '${points.abs()}',
+                      displayPoints, // Use formatted points here
                       style: TextStyle(
                         color: context.primaryColor,
                         fontWeight: FontWeight.bold,

@@ -1,6 +1,7 @@
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
+import 'package:fantavacanze_official/core/utils/number_formatter.dart';
 import 'package:flutter/material.dart';
 
 class StatCard extends StatelessWidget {
@@ -19,6 +20,15 @@ class StatCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Format value if it's a number
+    String displayValue = value;
+    try {
+      final doubleValue = double.parse(value);
+      displayValue = NumberFormatter.formatPoints(doubleValue);
+    } catch (e) {
+      // Not a number, keep original value
+    }
+
     final color = isBonus ? ColorPalette.success : ColorPalette.error;
 
     return Container(
@@ -61,7 +71,7 @@ class StatCard extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  value,
+                  displayValue,
                   style: TextStyle(
                     color: color,
                     fontSize: 18,

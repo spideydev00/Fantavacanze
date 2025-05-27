@@ -7,7 +7,7 @@ import 'package:flutter/material.dart';
 
 class AdminActionCard extends StatelessWidget {
   final String title;
-  final String? imagePath;
+  final String imagePath;
   final IconData iconData;
   final VoidCallback onTap;
   final double height;
@@ -17,7 +17,7 @@ class AdminActionCard extends StatelessWidget {
   const AdminActionCard({
     super.key,
     required this.title,
-    this.imagePath = 'assets/images/baddie-bg.jpg',
+    required this.imagePath,
     this.iconData = Icons.add,
     required this.onTap,
     this.height = 160.0,
@@ -51,13 +51,13 @@ class AdminActionCard extends StatelessWidget {
                 borderRadius: BorderRadius.circular(16),
                 child: Stack(
                   children: [
-                    // Background image
-                    Positioned.fill(
-                      child: Image.asset(
-                        imagePath!,
-                        fit: BoxFit.cover,
-                      ),
+                    Image.asset(
+                      imagePath,
+                      width: double.infinity,
+                      height: double.infinity,
+                      fit: BoxFit.cover,
                     ),
+
                     // Gradient overlay for better readability
                     Positioned.fill(
                       child: Container(

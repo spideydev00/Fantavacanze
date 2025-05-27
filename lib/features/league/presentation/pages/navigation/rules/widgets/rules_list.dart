@@ -189,7 +189,6 @@ class RulesList extends StatelessWidget {
             Navigator.pop(context);
 
             showSnackBar(
-              context,
               'Regola "$name" aggiunta con successo',
               color: ColorPalette.success,
             );
@@ -268,7 +267,6 @@ class RulesList extends StatelessWidget {
 
             // Show a snackbar with feedback
             showSnackBar(
-              context,
               "Regola aggiornata con successo",
               color: ColorPalette.success,
             );
@@ -288,7 +286,6 @@ class RulesList extends StatelessWidget {
         );
 
     showSnackBar(
-      context,
       'Regola "${rule.name}" eliminata',
       color: ColorPalette.success,
     );

@@ -2,6 +2,7 @@ import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/extensions/context_extension.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
+import 'package:fantavacanze_official/core/utils/number_formatter.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/event.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/league.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/participant.dart';
@@ -75,6 +76,16 @@ class _LeaderboardItemState extends State<LeaderboardItem> {
       isTeamBased: widget.isTeamBased,
     );
 
+    final points = NumberFormatter.formatPoints(
+      widget.participant.points,
+    );
+    final bonusTotal = NumberFormatter.formatPoints(
+      widget.participant.bonusTotal,
+    );
+    final malusTotal = NumberFormatter.formatPoints(
+      widget.participant.malusTotal,
+    );
+
     return Column(
       children: [
         // Main participant row
@@ -139,7 +150,7 @@ class _LeaderboardItemState extends State<LeaderboardItem> {
               Expanded(
                 flex: 2,
                 child: Text(
-                  '${widget.participant.bonusTotal}',
+                  bonusTotal,
                   textAlign: TextAlign.center,
                   style: context.textTheme.labelLarge?.copyWith(
                     color: ColorPalette.success,
@@ -154,7 +165,7 @@ class _LeaderboardItemState extends State<LeaderboardItem> {
               Expanded(
                 flex: 2,
                 child: Text(
-                  '${widget.participant.malusTotal}',
+                  malusTotal,
                   textAlign: TextAlign.center,
                   style: context.textTheme.labelLarge?.copyWith(
                     color: ColorPalette.error,
@@ -169,7 +180,7 @@ class _LeaderboardItemState extends State<LeaderboardItem> {
               Expanded(
                 flex: 2,
                 child: Text(
-                  '${widget.participant.points}',
+                  points,
                   textAlign: TextAlign.center,
                   style: context.textTheme.labelLarge?.copyWith(
                     fontWeight: FontWeight.bold,
@@ -294,7 +305,7 @@ class _LeaderboardItemState extends State<LeaderboardItem> {
               ),
               SizedBox(height: 1.5),
               Text(
-                "${isPositive ? '+' : '-'}${lastEvent.points} punti",
+                "${isPositive ? '+' : ''}${lastEvent.points} punti",
                 style: context.textTheme.bodySmall?.copyWith(
                   color: isPositive ? ColorPalette.success : ColorPalette.error,
                   fontWeight: FontWeight.w500,

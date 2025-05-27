@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:fantavacanze_official/features/league/data/models/note_model.dart';
+import 'package:fantavacanze_official/features/league/domain/entities/daily_challenge.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/league.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/rule.dart';
 
@@ -144,3 +145,28 @@ class AdminOperationSuccess extends LeagueState {
   @override
   List<Object> get props => [league, operation];
 }
+
+// Daily challenge states
+class DailyChallengesLoaded extends LeagueState {
+  final List<DailyChallenge> challenges;
+
+  const DailyChallengesLoaded({
+    required this.challenges,
+  });
+
+  @override
+  List<Object?> get props => [challenges];
+}
+
+class ChallengeMarkedAsCompleted extends LeagueState {
+  final DailyChallenge challenge;
+
+  const ChallengeMarkedAsCompleted({
+    required this.challenge,
+  });
+
+  @override
+  List<Object?> get props => [challenge];
+}
+
+class ChallengeRefreshed extends LeagueState {}

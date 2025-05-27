@@ -1,0 +1,30 @@
+{
+    "flutter": {
+        "platforms": {
+            "android": {
+                "default": {
+                    "projectId": "fantavacanze-official",
+                    "appId": "1:713063915358:android:47ba575caf35f68a8239cf",
+                    "fileOutput": "android/app/google-services.json"
+                }
+            },
+            "ios": {
+                "default": {
+                    "projectId": "fantavacanze-official",
+                    "appId": "1:713063915358:ios:c77a61d9fada755f8239cf",
+                    "uploadDebugSymbols": false,
+                    "fileOutput": "ios/Runner/GoogleService-Info.plist"
+                }
+            },
+            "dart": {
+                "lib/firebase_options.dart": {
+                    "projectId": "fantavacanze-official",
+                    "configurations": {
+                        "android": "1:713063915358:android:47ba575caf35f68a8239cf",
+                        "ios": "1:713063915358:ios:c77a61d9fada755f8239cf"
+                    }
+                }
+            }
+        }
+    }
+}

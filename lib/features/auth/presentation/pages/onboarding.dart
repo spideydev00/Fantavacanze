@@ -50,11 +50,13 @@ class _OnBoardingScreenState extends State<OnBoardingScreen> {
       appBar: AppBar(
         title: Padding(
           padding: const EdgeInsets.all(ThemeSizes.lg),
-          child: Image.asset(
-            pageIndex == 2
-                ? "assets/images/logo-dark.png"
-                : "assets/images/logo.png",
-            width: Constants.getWidth(context) * 0.30,
+          child: Center(
+            child: Image.asset(
+              pageIndex == 2
+                  ? "assets/images/logo-dark.png"
+                  : "assets/images/logo.png",
+              width: Constants.getWidth(context) * 0.30,
+            ),
           ),
         ),
         toolbarHeight: 150,
