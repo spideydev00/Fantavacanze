@@ -36,7 +36,6 @@ class _AdminSectionState extends State<AdminSection> {
             state.operation == 'add_administrators') {
           // Show success message
           showSnackBar(
-            context,
             "Amministratori aggiunti con successo!",
             color: ColorPalette.success,
           );
@@ -218,7 +217,6 @@ class _AdminSectionState extends State<AdminSection> {
               onConfirm: () {
                 if (selectedParticipants.isEmpty) {
                   showSnackBar(
-                    context,
                     "Seleziona almeno un partecipante da promuovere",
                     color: ColorPalette.error,
                   );
@@ -257,9 +255,10 @@ class _AdminSectionState extends State<AdminSection> {
               Container(
                 margin: const EdgeInsets.only(bottom: 4),
                 decoration: BoxDecoration(
-                  color: context.secondaryBgColor.withValues(alpha: 0.8),
-                  borderRadius:
-                      BorderRadius.circular(ThemeSizes.borderRadiusLg),
+                  color: context.bgColor,
+                  borderRadius: BorderRadius.circular(
+                    ThemeSizes.borderRadiusLg,
+                  ),
                 ),
                 child: CheckboxListTile(
                   title: Column(
@@ -312,7 +311,7 @@ class _AdminSectionState extends State<AdminSection> {
             Container(
               margin: const EdgeInsets.only(bottom: 4),
               decoration: BoxDecoration(
-                color: context.secondaryBgColor.withValues(alpha: 0.8),
+                color: context.bgColor,
                 borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusLg),
               ),
               child: CheckboxListTile(

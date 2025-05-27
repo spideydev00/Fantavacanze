@@ -1,4 +1,5 @@
 import 'package:fantavacanze_official/core/theme/colors.dart';
+import 'package:fantavacanze_official/core/utils/show_snackbar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/league.dart';
@@ -128,12 +129,9 @@ class LeagueCard extends StatelessWidget {
                   child: InkWell(
                     onTap: () {
                       Clipboard.setData(ClipboardData(text: inviteCode));
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Codice invito copiato negli appunti'),
-                          backgroundColor: ColorPalette.success,
-                          duration: Duration(seconds: 2),
-                        ),
+                      showSnackBar(
+                        'Codice invito copiato negli appunti!',
+                        color: ColorPalette.success,
                       );
                     },
                     child: Container(

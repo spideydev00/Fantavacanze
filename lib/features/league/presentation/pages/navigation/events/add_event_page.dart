@@ -141,7 +141,6 @@ class _AddEventPageState extends State<AddEventPage> {
     final league = _getCurrentLeague();
     if (league == null) {
       showSnackBar(
-        context,
         'Nessuna lega selezionata',
         color: ColorPalette.error,
       );
@@ -153,7 +152,6 @@ class _AddEventPageState extends State<AddEventPage> {
 
     if (!isAdmin) {
       showSnackBar(
-        context,
         'Solo gli amministratori possono aggiungere eventi',
         color: ColorPalette.error,
       );
@@ -163,7 +161,6 @@ class _AddEventPageState extends State<AddEventPage> {
     final currentUserState = context.read<AppUserCubit>().state;
     if (currentUserState is! AppUserIsLoggedIn) {
       showSnackBar(
-        context,
         'Utente non autenticato',
         color: ColorPalette.error,
       );
@@ -185,7 +182,6 @@ class _AddEventPageState extends State<AddEventPage> {
         _isSubmitting = false;
       });
       showSnackBar(
-        context,
         'Seleziona un partecipante a cui assegnare l\'evento',
         color: ColorPalette.error,
       );
@@ -193,6 +189,7 @@ class _AddEventPageState extends State<AddEventPage> {
     }
 
     final name = _nameController.text.trim();
+
     // Parse points, normalizing decimal separator
     final double points = double.parse(_pointsController.text
         .trim()
@@ -243,13 +240,13 @@ class _AddEventPageState extends State<AddEventPage> {
     } else if (step == 1) {
       // Validate event details
       if (_nameController.text.trim().isEmpty) {
-        showSnackBar(context, 'Inserisci un nome per l\'evento',
+        showSnackBar('Inserisci un nome per l\'evento',
             color: ColorPalette.warning);
         return false;
       }
 
       if (_pointsController.text.trim().isEmpty) {
-        showSnackBar(context, 'Inserisci i punti per l\'evento',
+        showSnackBar('Inserisci i punti per l\'evento',
             color: ColorPalette.warning);
         return false;
       }
@@ -260,7 +257,7 @@ class _AddEventPageState extends State<AddEventPage> {
             _pointsController.text.trim().replaceAll(',', '.');
         double.parse(normalizedInput);
       } catch (e) {
-        showSnackBar(context, 'Inserisci un valore numerico valido',
+        showSnackBar('Inserisci un valore numerico valido',
             color: ColorPalette.warning);
         return false;
       }
@@ -269,8 +266,7 @@ class _AddEventPageState extends State<AddEventPage> {
     } else if (step == 2) {
       // Validate participant selection
       if (_selectedParticipantId == null) {
-        showSnackBar(context, 'Seleziona un partecipante',
-            color: ColorPalette.warning);
+        showSnackBar('Seleziona un partecipante', color: ColorPalette.warning);
         return false;
       }
       return true;
@@ -309,11 +305,11 @@ class _AddEventPageState extends State<AddEventPage> {
           });
 
           if (state is LeagueSuccess && state.operation == 'add_event') {
-            showSnackBar(context, 'Evento aggiunto con successo!',
+            showSnackBar('Evento aggiunto con successo!',
                 color: ColorPalette.success);
             Navigator.of(context).pop();
           } else if (state is LeagueError) {
-            showSnackBar(context, state.message, color: ColorPalette.error);
+            showSnackBar(state.message, color: ColorPalette.error);
           }
         }
       },
@@ -435,8 +431,11 @@ class _AddEventPageState extends State<AddEventPage> {
             ),
           ),
           if (_isSubmitting)
-            Loader(
-              color: ColorPalette.success,
+            SizedBox(
+              height: Constants.getHeight(context) * 0.1,
+              child: Loader(
+                color: ColorPalette.success,
+              ),
             )
         ],
       ),
@@ -710,10 +709,10 @@ class _AddEventPageState extends State<AddEventPage> {
           TextFormField(
             controller: _pointsController,
             decoration: InputDecoration(
-              labelText: 'Punti (valore assoluto)',
+              labelText: 'Punti',
               hintText: _selectedType == RuleType.bonus
-                  ? 'Inserisci i punti bonus'
-                  : 'Inserisci i punti malus',
+                  ? 'Punti Bonus (1, 1.5, 2, etc..)'
+                  : 'Punti Malus (valore positivo)',
               filled: true,
               fillColor: context.secondaryBgColor,
               prefixIcon: Icon(
@@ -730,7 +729,9 @@ class _AddEventPageState extends State<AddEventPage> {
               FilteringTextInputFormatter.allow(RegExp(r'[0-9,\.]')),
             ],
             keyboardType: const TextInputType.numberWithOptions(
-                decimal: true, signed: false),
+              decimal: true,
+              signed: true,
+            ),
             validator: (value) {
               if (value == null || value.trim().isEmpty) {
                 return 'Inserisci un valore';
@@ -784,9 +785,31 @@ class _AddEventPageState extends State<AddEventPage> {
   // STEP 3: Assign Event to Participant
   Widget _buildAssignEventStep(League league) {
     // Calculate points and determine if it's a bonus or malus
-    final double points =
-        double.tryParse(_pointsController.text.trim().replaceAll(',', '.')) ??
-            0.0;
+    double points;
+    try {
+      // Parse the input and normalize comma to period
+      final normalizedInput =
+          _pointsController.text.trim().replaceAll(',', '.');
+      points = double.tryParse(normalizedInput) ?? 0.0;
+
+      // Adjust points sign based on event type
+      if (!_isFromRule) {
+        // For custom events, apply sign based on selected type
+        if (_selectedType == RuleType.malus && points > 0) {
+          points = -points; // Make it negative for malus
+        }
+      } else if (_selectedRule != null) {
+        // For rule-based events, use the rule's points (sign already correct)
+        points = _selectedRule!.points;
+
+        // Ensure malus rules have negative points
+        if (_selectedRule!.type == RuleType.malus && points > 0) {
+          points = -points; // Force negative for malus rules
+        }
+      }
+    } catch (e) {
+      points = 0.0;
+    }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -804,7 +827,7 @@ class _AddEventPageState extends State<AddEventPage> {
             _pointsController.text.isNotEmpty)
           EventPreviewCard(
             name: _nameController.text,
-            points: points,
+            points: points, // Now correctly signed
             description: _descriptionController.text,
             hasSelectedParticipant: _selectedParticipantId != null,
           ),

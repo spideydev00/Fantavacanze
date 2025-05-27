@@ -102,11 +102,13 @@ class CustomDivider extends StatelessWidget {
 class GradientSectionDivider extends StatelessWidget {
   final String text;
   final int? sectionNumber;
+  final Color color;
 
   const GradientSectionDivider({
     super.key,
     required this.text,
     this.sectionNumber,
+    this.color = ColorPalette.info,
   });
 
   @override
@@ -126,7 +128,7 @@ class GradientSectionDivider extends StatelessWidget {
                   gradient: LinearGradient(
                     colors: [
                       Colors.transparent,
-                      ColorPalette.info.withValues(alpha: 0.6),
+                      color.withValues(alpha: 0.6),
                     ],
                   ),
                 ),
@@ -141,8 +143,8 @@ class GradientSectionDivider extends StatelessWidget {
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                  ColorPalette.info.withValues(alpha: 0.8),
-                  ColorPalette.info,
+                  color.withValues(alpha: 0.8),
+                  color,
                 ],
               ),
               borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusMd),
@@ -192,7 +194,7 @@ class GradientSectionDivider extends StatelessWidget {
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [
-                      ColorPalette.info.withValues(alpha: 0.6),
+                      color.withValues(alpha: 0.6),
                       Colors.transparent,
                     ],
                   ),

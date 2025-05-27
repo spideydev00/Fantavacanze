@@ -34,9 +34,9 @@ class MemoryCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusLg),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.1),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
+              color: Colors.black.withValues(alpha: 0.08),
+              blurRadius: 15,
+              offset: const Offset(0, 4),
             ),
           ],
         ),
@@ -44,11 +44,12 @@ class MemoryCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Image section
+            // Image section with gradient overlay
             Stack(
               children: [
+                // Image
                 AspectRatio(
-                  aspectRatio: 1.2,
+                  aspectRatio: 1.1,
                   child: Hero(
                     tag: 'memory_image_${memory.id}',
                     child: CachedNetworkImage(
@@ -62,33 +63,18 @@ class MemoryCard extends StatelessWidget {
                         ),
                       ),
                       errorWidget: (context, url, error) => Container(
-                        color: Colors.grey[300],
-                        child: const Center(
-                          child: Icon(Icons.error_outline, color: Colors.red),
+                        color: context.secondaryBgColor,
+                        child: Center(
+                          child: Icon(
+                            Icons.broken_image_rounded,
+                            color: context.primaryColor.withValues(alpha: 0.5),
+                            size: 40,
+                          ),
                         ),
                       ),
                     ),
                   ),
                 ),
-                if (isCurrentUserAuthor && onDelete != null)
-                  Positioned(
-                    top: 8,
-                    right: 8,
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: Colors.black.withValues(alpha: 0.6),
-                        shape: BoxShape.circle,
-                      ),
-                      child: IconButton(
-                        icon: const Icon(
-                          Icons.delete_outline,
-                          color: Colors.white,
-                          size: 20,
-                        ),
-                        onPressed: onDelete,
-                      ),
-                    ),
-                  ),
               ],
             ),
 
@@ -101,18 +87,32 @@ class MemoryCard extends StatelessWidget {
                   // Author and date section
                   Row(
                     children: [
-                      CircleAvatar(
-                        radius: 14,
-                        backgroundColor:
-                            ColorPalette.getGradientFromId(memory.userId)
-                                .colors
-                                .first,
-                        child: Text(
-                          memory.participantName.substring(0, 1).toUpperCase(),
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 14,
+                      Container(
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.1),
+                              blurRadius: 4,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: CircleAvatar(
+                          radius: 16,
+                          backgroundColor:
+                              ColorPalette.getGradientFromId(memory.userId)
+                                  .colors
+                                  .first,
+                          child: Text(
+                            memory.participantName
+                                .substring(0, 1)
+                                .toUpperCase(),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                            ),
                           ),
                         ),
                       ),
@@ -123,9 +123,10 @@ class MemoryCard extends StatelessWidget {
                           children: [
                             Text(
                               memory.participantName,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontWeight: FontWeight.bold,
                                 fontSize: 14,
+                                color: context.textPrimaryColor,
                               ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
@@ -143,25 +144,38 @@ class MemoryCard extends StatelessWidget {
                     ],
                   ),
 
-                  // Related event (if any)
+                  // Related event badge with modern styling
                   if (memory.eventName != null)
                     Padding(
                       padding: const EdgeInsets.only(top: ThemeSizes.sm),
                       child: Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: ThemeSizes.sm, vertical: 4),
+                          horizontal: ThemeSizes.sm,
+                          vertical: 4,
+                        ),
                         decoration: BoxDecoration(
-                          color: context.primaryColor.withValues(alpha: 0.1),
+                          color: ColorPalette.info.withValues(alpha: 0.2),
                           borderRadius:
                               BorderRadius.circular(ThemeSizes.borderRadiusSm),
                         ),
-                        child: Text(
-                          memory.eventName!,
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: context.primaryColor,
-                            fontWeight: FontWeight.bold,
-                          ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Flexible(
+                              child: Text(
+                                memory.eventName!,
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: context.textSecondaryColor
+                                      .withValues(alpha: 0.8),
+                                  fontWeight: FontWeight.bold,
+                                  fontStyle: FontStyle.italic,
+                                ),
+                                maxLines: 5,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ),
@@ -172,7 +186,11 @@ class MemoryCard extends StatelessWidget {
                       padding: const EdgeInsets.only(top: ThemeSizes.sm),
                       child: Text(
                         memory.text,
-                        style: const TextStyle(fontSize: 14),
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: context.textPrimaryColor,
+                          height: 1.3,
+                        ),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),

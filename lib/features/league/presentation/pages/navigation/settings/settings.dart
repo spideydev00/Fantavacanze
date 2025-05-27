@@ -1,15 +1,22 @@
-import 'package:fantavacanze_official/core/constants/constants.dart';
 import 'package:fantavacanze_official/core/cubits/app_theme/app_theme_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit.dart';
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/extensions/context_extension.dart';
+import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:fantavacanze_official/core/theme/theme.dart';
 import 'package:fantavacanze_official/features/auth/presentation/pages/social_login.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/dashboard/sections/dashboard.dart';
 import 'package:fantavacanze_official/core/widgets/dialogs/confirmation_dialog.dart';
 import 'package:fantavacanze_official/core/widgets/divider.dart';
+import 'package:fantavacanze_official/core/pages/app_terms.dart';
+import 'package:fantavacanze_official/features/league/presentation/pages/navigation/settings/privacy_policy.dart';
+import 'package:fantavacanze_official/features/league/presentation/pages/navigation/settings/widgets/app_info_dialog.dart';
+import 'package:fantavacanze_official/features/league/presentation/pages/navigation/settings/widgets/support_contact_dialog.dart';
+import 'package:fantavacanze_official/features/league/presentation/pages/navigation/settings/widgets/user_profile_menu.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/settings/widgets/settings_widgets.dart';
+import 'package:fantavacanze_official/core/widgets/buttons/danger_action_button.dart';
+import 'package:fantavacanze_official/main.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -35,7 +42,9 @@ class SettingsPage extends StatelessWidget {
                     pinned: false,
                     title: Text(
                       'Impostazioni',
-                      style: context.textTheme.titleLarge!,
+                      style: context.textTheme.titleMedium!.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     backgroundColor: Colors.transparent,
                     elevation: 0,
@@ -56,32 +65,27 @@ class SettingsPage extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           UserProfileCard(
-                            name: 'Alex',
-                            avatarAsset: 'assets/images/avatar.png',
                             onTap: () {
-                              // Navigate to profile edit page
+                              Navigator.push(context, UserProfileMenu.route);
                             },
                           ),
-                          const SizedBox(height: ThemeSizes.lg),
-                          CustomDivider(text: "Aspetto"),
-                          const SizedBox(height: ThemeSizes.md),
+                          //divider
+                          _buildDivider("Aspetto"),
+                          //section
                           _buildAppearanceSection(context),
-                          const SizedBox(height: ThemeSizes.lg),
-                          CustomDivider(text: "Notifiche"),
-                          const SizedBox(height: ThemeSizes.md),
-                          _buildNotificationsSection(context),
-                          const SizedBox(height: ThemeSizes.lg),
-                          CustomDivider(text: "Privacy e Sicurezza"),
-                          const SizedBox(height: ThemeSizes.md),
+                          //divider
+                          _buildDivider("Privacy e Sicurezza"),
+                          //section
                           _buildPrivacySection(context),
-                          const SizedBox(height: ThemeSizes.lg),
-                          CustomDivider(text: "Informazioni"),
-                          const SizedBox(height: ThemeSizes.md),
+                          //divider
+                          _buildDivider("Informazioni"),
+                          //section
                           _buildAboutSection(context),
                           const SizedBox(height: ThemeSizes.spaceBtwSections),
                           _buildLogoutButton(context),
                           const SizedBox(
-                              height: ThemeSizes.spaceBtwSections + 8),
+                            height: ThemeSizes.spaceBtwSections,
+                          ),
                         ],
                       ),
                     ),
@@ -94,25 +98,31 @@ class SettingsPage extends StatelessWidget {
   }
 
   Widget _buildLogoutButton(BuildContext context) {
-    return Center(
-      child: ElevatedButton(
-        onPressed: () => _handleLogout(context),
-        style: Theme.of(context).elevatedButtonTheme.style?.copyWith(
-              // Mantieni lo stesso stile ma cambia solo dimensioni o altre proprietà specifiche
-              maximumSize: WidgetStatePropertyAll(
-                Size.fromWidth(
-                  Constants.getWidth(context) * 0.5,
-                ),
-              ),
-            ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.logout),
-            const SizedBox(width: ThemeSizes.sm),
-            const Text('Disconnetti'),
-          ],
-        ),
+    return DangerActionButton(
+      title: 'Disconnetti',
+      description: 'Esci dal tuo account',
+      icon: Icons.logout,
+      onTap: () => _handleLogout(context),
+      color: ColorPalette.error,
+    );
+  }
+
+  void _handleLogout(BuildContext context) {
+    showDialog(
+      context: context,
+      useRootNavigator: true,
+      builder: (_) => ConfirmationDialog.logOut(
+        onExit: () async {
+          // 1) chiudo il dialog
+          navigatorKey.currentState!.pop();
+          // 2) azzero tutto lo stack e mostro solo SocialLoginPage
+          navigatorKey.currentState!.pushAndRemoveUntil(
+            SocialLoginPage.route,
+            (route) => false,
+          );
+          // 3) eseguo il signOut sul cubit
+          await context.read<AppUserCubit>().signOut();
+        },
       ),
     );
   }
@@ -131,55 +141,8 @@ class SettingsPage extends StatelessWidget {
                 onChanged: (_) {
                   context.read<AppThemeCubit>().toggleTheme();
                 },
-                activeColor: context.primaryColor,
-                activeTrackColor: context.secondaryColor,
               );
             },
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildNotificationsSection(BuildContext context) {
-    return Column(
-      children: [
-        SettingsTile(
-          icon: Icons.notifications,
-          title: 'Notifiche Push',
-          trailing: Switch(
-            value: true,
-            onChanged: (value) {
-              // Toggle push notifications
-            },
-            activeColor: context.primaryColor,
-            activeTrackColor: context.secondaryColor,
-          ),
-        ),
-        SizedBox(height: ThemeSizes.sm),
-        SettingsTile(
-          icon: Icons.email,
-          title: 'Email',
-          trailing: Switch(
-            value: true,
-            onChanged: (value) {
-              // Toggle email notifications
-            },
-            activeColor: context.primaryColor,
-            activeTrackColor: context.secondaryColor,
-          ),
-        ),
-        SizedBox(height: ThemeSizes.sm),
-        SettingsTile(
-          icon: Icons.volume_up,
-          title: 'Suoni',
-          trailing: Switch(
-            value: false,
-            onChanged: (value) {
-              // Toggle sounds
-            },
-            activeColor: context.primaryColor,
-            activeTrackColor: context.secondaryColor,
           ),
         ),
       ],
@@ -190,26 +153,18 @@ class SettingsPage extends StatelessWidget {
     return Column(
       children: [
         SettingsTile(
-          icon: Icons.lock,
-          title: 'Cambia Password',
-          onTap: () {
-            // Navigate to change password screen
-          },
-        ),
-        SizedBox(height: ThemeSizes.sm),
-        SettingsTile(
           icon: Icons.privacy_tip,
           title: 'Privacy Policy',
           onTap: () {
-            // Show privacy policy
+            Navigator.push(context, PrivacyPolicyPage.route);
           },
         ),
-        SizedBox(height: ThemeSizes.sm),
+        const SizedBox(height: ThemeSizes.sm),
         SettingsTile(
           icon: Icons.description,
           title: 'Termini di Servizio',
           onTap: () {
-            // Show terms of service
+            Navigator.push(context, AppTermsPage.route);
           },
         ),
       ],
@@ -224,46 +179,28 @@ class SettingsPage extends StatelessWidget {
           title: 'Versione App',
           subtitle: '1.0.0',
           onTap: () {
-            // Show app version details
+            AppInfoDialog.show(context);
           },
         ),
-        SizedBox(height: ThemeSizes.sm),
-        SettingsTile(
-          icon: Icons.star,
-          title: 'Valuta l\'App',
-          onTap: () {
-            // Open app store for rating
-          },
-        ),
-        SizedBox(height: ThemeSizes.sm),
+        const SizedBox(height: ThemeSizes.sm),
         SettingsTile(
           icon: Icons.contact_support,
           title: 'Supporto',
           onTap: () {
-            // Navigate to support screen
+            SupportContactDialog.show(context);
           },
         ),
       ],
     );
   }
 
-  void _handleLogout(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => ConfirmationDialog.logOut(
-        onExit: () async {
-          Navigator.of(context).pop();
-
-          Navigator.pushAndRemoveUntil(
-            context,
-            SocialLoginPage.route,
-            (route) => false,
-          );
-
-          // esci dall'account
-          await context.read<AppUserCubit>().signOut();
-        },
-      ),
+  Widget _buildDivider(String text) {
+    return Column(
+      children: [
+        const SizedBox(height: ThemeSizes.md),
+        CustomDivider(text: text),
+        const SizedBox(height: ThemeSizes.sm),
+      ],
     );
   }
 }

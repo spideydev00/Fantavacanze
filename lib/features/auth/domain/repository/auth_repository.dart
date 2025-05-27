@@ -1,17 +1,13 @@
+import 'dart:async';
+
 import 'package:fantavacanze_official/core/errors/failure.dart';
 import 'package:fantavacanze_official/features/auth/domain/entities/user.dart';
 import 'package:fpdart/fpdart.dart';
 
 abstract interface class AuthRepository {
-  Future<Either<Failure, User>> googleSignIn({
-    required bool isAdult,
-    required bool isTermsAccepted,
-  });
+  Future<Either<Failure, User>> googleSignIn();
 
-  Future<Either<Failure, User>> appleSignIn({
-    required bool isAdult,
-    required bool isTermsAccepted,
-  });
+  Future<Either<Failure, User>> appleSignIn();
 
   Future<Either<Failure, void>> signUpWithEmailPassword({
     required String name,
@@ -35,4 +31,25 @@ abstract interface class AuthRepository {
   Future<Either<Failure, User>> currentUser();
 
   Future<Either<Failure, void>> signOut();
+
+  // Methods for user profile management
+  Future<Either<Failure, User>> updateDisplayName(String newName);
+
+  Future<Either<Failure, void>> updatePassword(
+    String oldPassword,
+    String newPassword,
+    String captchaToken,
+  );
+
+  Future<Either<Failure, void>> deleteAccount();
+
+  Future<Either<Failure, void>> removeConsents({
+    required bool isAdult,
+    required bool isTermsAccepted,
+  });
+
+  Future<Either<Failure, User>> updateConsents({
+    required bool isAdult,
+    required bool isTermsAccepted,
+  });
 }

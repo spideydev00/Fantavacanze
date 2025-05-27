@@ -1,9 +1,8 @@
 import 'package:fantavacanze_official/core/navigation/navigation_item.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/admin/admin_page.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/homepage/home.dart';
-import 'package:fantavacanze_official/features/blog/presentation/pages/articles_page.dart';
 import 'package:fantavacanze_official/features/games/presentation/pages/drink_games.dart';
-import 'package:fantavacanze_official/features/games/presentation/pages/quick_challenge.dart';
+// import 'package:fantavacanze_official/features/games/presentation/pages/quick_challenge.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/create_league/create_league_page.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/join_league/search_league_page.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/leaderboard/leaderboard_page.dart';
@@ -28,18 +27,17 @@ List<NavigationItem> nonParticipantNavbarItems = [
     screen: const HomePage(),
     subsection: "Naviga",
   ),
-  NavigationItem(
-    title: "Sfida",
-    darkSvgIcon: 'assets/images/icons/homepage_icons/thunder-icon-red.svg',
-    lightSvgIcon: 'assets/images/icons/homepage_icons/thunder-icon-red.svg',
-    screen: const QuickChallenge(),
-    subsection: "Naviga",
-  ),
+  // NavigationItem(
+  //   title: "Sfida",
+  //   darkSvgIcon: 'assets/images/icons/homepage_icons/thunder-icon-red.svg',
+  //   lightSvgIcon: 'assets/images/icons/homepage_icons/thunder-icon-red.svg',
+  //   screen: const QuickChallenge(),
+  //   subsection: "Naviga",
+  // ),
   NavigationItem(
     title: "Giochi",
-    darkSvgIcon: 'assets/images/icons/homepage_icons/drink-games-icon.svg',
-    lightSvgIcon:
-        'assets/images/icons/homepage_icons/drink-games-icon-dark.svg',
+    darkSvgIcon: 'assets/images/icons/homepage_icons/drink-games-icon-red.svg',
+    lightSvgIcon: 'assets/images/icons/homepage_icons/drink-games-icon-red.svg',
     screen: const DrinkGames(),
     subsection: "Naviga",
   ),
@@ -70,27 +68,26 @@ List<NavigationItem> participantNavbarItems = [
     subsection: "Naviga",
   ),
   NavigationItem(
+    title: "Giochi",
+    darkSvgIcon: 'assets/images/icons/homepage_icons/drink-games-icon-red.svg',
+    lightSvgIcon: 'assets/images/icons/homepage_icons/drink-games-icon-red.svg',
+    screen: const DrinkGames(),
+    subsection: "Games",
+  ),
+  NavigationItem(
     title: "Classifica",
     darkSvgIcon: 'assets/images/icons/homepage_icons/rankings-icon.svg',
     lightSvgIcon: 'assets/images/icons/homepage_icons/rankings-icon-dark.svg',
     screen: LeaderboardPage(),
     subsection: "Naviga",
   ),
-  NavigationItem(
-    title: "Sfida",
-    darkSvgIcon: 'assets/images/icons/homepage_icons/thunder-icon-red.svg',
-    lightSvgIcon: 'assets/images/icons/homepage_icons/thunder-icon-red.svg',
-    screen: const QuickChallenge(),
-    subsection: "Games",
-  ),
-  NavigationItem(
-    title: "Giochi Alcolici",
-    darkSvgIcon: 'assets/images/icons/homepage_icons/drink-games-icon.svg',
-    lightSvgIcon:
-        'assets/images/icons/homepage_icons/drink-games-icon-dark.svg',
-    screen: const DrinkGames(),
-    subsection: "Games",
-  ),
+  // NavigationItem(
+  //   title: "Sfida",
+  //   darkSvgIcon: 'assets/images/icons/homepage_icons/thunder-icon-red.svg',
+  //   lightSvgIcon: 'assets/images/icons/homepage_icons/thunder-icon-red.svg',
+  //   screen: const QuickChallenge(),
+  //   subsection: "Games",
+  // ),
   NavigationItem(
     title: "Regole",
     darkSvgIcon: 'assets/images/icons/homepage_icons/rules-icon.svg',
@@ -143,11 +140,11 @@ List<NavigationItem> participantNavbarItems = [
     subsection: "Gestione Lega",
     isAdminOnly: true,
   ),
-  NavigationItem(
-    title: "Articoli",
-    darkSvgIcon: 'assets/images/icons/homepage_icons/articles-icon.svg',
-    lightSvgIcon: 'assets/images/icons/homepage_icons/articles-icon-dark.svg',
-    screen: const ArticlesPage(),
-    subsection: "Altro",
-  ),
+  // NavigationItem(
+  //   title: "Articoli",
+  //   darkSvgIcon: 'assets/images/icons/homepage_icons/articles-icon.svg',
+  //   lightSvgIcon: 'assets/images/icons/homepage_icons/articles-icon-dark.svg',
+  //   screen: const ArticlesPage(),
+  //   subsection: "Altro",
+  // ),
 ];

@@ -1,7 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit.dart';
 import 'package:fantavacanze_official/core/use-case/usecase.dart';
-import 'package:fantavacanze_official/core/utils/sort_leagues_by_date.dart';
+import 'package:fantavacanze_official/core/utils/sort_by_date.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/league.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/get_user_leagues.dart';
 import 'package:flutter/material.dart';

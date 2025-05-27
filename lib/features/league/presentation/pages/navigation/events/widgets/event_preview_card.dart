@@ -19,8 +19,17 @@ class EventPreviewCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Determine if it's a bonus or malus based on the sign of points
     final bool isBonus = points >= 0;
     final mainColor = isBonus ? ColorPalette.success : ColorPalette.error;
+
+    // Format points for display
+    final String pointsDisplay;
+    if (isBonus) {
+      pointsDisplay = "+ ${points.abs()}";
+    } else {
+      pointsDisplay = "- ${points.abs()}";
+    }
 
     return Container(
       decoration: BoxDecoration(
@@ -97,7 +106,7 @@ class EventPreviewCard extends StatelessWidget {
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
-                    '${isBonus ? "+ " : ""}$points',
+                    pointsDisplay, // Use formatted points with proper sign
                     style: const TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.bold,

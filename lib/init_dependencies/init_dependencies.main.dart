@@ -9,6 +9,14 @@ Future<void> initDependencies() async {
       url: AppSecrets.supabaseUrl,
     );
 
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+
+    serviceLocator.registerLazySingleton<FirebaseMessaging>(
+      () => FirebaseMessaging.instance,
+    );
+
     serviceLocator.registerLazySingleton(() => supabase.client);
 
     // Initialize Hive
@@ -28,6 +36,14 @@ Future<void> initDependencies() async {
       ..registerLazySingleton<Box<Map<dynamic, dynamic>>>(
         () => Hive.box<Map<dynamic, dynamic>>(),
         instanceName: 'notes_box',
+      )
+      ..registerLazySingleton<Box<Map<dynamic, dynamic>>>(
+        () => Hive.box<Map<dynamic, dynamic>>(),
+        instanceName: 'challenges_box',
+      )
+      ..registerLazySingleton<Box<Map<dynamic, dynamic>>>(
+        () => Hive.box<Map<dynamic, dynamic>>(),
+        instanceName: 'notifications_box',
       );
 
     serviceLocator.registerFactory(
@@ -51,6 +67,10 @@ Future<void> initDependencies() async {
         () => AppUserCubit(
           getCurrentUser: serviceLocator(),
           signOut: serviceLocator(),
+          updateDisplayName: serviceLocator(),
+          updatePassword: serviceLocator(),
+          deleteAccount: serviceLocator(),
+          removeConsents: serviceLocator(),
         ),
       )
       //2. navigation cubit
@@ -68,7 +88,7 @@ Future<void> initDependencies() async {
         () => AppLeagueCubit(
           getUserLeagues: serviceLocator(),
           prefs: serviceLocator<SharedPreferences>(),
-          appUserCubit: serviceLocator<AppUserCubit>(), // Pass AppUserCubit
+          appUserCubit: serviceLocator<AppUserCubit>(),
         ),
       )
       //5. connection checker
@@ -89,7 +109,9 @@ void _initAuth() {
   serviceLocator
     //datasource
     ..registerFactory<AuthRemoteDataSource>(
-      () => AuthRemoteDataSourceImpl(supabaseClient: serviceLocator()),
+      () => AuthRemoteDataSourceImpl(
+        supabaseClient: serviceLocator(),
+      ),
     )
     //repository
     ..registerFactory<AuthRepository>(
@@ -120,6 +142,21 @@ void _initAuth() {
     ..registerFactory(
       () => ChangeIsOnboardedValue(authRepository: serviceLocator()),
     )
+    ..registerFactory(
+      () => DeleteAccount(authRepository: serviceLocator()),
+    )
+    ..registerFactory(
+      () => UpdateDisplayName(authRepository: serviceLocator()),
+    )
+    ..registerFactory(
+      () => UpdatePassword(authRepository: serviceLocator()),
+    )
+    ..registerFactory(
+      () => RemoveConsents(authRepository: serviceLocator()),
+    )
+    ..registerFactory(
+      () => UpdateConsents(authRepository: serviceLocator()),
+    )
     //bloc
     ..registerLazySingleton(
       () => AuthBloc(
@@ -131,6 +168,7 @@ void _initAuth() {
         signOut: serviceLocator(),
         appLeagueCubit: serviceLocator(),
         changeIsOnboardedValue: serviceLocator(),
+        updateConsents: serviceLocator(),
       ),
     );
 }
@@ -153,6 +191,10 @@ void _initLeague() {
             instanceName: 'rules_box'),
         notesBox: serviceLocator<Box<Map<dynamic, dynamic>>>(
             instanceName: 'notes_box'),
+        challengesBox: serviceLocator<Box<Map<dynamic, dynamic>>>(
+            instanceName: 'challenges_box'),
+        notificationsBox: serviceLocator<Box<Map<dynamic, dynamic>>>(
+            instanceName: 'notifications_box'),
       ),
     )
 
@@ -241,6 +283,15 @@ void _initLeague() {
     ..registerFactory(
       () => DeleteLeague(leagueRepository: serviceLocator()),
     )
+    ..registerFactory(
+      () => GetDailyChallenges(leagueRepository: serviceLocator()),
+    )
+    ..registerFactory(
+      () => MarkChallengeAsCompleted(leagueRepository: serviceLocator()),
+    )
+    ..registerFactory(
+      () => UpdateChallengeRefreshStatus(leagueRepository: serviceLocator()),
+    )
 
     // bloc
     ..registerFactory(
@@ -271,6 +322,9 @@ void _initLeague() {
         removeParticipants: serviceLocator(),
         updateLeagueInfo: serviceLocator(),
         deleteLeague: serviceLocator(),
+        getDailyChallenges: serviceLocator(),
+        markChallengeAsCompleted: serviceLocator(),
+        updateChallengeRefreshStatus: serviceLocator(),
       ),
     );
 }

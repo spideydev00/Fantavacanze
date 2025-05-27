@@ -31,3 +31,16 @@ final class AuthSignUpSuccess extends AuthState {
 
   AuthSignUpSuccess(this.email);
 }
+
+// State for consents
+class AuthNeedsConsent extends AuthState {
+  final User? user;
+  final String provider;
+
+  AuthNeedsConsent({this.user, required this.provider});
+}
+
+class AuthConsentsUpdated extends AuthState {
+  final User user;
+  AuthConsentsUpdated(this.user);
+}

@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:fantavacanze_official/features/league/data/models/note_model.dart';
+import 'package:fantavacanze_official/features/league/domain/entities/daily_challenge.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/rule.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/league.dart';
 import 'dart:io';
@@ -354,4 +355,46 @@ class DeleteLeagueEvent extends LeagueEvent {
 
   @override
   List<Object?> get props => [leagueId];
+}
+
+// Daily challenges events
+class GetDailyChallengesEvent extends LeagueEvent {
+  final String userId;
+
+  const GetDailyChallengesEvent({
+    required this.userId,
+  });
+
+  @override
+  List<Object?> get props => [userId];
+}
+
+class MarkChallengeAsCompletedEvent extends LeagueEvent {
+  final DailyChallenge challenge;
+  final String userId;
+  final League league;
+
+  const MarkChallengeAsCompletedEvent({
+    required this.challenge,
+    required this.userId,
+    required this.league,
+  });
+
+  @override
+  List<Object?> get props => [challenge, userId, league];
+}
+
+class RefreshDailyChallengeEvent extends LeagueEvent {
+  final String challengeId;
+  final String userId;
+  final int primaryIndex;
+
+  const RefreshDailyChallengeEvent({
+    required this.challengeId,
+    required this.userId,
+    required this.primaryIndex,
+  });
+
+  @override
+  List<Object?> get props => [challengeId, userId, primaryIndex];
 }

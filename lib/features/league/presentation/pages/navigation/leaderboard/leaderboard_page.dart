@@ -2,6 +2,7 @@ import 'package:fantavacanze_official/core/cubits/app_league/app_league_cubit.da
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/extensions/context_extension.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
+import 'package:fantavacanze_official/core/utils/number_formatter.dart';
 import 'package:fantavacanze_official/core/widgets/custom_tab.dart';
 import 'package:fantavacanze_official/core/widgets/custom_tab_bar.dart';
 import 'package:fantavacanze_official/core/widgets/empty_state.dart';
@@ -184,6 +185,8 @@ class _LeaderboardPageState extends State<LeaderboardPage>
       itemCount: allMembers.length,
       itemBuilder: (context, index) {
         final member = allMembers[index];
+        // Format points using our NumberFormatter
+        final formattedPoints = NumberFormatter.formatPoints(member['points']);
 
         // Use our new ParticipantCard for a cleaner, consistent UI
         return Padding(
@@ -191,6 +194,7 @@ class _LeaderboardPageState extends State<LeaderboardPage>
           child: ParticipantCard(
             name: member['name'],
             points: member['points'],
+            formattedPoints: formattedPoints, // Pass formatted points
             showPoints: true,
             isFullWidth: true,
             subtitle: '${member['teamName']}',

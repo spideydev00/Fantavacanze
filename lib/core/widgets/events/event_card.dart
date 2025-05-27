@@ -26,17 +26,27 @@ class EventCard extends StatelessWidget {
   Widget build(BuildContext context) {
     // Extract event data
     final String eventName = event.name;
-    final double points = event.points;
+    final double points =
+        event.points is int ? (event.points as int).toDouble() : event.points;
     final bool isBonus = event.type == RuleType.bonus;
     final DateTime createdAt = event.createdAt;
     final String targetId = event.targetUser;
     final String formattedDate =
         (dateFormat ?? _defaultDateFormat).format(createdAt);
 
+    // Format points value - only use comma for non-zero decimal parts
+    String formattedPoints;
+    if (points == points.truncateToDouble()) {
+      // It's a whole number, don't show decimal
+      formattedPoints = points.toInt().toString();
+    } else {
+      // It has a decimal part, use comma
+      formattedPoints = points.toString().replaceAll('.', ',');
+    }
+
     // Define colors based on event type
     final Color primaryColor =
         isBonus ? ColorPalette.success : ColorPalette.error;
-
     final Color secondaryColor = context.secondaryBgColor;
 
     // Create gradient colors based on event type and theme
@@ -117,7 +127,7 @@ class EventCard extends StatelessWidget {
                       child: Icon(
                         isBonus ? Icons.arrow_upward : Icons.arrow_downward,
                         color: Colors.white,
-                        size: 24,
+                        size: 20,
                       ),
                     ),
                     const SizedBox(width: ThemeSizes.md),
@@ -130,9 +140,8 @@ class EventCard extends StatelessWidget {
                           children: [
                             Text(
                               eventName,
-                              style: context.textTheme.bodyMedium!.copyWith(
+                              style: context.textTheme.bodySmall!.copyWith(
                                 fontWeight: FontWeight.bold,
-                                color: context.textPrimaryColor,
                               ),
                             ),
                             const SizedBox(height: 4),
@@ -147,12 +156,9 @@ class EventCard extends StatelessWidget {
                                 Expanded(
                                   child: Text(
                                     targetId,
-                                    style:
-                                        context.textTheme.labelMedium!.copyWith(
-                                      color: context.textSecondaryColor,
-                                    ),
-                                    maxLines: 2,
+                                    style: context.textTheme.labelSmall,
                                     overflow: TextOverflow.ellipsis,
+                                    maxLines: 2,
                                   ),
                                 ),
                               ],
@@ -168,10 +174,7 @@ class EventCard extends StatelessWidget {
                                 const SizedBox(width: 4),
                                 Text(
                                   formattedDate,
-                                  style:
-                                      context.textTheme.labelMedium!.copyWith(
-                                    color: context.textSecondaryColor,
-                                  ),
+                                  style: context.textTheme.labelSmall,
                                 ),
                               ],
                             ),
@@ -205,11 +208,10 @@ class EventCard extends StatelessWidget {
                         ],
                       ),
                       child: Text(
-                        isBonus ? '+$points' : '$points',
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 18,
+                        isBonus ? '+$formattedPoints' : formattedPoints,
+                        style: context.textTheme.labelMedium!.copyWith(
                           color: Colors.white,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
                     ),

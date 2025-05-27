@@ -7,14 +7,17 @@ import 'package:fantavacanze_official/features/league/domain/use_cases/create_le
 import 'package:fantavacanze_official/features/league/domain/use_cases/delete_note.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/delete_rule.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/exit_league.dart';
+import 'package:fantavacanze_official/features/league/domain/use_cases/get_daily_challenges.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/get_league.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/get_notes.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/get_rules.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/join_league.dart';
+import 'package:fantavacanze_official/features/league/domain/use_cases/mark_challenge_as_completed.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/remove_memory.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/remove_team_participants.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/save_note.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/search_league.dart';
+import 'package:fantavacanze_official/features/league/domain/use_cases/update_challenge_refresh_status.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/update_rule.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/update_team_name.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/upload_image.dart';
@@ -56,12 +59,22 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
   final AppUserCubit appUserCubit;
   final AppLeagueCubit appLeagueCubit;
 
+  // Daily challenges and notifications
+  final GetDailyChallenges getDailyChallenges;
+  final MarkChallengeAsCompleted markChallengeAsCompleted;
+  final UpdateChallengeRefreshStatus updateChallengeRefreshStatus;
+
   LeagueBloc({
     required this.createLeague,
+    required this.deleteLeague,
     required this.getLeague,
     required this.joinLeague,
     required this.exitLeague,
+    required this.updateLeagueInfo,
     required this.updateTeamName,
+    required this.addAdministrators,
+    required this.removeTeamParticipants,
+    required this.removeParticipants,
     required this.addEvent,
     required this.addMemory,
     required this.removeMemory,
@@ -76,13 +89,11 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
     required this.uploadImage,
     required this.uploadTeamLogo,
     required this.updateTeamLogo,
+    required this.getDailyChallenges,
+    required this.markChallengeAsCompleted,
+    required this.updateChallengeRefreshStatus,
     required this.appUserCubit,
     required this.appLeagueCubit,
-    required this.removeTeamParticipants,
-    required this.addAdministrators,
-    required this.removeParticipants,
-    required this.updateLeagueInfo,
-    required this.deleteLeague,
   }) : super(LeagueInitial()) {
     on<CreateLeagueEvent>(_onCreateLeague);
     on<GetLeagueEvent>(_onGetLeague);
@@ -108,6 +119,9 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
     on<RemoveParticipantsEvent>(_onRemoveParticipants);
     on<UpdateLeagueInfoEvent>(_onUpdateLeagueInfo);
     on<DeleteLeagueEvent>(_onDeleteLeague);
+    on<GetDailyChallengesEvent>(_onGetDailyChallenges);
+    on<MarkChallengeAsCompletedEvent>(_onMarkChallengeAsCompleted);
+    on<RefreshDailyChallengeEvent>(_onRefreshDailyChallenge);
   }
 
   // -----------------------------------------------------------
@@ -799,6 +813,57 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
   }
 
   // -----------------------------------------------------------
+  // D A I L Y   C H A L L E N G E S   O P E R A T I O N S
+  // -----------------------------------------------------------
+
+  // G E T   D A I L Y   C H A L L E N G E S
+  Future<void> _onGetDailyChallenges(
+    GetDailyChallengesEvent event,
+    Emitter<LeagueState> emit,
+  ) async {
+    emit(LeagueLoading());
+
+    final result = await getDailyChallenges.call(
+      GetDailyChallengesParams(
+        userId: event.userId,
+      ),
+    );
+
+    result.fold(
+      (failure) => emit(LeagueError(message: failure.message)),
+      (challenges) => emit(DailyChallengesLoaded(challenges: challenges)),
+    );
+  }
+
+  // M A R K   C H A L L E N G E   A S   C O M P L E T E D
+  void _onMarkChallengeAsCompleted(
+    MarkChallengeAsCompletedEvent event,
+    Emitter<LeagueState> emit,
+  ) async {
+    emit(LeagueLoading());
+
+    final result = await markChallengeAsCompleted.call(
+      MarkChallengeAsCompletedParams(
+        challenge: event.challenge,
+        userId: event.userId,
+        league: event.league,
+      ),
+    );
+
+    result.fold(
+      (failure) => emit(LeagueError(message: failure.message)),
+      (_) {
+        // Successfully marked challenge as completed
+        emit(ChallengeMarkedAsCompleted(challenge: event.challenge));
+      },
+    );
+  }
+
+  // -----------------------------------------------------------
+  // N O T I F I C A T I O N S   O P E R A T I O N S
+  // -----------------------------------------------------------
+
+  // -----------------------------------------------------------
   // U T I L I T Y   M E T H O D S
   // -----------------------------------------------------------
 
@@ -819,5 +884,35 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
     }
 
     return false;
+  }
+
+  // -----------------------------------------------------------
+  // D A I L Y   C H A L L E N G E S   O P E R A T I O N S
+  // -----------------------------------------------------------
+
+  // R E F R E S H   D A I L Y   C H A L L E N G E
+  Future<void> _onRefreshDailyChallenge(
+    RefreshDailyChallengeEvent event,
+    Emitter<LeagueState> emit,
+  ) async {
+    emit(LeagueLoading());
+
+    final result = await updateChallengeRefreshStatus(
+      UpdateChallengeRefreshStatusParams(
+        challengeId: event.challengeId,
+        userId: event.userId,
+        isRefreshed: true,
+        primaryIndex: event.primaryIndex,
+      ),
+    );
+
+    result.fold(
+      (failure) => emit(LeagueError(message: failure.message)),
+      (_) {
+        // After refreshing the challenge, reload all challenges
+        emit(ChallengeRefreshed());
+        add(GetDailyChallengesEvent(userId: event.userId));
+      },
+    );
   }
 }

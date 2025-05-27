@@ -20,7 +20,7 @@ class LeagueModel extends League {
     required super.events,
     required super.memories,
     required super.isTeamBased,
-    required super.inviteCode, // Now required
+    required super.inviteCode,
   });
 
   factory LeagueModel.fromJson(Map<String, dynamic> json) {

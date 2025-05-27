@@ -292,11 +292,9 @@ class _CreateLeaguePageState extends State<CreateLeaguePage> {
   void _submitForm() {
     if (_formKey.currentState!.validate()) {
       if (_rules.isEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Aggiungi almeno una regola'),
-            backgroundColor: ColorPalette.warning,
-          ),
+        showSnackBar(
+          'Aggiungi almeno una regola prima di creare la lega.',
+          color: ColorPalette.warning,
         );
         return;
       }
@@ -412,11 +410,9 @@ class _CreateLeaguePageState extends State<CreateLeaguePage> {
         // Validate basic info step
         if (_nameController.text.trim().isEmpty ||
             _descriptionController.text.trim().isEmpty) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Compila tutti i campi obbligatori'),
-              backgroundColor: ColorPalette.warning,
-            ),
+          showSnackBar(
+            "Compila tutti i campi obbligatori!",
+            color: ColorPalette.warning,
           );
           return;
         }
@@ -452,7 +448,7 @@ class _CreateLeaguePageState extends State<CreateLeaguePage> {
             _isCreating = false;
             _isLoadingRules = false;
           });
-          showSnackBar(context, state.message);
+          showSnackBar(state.message);
         } else if (state is RulesLoaded) {
           // Determine which cache to update based on the mode
           String cacheKey = state.mode;
@@ -498,7 +494,9 @@ class _CreateLeaguePageState extends State<CreateLeaguePage> {
                         if (_currentStep == 0) {
                           if (_nameController.text.trim().isEmpty) {
                             showSnackBar(
-                                context, "Compila tutti i campi obbligatori!");
+                              "Compila tutti i campi obbligatori!",
+                              color: ColorPalette.warning,
+                            );
                             return;
                           }
                         }

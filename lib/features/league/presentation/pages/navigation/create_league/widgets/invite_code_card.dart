@@ -1,3 +1,4 @@
+import 'package:fantavacanze_official/core/utils/show_snackbar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
@@ -26,12 +27,9 @@ class _InviteCodeCardState extends State<InviteCodeCard> {
       _codeCopied = true;
     });
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Codice copiato negli appunti!'),
-        backgroundColor: ColorPalette.success,
-        duration: Duration(seconds: 2),
-      ),
+    showSnackBar(
+      'Codice invito copiato negli appunti!',
+      color: ColorPalette.success,
     );
 
     // Reset the copied state after some delay

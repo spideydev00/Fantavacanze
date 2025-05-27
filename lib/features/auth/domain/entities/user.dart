@@ -6,6 +6,8 @@ class User {
   final bool isOnboarded;
   final bool isAdult;
   final bool isTermsAccepted;
+  final String authProvider;
+  final String? fcmToken;
 
   const User({
     required this.id,
@@ -15,5 +17,7 @@ class User {
     required this.isOnboarded,
     required this.isAdult,
     required this.isTermsAccepted,
+    this.authProvider = '',
+    this.fcmToken,
   });
 }

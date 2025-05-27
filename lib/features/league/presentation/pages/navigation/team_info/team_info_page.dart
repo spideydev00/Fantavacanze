@@ -39,7 +39,7 @@ class TeamInfoPage extends StatelessWidget {
       listener: (context, state) {
         if (state is LeagueError) {
           // Show error message in a snackbar
-          showSnackBar(context, state.message);
+          showSnackBar(state.message);
         }
       },
       child: BlocBuilder<AppLeagueCubit, AppLeagueState>(
@@ -207,8 +207,7 @@ class _TeamBasedInfoState extends State<_TeamBasedInfo>
     final canEdit = widget.isCaptain || isAdmin;
 
     if (!canEdit) {
-      showSnackBar(
-          context, 'Solo il capitano o gli admin possono modificare il logo');
+      showSnackBar('Solo il capitano o gli admin possono modificare il logo');
       return;
     }
 
@@ -267,7 +266,6 @@ class _TeamBasedInfoState extends State<_TeamBasedInfo>
           });
 
           showSnackBar(
-            context,
             'Logo del team aggiornato con successo',
             color: ColorPalette.success,
           );
@@ -276,7 +274,7 @@ class _TeamBasedInfoState extends State<_TeamBasedInfo>
             _isUploadingLogo = false;
             _pendingTeamLogoUrl = null;
           });
-          showSnackBar(context, state.message);
+          showSnackBar(state.message);
         }
       },
       child: Scaffold(

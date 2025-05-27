@@ -1,7 +1,9 @@
 import 'package:fantavacanze_official/core/errors/exceptions.dart';
+import 'package:fantavacanze_official/features/league/data/models/daily_challenge_model.dart';
 import 'package:fantavacanze_official/features/league/data/models/league_model.dart';
 import 'package:fantavacanze_official/features/league/data/models/note_model.dart';
 import 'package:fantavacanze_official/features/league/data/models/rule_model.dart';
+import 'package:fantavacanze_official/features/league/domain/entities/daily_challenge.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:fantavacanze_official/core/errors/failure.dart';
 import 'package:fantavacanze_official/core/network/connection_checker.dart';
@@ -749,4 +751,127 @@ class LeagueRepositoryImpl implements LeagueRepository {
       return Left(Failure(e.message));
     }
   }
+
+  // ------------------------------------------------
+  // D A I L Y   C H A L L E N G E S   O P E R A T I O N S
+  // ------------------------------------------------
+
+  @override
+  Future<Either<Failure, List<DailyChallenge>>> getDailyChallenges({
+    required String userId,
+  }) async {
+    try {
+      if (!await connectionChecker.isConnected) {
+        // Try to get from cache when offline
+        final cachedChallenges =
+            await localDataSource.getCachedDailyChallenges(userId);
+        if (cachedChallenges.isNotEmpty) {
+          return Right(cachedChallenges);
+        }
+        return Left(Failure('Nessuna connessione e nessun dato nella cache.'));
+      }
+
+      // Get from remote and cache
+      final challenges = await remoteDataSource.getDailyChallenges(
+        userId: userId,
+      );
+
+      await localDataSource.cacheDailyChallenges(challenges, userId);
+
+      return Right(challenges);
+    } on ServerException catch (e) {
+      // If server error, try to get from cache
+      try {
+        final cachedChallenges =
+            await localDataSource.getCachedDailyChallenges(userId);
+        if (cachedChallenges.isNotEmpty) {
+          return Right(cachedChallenges);
+        }
+      } catch (_) {}
+      return Left(Failure(e.message));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> markChallengeAsCompleted({
+    required DailyChallenge challenge,
+    required League league,
+    required String userId,
+  }) async {
+    try {
+      if (!await connectionChecker.isConnected) {
+        return Left(Failure(
+            'Nessuna connessione ad internet, riprova appena sarai connesso.'));
+      }
+
+      await remoteDataSource.markChallengeAsCompleted(
+        challenge: challenge as DailyChallengeModel,
+        userId: userId,
+        league: league as LeagueModel,
+      );
+
+      // Update the challenge in the cache
+      final cachedChallenges =
+          await localDataSource.getCachedDailyChallenges(userId);
+
+      final updatedChallenges = cachedChallenges.map((cachedChallenge) {
+        if (cachedChallenge.id == challenge.id) {
+          return cachedChallenge.copyWith(
+            isCompleted: true,
+            completedAt: DateTime.now(),
+          );
+        }
+        return cachedChallenge;
+      }).toList();
+
+      await localDataSource.cacheDailyChallenges(updatedChallenges, userId);
+
+      return const Right(null);
+    } on ServerException catch (e) {
+      return Left(Failure(e.message));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> updateChallengeRefreshStatus({
+    required String challengeId,
+    required String userId,
+    required bool isRefreshed,
+  }) async {
+    try {
+      if (!await connectionChecker.isConnected) {
+        return Left(Failure(
+            'Nessuna connessione ad internet, riprova appena sarai connesso.'));
+      }
+
+      await remoteDataSource.updateChallengeRefreshStatus(
+        challengeId: challengeId,
+        userId: userId,
+        isRefreshed: isRefreshed,
+      );
+
+      // Update the challenge in the local cache as well
+      final cachedChallenges =
+          await localDataSource.getCachedDailyChallenges(userId);
+      final updatedChallenges = cachedChallenges.map((challenge) {
+        if (challenge.id == challengeId) {
+          return challenge.copyWith(
+            isRefreshed: isRefreshed,
+            refreshedAt: DateTime.now(),
+          );
+        }
+        return challenge;
+      }).toList();
+
+      await localDataSource.cacheDailyChallenges(updatedChallenges, userId);
+
+      return const Right(null);
+    } on ServerException catch (e) {
+      return Left(Failure(e.message));
+    }
+  }
+
+  // ------------------------------------------------
+  // N O T I F I C A T I O N S   O P E R A T I O N S
+  // ------------------------------------------------
 }

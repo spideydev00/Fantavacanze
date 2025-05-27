@@ -142,6 +142,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                         BorderRadius.circular(ThemeSizes.borderRadiusXlg),
                     child: Scaffold(
                       appBar: AppBar(
+                        centerTitle: true,
                         forceMaterialTransparency: true,
                         toolbarHeight: ThemeSizes.appBarHeight,
                         title: _buildLogo(context),
@@ -152,20 +153,12 @@ class _DashboardScreenState extends State<DashboardScreen>
                             },
                             child: Padding(
                               padding:
-                                  const EdgeInsets.only(right: ThemeSizes.xl),
-                              child: Container(
-                                width: ThemeSizes.iconLg,
-                                height: ThemeSizes.iconLg,
-                                decoration: BoxDecoration(
-                                  color: context.secondaryBgColor,
-                                  shape: BoxShape.circle,
-                                ),
-                                child: Icon(
-                                  Icons.settings,
-                                  size: ThemeSizes.iconLg * 0.6,
-                                  color: context.textPrimaryColor
-                                      .withValues(alpha: 0.9),
-                                ),
+                                  const EdgeInsets.only(right: ThemeSizes.lg),
+                              child: Icon(
+                                Icons.settings,
+                                size: 22,
+                                color: context.textPrimaryColor
+                                    .withValues(alpha: 0.9),
                               ),
                             ),
                           )
@@ -270,13 +263,11 @@ class _DashboardScreenState extends State<DashboardScreen>
   }
 
   Widget _buildLogo(BuildContext context) {
-    return Center(
-      child: Image.asset(
-        context.read<AppThemeCubit>().isDarkMode(context)
-            ? "assets/images/logo.png"
-            : "assets/images/logo-dark.png",
-        width: Constants.getWidth(context) * 0.18,
-      ),
+    return Image.asset(
+      context.read<AppThemeCubit>().isDarkMode(context)
+          ? "assets/images/logo.png"
+          : "assets/images/logo-dark.png",
+      width: Constants.getWidth(context) * 0.18,
     );
   }
 }

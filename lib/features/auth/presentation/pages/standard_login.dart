@@ -1,4 +1,5 @@
 import 'package:fantavacanze_official/core/extensions/context_extension.dart';
+import 'package:fantavacanze_official/core/utils/show_snackbar.dart';
 import 'package:fantavacanze_official/core/widgets/loader.dart';
 import 'package:fantavacanze_official/core/pages/empty_branded_page.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
@@ -6,6 +7,7 @@ import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:fantavacanze_official/core/widgets/dialogs/auth_dialog_box.dart';
 import 'package:fantavacanze_official/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:fantavacanze_official/features/auth/presentation/pages/signup.dart';
+import 'package:fantavacanze_official/features/auth/presentation/widgets/age_verification_dialog.dart';
 import 'package:fantavacanze_official/features/auth/presentation/widgets/auth_field.dart';
 import 'package:fantavacanze_official/features/auth/presentation/widgets/cloudflare_turnstile_widget.dart';
 import 'package:fantavacanze_official/features/auth/presentation/widgets/rich_text.dart';
@@ -26,6 +28,11 @@ class StandardLoginPage extends StatefulWidget {
 class _StandardLoginPageState extends State<StandardLoginPage> {
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
   String turnstileToken = "";
+  bool isVerificationDialogShown = false;
+
+  // Add a global key to reference the CloudflareTurnstileWidget
+  final GlobalKey<CloudflareTurnstileWidgetState> turnstileKey =
+      GlobalKey<CloudflareTurnstileWidgetState>();
 
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
@@ -35,6 +42,46 @@ class _StandardLoginPageState extends State<StandardLoginPage> {
     emailController.dispose();
     passwordController.dispose();
     super.dispose();
+  }
+
+  void _showAgeVerificationDialog() {
+    if (isVerificationDialogShown) return;
+
+    setState(() => isVerificationDialogShown = true);
+    AgeVerificationDialog.show(
+      context: context,
+      provider: 'Email',
+      initialIsAdult: false,
+      initialIsTermsAccepted: false,
+      onConfirm: (isAdult, isTermsAccepted) {
+        setState(() => isVerificationDialogShown = false);
+
+        // Update consents but don't auto-retry login
+        context.read<AuthBloc>().add(
+              AuthUpdateConsents(
+                isAdult: isAdult,
+                isTermsAccepted: isTermsAccepted,
+              ),
+            );
+
+        // Reset captcha widget after updating consents
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          // Reset the widget using the key
+          turnstileKey.currentState?.resetWidget();
+
+          // Clear the token
+          setState(() => turnstileToken = "");
+
+          showSnackBar(
+            "Consensi aggiornati! Completa il captcha e prova a fare il login.",
+            color: ColorPalette.success,
+          );
+        });
+      },
+      onCancel: () {
+        setState(() => isVerificationDialogShown = false);
+      },
+    );
   }
 
   @override
@@ -84,35 +131,38 @@ class _StandardLoginPageState extends State<StandardLoginPage> {
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: ThemeSizes.lg),
                   child: CloudflareTurnstileWidget(
+                    key: turnstileKey, // Use the global key here
                     onTokenReceived: (token) {
-                      setState(() {
-                        turnstileToken = token;
-                      });
-
-                      // print("Token: $turnstileToken");
+                      setState(() => turnstileToken = token);
                     },
                   ),
                 ),
                 BlocConsumer<AuthBloc, AuthState>(
                   listener: (context, state) {
-                    if (state is AuthFailure) {
+                    if (state is AuthNeedsConsent &&
+                        ModalRoute.of(context)?.isCurrent == true) {
+                      _showAgeVerificationDialog();
+                    } else if (state is AuthConsentsUpdated) {
+                      showSnackBar(
+                        "Consensi aggiornati! Ora riprova a fare il login.",
+                        color: ColorPalette.success,
+                      );
+                    } else if (state is AuthFailure) {
                       showDialog(
                         context: context,
-                        builder: (context) => AuthDialogBox(
-                          title: "Errore Login!",
+                        builder: (_) => AuthDialogBox(
+                          title: "Errore di accesso",
                           description: state.message,
                           type: DialogType.error,
                           isMultiButton: false,
                         ),
                       );
-                    }
-                    if (state is AuthSuccess) {
+                    } else if (state is AuthSuccess) {
                       Navigator.pushAndRemoveUntil(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => InitialPage(),
-                          ),
-                          (route) => false);
+                        context,
+                        MaterialPageRoute(builder: (_) => InitialPage()),
+                        (route) => false,
+                      );
                     }
                   },
                   builder: (context, state) {
@@ -128,13 +178,14 @@ class _StandardLoginPageState extends State<StandardLoginPage> {
                         if (turnstileToken.isEmpty) {
                           showDialog(
                             context: context,
-                            builder: (context) => AuthDialogBox(
+                            builder: (_) => AuthDialogBox(
                               title: "hCaptcha Error..",
                               description: "Dimostra di essere un umano!",
                               type: DialogType.error,
                               isMultiButton: false,
                             ),
                           );
+                          return;
                         }
                         if (formKey.currentState!.validate()) {
                           context.read<AuthBloc>().add(
@@ -148,11 +199,9 @@ class _StandardLoginPageState extends State<StandardLoginPage> {
                       },
                       style: context.elevatedButtonThemeData.style!.copyWith(
                         backgroundColor: WidgetStatePropertyAll(
-                          ColorPalette.primary(ThemeMode.dark),
-                        ),
+                            ColorPalette.primary(ThemeMode.dark)),
                         foregroundColor: WidgetStatePropertyAll(
-                          ColorPalette.textPrimary(ThemeMode.dark),
-                        ),
+                            ColorPalette.textPrimary(ThemeMode.dark)),
                       ),
                       label: const Text("Accedi"),
                       icon: SvgPicture.asset(
@@ -168,14 +217,10 @@ class _StandardLoginPageState extends State<StandardLoginPage> {
         )
       ],
       newColumnWidgets: [
-        /* ----------------------------------------------------------- */
-        //Testo nella parte bassa della pagina
         Padding(
           padding: const EdgeInsets.symmetric(vertical: ThemeSizes.xl),
           child: CustomRichText(
-            onPressed: () {
-              Navigator.of(context).push(SignUpPage.route);
-            },
+            onPressed: () => Navigator.of(context).push(SignUpPage.route),
             initialText: "Non hai un account?",
             richText: "Crealo ora.",
             richTxtColor: ColorPalette.secondary(ThemeMode.dark),

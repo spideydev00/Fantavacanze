@@ -79,7 +79,7 @@ class _NotesPageState extends State<NotesPage> {
     final String targetId = _getTargetId();
 
     if (targetId.isEmpty || _noteController.text.trim().isEmpty) {
-      showSnackBar(context, 'Seleziona un partecipante e inserisci una nota');
+      showSnackBar('Seleziona un partecipante e inserisci una nota');
       return;
     }
 
@@ -168,13 +168,9 @@ class _NotesPageState extends State<NotesPage> {
               break;
             case 'save':
               _loadNotes(); // Reload notes after save
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Nota salvata',
-                      style: TextStyle(color: Colors.white)),
-                  backgroundColor: ColorPalette.success,
-                  duration: Duration(seconds: 1),
-                ),
+              showSnackBar(
+                'Nota salvata con successo!',
+                color: ColorPalette.success,
               );
               break;
             case 'delete':
@@ -182,7 +178,7 @@ class _NotesPageState extends State<NotesPage> {
               break;
           }
         } else if (state is LeagueError) {
-          showSnackBar(context, state.message);
+          showSnackBar(state.message);
         }
       },
       builder: (context, state) {

@@ -1,18 +1,21 @@
 import 'dart:io';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:fantavacanze_official/core/constants/constants.dart';
 import 'package:fantavacanze_official/core/cubits/app_league/app_league_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit.dart';
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
+import 'package:fantavacanze_official/core/extensions/context_extension.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:fantavacanze_official/core/utils/show_snackbar.dart';
+import 'package:fantavacanze_official/core/utils/sort_by_date.dart';
+import 'package:fantavacanze_official/core/widgets/buttons/gradient_option_button.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/event.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/league.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/memory.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_event.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_state.dart';
-import 'package:fantavacanze_official/core/widgets/empty_state.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/memories/widgets/add_memory_bottom_sheet.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/memories/widgets/memory_card.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/memories/widgets/memory_detail_screen.dart';
@@ -36,7 +39,7 @@ class _MemoriesPageState extends State<MemoriesPage>
   bool _isAdmin = false;
   bool _isLoading = false;
 
-  // Add these new variables to store form data
+  // Variabili per memorizzare i dati del form
   String _pendingMemoryText = '';
   String? _pendingEventId;
   String? _pendingEventName;
@@ -67,12 +70,7 @@ class _MemoriesPageState extends State<MemoriesPage>
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: context.bgColor,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(
-          top: Radius.circular(ThemeSizes.borderRadiusLg),
-        ),
-      ),
+      backgroundColor: Colors.transparent,
       builder: (context) => AddMemoryBottomSheet(
         league: _currentLeague!,
         events: _currentLeague!.events,
@@ -101,21 +99,41 @@ class _MemoriesPageState extends State<MemoriesPage>
     });
   }
 
+  /// Elimina subito il ricordo, senza mostrare una seconda conferma
+  void _deleteMemoryImmediate(String memoryId) {
+    if (_currentLeague == null) return;
+    context.read<LeagueBloc>().add(
+          RemoveMemoryEvent(
+            league: _currentLeague!,
+            memoryId: memoryId,
+          ),
+        );
+  }
+
+  /// Rimuove il ricordo mostrando dialog di conferma
   void _deleteMemory(String memoryId) {
     if (_currentLeague == null) return;
 
-    // Confirmation dialog
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Conferma eliminazione'),
         content: const Text('Sei sicuro di voler eliminare questo ricordo?'),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusLg),
+        ),
+        backgroundColor: context.bgColor,
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Annulla'),
+            child: Text(
+              'Annulla',
+              style: TextStyle(
+                color: context.textSecondaryColor,
+              ),
+            ),
           ),
-          TextButton(
+          ElevatedButton(
             onPressed: () {
               Navigator.pop(context);
               context.read<LeagueBloc>().add(
@@ -125,8 +143,9 @@ class _MemoriesPageState extends State<MemoriesPage>
                     ),
                   );
             },
-            style: TextButton.styleFrom(
-              foregroundColor: ColorPalette.error,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: ColorPalette.error,
+              foregroundColor: Colors.white,
             ),
             child: const Text('Elimina'),
           ),
@@ -135,6 +154,7 @@ class _MemoriesPageState extends State<MemoriesPage>
     );
   }
 
+  /// Apre lo schermo di dettaglio e passa il callback "immediato"
   void _openMemoryDetail(Memory memory) {
     Navigator.push(
       context,
@@ -142,10 +162,39 @@ class _MemoriesPageState extends State<MemoriesPage>
         builder: (context) => MemoryDetailScreen(
           memory: memory,
           isCurrentUserAuthor: memory.userId == _currentUserId || _isAdmin,
-          onDelete: () => _deleteMemory(memory.id),
+          onDelete: () => _deleteMemoryImmediate(memory.id),
         ),
       ),
     );
+  }
+
+  Widget _buildAddMemoryButton() {
+    return _isLoading
+        ? Container(
+            width: 150,
+            height: 150,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusLg),
+              color: context.secondaryBgColor,
+            ),
+            child: Center(
+              child: CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(context.primaryColor),
+              ),
+            ),
+          )
+        : GradientOptionButton(
+            isSelected: true,
+            label: 'Aggiungi un ricordo',
+            icon: Icons.add_photo_alternate_rounded,
+            onTap: _showAddMemoryBottomSheet,
+            primaryColor: const Color(0xFF614385),
+            secondaryColor: const Color(0xFF516395),
+            iconSize: 32,
+            labelFontSize: 14,
+            description: 'Immortala un momento speciale',
+            descriptionFontSize: 12,
+          );
   }
 
   @override
@@ -155,12 +204,11 @@ class _MemoriesPageState extends State<MemoriesPage>
     return BlocConsumer<LeagueBloc, LeagueState>(
       listener: (context, state) {
         if (state is LeagueError) {
-          showSnackBar(context, state.message);
+          showSnackBar(state.message);
           setState(() {
             _isLoading = false;
           });
         } else if (state is ImageUploadSuccess) {
-          // After image upload, add the memory
           if (_currentLeague != null && _currentUserId != null) {
             context.read<LeagueBloc>().add(AddMemoryEvent(
                   league: _currentLeague!,
@@ -175,21 +223,12 @@ class _MemoriesPageState extends State<MemoriesPage>
           setState(() {
             _isLoading = false;
           });
-          // Update the current league reference
           _currentLeague = state.league;
-
-          // Clear the pending data
           _pendingMemoryText = '';
           _pendingEventId = null;
           _pendingEventName = null;
-
-          // Close bottom sheet if it's open
-          if (Navigator.canPop(context)) {
-            Navigator.pop(context);
-          }
-
+          if (Navigator.canPop(context)) Navigator.pop(context);
           showSnackBar(
-            context,
             'Ricordo aggiunto con successo!',
             color: ColorPalette.success,
           );
@@ -201,104 +240,208 @@ class _MemoriesPageState extends State<MemoriesPage>
             if (leagueState is AppLeagueExists) {
               _currentLeague = leagueState.selectedLeague;
               _isAdmin = _currentLeague!.admins.contains(_currentUserId);
-
               final memories = _currentLeague!.memories;
-
               return Scaffold(
-                floatingActionButton: FloatingActionButton(
-                  onPressed: _isLoading ? null : _showAddMemoryBottomSheet,
-                  child: _isLoading
-                      ? const CircularProgressIndicator(color: Colors.white)
-                      : const Icon(Icons.add_photo_alternate),
-                ),
                 body: memories.isEmpty
-                    ? Padding(
-                        padding: const EdgeInsets.all(ThemeSizes.md),
-                        child: const EmptyState(
-                          icon: Icons.sports_kabaddi_rounded,
-                          title: 'Nessun ricordo...',
-                          subtitle: 'Aggiungi dei ricordi della tua vacanza :)',
-                        ),
-                      )
-                    : RefreshIndicator(
-                        onRefresh: () async {
-                          if (_currentLeague != null) {
-                            context.read<LeagueBloc>().add(
-                                GetLeagueEvent(leagueId: _currentLeague!.id));
-                          }
-                        },
-                        child: CustomScrollView(
-                          slivers: [
-                            // Recent memories in horizontal list
-                            SliverToBoxAdapter(
-                              child: _buildRecentMemories(memories),
-                            ),
-
-                            // All memories in staggered grid
-                            SliverPadding(
-                              padding: const EdgeInsets.all(ThemeSizes.md),
-                              sliver: SliverMasonryGrid.count(
-                                crossAxisCount: 2,
-                                mainAxisSpacing: ThemeSizes.md,
-                                crossAxisSpacing: ThemeSizes.md,
-                                childCount: memories.length,
-                                itemBuilder: (context, index) {
-                                  final memory = memories[index];
-                                  return MemoryCard(
-                                    memory: memory,
-                                    isCurrentUserAuthor:
-                                        memory.userId == _currentUserId ||
-                                            _isAdmin,
-                                    onTap: () => _openMemoryDetail(memory),
-                                    onDelete: () => _deleteMemory(memory.id),
-                                  );
-                                },
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
+                    ? _buildEmptyState()
+                    : _buildMemoriesGrid(memories),
               );
             }
 
-            return const Center(child: Text('Nessuna lega selezionata'));
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.sports_score_outlined,
+                    size: 60,
+                    color: context.textSecondaryColor.withValues(alpha: 0.5),
+                  ),
+                  const SizedBox(height: ThemeSizes.md),
+                  Text(
+                    'Nessuna lega selezionata',
+                    style: TextStyle(
+                      fontSize: 18,
+                      color: context.textSecondaryColor,
+                    ),
+                  ),
+                ],
+              ),
+            );
           },
         );
       },
     );
   }
 
+  Widget _buildEmptyState() {
+    return Padding(
+      padding: const EdgeInsets.all(ThemeSizes.md),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Icon(Icons.grid_view_rounded, size: 16),
+              const SizedBox(width: 8),
+              Text(
+                'Porta con te i tuoi ricordi',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: context.textPrimaryColor,
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 20),
+          Text(
+            'Qui puoi caricare foto della vacanza e condividerle con gli altri partecipanti della lega. Puoi collegarle ad un evento della lega, per sbeffeggiare gli altri ancora di più!',
+            style: context.textTheme.bodyMedium!.copyWith(
+              fontStyle: FontStyle.italic,
+            ),
+          ),
+          SizedBox(height: 60),
+          SizedBox(
+            height: Constants.getHeight(context) * 0.25,
+            child: _buildAddMemoryButton(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Grid with memories and positioned add button
+  Widget _buildMemoriesGrid(List<Memory> memories) {
+    // Use the utility function to sort memories by creation date (newest first)
+    final sortedMemories = sortMemoriesByDate(memories);
+
+    return RefreshIndicator(
+      onRefresh: () async {
+        if (_currentLeague != null) {
+          context.read<LeagueBloc>().add(
+                GetLeagueEvent(leagueId: _currentLeague!.id),
+              );
+        }
+      },
+      color: context.primaryColor,
+      backgroundColor: context.secondaryBgColor,
+      child: CustomScrollView(
+        physics: const BouncingScrollPhysics(),
+        slivers: [
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(
+                ThemeSizes.md,
+                0,
+                ThemeSizes.md,
+                0,
+              ),
+            ),
+          ),
+          SliverToBoxAdapter(child: _buildRecentMemories(memories)),
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: ThemeSizes.md,
+                vertical: ThemeSizes.sm,
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.grid_view_rounded, size: 16),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Porta con te i tuoi ricordi',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: context.textPrimaryColor,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          SliverPadding(
+            padding: const EdgeInsets.all(ThemeSizes.md),
+            sliver: SliverToBoxAdapter(
+              child: MasonryGridView.count(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                crossAxisCount: 2,
+                mainAxisSpacing: ThemeSizes.md,
+                crossAxisSpacing: ThemeSizes.md,
+                itemCount: sortedMemories.length + 1, // Use sortedMemories
+                itemBuilder: (context, index) {
+                  // Place add button as the second item
+                  if (index == 1) {
+                    return _buildAddMemoryButton();
+                  }
+
+                  // Adjust index for memories
+                  final memoryIndex = index > 1 ? index - 1 : index;
+                  final memory =
+                      sortedMemories[memoryIndex]; // Use sortedMemories
+
+                  return MemoryCard(
+                    memory: memory,
+                    isCurrentUserAuthor:
+                        memory.userId == _currentUserId || _isAdmin,
+                    onTap: () => _openMemoryDetail(memory),
+                    onDelete: () => _deleteMemory(memory.id),
+                  );
+                },
+              ),
+            ),
+          ),
+          const SliverToBoxAdapter(child: SizedBox(height: 40)),
+        ],
+      ),
+    );
+  }
+
   Widget _buildRecentMemories(List<Memory> memories) {
     if (memories.length <= 3) return const SizedBox.shrink();
 
-    // Take the 5 most recent memories for the horizontal list
-    final recentMemories = List<Memory>.from(memories)
-      ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    // Use the utility function for recent memories too
+    final recentMemories = sortMemoriesByDate(memories);
     final topMemories = recentMemories.take(5).toList();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Padding(
-          padding: EdgeInsets.only(
+        Padding(
+          padding: const EdgeInsets.only(
             left: ThemeSizes.md,
             right: ThemeSizes.md,
             top: ThemeSizes.md,
           ),
-          child: Text(
-            'Ricordi recenti',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
+          child: Row(
+            children: [
+              Icon(Icons.access_time_rounded,
+                  size: 16, color: context.primaryColor),
+              const SizedBox(width: 8),
+              Text(
+                'Ricordi recenti',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: context.textPrimaryColor,
+                ),
+              ),
+            ],
           ),
         ),
         const SizedBox(height: ThemeSizes.sm),
         SizedBox(
-          height: 140,
+          height: 180,
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: ThemeSizes.sm),
+            physics: const BouncingScrollPhysics(),
+            padding: const EdgeInsets.only(
+              left: ThemeSizes.sm,
+              right: ThemeSizes.sm,
+              bottom: ThemeSizes.sm,
+            ),
             itemCount: topMemories.length,
             itemBuilder: (context, index) {
               final memory = topMemories[index];
@@ -307,15 +450,15 @@ class _MemoriesPageState extends State<MemoriesPage>
                 child: GestureDetector(
                   onTap: () => _openMemoryDetail(memory),
                   child: Container(
-                    width: 140,
+                    width: 160,
                     decoration: BoxDecoration(
                       borderRadius:
-                          BorderRadius.circular(ThemeSizes.borderRadiusMd),
+                          BorderRadius.circular(ThemeSizes.borderRadiusLg),
                       boxShadow: [
                         BoxShadow(
                           color: Colors.black.withValues(alpha: 0.1),
-                          blurRadius: 4,
-                          offset: const Offset(0, 2),
+                          blurRadius: 8,
+                          offset: const Offset(0, 3),
                         ),
                       ],
                     ),
@@ -323,23 +466,22 @@ class _MemoriesPageState extends State<MemoriesPage>
                     child: Stack(
                       fit: StackFit.expand,
                       children: [
-                        // Memory image
-                        CachedNetworkImage(
-                          imageUrl: memory.imageUrl,
-                          fit: BoxFit.cover,
-                          placeholder: (context, url) => Container(
-                            color: context.secondaryBgColor,
-                            child: const Center(
-                              child: CircularProgressIndicator(),
+                        Hero(
+                          tag: 'recent_memory_${memory.id}',
+                          child: CachedNetworkImage(
+                            imageUrl: memory.imageUrl,
+                            fit: BoxFit.cover,
+                            placeholder: (context, url) => Container(
+                              color: context.secondaryBgColor,
+                              child: const Center(
+                                  child: CircularProgressIndicator()),
+                            ),
+                            errorWidget: (context, url, error) => Container(
+                              color: context.secondaryBgColor,
+                              child: const Icon(Icons.error),
                             ),
                           ),
-                          errorWidget: (context, url, error) => Container(
-                            color: context.secondaryBgColor,
-                            child: const Icon(Icons.error),
-                          ),
                         ),
-
-                        // Gradient overlay for text readability
                         Positioned.fill(
                           child: Container(
                             decoration: BoxDecoration(
@@ -348,28 +490,86 @@ class _MemoriesPageState extends State<MemoriesPage>
                                 end: Alignment.bottomCenter,
                                 colors: [
                                   Colors.transparent,
-                                  Colors.black.withValues(alpha: 0.7),
+                                  Colors.black.withValues(alpha: 0.3),
+                                  Colors.black.withValues(alpha: 0.8),
                                 ],
-                                stops: const [0.6, 1.0],
+                                stops: const [0.5, 0.8, 1.0],
                               ),
                             ),
                           ),
                         ),
-
-                        // User name at bottom
                         Positioned(
-                          bottom: 8,
-                          left: 8,
-                          right: 8,
-                          child: Text(
-                            memory.participantName,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 12,
+                          bottom: 0,
+                          left: 0,
+                          right: 0,
+                          child: Padding(
+                            padding: const EdgeInsets.all(ThemeSizes.sm),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                if (memory.eventName != null)
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 6, vertical: 2),
+                                    decoration: BoxDecoration(
+                                      color: context.primaryColor,
+                                      borderRadius: BorderRadius.circular(4),
+                                    ),
+                                    child: Text(
+                                      memory.eventName!,
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 10,
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                const SizedBox(height: 4),
+                                Row(
+                                  children: [
+                                    CircleAvatar(
+                                      radius: 10,
+                                      backgroundColor:
+                                          ColorPalette.getGradientFromId(
+                                                  memory.userId)
+                                              .colors
+                                              .first,
+                                      child: Text(
+                                        memory.participantName
+                                            .substring(0, 1)
+                                            .toUpperCase(),
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 10,
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 6),
+                                    Expanded(
+                                      child: Text(
+                                        memory.participantName,
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 12,
+                                          shadows: [
+                                            Shadow(
+                                                color: Colors.black,
+                                                blurRadius: 2)
+                                          ],
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
                             ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
                       ],
@@ -378,17 +578,6 @@ class _MemoriesPageState extends State<MemoriesPage>
                 ),
               );
             },
-          ),
-        ),
-        const SizedBox(height: ThemeSizes.md),
-        const Padding(
-          padding: EdgeInsets.symmetric(horizontal: ThemeSizes.md),
-          child: Text(
-            'Tutti i ricordi',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
           ),
         ),
       ],

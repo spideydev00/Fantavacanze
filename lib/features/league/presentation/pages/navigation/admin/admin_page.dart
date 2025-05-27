@@ -14,10 +14,11 @@ import 'package:fantavacanze_official/features/league/presentation/bloc/league_s
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/admin/sections/admin_section.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/admin/sections/league_info_section.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/admin/sections/participants_section.dart';
-import 'package:fantavacanze_official/features/league/presentation/pages/navigation/events/add_event.dart';
+import 'package:fantavacanze_official/features/league/presentation/pages/navigation/events/add_event_page.dart';
 import 'package:fantavacanze_official/core/widgets/dialogs/confirmation_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:fantavacanze_official/core/widgets/buttons/danger_action_button.dart';
 
 class AdminPage extends StatefulWidget {
   static Route get route =>
@@ -64,7 +65,7 @@ class _AdminPageState extends State<AdminPage> {
           });
 
           if (state is LeagueError) {
-            showSnackBar(context, state.message, color: ColorPalette.error);
+            showSnackBar(state.message, color: ColorPalette.error);
           } else if (state is AdminOperationSuccess) {
             _currentLeague = state.league;
 
@@ -86,7 +87,7 @@ class _AdminPageState extends State<AdminPage> {
                 message = 'Operazione completata con successo';
             }
 
-            showSnackBar(context, message, color: ColorPalette.success);
+            showSnackBar(message, color: ColorPalette.success);
 
             // Update any child state if needed
             if (state.operation == 'remove_participants') {
@@ -94,7 +95,7 @@ class _AdminPageState extends State<AdminPage> {
             }
           } else if (state is LeagueSuccess) {
             if (state.operation == 'add_event') {
-              showSnackBar(context, 'Evento aggiunto con successo',
+              showSnackBar('Evento aggiunto con successo',
                   color: ColorPalette.success);
             }
           } else if (state is DeleteLeagueSuccess) {
@@ -103,7 +104,6 @@ class _AdminPageState extends State<AdminPage> {
             context.read<AppNavigationCubit>().setIndex(0);
             // Show success message
             showSnackBar(
-              context,
               'Lega eliminata con successo',
               color: ColorPalette.success,
             );
@@ -113,7 +113,12 @@ class _AdminPageState extends State<AdminPage> {
       child: Scaffold(
         backgroundColor: context.bgColor,
         appBar: AppBar(
-          title: const Text('Admin'),
+          title: Text(
+            'Admin',
+            style: context.textTheme.titleMedium!.copyWith(
+              fontWeight: FontWeight.bold,
+            ),
+          ),
           elevation: 0,
         ),
         body: _isLoading
@@ -317,70 +322,11 @@ class _AdminPageState extends State<AdminPage> {
   }
 
   Widget _buildDeleteLeagueButton() {
-    return Container(
-      margin: const EdgeInsets.symmetric(vertical: ThemeSizes.md),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusLg),
-        gradient: LinearGradient(
-          colors: [
-            ColorPalette.error.withValues(alpha: 0.05),
-            ColorPalette.error.withValues(alpha: 0.1),
-          ],
-        ),
-        border: Border.all(color: ColorPalette.error.withValues(alpha: 0.3)),
-      ),
-      child: Material(
-        color: Colors.transparent,
-        borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusLg),
-        child: InkWell(
-          onTap: () => _showDeleteLeagueDialog(context),
-          borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusLg),
-          splashColor: ColorPalette.error.withValues(alpha: 0.1),
-          highlightColor: ColorPalette.error.withValues(alpha: 0.05),
-          child: Padding(
-            padding: const EdgeInsets.all(ThemeSizes.md),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: ColorPalette.error.withValues(alpha: 0.1),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons.delete_forever,
-                    color: ColorPalette.error,
-                    size: 22,
-                  ),
-                ),
-                const SizedBox(width: ThemeSizes.md),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Elimina Lega',
-                        style: context.textTheme.bodyLarge!.copyWith(
-                          color: ColorPalette.error,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      Text(
-                        'Questa azione non può essere annullata',
-                        maxLines: 2,
-                        style: context.textTheme.bodySmall!.copyWith(
-                          color: ColorPalette.error.withValues(alpha: 0.7),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
+    return DangerActionButton(
+      title: 'Elimina Lega',
+      description: 'Questa azione non può essere annullata',
+      icon: Icons.delete_forever,
+      onTap: () => _showDeleteLeagueDialog(context),
     );
   }
 
