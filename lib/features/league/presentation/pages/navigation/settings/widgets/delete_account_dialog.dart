@@ -1,3 +1,4 @@
+import 'package:fantavacanze_official/core/cubits/app_league/app_league_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit.dart';
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/extensions/context_extension.dart';
@@ -50,8 +51,13 @@ class _DeleteAccountDialogState extends State<DeleteAccountDialog> {
     setState(() => _isLoading = true);
 
     try {
+      late bool success;
+      await context.read<AppLeagueCubit>().clearCache();
+
       // Call deleteAccount and get success status
-      final success = await context.read<AppUserCubit>().deleteAccount();
+      if (mounted) {
+        success = await context.read<AppUserCubit>().deleteAccount();
+      }
 
       if (success) {
         // Navigate to login screen only on success

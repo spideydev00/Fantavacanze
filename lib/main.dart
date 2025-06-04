@@ -2,9 +2,11 @@ import 'package:fantavacanze_official/core/cubits/app_league/app_league_cubit.da
 import 'package:fantavacanze_official/core/cubits/app_navigation/app_navigation_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/app_theme/app_theme_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit.dart';
+import 'package:fantavacanze_official/core/cubits/notification_count/notification_count_cubit.dart';
 import 'package:fantavacanze_official/core/theme/theme.dart';
 import 'package:fantavacanze_official/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc.dart';
+import 'package:fantavacanze_official/features/league/presentation/bloc/league_event.dart';
 import 'package:fantavacanze_official/init_dependencies/init_dependencies.dart';
 import 'package:fantavacanze_official/initial_page.dart';
 import 'package:flutter/material.dart';
@@ -41,7 +43,8 @@ void main() async {
           BlocProvider(create: (_) => serviceLocator<AppUserCubit>()),
           BlocProvider(create: (_) => serviceLocator<AppLeagueCubit>()),
           BlocProvider(create: (_) => serviceLocator<AppNavigationCubit>()),
-          BlocProvider(create: (_) => serviceLocator<AppThemeCubit>()),
+          BlocProvider(create: (_) => serviceLocator<NotificationCountCubit>()),
+          BlocProvider.value(value: themeCubit),
         ],
         child: const MyApp(),
       ),
@@ -70,11 +73,16 @@ class _MyAppState extends State<MyApp> {
 
       if (mounted && context.read<AppUserCubit>().state is AppUserIsLoggedIn) {
         await context.read<AppLeagueCubit>().getUserLeagues();
+
+        if (mounted) {
+          // Load notifications
+          context.read<LeagueBloc>().add(GetNotificationsEvent());
+        }
       }
 
-      await Future.delayed(const Duration(seconds: 2));
+      await Future.delayed(const Duration(seconds: 1));
     } catch (e) {
-      debugPrint("Error in initialization: $e");
+      debugPrint("Errore di inizializzazione nel main: $e");
     } finally {
       FlutterNativeSplash.remove();
     }

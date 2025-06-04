@@ -2,21 +2,27 @@ import 'dart:async';
 import 'dart:io';
 import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit.dart';
 import 'package:fantavacanze_official/core/errors/exceptions.dart';
-import 'package:fantavacanze_official/features/league/data/models/daily_challenge_model.dart';
-import 'package:fantavacanze_official/features/league/data/models/event_model.dart';
-import 'package:fantavacanze_official/features/league/data/models/individual_participant_model.dart';
-import 'package:fantavacanze_official/features/league/data/models/league_model.dart';
-import 'package:fantavacanze_official/features/league/data/models/memory_model.dart';
-import 'package:fantavacanze_official/features/league/data/models/participant_model.dart';
-import 'package:fantavacanze_official/features/league/data/models/rule_model.dart';
-import 'package:fantavacanze_official/features/league/data/models/team_participant_model.dart';
-import 'package:fantavacanze_official/features/league/data/models/simple_participant_model.dart';
-import 'package:fantavacanze_official/features/league/domain/entities/rule.dart';
+import 'package:fantavacanze_official/features/league/data/models/daily_challenge_model/daily_challenge_model.dart';
+import 'package:fantavacanze_official/features/league/data/models/event_model/event_model.dart';
+import 'package:fantavacanze_official/features/league/data/models/individual_participant_model/individual_participant_model.dart';
+import 'package:fantavacanze_official/features/league/data/models/league_model/league_model.dart';
+import 'package:fantavacanze_official/features/league/data/models/memory_model/memory_model.dart';
+import 'package:fantavacanze_official/features/league/data/models/notification_model/daily_challenge_notification/daily_challenge_notification_model.dart';
+import 'package:fantavacanze_official/features/league/data/models/notification_model/notification/notification_model.dart';
+import 'package:fantavacanze_official/features/league/data/models/participant_model/participant_model.dart';
+import 'package:fantavacanze_official/features/league/data/models/rule_model/rule_model.dart';
+import 'package:fantavacanze_official/features/league/data/models/team_participant_model/team_participant_model.dart';
+import 'package:fantavacanze_official/features/league/data/models/simple_participant_model/simple_participant_model.dart';
+import 'package:fantavacanze_official/features/league/domain/entities/rule/rule.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:uuid/uuid.dart';
 
 abstract class LeagueRemoteDataSource {
-  // League operations
+  // =====================================================================
+  // LEAGUE OPERATIONS
+  // =====================================================================
   Future<LeagueModel> createLeague({
     required String name,
     required String? description,
@@ -38,7 +44,9 @@ abstract class LeagueRemoteDataSource {
     String? description,
   });
 
-  // Participant operations
+  // =====================================================================
+  // PARTICIPANT OPERATIONS
+  // =====================================================================
   Future<LeagueModel> joinLeague({
     required String inviteCode,
     String? teamName,
@@ -70,7 +78,9 @@ abstract class LeagueRemoteDataSource {
     String? newCaptainId,
   });
 
-  // Event operations
+  // =====================================================================
+  // EVENT OPERATIONS
+  // =====================================================================
   Future<LeagueModel> addEvent({
     required LeagueModel league,
     required String name,
@@ -82,7 +92,9 @@ abstract class LeagueRemoteDataSource {
     String? description,
   });
 
-  // Memory operations
+  // =====================================================================
+  // MEMORY OPERATIONS
+  // =====================================================================
   Future<LeagueModel> addMemory({
     required LeagueModel league,
     required String imageUrl,
@@ -96,7 +108,9 @@ abstract class LeagueRemoteDataSource {
     required String memoryId,
   });
 
-  // Rule operations
+  // =====================================================================
+  // RULE OPERATIONS
+  // =====================================================================
   Future<List<RuleModel>> getRules({required String mode});
   Future<LeagueModel> updateRule({
     required LeagueModel league,
@@ -112,7 +126,9 @@ abstract class LeagueRemoteDataSource {
     required RuleModel rule,
   });
 
-  // Storage operations
+  // =====================================================================
+  // STORAGE OPERATIONS
+  // =====================================================================
   Future<String> uploadImage({
     required String leagueId,
     required File imageFile,
@@ -128,20 +144,46 @@ abstract class LeagueRemoteDataSource {
     required String logoUrl,
   });
 
-  // Daily challenge operations
+  // =====================================================================
+  // DAILY CHALLENGE OPERATIONS
+  // =====================================================================
   Future<List<DailyChallengeModel>> getDailyChallenges({
     required String userId,
+    required String leagueId,
   });
+
+  Future<void> sendChallengeNotification({
+    required LeagueModel league,
+    required DailyChallengeModel challenge,
+    required String userId,
+  });
+
   Future<void> markChallengeAsCompleted({
     required DailyChallengeModel challenge,
     required LeagueModel league,
     required String userId,
   });
+
   Future<void> updateChallengeRefreshStatus({
     required String challengeId,
     required String userId,
     required bool isRefreshed,
   });
+
+  // =====================================================================
+  // NOTIFICATION OPERATIONS
+  // =====================================================================
+  Stream<RemoteNotification> listenToNotification();
+
+  Future<List<NotificationModel>> getNotifications();
+
+  Future<void> markAsRead(String notificationId);
+
+  Future<void> deleteNotification(String notificationId);
+
+  Future<void> approveDailyChallenge(String notificationId);
+
+  Future<void> rejectDailyChallenge(String notificationId);
 }
 
 class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
@@ -153,11 +195,32 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
   String? _cachedUserId;
   String? _cachedUserName;
 
+  // StreamController to handle incoming notifications
+  final StreamController<RemoteNotification> _notificationController =
+      StreamController<RemoteNotification>.broadcast();
+
+  // Expose the notification stream to listen for incoming notifications
+  Stream<RemoteNotification> get notificationStream =>
+      _notificationController.stream;
+
+  void initNotificationListener() {
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      if (message.notification != null) {
+        _notificationController.add(message.notification!);
+        debugPrint('📨 Notifica ricevuta: ${message.notification!.title}');
+      } else {
+        debugPrint('📨 Messaggio ricevuto senza notifica');
+      }
+    });
+  }
+
   LeagueRemoteDataSourceImpl({
     required this.supabaseClient,
     required this.uuid,
     required this.appUserCubit,
-  });
+  }) {
+    initNotificationListener();
+  }
 
   // =====================================================================
   // HELPER METHODS - USER AUTHENTICATION & ERROR HANDLING
@@ -212,12 +275,13 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
     try {
       return await operation();
     } catch (e) {
+      debugPrint('❌ Errore nella comunicazione col database: $e');
       throw ServerException(_extractErrorMessage(e));
     }
   }
 
   // =====================================================================
-  // LEAGUE OPERATIONS
+  // LEAGUE OPERATIONS IMPLEMENTATION
   // =====================================================================
 
   @override
@@ -378,7 +442,7 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
   }
 
   // =====================================================================
-  // PARTICIPANT OPERATIONS
+  // PARTICIPANT OPERATIONS IMPLEMENTATION
   // =====================================================================
 
   @override
@@ -602,7 +666,7 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
   }
 
   // =====================================================================
-  // EVENT OPERATIONS
+  // EVENT OPERATIONS IMPLEMENTATION
   // =====================================================================
 
   @override
@@ -663,7 +727,7 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
   }
 
   // =====================================================================
-  // MEMORY OPERATIONS
+  // MEMORY OPERATIONS IMPLEMENTATION
   // =====================================================================
 
   @override
@@ -751,23 +815,40 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
   }
 
   // =====================================================================
-  // RULE OPERATIONS
+  // RULE OPERATIONS IMPLEMENTATION
   // =====================================================================
 
   @override
   Future<List<RuleModel>> getRules({required String mode}) async {
-    return _tryDatabaseOperation(() async {
-      // Query the appropriate table
-      final tableName = mode == "hard" ? "hard_rules" : "soft_rules";
+    return _tryDatabaseOperation(
+      () async {
+        // Query the appropriate table based on the new mode names
+        final String tableName;
 
-      // Execute the query
-      final response = await supabaseClient.from(tableName).select();
+        switch (mode) {
+          case "male":
+            tableName = "male_rules";
+            break;
+          case "female":
+            tableName = "female_rules";
+            break;
+          case "mixed":
+            tableName = "mixed_rules";
+            break;
+          default:
+            // For custom or any other mode
+            tableName = "mixed_rules";
+        }
 
-      // Parse the response directly into models
-      return (response as List)
-          .map((ruleJson) => RuleModel.fromJson(ruleJson))
-          .toList();
-    });
+        // Execute the query
+        final response = await supabaseClient.from(tableName).select();
+
+        // Parse the response directly into models
+        return (response as List)
+            .map((ruleJson) => RuleModel.fromJson(ruleJson))
+            .toList();
+      },
+    );
   }
 
   @override
@@ -848,7 +929,7 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
   }
 
   // =====================================================================
-  // STORAGE OPERATIONS
+  // STORAGE OPERATIONS IMPLEMENTATION
   // =====================================================================
 
   @override
@@ -862,7 +943,7 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
         bucket: 'memories',
         path: path,
         imageFile: imageFile,
-        expiresIn: 60 * 60 * 24 * 365, // 1 year
+        expiresIn: 60 * 60 * 24 * 365,
       );
     });
   }
@@ -928,18 +1009,22 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
   }
 
   // =====================================================================
-  // DAILY CHALLENGE OPERATIONS
+  // DAILY CHALLENGE OPERATIONS IMPLEMENTATION
   // =====================================================================
 
   @override
   Future<List<DailyChallengeModel>> getDailyChallenges({
     required String userId,
+    required String leagueId,
   }) async {
     return _tryDatabaseOperation(() async {
       // Call the RPC function to get challenges efficiently
       final response = await supabaseClient.rpc(
         'get_daily_challenges',
-        params: {'p_user_id': userId},
+        params: {
+          'p_user_id': userId,
+          'p_league_id': leagueId,
+        },
       );
 
       if (response == null) {
@@ -948,9 +1033,46 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
 
       // Convert to models
       final List<dynamic> challengesJson = response as List<dynamic>;
-      return challengesJson
+
+      final result = challengesJson
           .map((json) => DailyChallengeModel.fromJson(json))
           .toList();
+
+      return result;
+    });
+  }
+
+  @override
+  Future<void> sendChallengeNotification({
+    required LeagueModel league,
+    required DailyChallengeModel challenge,
+    required String userId,
+  }) async {
+    return _tryDatabaseOperation(() async {
+      final now = DateTime.now();
+      final userName = _getCurrentUserName();
+
+      // Create notification data
+      final notificationData = {
+        'id': const Uuid().v4(),
+        'title': 'Nuova sfida completata',
+        'message': '$userName ha completato la sfida "${challenge.name}"',
+        'created_at': now.toIso8601String(),
+        'is_read': false,
+        'type': 'daily_challenge',
+        'user_id': userId,
+        'league_id': league.id,
+        'challenge_id': challenge.id,
+        'challenge_name': challenge.name,
+        'challenge_points': challenge.points,
+        'target_user_ids': league.admins,
+      };
+
+      // Insert notification
+      await supabaseClient
+          .from('daily_challenges_notifications')
+          .insert(notificationData)
+          .select();
     });
   }
 
@@ -961,54 +1083,38 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
     required String userId,
   }) async {
     return _tryDatabaseOperation(() async {
-      // 1) Update the challenge as completed in the database
-      await supabaseClient.from('user_daily_challenges').update({
-        'is_completed': true,
-        'completed_at': DateTime.now().toIso8601String(),
-      }).eq('id', challenge.id);
-
-      // 2) Check if user is an admin of this league
+      // 1) Check if the user is an admin
       final isAdmin = league.admins.contains(userId);
 
       if (isAdmin) {
-        // Reuse the existing addEvent method to avoid code duplication
+        // Admin completes challenge directly - Add event and update challenge status
         await addEvent(
           league: league,
           name: challenge.name,
           points: challenge.points,
           creatorId: userId,
           targetUser: userId,
-          type: challenge.points >= 0 ? RuleType.bonus : RuleType.malus,
+          type: RuleType.bonus,
           isTeamMember: league.isTeamBased,
-          description: 'Obiettivo giornaliero completato',
         );
+
+        // Also update the challenge record to mark it as completed
+        await supabaseClient.from('user_daily_challenges').update({
+          'is_completed': true,
+          'completed_at': DateTime.now().toIso8601String(),
+        }).eq('id', challenge.id);
       } else {
-        // 3) If not admin, create notifications for all admins
-        final now = DateTime.now().toIso8601String();
-        final userName = _getCurrentUserName();
+        // Non-admin - send notification to admins for approval
+        await sendChallengeNotification(
+          league: league,
+          challenge: challenge,
+          userId: userId,
+        );
 
-        final notifications = league.admins
-            .map((adminId) => {
-                  'id': uuid.v4(),
-                  'title': 'Obiettivo Completato',
-                  'message':
-                      '$userName ha completato l\'obiettivo: ${challenge.name}',
-                  'created_at': now,
-                  'is_read': false,
-                  'type': 'challengeCompletion',
-                  'league_id': league.id,
-                  'challenge_id': challenge.id,
-                  'challenge_name': challenge.name,
-                  'challenge_points': challenge.points,
-                  'user_id': userId,
-                  'target_user_id': adminId,
-                })
-            .toList();
-
-        // Insert notifications in batch if any exist
-        if (notifications.isNotEmpty) {
-          await supabaseClient.from('notifications').insert(notifications);
-        }
+        // Update challenge as pending approval
+        await supabaseClient.from('user_daily_challenges').update({
+          'is_pending_approval': true,
+        }).eq('id', challenge.id);
       }
     });
   }
@@ -1019,20 +1125,118 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
     required String userId,
     required bool isRefreshed,
   }) async {
-    return _tryDatabaseOperation(() async {
-      // Update the challenge refresh status in the database
-      await supabaseClient.from('user_daily_challenges').update({
-        'is_refreshed': isRefreshed,
-        'refreshed_at': DateTime.now().toIso8601String(),
-      }).eq('id', challengeId);
-
-      // No need to fetch the updated data - the app will reload challenges when needed
-    });
+    return _tryDatabaseOperation(
+      () async {
+        // Update the challenge refresh status in the database
+        await supabaseClient
+            .from('user_daily_challenges')
+            .update({
+              'is_refreshed': isRefreshed,
+              'refreshed_at': DateTime.now().toIso8601String(),
+            })
+            .eq('id', challengeId)
+            .select();
+      },
+    );
   }
 
   // =====================================================================
-  // NOTIFICATION OPERATIONS
+  // NOTIFICATION OPERATIONS IMPLEMENTATION
   // =====================================================================
+
+  @override
+  Future<List<NotificationModel>> getNotifications() async {
+    return _tryDatabaseOperation(() async {
+      final userId = _checkAuthentication();
+
+      // Use the updated RPC function
+      final response = await supabaseClient.rpc(
+        'get_user_notifications',
+        params: {'p_user_id': userId},
+      );
+
+      // The response now contains objects with a "notification" field
+      final List<dynamic> notificationsWithDate = response as List<dynamic>;
+
+      // Extract just the notification objects
+      final notifications = notificationsWithDate.map((item) {
+        final json = item['notification'];
+
+        if (json['type'] == 'daily_challenge') {
+          return DailyChallengeNotificationModel.fromJson(json);
+        } else {
+          return NotificationModel.fromJson(json);
+        }
+      }).toList();
+
+      return notifications;
+    });
+  }
+
+  @override
+  Future<void> markAsRead(String notificationId) async {
+    return _tryDatabaseOperation(() async {
+      await supabaseClient.rpc(
+        'mark_notification_as_read',
+        params: {'p_notification_id': notificationId},
+      );
+    });
+  }
+
+  @override
+  Future<void> deleteNotification(String notificationId) async {
+    return _tryDatabaseOperation(
+      () async {
+        // Delete from standard notifications table
+        await supabaseClient
+            .from('notifications')
+            .delete()
+            .eq('id', notificationId);
+
+        // Delete from daily challenge notifications table
+        await supabaseClient
+            .from('daily_challenges_notifications')
+            .delete()
+            .eq('id', notificationId);
+      },
+    );
+  }
+
+  @override
+  Future<void> approveDailyChallenge(String notificationId) async {
+    return _tryDatabaseOperation(() async {
+      final eventId = uuid.v4();
+
+      // Call the RPC function with just the notification ID and necessary parameters
+      await supabaseClient.rpc(
+        'approve_daily_challenge',
+        params: {
+          'p_notification_id': notificationId,
+          'p_created_at': DateTime.now().toIso8601String(),
+          'p_event_id': eventId,
+        },
+      );
+    });
+  }
+
+  @override
+  Future<void> rejectDailyChallenge(String notificationId) async {
+    return _tryDatabaseOperation(() async {
+      await deleteNotification(notificationId);
+    });
+  }
+
+  /// Notification listener
+  @override
+  Stream<RemoteNotification> listenToNotification() {
+    try {
+      return notificationStream;
+    } catch (e) {
+      throw ServerException(
+        'Errore durante l\'ascolto delle notifiche: ${_extractErrorMessage(e)}',
+      );
+    }
+  }
 
   // =====================================================================
   // PRIVATE HELPER METHODS

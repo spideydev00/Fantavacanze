@@ -3,7 +3,8 @@ import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit.dart';
 import 'package:fantavacanze_official/core/use-case/usecase.dart';
 import 'package:fantavacanze_official/core/utils/sort_by_date.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/league.dart';
-import 'package:fantavacanze_official/features/league/domain/use_cases/get_user_leagues.dart';
+import 'package:fantavacanze_official/features/league/domain/use_cases/local/clear_local_cache.dart';
+import 'package:fantavacanze_official/features/league/domain/use_cases/remote/league/get_user_leagues.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -13,7 +14,8 @@ part 'app_league_state.dart';
 class AppLeagueCubit extends Cubit<AppLeagueState> {
   final GetUserLeagues _getUserLeagues;
   final SharedPreferences _prefs;
-  final AppUserCubit _appUserCubit; // Add AppUserCubit dependency
+  final AppUserCubit _appUserCubit;
+  final ClearLocalCache _clearLocalCache;
 
   // Key for storing selected league ID in shared preferences
   static const String _selectedLeagueKey = 'selected_league_id';
@@ -21,10 +23,12 @@ class AppLeagueCubit extends Cubit<AppLeagueState> {
   AppLeagueCubit({
     required GetUserLeagues getUserLeagues,
     required SharedPreferences prefs,
-    required AppUserCubit appUserCubit, // Add this parameter
+    required AppUserCubit appUserCubit,
+    required ClearLocalCache clearLocalCache,
   })  : _getUserLeagues = getUserLeagues,
         _prefs = prefs,
-        _appUserCubit = appUserCubit, // Store the reference
+        _appUserCubit = appUserCubit,
+        _clearLocalCache = clearLocalCache,
         super(AppLeagueInitial());
 
   // -----------------------------------------
@@ -36,8 +40,6 @@ class AppLeagueCubit extends Cubit<AppLeagueState> {
     if (userState is! AppUserIsLoggedIn) {
       // User is not logged in or is in onboarding
       // Silently maintain the initial state without showing error
-      debugPrint(
-          "🧊 AppLeagueCubit - Skipping league fetch: User not fully authenticated yet");
       return;
     }
 
@@ -45,12 +47,13 @@ class AppLeagueCubit extends Cubit<AppLeagueState> {
 
     res.fold(
       (l) {
-        debugPrint("🧊 AppLeagueCubit - Error fetching leagues - ${l.message}");
+        debugPrint(
+            "🧊 AppLeagueCubit - Errore nell'ottenimento delle leghe - ${l.message}");
 
         emit(AppLeagueInitial());
       },
       (leagues) {
-        debugPrint("🧊 AppLeagueCubit - Got ${leagues.length} leagues");
+        debugPrint("🧊 AppLeagueCubit - L'utente ha ${leagues.length} leghe");
         if (leagues.isEmpty) {
           emit(AppLeagueInitial());
         } else {
@@ -87,7 +90,7 @@ class AppLeagueCubit extends Cubit<AppLeagueState> {
     }
 
     debugPrint(
-        "🧊 AppLeagueCubit: Selected league: ${selectedLeague.name} (ID: ${selectedLeague.id})");
+        "🧊 AppLeagueCubit - Lega selezionata: ${selectedLeague.name} (ID: ${selectedLeague.id})");
     emit(AppLeagueExists(leagues: leagues, selectedLeague: selectedLeague));
   }
 
@@ -101,8 +104,7 @@ class AppLeagueCubit extends Cubit<AppLeagueState> {
       _prefs.setString(_selectedLeagueKey, league.id);
       emit(currentState.copyWith(selectedLeague: league));
 
-      debugPrint(
-          "✅ AppLeagueCubit: Selected League changed/updated to ${league.name}");
+      debugPrint("✅ AppLeagueCubit - Nuova lega selezionata: ${league.name}");
     }
   }
 
@@ -123,7 +125,8 @@ class AppLeagueCubit extends Cubit<AppLeagueState> {
 
       _prefs.setString(_selectedLeagueKey, league.id);
 
-      debugPrint('✅ AppLeagueCubit: Updated ${league.name} information');
+      debugPrint(
+          '✅ AppLeagueCubit: Informazioni della lega ${league.name} aggiornate');
     }
   }
 
@@ -136,5 +139,21 @@ class AppLeagueCubit extends Cubit<AppLeagueState> {
       _prefs.remove(_selectedLeagueKey);
       emit(currentState.copyWith(selectedLeague: null));
     }
+  }
+
+  /// Clears all locally cached league data
+  Future<void> clearCache() async {
+    final res = await _clearLocalCache(NoParams());
+
+    res.fold((failure) {
+      debugPrint(
+          "❌ AppLeagueCubit - Errore nella pulizia della cache: ${failure.message}");
+    }, (_) {
+      // Also clear the selected league from preferences
+      _prefs.remove(_selectedLeagueKey);
+
+      // Reset to initial state
+      emit(AppLeagueInitial());
+    });
   }
 }

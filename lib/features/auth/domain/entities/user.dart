@@ -2,6 +2,7 @@ class User {
   final String id;
   final String email;
   final String name;
+  final String? gender;
   final bool isPremium;
   final bool isOnboarded;
   final bool isAdult;
@@ -13,6 +14,7 @@ class User {
     required this.id,
     required this.email,
     required this.name,
+    required this.gender,
     this.isPremium = false,
     required this.isOnboarded,
     required this.isAdult,

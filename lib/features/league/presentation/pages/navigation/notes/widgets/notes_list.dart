@@ -1,5 +1,5 @@
 import 'package:fantavacanze_official/core/theme/sizes.dart';
-import 'package:fantavacanze_official/features/league/data/models/note_model.dart';
+import 'package:fantavacanze_official/features/league/data/models/note_model/note_model.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/notes/widgets/note_card.dart';
 import 'package:flutter/material.dart';
 

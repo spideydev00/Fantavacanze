@@ -43,10 +43,13 @@ class AppUserCubit extends Cubit<AppUserState> {
     result.fold(
       (failure) => emit(AppUserInitial()),
       (user) {
-        if (user.isOnboarded) {
-          emit(AppUserIsLoggedIn(user: user));
-        } else {
+        // Uniforma questa logica con quella di updateUser
+        if (!user.isOnboarded) {
           emit(AppUserNeedsOnboarding(user: user));
+        } else if (user.gender == null) {
+          emit(AppUserNeedsGender(user: user));
+        } else {
+          emit(AppUserIsLoggedIn(user: user));
         }
       },
     );
@@ -57,6 +60,8 @@ class AppUserCubit extends Cubit<AppUserState> {
       emit(AppUserInitial());
     } else if (!user.isOnboarded) {
       emit(AppUserNeedsOnboarding(user: user));
+    } else if (user.gender == null) {
+      emit(AppUserNeedsGender(user: user));
     } else {
       emit(AppUserIsLoggedIn(user: user));
     }
@@ -72,7 +77,9 @@ class AppUserCubit extends Cubit<AppUserState> {
         (failure) {
           emit(currentState);
         },
-        (_) {
+        (_) async {
+          // await _appLeagueCubit.clearCache();
+          // Clear the user state and emit initial state
           emit(AppUserInitial());
         },
       );

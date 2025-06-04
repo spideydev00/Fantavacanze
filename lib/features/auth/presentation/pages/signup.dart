@@ -1,3 +1,5 @@
+import 'package:dropdown_button2/dropdown_button2.dart';
+import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/extensions/context_extension.dart';
 import 'package:fantavacanze_official/features/auth/presentation/widgets/age_verification_form.dart';
 import 'package:fantavacanze_official/core/widgets/loader.dart';
@@ -31,6 +33,7 @@ class _SignUpPageState extends State<SignUpPage> {
   String _turnstile = "";
   bool _isAdult = false;
   bool _isTermsAccepted = false;
+  String? _selectedGender;
 
   // Raw validators per-dato (senza toccare formKey.validate qui)
   bool get _nameValid => _nameCtrl.text.trim().isNotEmpty;
@@ -40,6 +43,7 @@ class _SignUpPageState extends State<SignUpPage> {
   }
 
   bool get _passValid => _passCtrl.text.length >= 6;
+  bool get _genderValid => _selectedGender != null;
 
   bool get _formReady =>
       _nameValid &&
@@ -47,7 +51,10 @@ class _SignUpPageState extends State<SignUpPage> {
       _passValid &&
       _turnstile.isNotEmpty &&
       _isAdult &&
-      _isTermsAccepted;
+      _isTermsAccepted &&
+      _genderValid;
+
+  List<String> genders = ["Maschio", "Femmina"];
 
   @override
   void dispose() {
@@ -58,6 +65,17 @@ class _SignUpPageState extends State<SignUpPage> {
   }
 
   void _rebuild() => setState(() {});
+
+  String _getGenderText(String gender) {
+    switch (gender) {
+      case "Maschio":
+        return 'male';
+      case "Femmina":
+        return 'female';
+      default:
+        return 'male';
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -75,29 +93,104 @@ class _SignUpPageState extends State<SignUpPage> {
             padding: const EdgeInsets.symmetric(horizontal: ThemeSizes.lg),
             child: Column(
               children: [
-                // Nome
-                AuthField(
-                  controller: _nameCtrl,
-                  hintText: "Nome",
-                  icon: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      vertical: ThemeSizes.sm,
-                      horizontal: ThemeSizes.md,
+                // Nome e Genere
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Nome field
+                    Expanded(
+                      flex: 7,
+                      child: AuthField(
+                        controller: _nameCtrl,
+                        hintText: "Nome",
+                        icon: Padding(
+                          padding: const EdgeInsets.symmetric(
+                            vertical: ThemeSizes.sm,
+                            horizontal: ThemeSizes.md,
+                          ),
+                          child: SvgPicture.asset(
+                            "assets/images/icons/auth_field_icons/user-icon.svg",
+                            width: 35,
+                          ),
+                        ),
+                        // validazione on user interaction solo per questo campo
+                        autovalidateMode: AutovalidateMode.onUserInteraction,
+                        onChanged: (_) => _rebuild(),
+                        validator: (v) {
+                          if (v == null || v.trim().isEmpty) {
+                            return "Inserisci il tuo nome";
+                          }
+                          return null;
+                        },
+                      ),
                     ),
-                    child: SvgPicture.asset(
-                      "assets/images/icons/auth_field_icons/user-icon.svg",
-                      width: 35,
+                    SizedBox(width: 8),
+                    // Gender selector
+                    Expanded(
+                      flex: 5,
+                      child: Container(
+                        height: 64,
+                        decoration: BoxDecoration(
+                          color: ColorPalette.white,
+                          borderRadius:
+                              BorderRadius.circular(ThemeSizes.borderRadiusMd),
+                          border: Border.all(
+                            color: context.borderColor.withValues(alpha: 0.3),
+                            width: 1,
+                          ),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                          child: DropdownButtonHideUnderline(
+                            child: DropdownButton2(
+                              isExpanded: true,
+                              value: _selectedGender,
+                              hint: Text(
+                                genders.first,
+                                style: TextStyle(
+                                  color: ColorPalette.darkerGrey,
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                              items: genders.map((String gender) {
+                                return DropdownMenuItem<String>(
+                                  value: gender,
+                                  child: Text(
+                                    gender,
+                                    style: TextStyle(
+                                      color: ColorPalette.darkerGrey,
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                );
+                              }).toList(),
+                              onChanged: (String? newValue) {
+                                setState(() {
+                                  _selectedGender = newValue;
+                                });
+                              },
+                              iconStyleData: IconStyleData(
+                                icon: Icon(
+                                  Icons.arrow_drop_down,
+                                  color: ColorPalette.darkGrey,
+                                ),
+                                iconSize: 24,
+                              ),
+                              dropdownStyleData: DropdownStyleData(
+                                decoration: BoxDecoration(
+                                  color: ColorPalette.white,
+                                  borderRadius: BorderRadius.circular(
+                                      ThemeSizes.borderRadiusMd),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
                     ),
-                  ),
-                  // validazione on user interaction solo per questo campo
-                  autovalidateMode: AutovalidateMode.onUserInteraction,
-                  onChanged: (_) => _rebuild(),
-                  validator: (v) {
-                    if (v == null || v.trim().isEmpty) {
-                      return "Inserisci il tuo nome";
-                    }
-                    return null;
-                  },
+                  ],
                 ),
                 const SizedBox(height: 12),
 
@@ -230,23 +323,38 @@ class _SignUpPageState extends State<SignUpPage> {
                           )!;
 
                     return ElevatedButton.icon(
-                      onPressed: _formReady
-                          ? () {
-                              // mostra comunque gli errori se l’utente preme
-                              if (_formKey.currentState!.validate()) {
-                                context.read<AuthBloc>().add(
-                                      AuthEmailSignUp(
-                                        name: _nameCtrl.text.trim(),
-                                        email: _emailCtrl.text.trim(),
-                                        password: _passCtrl.text,
-                                        hCaptcha: _turnstile,
-                                        isAdult: _isAdult,
-                                        isTermsAccepted: _isTermsAccepted,
-                                      ),
-                                    );
-                              }
-                            }
-                          : null,
+                      onPressed: () {
+                        // Check for gender selection first
+                        if (!_genderValid) {
+                          showDialog(
+                            context: context,
+                            builder: (_) => AuthDialogBox(
+                              title: "Attenzione!",
+                              description: "Per favore seleziona il tuo genere",
+                              type: DialogType.error,
+                              isMultiButton: false,
+                            ),
+                          );
+                          return;
+                        }
+
+                        // Then proceed with regular validation
+                        if (_formReady) {
+                          if (_formKey.currentState!.validate()) {
+                            context.read<AuthBloc>().add(
+                                  AuthEmailSignUp(
+                                    name: _nameCtrl.text.trim(),
+                                    email: _emailCtrl.text.trim(),
+                                    password: _passCtrl.text,
+                                    hCaptcha: _turnstile,
+                                    isAdult: _isAdult,
+                                    isTermsAccepted: _isTermsAccepted,
+                                    gender: _getGenderText(_selectedGender!),
+                                  ),
+                                );
+                          }
+                        }
+                      },
                       style: context.elevatedButtonThemeData.style!.copyWith(
                         backgroundColor: WidgetStatePropertyAll(buttonColor),
                         foregroundColor: WidgetStatePropertyAll(_formReady

@@ -2,7 +2,7 @@ import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/extensions/context_extension.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
-import 'package:fantavacanze_official/features/league/domain/entities/rule.dart';
+import 'package:fantavacanze_official/features/league/domain/entities/rule/rule.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -30,7 +30,10 @@ class EventCard extends StatelessWidget {
         event.points is int ? (event.points as int).toDouble() : event.points;
     final bool isBonus = event.type == RuleType.bonus;
     final DateTime createdAt = event.createdAt;
-    final String targetId = event.targetUser;
+
+    // Use targetUser directly - it should already be resolved by _EventWithResolvedName
+    final String targetName = event.targetUser;
+
     final String formattedDate =
         (dateFormat ?? _defaultDateFormat).format(createdAt);
 
@@ -155,7 +158,7 @@ class EventCard extends StatelessWidget {
                                 const SizedBox(width: 4),
                                 Expanded(
                                   child: Text(
-                                    targetId,
+                                    targetName, // This should now show the resolved name
                                     style: context.textTheme.labelSmall,
                                     overflow: TextOverflow.ellipsis,
                                     maxLines: 2,

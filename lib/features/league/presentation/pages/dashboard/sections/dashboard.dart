@@ -3,7 +3,14 @@ import 'dart:math';
 import 'package:fantavacanze_official/core/constants/navigation_items.dart';
 import 'package:fantavacanze_official/core/cubits/app_league/app_league_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/app_theme/app_theme_cubit.dart';
+import 'package:fantavacanze_official/core/cubits/notification_count/notification_count_cubit.dart';
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
+import 'package:fantavacanze_official/core/widgets/dialogs/notification_dialog.dart';
+import 'package:fantavacanze_official/core/widgets/notification_badge.dart';
+import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc.dart';
+import 'package:fantavacanze_official/features/league/presentation/bloc/league_event.dart';
+import 'package:fantavacanze_official/features/league/presentation/bloc/league_state.dart';
+import 'package:fantavacanze_official/features/league/presentation/pages/navigation/notifications/notifications_page.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/settings/settings.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/dashboard/widgets/side_menu/custom_menu_icon.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/dashboard/sections/side_menu.dart';
@@ -55,6 +62,9 @@ class _DashboardScreenState extends State<DashboardScreen>
         curve: Curves.fastOutSlowIn,
       ),
     );
+
+    // Inizializza l'ascolto delle notifiche
+    context.read<LeagueBloc>().add(ListenToNotificationEvent());
   }
 
   @override
@@ -88,175 +98,217 @@ class _DashboardScreenState extends State<DashboardScreen>
     // Check if keyboard is visible
     final bool isKeyboardVisible = MediaQuery.of(context).viewInsets.bottom > 0;
 
-    return Scaffold(
-      // Use a background color matching the SideMenu
-      backgroundColor: context.secondaryBgColor,
-      body: GestureDetector(
-        // Detector principale per aprire il menu con swipe da sinistra a destra
-        onHorizontalDragEnd: (details) {
-          // Determina se il gesto è sufficientemente veloce e nella giusta direzione
-          if (details.primaryVelocity != null) {
-            // Velocità positiva significa swipe da sinistra a destra (apre il menu)
-            if (details.primaryVelocity! > 300 && !isSideMenuOpen) {
+    return BlocListener<LeagueBloc, LeagueState>(
+      listener: (context, state) {
+        if (state is NotificationReceived) {
+          showDialog(
+            context: context,
+            builder: (context) => NotificationDialog.fromNotification(
+              notification: state.notification,
+              data: state.data,
+            ),
+          );
+        }
+      },
+      child: Scaffold(
+        // Use a background color matching the SideMenu
+        backgroundColor: context.secondaryBgColor,
+        body: GestureDetector(
+          // Detector principale per aprire il menu con swipe da sinistra a destra
+          onHorizontalDragEnd: (details) {
+            // Determina se il gesto è sufficientemente veloce e nella giusta direzione
+            if (details.primaryVelocity != null) {
+              // Velocità positiva significa swipe da sinistra a destra (apre il menu)
+              if (details.primaryVelocity! > 300 && !isSideMenuOpen) {
+                _toggleSideMenu();
+              }
+              // Velocità negativa significa swipe da destra a sinistra (chiude il menu)
+              else if (details.primaryVelocity! < -300 && isSideMenuOpen) {
+                _closeSideMenu();
+              }
+            }
+          },
+          // Rileva anche l'inizio dello swipe vicino al bordo sinistro per aprire il menu
+          onHorizontalDragStart: (details) {
+            // Se il gesto inizia vicino al bordo sinistro dello schermo (< 20px)
+            // e il menu è chiuso, è probabile che l'utente voglia aprire il menu
+            if (details.globalPosition.dx < 20 && !isSideMenuOpen) {
               _toggleSideMenu();
             }
-            // Velocità negativa significa swipe da destra a sinistra (chiude il menu)
-            else if (details.primaryVelocity! < -300 && isSideMenuOpen) {
-              _closeSideMenu();
-            }
-          }
-        },
-        // Rileva anche l'inizio dello swipe vicino al bordo sinistro per aprire il menu
-        onHorizontalDragStart: (details) {
-          // Se il gesto inizia vicino al bordo sinistro dello schermo (< 20px)
-          // e il menu è chiuso, è probabile che l'utente voglia aprire il menu
-          if (details.globalPosition.dx < 20 && !isSideMenuOpen) {
-            _toggleSideMenu();
-          }
-        },
-        child: Stack(
-          children: [
-            AnimatedPositioned(
-              duration: const Duration(milliseconds: 200),
-              curve: Curves.fastOutSlowIn,
-              width: Constants.getWidth(context) * 0.70,
-              left: !isSideMenuOpen ? -(Constants.getWidth(context) * 0.70) : 0,
-              height: Constants.getHeight(context),
-              // Pass the close callback to SideMenu
-              child: SideMenu(closeMenuCallback: _closeSideMenu),
-            ),
-            Transform(
-              alignment: Alignment.center,
-              transform: Matrix4.identity()
-                ..setEntry(3, 2, 0.001)
-                ..rotateY(
-                  animation.value - 30 * animation.value * pi / 180,
-                ),
-              child: Transform.translate(
-                offset: Offset(
-                    animation.value * (Constants.getWidth(context) * 0.70), 0),
-                child: Transform.scale(
-                  scale: scaleAnimation.value,
-                  child: ClipRRect(
-                    borderRadius:
-                        BorderRadius.circular(ThemeSizes.borderRadiusXlg),
-                    child: Scaffold(
-                      appBar: AppBar(
-                        centerTitle: true,
-                        forceMaterialTransparency: true,
-                        toolbarHeight: ThemeSizes.appBarHeight,
-                        title: _buildLogo(context),
-                        actions: [
-                          GestureDetector(
-                            onTap: () {
-                              Navigator.push(context, SettingsPage.route);
-                            },
-                            child: Padding(
-                              padding:
-                                  const EdgeInsets.only(right: ThemeSizes.lg),
-                              child: Icon(
-                                Icons.settings,
-                                size: 22,
-                                color: context.textPrimaryColor
-                                    .withValues(alpha: 0.9),
+          },
+          child: Stack(
+            children: [
+              AnimatedPositioned(
+                duration: const Duration(milliseconds: 200),
+                curve: Curves.fastOutSlowIn,
+                width: Constants.getWidth(context) * 0.70,
+                left:
+                    !isSideMenuOpen ? -(Constants.getWidth(context) * 0.70) : 0,
+                height: Constants.getHeight(context),
+                // Pass the close callback to SideMenu
+                child: SideMenu(closeMenuCallback: _closeSideMenu),
+              ),
+              Transform(
+                alignment: Alignment.center,
+                transform: Matrix4.identity()
+                  ..setEntry(3, 2, 0.001)
+                  ..rotateY(
+                    animation.value - 30 * animation.value * pi / 180,
+                  ),
+                child: Transform.translate(
+                  offset: Offset(
+                      animation.value * (Constants.getWidth(context) * 0.70),
+                      0),
+                  child: Transform.scale(
+                    scale: scaleAnimation.value,
+                    child: ClipRRect(
+                      borderRadius:
+                          BorderRadius.circular(ThemeSizes.borderRadiusXlg),
+                      child: Scaffold(
+                        appBar: AppBar(
+                          centerTitle: true,
+                          forceMaterialTransparency: true,
+                          toolbarHeight: ThemeSizes.appBarHeight,
+                          title: _buildLogo(context),
+                          actions: [
+                            // Notification icon with badge
+                            BlocBuilder<NotificationCountCubit, int>(
+                              builder: (context, count) {
+                                return GestureDetector(
+                                  onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      NotificationsPage.route,
+                                    );
+                                  },
+                                  child: Padding(
+                                    padding: const EdgeInsets.only(
+                                        right: ThemeSizes.md),
+                                    child: NotificationBadge(
+                                      count: count,
+                                      child: Icon(
+                                        Icons.notifications_outlined,
+                                        size: 22,
+                                        color: context.textPrimaryColor
+                                            .withValues(alpha: 0.9),
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                            // Settings icon
+                            GestureDetector(
+                              onTap: () {
+                                Navigator.push(context, SettingsPage.route);
+                              },
+                              child: Padding(
+                                padding:
+                                    const EdgeInsets.only(right: ThemeSizes.lg),
+                                child: Icon(
+                                  Icons.settings,
+                                  size: 22,
+                                  color: context.textPrimaryColor
+                                      .withValues(alpha: 0.9),
+                                ),
                               ),
                             ),
-                          )
-                        ],
-                        leading: CustomMenuIcon(
-                          path: context
-                                  .read<AppThemeCubit>()
-                                  .isDarkMode(context)
-                              ? "assets/animations/rive/menu_button.riv"
-                              : "assets/animations/rive/menu_button_black.riv",
-                          artboard: "Artboard",
-                          stateMachineName: "switch",
-                          triggerValue: "toggleX",
-                          // Use the toggle function
-                          onTap: _toggleSideMenu,
-                          // Pass the actual menu state to control the icon
-                          isActive: isSideMenuOpen,
+                          ],
+                          leading: CustomMenuIcon(
+                            path: context
+                                    .read<AppThemeCubit>()
+                                    .isDarkMode(context)
+                                ? "assets/animations/rive/menu_button.riv"
+                                : "assets/animations/rive/menu_button_black.riv",
+                            artboard: "Artboard",
+                            stateMachineName: "switch",
+                            triggerValue: "toggleX",
+                            // Use the toggle function
+                            onTap: _toggleSideMenu,
+                            // Pass the actual menu state to control the icon
+                            isActive: isSideMenuOpen,
+                          ),
                         ),
+                        resizeToAvoidBottomInset: false,
+                        body: BlocBuilder<AppLeagueCubit, AppLeagueState>(
+                          builder: (context, leagueState) {
+                            final hasLeagues = leagueState is AppLeagueExists;
+
+                            return BlocBuilder<AppNavigationCubit, int>(
+                              builder: (context, selectedIndex) {
+                                final navItems = hasLeagues
+                                    ? participantNavbarItems
+                                    : nonParticipantNavbarItems;
+
+                                // Ensure index is within bounds
+                                if (selectedIndex < 0 ||
+                                    selectedIndex >= navItems.length) {
+                                  //default screen
+                                  return navItems[0].screen;
+                                }
+
+                                final selectedItem = navItems[selectedIndex];
+
+                                // Handle "Nuova Lega" subsection and specific items
+                                if (selectedItem.title == "Crea Lega" ||
+                                    selectedItem.title == "Cerca Lega") {
+                                  WidgetsBinding.instance.addPostFrameCallback(
+                                    (_) {
+                                      if (mounted) {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) =>
+                                                selectedItem.screen,
+                                          ),
+                                        );
+                                        // Reset navigation index after push
+                                        context
+                                            .read<AppNavigationCubit>()
+                                            .setIndex(0);
+                                      }
+                                    },
+                                  );
+                                }
+
+                                // Display the screen directly
+                                return selectedItem.screen;
+                              },
+                            );
+                          },
+                        ),
+                        // Hide the bottom navigation bar when keyboard is visible
+                        bottomNavigationBar: isKeyboardVisible
+                            ? null
+                            : const CustomBottomNavigationBar(),
                       ),
-                      resizeToAvoidBottomInset: false,
-                      body: BlocBuilder<AppLeagueCubit, AppLeagueState>(
-                        builder: (context, leagueState) {
-                          final hasLeagues = leagueState is AppLeagueExists;
-
-                          return BlocBuilder<AppNavigationCubit, int>(
-                            builder: (context, selectedIndex) {
-                              final navItems = hasLeagues
-                                  ? participantNavbarItems
-                                  : nonParticipantNavbarItems;
-
-                              // Ensure index is within bounds
-                              if (selectedIndex < 0 ||
-                                  selectedIndex >= navItems.length) {
-                                //default screen
-                                return navItems[0].screen;
-                              }
-
-                              final selectedItem = navItems[selectedIndex];
-
-                              // Handle "Nuova Lega" subsection and specific items
-                              if (selectedItem.title == "Crea Lega" ||
-                                  selectedItem.title == "Cerca Lega") {
-                                WidgetsBinding.instance.addPostFrameCallback(
-                                  (_) {
-                                    if (mounted) {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) =>
-                                              selectedItem.screen,
-                                        ),
-                                      );
-                                      // Reset navigation index after push
-                                      context
-                                          .read<AppNavigationCubit>()
-                                          .setIndex(0);
-                                    }
-                                  },
-                                );
-                              }
-
-                              // Display the screen directly
-                              return selectedItem.screen;
-                            },
-                          );
-                        },
-                      ),
-                      // Hide the bottom navigation bar when keyboard is visible
-                      bottomNavigationBar: isKeyboardVisible
-                          ? null
-                          : const CustomBottomNavigationBar(),
                     ),
                   ),
                 ),
               ),
-            ),
-            // Overlay GestureDetector to close menu when tapped outside or dragged
-            if (isSideMenuOpen)
-              Positioned.fill(
-                // Position over the transformed content area
-                left: animation.value * (Constants.getWidth(context) * 0.70),
-                child: GestureDetector(
-                  onTap: _closeSideMenu,
-                  onHorizontalDragUpdate: (details) {
-                    // Chiude se si trascina significativamente verso sinistra
-                    if (details.delta.dx < -1.0) {
-                      _closeSideMenu();
-                    }
-                  },
-                  // Prevent gestures below when menu is open and overlay is active
-                  behavior: HitTestBehavior.opaque,
-                  // Use a transparent color to make it tappable but invisible
-                  child: Container(
-                    color: Colors.transparent,
+              // Overlay GestureDetector to close menu when tapped outside or dragged
+              if (isSideMenuOpen)
+                Positioned.fill(
+                  // Position over the transformed content area
+                  left: animation.value * (Constants.getWidth(context) * 0.70),
+                  child: GestureDetector(
+                    onTap: _closeSideMenu,
+                    onHorizontalDragUpdate: (details) {
+                      // Chiude se si trascina significativamente verso sinistra
+                      if (details.delta.dx < -1.0) {
+                        _closeSideMenu();
+                      }
+                    },
+                    // Prevent gestures below when menu is open and overlay is active
+                    behavior: HitTestBehavior.opaque,
+                    // Use a transparent color to make it tappable but invisible
+                    child: Container(
+                      color: Colors.transparent,
+                    ),
                   ),
                 ),
-              ),
-          ],
+            ],
+          ),
         ),
       ),
     );

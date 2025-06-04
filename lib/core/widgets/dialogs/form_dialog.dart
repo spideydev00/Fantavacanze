@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
-import 'package:fantavacanze_official/features/league/domain/entities/rule.dart';
+import 'package:fantavacanze_official/features/league/domain/entities/rule/rule.dart';
 import 'package:fantavacanze_official/core/widgets/dialogs/rule_dialog_header.dart';
 
 /// A generic form dialog with customizable header, content and actions
@@ -150,7 +150,10 @@ class FormDialog extends StatelessWidget {
                             const SizedBox(width: ThemeSizes.md),
                             Expanded(
                               child: ElevatedButton(
-                                onPressed: onPrimaryAction,
+                                onPressed: () {
+                                  FocusManager.instance.primaryFocus?.unfocus();
+                                  onPrimaryAction();
+                                },
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: ruleType == RuleType.bonus
                                       ? ColorPalette.success

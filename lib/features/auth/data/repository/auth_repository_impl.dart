@@ -101,6 +101,7 @@ class AuthRepositoryImpl implements AuthRepository {
     required String name,
     required String email,
     required String password,
+    required String gender,
     required String hCaptcha,
     required bool isAdult,
     required bool isTermsAccepted,
@@ -121,6 +122,7 @@ class AuthRepositoryImpl implements AuthRepository {
         name: name,
         email: email,
         password: password,
+        gender: gender,
         hCaptcha: hCaptcha,
         isAdult: isAdult,
         isTermsAccepted: isTermsAccepted,
@@ -156,9 +158,11 @@ class AuthRepositoryImpl implements AuthRepository {
   Future<Either<Failure, User>> currentUser() async {
     try {
       final user = await authRemoteDataSource.getCurrentUserData();
+
       if (user == null) {
-        return left(Failure("No user logged in"));
+        return left(Failure("Nessun utente loggato."));
       }
+
       return right(user);
     } on ServerException catch (e) {
       return left(Failure(e.message));
@@ -198,8 +202,16 @@ class AuthRepositoryImpl implements AuthRepository {
     String captchaToken,
   ) async {
     try {
+      if (!await connectionChecker.isConnected) {
+        return left(Failure(
+            "Nessuna connessione ad internet, riprova appena sarai connesso."));
+      }
+
       await authRemoteDataSource.updatePassword(
-          oldPassword, newPassword, captchaToken);
+        oldPassword,
+        newPassword,
+        captchaToken,
+      );
       return const Right(null);
     } on ServerException catch (e) {
       return Left(Failure(e.message));
@@ -237,6 +249,22 @@ class AuthRepositoryImpl implements AuthRepository {
         isTermsAccepted: isTermsAccepted,
       );
       return right(user);
+    } on ServerException catch (e) {
+      return left(Failure(e.message));
+    }
+  }
+
+  @override
+  Future<Either<Failure, User>> updateGender({required String gender}) async {
+    try {
+      if (!await connectionChecker.isConnected) {
+        return left(
+            Failure("Connessione a internet assente. Riprova più tardi."));
+      }
+
+      final res = await authRemoteDataSource.updateGender(gender: gender);
+
+      return right(res);
     } on ServerException catch (e) {
       return left(Failure(e.message));
     }

@@ -1,8 +1,10 @@
 import 'package:fantavacanze_official/core/errors/failure.dart';
-import 'package:fantavacanze_official/features/league/data/models/note_model.dart';
+import 'package:fantavacanze_official/features/league/data/models/note_model/note_model.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/daily_challenge.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/league.dart';
-import 'package:fantavacanze_official/features/league/domain/entities/rule.dart';
+import 'package:fantavacanze_official/features/league/domain/entities/notification.dart';
+import 'package:fantavacanze_official/features/league/domain/entities/rule/rule.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:fpdart/fpdart.dart';
 import 'dart:io';
 
@@ -81,7 +83,6 @@ abstract class LeagueRepository {
     required String memoryId,
   });
 
-  // Rules operations
   Future<Either<Failure, List<Rule>>> getRules(String mode);
 
   Future<Either<Failure, League>> addRule({
@@ -147,6 +148,13 @@ abstract class LeagueRepository {
   // Daily Challenges operations
   Future<Either<Failure, List<DailyChallenge>>> getDailyChallenges({
     required String userId,
+    required String leagueId,
+  });
+
+  Future<Either<Failure, void>> sendChallengeNotification({
+    required League league,
+    required DailyChallenge challenge,
+    required String userId,
   });
 
   Future<Either<Failure, void>> markChallengeAsCompleted({
@@ -160,4 +168,16 @@ abstract class LeagueRepository {
     required String userId,
     required bool isRefreshed,
   });
+
+  Future<Either<Failure, List<Notification>>> getNotifications();
+
+  Future<Either<Failure, void>> markAsRead(String notificationId);
+
+  Future<Either<Failure, void>> deleteNotification(String notificationId);
+
+  Future<Either<Failure, void>> approveDailyChallenge(String notificationId);
+
+  Future<Either<Failure, void>> rejectDailyChallenge(String notificationId);
+
+  Either<Failure, Stream<RemoteNotification>> listenToNotification();
 }

@@ -11,6 +11,7 @@ import 'package:fantavacanze_official/features/auth/domain/use-cases/email_sign_
 import 'package:fantavacanze_official/features/auth/domain/use-cases/google_sign_in.dart';
 import 'package:fantavacanze_official/features/auth/domain/use-cases/sign_out.dart';
 import 'package:fantavacanze_official/features/auth/domain/use-cases/update_consents.dart';
+import 'package:fantavacanze_official/features/auth/domain/use-cases/update_gender.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -27,6 +28,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final AppLeagueCubit _appLeagueCubit;
   final ChangeIsOnboardedValue _changeIsOnboardedValue;
   final UpdateConsents _updateConsents;
+  final UpdateGender _updateGender;
 
   /// Qui salviamo qual è l'evento di login pendente (Email/Google/Apple)
   AuthEvent? _pendingAuthEvent;
@@ -41,6 +43,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     required AppLeagueCubit appLeagueCubit,
     required ChangeIsOnboardedValue changeIsOnboardedValue,
     required UpdateConsents updateConsents,
+    required UpdateGender updateGender,
   })  : _googleSignIn = googleSignIn,
         _appleSignIn = appleSignIn,
         _emailSignIn = emailSignIn,
@@ -50,6 +53,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         _appLeagueCubit = appLeagueCubit,
         _changeIsOnboardedValue = changeIsOnboardedValue,
         _updateConsents = updateConsents,
+        _updateGender = updateGender,
         super(AuthInitial()) {
     on<AuthGoogleSignIn>(_onGoogleSignIn);
     on<AuthAppleSignIn>(_onAppleSignIn);
@@ -58,6 +62,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<AuthSignOut>(_onSignOut);
     on<AuthChangeIsOnboardedValue>(_onChangeIsOnboardedValue);
     on<AuthUpdateConsents>(_onUpdateConsents);
+    on<AuthUpdateGender>(_onUpdateGender);
   }
 
   Future<void> _onGoogleSignIn(
@@ -139,6 +144,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         name: event.name,
         email: event.email,
         password: event.password,
+        gender: event.gender,
         hCaptcha: event.hCaptcha,
         isAdult: event.isAdult,
         isTermsAccepted: event.isTermsAccepted,
@@ -193,6 +199,17 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         emit(AuthConsentsUpdated(user));
       }
     });
+  }
+
+  _onUpdateGender(AuthUpdateGender event, Emitter<AuthState> emit) async {
+    final result = await _updateGender.call(event.gender);
+
+    result.fold(
+      (failure) => emit(AuthFailure(failure.message)),
+      (user) {
+        _emitAuthSuccess(user, emit);
+      },
+    );
   }
 
   //Save information about user state (logged in or not)

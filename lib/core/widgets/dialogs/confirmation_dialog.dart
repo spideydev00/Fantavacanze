@@ -1,6 +1,7 @@
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
+import 'package:fantavacanze_official/core/widgets/info_banner.dart';
 import 'package:flutter/material.dart';
 
 class ConfirmationDialog extends StatelessWidget {
@@ -153,6 +154,33 @@ class ConfirmationDialog extends StatelessWidget {
       outlinedButtonStyle: outlinedButtonStyle,
       elevatedButtonStyle: elevatedButtonStyle,
       isPrimaryAction: true,
+    );
+  }
+
+  /// Factory constructor for creating a challenge completion confirmation dialog
+  factory ConfirmationDialog.completeChallenge({
+    required String challengeName,
+    required Function onComplete,
+  }) {
+    return ConfirmationDialog(
+      title: 'Completare Obiettivo',
+      message: 'Confermi di aver completato l\'obiettivo?\n\n"$challengeName"',
+      confirmText: 'Completa',
+      cancelText: 'Annulla',
+      icon: Icons.check_circle_rounded,
+      iconColor: ColorPalette.success,
+      useIconBackground: true,
+      isPrimaryAction: true,
+      elevatedButtonStyle: ElevatedButton.styleFrom(
+        backgroundColor: ColorPalette.success,
+      ),
+      additionalContent: InfoBanner(
+        message:
+            "Se sei un admin, verrà già aggiornata la classifica. In alternativa, verrà inviata una notifica agli admin.",
+        icon: Icons.info_outline_rounded,
+        color: ColorPalette.success,
+      ),
+      onConfirm: () => onComplete(),
     );
   }
 

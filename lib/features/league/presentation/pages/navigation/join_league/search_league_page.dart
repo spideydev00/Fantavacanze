@@ -70,7 +70,7 @@ class _SearchLeaguePageState extends State<SearchLeaguePage> {
   /// Metodo che scatta la ricerca di una lega tramite codice invito
   /// ------------------------------
   void _searchLeague() {
-    FocusScope.of(context).unfocus();
+    FocusManager.instance.primaryFocus?.unfocus();
 
     if (_inviteCodeController.text.isEmpty || _userId == null) return;
 

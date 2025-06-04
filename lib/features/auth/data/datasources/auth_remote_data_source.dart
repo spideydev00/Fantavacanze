@@ -6,6 +6,7 @@ import 'package:fantavacanze_official/core/errors/exceptions.dart';
 import 'package:fantavacanze_official/core/secrets/app_secrets.dart';
 import 'package:fantavacanze_official/features/auth/data/models/user_model.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -19,6 +20,7 @@ abstract interface class AuthRemoteDataSource {
     required String email,
     required String password,
     required String hCaptcha,
+    required String gender,
     required bool isAdult,
     required bool isTermsAccepted,
   });
@@ -43,6 +45,7 @@ abstract interface class AuthRemoteDataSource {
     required bool isAdult,
     required bool isTermsAccepted,
   });
+  Future<UserModel> updateGender({required String gender});
   Future<UserModel?> getCurrentUserData();
   Session? get currentSession;
 }
@@ -78,7 +81,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         throw ServerException('Nessuna sessione attiva');
       }
 
-      final user = supabaseClient.auth.currentUser;
+      final user = currentSession?.user;
 
       final userData = await supabaseClient
           .from('profiles')
@@ -167,7 +170,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         captchaToken: hCaptcha,
       );
 
-      if (response.user == null) throw ServerException('User is null!');
+      if (response.user == null) throw ServerException('Utente non valido!');
 
       final user = await getCurrentUserData();
 
@@ -221,6 +224,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     required String email,
     required String password,
     required String hCaptcha,
+    required String gender,
     required bool isAdult,
     required bool isTermsAccepted,
   }) async {
@@ -233,10 +237,12 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
           'name': name,
           'is_adult': isAdult,
           'is_terms_accepted': isTermsAccepted,
+          'gender': gender,
         },
         emailRedirectTo: "https://fantavacanze.it/",
       );
-      if (response.user == null) throw ServerException('User is null!');
+
+      if (response.user == null) throw ServerException('Utente non creato!');
     } catch (e) {
       throw ServerException(_extractErrorMessage(e));
     }
@@ -332,7 +338,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   }) async {
     try {
       if (currentSession?.user.id == null) {
-        throw ServerException('No user is logged in');
+        throw ServerException('Nessuna sessione attiva');
       }
       await supabaseClient.auth.updateUser(
         UserAttributes(data: {
@@ -353,13 +359,16 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   }) async {
     try {
       final userId = currentSession?.user.id;
-      if (userId == null) throw ServerException('No user is logged in');
+
+      if (userId == null) throw ServerException('Nessuna sessione attiva');
+
       await supabaseClient.auth.updateUser(
         UserAttributes(data: {
           'is_adult': isAdult,
           'is_terms_accepted': isTermsAccepted,
         }),
       );
+
       final profileJson = await supabaseClient
           .from('profiles')
           .update({
@@ -369,6 +378,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
           .eq('id', userId)
           .select()
           .single();
+
       return UserModel.fromJson(profileJson)
           .copyWith(email: currentSession!.user.email);
     } catch (e) {
@@ -376,7 +386,31 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     }
   }
 
-// ------------------ FCM TOKEN MANAGEMENT ------------------ //
+  //------------------ UPDATE GENDER ------------------ //
+  @override
+  Future<UserModel> updateGender({required String gender}) async {
+    try {
+      final userId = currentSession?.user.id;
+
+      if (userId == null) throw ServerException('Utente non autenticato');
+
+      final response = await supabaseClient
+          .from('profiles')
+          .update({'gender': gender})
+          .eq('id', userId)
+          .select()
+          .single();
+
+      final updatedUser = UserModel.fromJson(response)
+          .copyWith(email: currentSession!.user.email);
+
+      return updatedUser;
+    } catch (e) {
+      throw ServerException(_extractErrorMessage(e));
+    }
+  }
+
+// // ------------------ FCM TOKEN MANAGEMENT ------------------ //
   Future<StreamSubscription<String>> initTokenSubscription(
       {String? userId}) async {
     try {
@@ -386,21 +420,22 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
 
       return firebaseMessaging.onTokenRefresh.listen((newToken) async {
         await updateFcmTokenManually(newToken);
+        debugPrint('🪙 FCM Token aggiornato: $newToken');
       });
     } catch (e) {
       throw ServerException(_extractErrorMessage(e));
     }
   }
 
-  Stream<String> get onFcmTokenRefresh => firebaseMessaging.onTokenRefresh;
-
   Future<String> updateFcmToken({String? userId}) async {
     try {
       // For iOS, first try to get the APNs token
       await firebaseMessaging.getAPNSToken();
 
-      // Get the FCM token directly (without Future.delayed)
+      // Get the FCM token
       final token = await firebaseMessaging.getToken();
+
+      debugPrint('🪙 FCM Token: $token');
 
       if (token == null || token.isEmpty) {
         throw ServerException('FCM token non disponibile');

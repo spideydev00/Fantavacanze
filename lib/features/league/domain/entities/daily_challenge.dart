@@ -1,35 +1,29 @@
-import 'package:equatable/equatable.dart';
-
-class DailyChallenge extends Equatable {
+class DailyChallenge {
   final String id;
+  final String userId;
+  final String leagueId;
+  final String tableChallengeId;
   final String name;
   final double points;
   final bool isCompleted;
   final bool isRefreshed;
   final DateTime refreshedAt;
+  final DateTime createdAt; // Added new field for creation time
   final DateTime? completedAt;
-  final int position; // New field for position
+  final int position;
 
   const DailyChallenge({
     required this.id,
     required this.name,
     required this.points,
-    this.isCompleted = false,
-    this.isRefreshed = false,
+    required this.userId,
+    required this.leagueId,
+    required this.tableChallengeId,
+    required this.isCompleted,
+    required this.isRefreshed,
     required this.refreshedAt,
-    this.completedAt,
-    required this.position, // Make it required
+    required this.createdAt, // Added parameter
+    required this.completedAt,
+    required this.position,
   });
-
-  @override
-  List<Object?> get props => [
-        id,
-        name,
-        points,
-        isCompleted,
-        isRefreshed,
-        refreshedAt,
-        completedAt,
-        position, // Add to props
-      ];
 }

@@ -1,7 +1,7 @@
 import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
-import 'package:fantavacanze_official/features/league/domain/entities/rule.dart';
+import 'package:fantavacanze_official/features/league/domain/entities/rule/rule.dart';
 
 /// A component that provides standard action buttons for rule dialogs
 ///
