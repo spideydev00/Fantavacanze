@@ -7,7 +7,7 @@ import 'package:fantavacanze_official/core/utils/show_snackbar.dart';
 import 'package:fantavacanze_official/core/widgets/events/events_list_widget.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/event.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/league.dart';
-import 'package:fantavacanze_official/features/league/domain/entities/rule.dart';
+import 'package:fantavacanze_official/features/league/domain/entities/rule/rule.dart';
 import 'package:flutter/material.dart';
 import 'package:fantavacanze_official/core/utils/image_picker_util.dart';
 import 'package:image_picker/image_picker.dart' as image_picker;

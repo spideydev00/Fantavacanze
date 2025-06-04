@@ -2,7 +2,7 @@ import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/extensions/context_extension.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
-import 'package:fantavacanze_official/features/league/domain/entities/rule.dart';
+import 'package:fantavacanze_official/features/league/domain/entities/rule/rule.dart';
 import 'package:flutter/material.dart';
 
 class SelectedRuleCard extends StatelessWidget {

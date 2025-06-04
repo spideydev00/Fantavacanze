@@ -139,8 +139,7 @@ List<NavigationItem> participantNavbarItems = [
     screen: const AdminPage(),
     subsection: "Gestione Lega",
     isAdminOnly: true,
-  ),
-  // NavigationItem(
+  )
   //   title: "Articoli",
   //   darkSvgIcon: 'assets/images/icons/homepage_icons/articles-icon.svg',
   //   lightSvgIcon: 'assets/images/icons/homepage_icons/articles-icon-dark.svg',

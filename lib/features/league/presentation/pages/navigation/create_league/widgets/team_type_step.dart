@@ -1,4 +1,5 @@
 import 'package:fantavacanze_official/core/theme/colors.dart';
+import 'package:fantavacanze_official/core/widgets/divider.dart';
 import 'package:fantavacanze_official/core/widgets/info_container.dart';
 import 'package:flutter/material.dart';
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
@@ -78,34 +79,91 @@ class TeamTypeStep extends StatelessWidget {
           padding: const EdgeInsets.all(ThemeSizes.md),
           child: Column(
             children: [
-              ListTile(
-                title: const Text('Lega Individuale'),
-                subtitle:
-                    const Text('I partecipanti competono individualmente'),
-                leading: Radio<bool>(
-                  value: false,
-                  groupValue: isTeamBased,
-                  onChanged: (value) {
-                    if (value != null) onTeamTypeChanged(value);
-                  },
-                ),
+              // Individual league option
+              _TeamTypeOption(
+                title: 'Lega Individuale',
+                description: 'Ogni partecipante gioca per sé',
+                isSelected: !isTeamBased,
+                value: false,
+                groupValue: isTeamBased,
+                onChanged: onTeamTypeChanged,
               ),
-              const Divider(
-                thickness: 0.2,
-              ),
-              ListTile(
-                title: const Text('Lega a Squadre'),
-                subtitle: const Text('I partecipanti competono in squadre'),
-                leading: Radio<bool>(
-                  value: true,
-                  groupValue: isTeamBased,
-                  onChanged: (value) {
-                    if (value != null) onTeamTypeChanged(value);
-                  },
-                ),
+              
+              CustomDivider(text: 'Oppure'),
+              
+              // Team league option
+              _TeamTypeOption(
+                title: 'Lega a Squadre',
+                description: 'I partecipanti competono in squadre',
+                isSelected: isTeamBased,
+                value: true,
+                groupValue: isTeamBased,
+                onChanged: onTeamTypeChanged,
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Private reusable component for team type options
+class _TeamTypeOption extends StatelessWidget {
+  final String title;
+  final String description;
+  final bool isSelected;
+  final bool value;
+  final bool groupValue;
+  final ValueChanged<bool> onChanged;
+
+  const _TeamTypeOption({
+    required this.title,
+    required this.description,
+    required this.isSelected,
+    required this.value,
+    required this.groupValue,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: () => onChanged(value),
+      borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusMd),
+      child: Container(
+        padding: const EdgeInsets.all(ThemeSizes.sm),
+        decoration: BoxDecoration(
+          color: context.secondaryBgColor,
+          borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusMd),
+        ),
+        child: Row(
+          children: [
+            Radio<bool>(
+              value: value,
+              groupValue: groupValue,
+              onChanged: (val) => onChanged(val!),
+              activeColor: context.primaryColor,
+            ),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: ThemeSizes.xs),
+                  Text(
+                    description,
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );

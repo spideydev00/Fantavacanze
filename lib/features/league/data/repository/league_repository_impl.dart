@@ -1,16 +1,19 @@
 import 'package:fantavacanze_official/core/errors/exceptions.dart';
-import 'package:fantavacanze_official/features/league/data/models/daily_challenge_model.dart';
-import 'package:fantavacanze_official/features/league/data/models/league_model.dart';
-import 'package:fantavacanze_official/features/league/data/models/note_model.dart';
-import 'package:fantavacanze_official/features/league/data/models/rule_model.dart';
+import 'package:fantavacanze_official/features/league/data/models/daily_challenge_model/daily_challenge_model.dart';
+import 'package:fantavacanze_official/features/league/data/models/league_model/league_model.dart';
+import 'package:fantavacanze_official/features/league/data/models/note_model/note_model.dart';
+import 'package:fantavacanze_official/features/league/data/models/notification_model/notification/notification_model.dart';
+import 'package:fantavacanze_official/features/league/data/models/rule_model/rule_model.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/daily_challenge.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/material.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:fantavacanze_official/core/errors/failure.dart';
 import 'package:fantavacanze_official/core/network/connection_checker.dart';
 import 'package:fantavacanze_official/features/league/data/datasources/league_local_data_source.dart';
 import 'package:fantavacanze_official/features/league/data/datasources/league_remote_data_source.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/league.dart';
-import 'package:fantavacanze_official/features/league/domain/entities/rule.dart';
+import 'package:fantavacanze_official/features/league/domain/entities/rule/rule.dart';
 import 'package:fantavacanze_official/features/league/domain/repository/league_repository.dart';
 import 'dart:io';
 
@@ -57,7 +60,6 @@ class LeagueRepositoryImpl implements LeagueRepository {
         rules: ruleModels,
       );
 
-      // Cache the newly created league
       await localDataSource.cacheLeague(league);
 
       return Right(league);
@@ -378,11 +380,6 @@ class LeagueRepositoryImpl implements LeagueRepository {
   Future<Either<Failure, List<Rule>>> getRules(String mode) async {
     try {
       if (!await connectionChecker.isConnected) {
-        // Return cached rules when offline
-        final cachedRules = await localDataSource.getCachedRules(mode);
-        if (cachedRules.isNotEmpty) {
-          return Right(cachedRules);
-        }
         return Left(
           Failure("No internet connection and no cached rules available."),
         );
@@ -390,18 +387,9 @@ class LeagueRepositoryImpl implements LeagueRepository {
 
       // Get from remote and cache
       final rules = await remoteDataSource.getRules(mode: mode);
-      await localDataSource.cacheRules(rules, mode);
+
       return Right(rules);
     } on ServerException catch (e) {
-      // If server error, try to get from cache
-      try {
-        final cachedRules = await localDataSource.getCachedRules(mode);
-        if (cachedRules.isNotEmpty) {
-          return Right(cachedRules);
-        }
-      } catch (_) {}
-      return Left(Failure(e.message));
-    } catch (e) {
       return Left(Failure(e.toString()));
     }
   }
@@ -561,9 +549,11 @@ class LeagueRepositoryImpl implements LeagueRepository {
 
   @override
   Future<Either<Failure, void>> saveNote(
-      String leagueId, NoteModel note) async {
+    String leagueId,
+    NoteModel note,
+  ) async {
     try {
-      await localDataSource.saveNote(leagueId, note);
+      await localDataSource.saveNote(note, leagueId);
       return const Right(null);
     } on CacheException catch (e) {
       return Left(Failure('Errore nel salvare la nota: ${e.message}'));
@@ -752,42 +742,81 @@ class LeagueRepositoryImpl implements LeagueRepository {
     }
   }
 
-  // ------------------------------------------------
+  // -----------------------------------------------------
   // D A I L Y   C H A L L E N G E S   O P E R A T I O N S
-  // ------------------------------------------------
+  // -----------------------------------------------------
 
   @override
   Future<Either<Failure, List<DailyChallenge>>> getDailyChallenges({
     required String userId,
+    required String leagueId,
   }) async {
     try {
-      if (!await connectionChecker.isConnected) {
-        // Try to get from cache when offline
-        final cachedChallenges =
-            await localDataSource.getCachedDailyChallenges(userId);
-        if (cachedChallenges.isNotEmpty) {
+      final cachedChallenges =
+          await localDataSource.getCachedDailyChallenges(leagueId);
+
+      if (cachedChallenges.isNotEmpty) {
+        // Check if cached challenges need refresh (passed 7 AM)
+        final now = DateTime.now();
+        final today7AM = DateTime(now.year, now.month, now.day, 7, 0);
+
+        // Get the first challenge to check its creation date
+        final challenge = cachedChallenges.first;
+
+        // If it's past 7 AM and the challenge was created before today at 7 AM,
+        // we need to refresh the challenges
+        bool needsRefresh =
+            now.isAfter(today7AM) && challenge.createdAt.isBefore(today7AM);
+
+        if (!needsRefresh) {
+          debugPrint(
+              "✅ Usando le challenge presenti nella cache per $leagueId");
+          return Right(cachedChallenges);
+        } else if (!await connectionChecker.isConnected) {
+          // If we need refresh but have no connection, use cache anyway
+          debugPrint(
+              "⚠️ Usando le challenge dalla cache perché non c'è connessione");
           return Right(cachedChallenges);
         }
-        return Left(Failure('Nessuna connessione e nessun dato nella cache.'));
+      } else if (!await connectionChecker.isConnected) {
+        return Left(
+            Failure('❌ Nessuna connessione e nessun dato nella cache.'));
       }
 
       // Get from remote and cache
       final challenges = await remoteDataSource.getDailyChallenges(
         userId: userId,
+        leagueId: leagueId,
       );
 
-      await localDataSource.cacheDailyChallenges(challenges, userId);
+      await localDataSource.cacheDailyChallenges(challenges, leagueId);
 
       return Right(challenges);
     } on ServerException catch (e) {
-      // If server error, try to get from cache
-      try {
-        final cachedChallenges =
-            await localDataSource.getCachedDailyChallenges(userId);
-        if (cachedChallenges.isNotEmpty) {
-          return Right(cachedChallenges);
-        }
-      } catch (_) {}
+      return Left(Failure(e.message));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> sendChallengeNotification({
+    required League league,
+    required DailyChallenge challenge,
+    required String userId,
+  }) async {
+    try {
+      if (!await connectionChecker.isConnected) {
+        return Left(Failure(
+            'Nessuna connessione ad internet, riprova appena sarai connesso.'));
+      }
+
+      await remoteDataSource.sendChallengeNotification(
+        league: league as LeagueModel,
+        challenge: challenge as DailyChallengeModel,
+        userId: userId,
+      );
+
+      return Right(null);
+    } on ServerException catch (e) {
       return Left(Failure(e.message));
     }
   }
@@ -812,7 +841,7 @@ class LeagueRepositoryImpl implements LeagueRepository {
 
       // Update the challenge in the cache
       final cachedChallenges =
-          await localDataSource.getCachedDailyChallenges(userId);
+          await localDataSource.getCachedDailyChallenges(league.id);
 
       final updatedChallenges = cachedChallenges.map((cachedChallenge) {
         if (cachedChallenge.id == challenge.id) {
@@ -824,7 +853,7 @@ class LeagueRepositoryImpl implements LeagueRepository {
         return cachedChallenge;
       }).toList();
 
-      await localDataSource.cacheDailyChallenges(updatedChallenges, userId);
+      await localDataSource.cacheDailyChallenges(updatedChallenges, league.id);
 
       return const Right(null);
     } on ServerException catch (e) {
@@ -844,26 +873,22 @@ class LeagueRepositoryImpl implements LeagueRepository {
             'Nessuna connessione ad internet, riprova appena sarai connesso.'));
       }
 
+      // 1. Update on the server
       await remoteDataSource.updateChallengeRefreshStatus(
         challengeId: challengeId,
         userId: userId,
         isRefreshed: isRefreshed,
       );
 
-      // Update the challenge in the local cache as well
-      final cachedChallenges =
-          await localDataSource.getCachedDailyChallenges(userId);
-      final updatedChallenges = cachedChallenges.map((challenge) {
-        if (challenge.id == challengeId) {
-          return challenge.copyWith(
-            isRefreshed: isRefreshed,
-            refreshedAt: DateTime.now(),
-          );
-        }
-        return challenge;
-      }).toList();
+      // 2. Find which league this challenge belongs to
+      final leagueId =
+          await localDataSource.findLeagueIdForChallenge(challengeId);
 
-      await localDataSource.cacheDailyChallenges(updatedChallenges, userId);
+      if (leagueId.isNotEmpty) {
+        // 3. Update in cache
+        await localDataSource.updateCachedChallenge(
+            challengeId, leagueId, isRefreshed);
+      }
 
       return const Right(null);
     } on ServerException catch (e) {
@@ -871,7 +896,125 @@ class LeagueRepositoryImpl implements LeagueRepository {
     }
   }
 
-  // ------------------------------------------------
-  // N O T I F I C A T I O N S   O P E R A T I O N S
-  // ------------------------------------------------
+  @override
+  Future<Either<Failure, List<NotificationModel>>> getNotifications() async {
+    try {
+      if (!await connectionChecker.isConnected) {
+        // If offline, return cached notifications
+        final cachedNotifications =
+            await localDataSource.getCachedNotifications();
+        debugPrint(
+            "📱 Usando ${cachedNotifications.length} notifiche dalla cache perché offline");
+        return Right(cachedNotifications);
+      }
+
+      // Otherwise get from server
+      final notifications = await remoteDataSource.getNotifications();
+
+      // Cache all notifications
+      for (final notification in notifications) {
+        await localDataSource.cacheNotification(notification);
+      }
+
+      return Right(notifications);
+    } on ServerException catch (e) {
+      return Left(Failure(e.message));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> markAsRead(String notificationId) async {
+    try {
+      if (!await connectionChecker.isConnected) {
+        return Left(Failure(
+            'Nessuna connessione ad internet, riprova appena sarai connesso.'));
+      }
+
+      // Update on the server
+      await remoteDataSource.markAsRead(notificationId);
+
+      // Update in cache
+      await localDataSource.markNotificationAsRead(notificationId);
+
+      return const Right(null);
+    } on ServerException catch (e) {
+      return Left(Failure(e.message));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> deleteNotification(
+      String notificationId) async {
+    try {
+      if (!await connectionChecker.isConnected) {
+        return Left(Failure(
+            'Nessuna connessione ad internet, riprova appena sarai connesso.'));
+      }
+
+      // Delete from server
+      await remoteDataSource.deleteNotification(notificationId);
+
+      // Delete from cache
+      await localDataSource.deleteNotificationFromCache(notificationId);
+
+      return const Right(null);
+    } on ServerException catch (e) {
+      return Left(Failure(e.message));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> approveDailyChallenge(
+      String notificationId) async {
+    try {
+      if (!await connectionChecker.isConnected) {
+        return Left(Failure(
+            'Nessuna connessione ad internet, riprova appena sarai connesso.'));
+      }
+
+      // Approve on server
+      await remoteDataSource.approveDailyChallenge(notificationId);
+
+      // Delete from cache since it's been processed
+      await localDataSource.deleteNotificationFromCache(notificationId);
+
+      return const Right(null);
+    } on ServerException catch (e) {
+      return Left(Failure(e.message));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> rejectDailyChallenge(
+      String notificationId) async {
+    try {
+      if (!await connectionChecker.isConnected) {
+        return Left(Failure(
+            'Nessuna connessione ad internet, riprova appena sarai connesso.'));
+      }
+
+      // Reject on server
+      await remoteDataSource.rejectDailyChallenge(notificationId);
+
+      // Delete from cache since it's been processed
+      await localDataSource.deleteNotificationFromCache(notificationId);
+
+      return const Right(null);
+    } on ServerException catch (e) {
+      return Left(Failure(e.message));
+    }
+  }
+
+  @override
+  Either<Failure, Stream<RemoteNotification>> listenToNotification() {
+    try {
+      final res = remoteDataSource.listenToNotification();
+
+      return Right(res);
+    } on ServerException catch (e) {
+      return Left(
+        Failure(e.message),
+      );
+    }
+  }
 }

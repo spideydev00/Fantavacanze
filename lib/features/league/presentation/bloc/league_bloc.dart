@@ -1,33 +1,44 @@
+import 'dart:async';
+
 import 'package:fantavacanze_official/core/cubits/app_league/app_league_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit.dart';
-import 'package:fantavacanze_official/features/league/domain/use_cases/add_event.dart';
-import 'package:fantavacanze_official/features/league/domain/use_cases/add_memory.dart';
-import 'package:fantavacanze_official/features/league/domain/use_cases/add_rule.dart';
-import 'package:fantavacanze_official/features/league/domain/use_cases/create_league.dart';
-import 'package:fantavacanze_official/features/league/domain/use_cases/delete_note.dart';
-import 'package:fantavacanze_official/features/league/domain/use_cases/delete_rule.dart';
-import 'package:fantavacanze_official/features/league/domain/use_cases/exit_league.dart';
-import 'package:fantavacanze_official/features/league/domain/use_cases/get_daily_challenges.dart';
-import 'package:fantavacanze_official/features/league/domain/use_cases/get_league.dart';
-import 'package:fantavacanze_official/features/league/domain/use_cases/get_notes.dart';
-import 'package:fantavacanze_official/features/league/domain/use_cases/get_rules.dart';
-import 'package:fantavacanze_official/features/league/domain/use_cases/join_league.dart';
-import 'package:fantavacanze_official/features/league/domain/use_cases/mark_challenge_as_completed.dart';
-import 'package:fantavacanze_official/features/league/domain/use_cases/remove_memory.dart';
-import 'package:fantavacanze_official/features/league/domain/use_cases/remove_team_participants.dart';
-import 'package:fantavacanze_official/features/league/domain/use_cases/save_note.dart';
-import 'package:fantavacanze_official/features/league/domain/use_cases/search_league.dart';
-import 'package:fantavacanze_official/features/league/domain/use_cases/update_challenge_refresh_status.dart';
-import 'package:fantavacanze_official/features/league/domain/use_cases/update_rule.dart';
-import 'package:fantavacanze_official/features/league/domain/use_cases/update_team_name.dart';
-import 'package:fantavacanze_official/features/league/domain/use_cases/upload_image.dart';
-import 'package:fantavacanze_official/features/league/domain/use_cases/upload_team_logo.dart';
-import 'package:fantavacanze_official/features/league/domain/use_cases/update_team_logo.dart';
-import 'package:fantavacanze_official/features/league/domain/use_cases/add_administrators.dart';
-import 'package:fantavacanze_official/features/league/domain/use_cases/remove_participants.dart';
-import 'package:fantavacanze_official/features/league/domain/use_cases/update_league_info.dart';
+import 'package:fantavacanze_official/core/cubits/notification_count/notification_count_cubit.dart';
+import 'package:fantavacanze_official/core/use-case/usecase.dart';
+import 'package:fantavacanze_official/features/league/domain/use_cases/remote/daily_challenges/approve_daily_challenge.dart';
+import 'package:fantavacanze_official/features/league/domain/use_cases/remote/daily_challenges/reject_daily_challenge.dart';
+import 'package:fantavacanze_official/features/league/domain/use_cases/remote/events/add_event.dart';
+import 'package:fantavacanze_official/features/league/domain/use_cases/remote/memory/add_memory.dart';
+import 'package:fantavacanze_official/features/league/domain/use_cases/remote/notifications/delete_notification.dart';
+import 'package:fantavacanze_official/features/league/domain/use_cases/remote/notifications/get_notifications.dart';
+import 'package:fantavacanze_official/features/league/domain/use_cases/remote/notifications/mark_notification_as_read.dart';
+import 'package:fantavacanze_official/features/league/domain/use_cases/remote/rules/add_rule.dart';
+import 'package:fantavacanze_official/features/league/domain/use_cases/remote/league/create_league.dart';
+import 'package:fantavacanze_official/features/league/domain/use_cases/remote/notes/delete_note.dart';
+import 'package:fantavacanze_official/features/league/domain/use_cases/remote/rules/delete_rule.dart';
+import 'package:fantavacanze_official/features/league/domain/use_cases/remote/league/exit_league.dart';
+import 'package:fantavacanze_official/features/league/domain/use_cases/remote/daily_challenges/get_daily_challenges.dart';
+import 'package:fantavacanze_official/features/league/domain/use_cases/remote/league/get_league.dart';
+import 'package:fantavacanze_official/features/league/domain/use_cases/remote/notes/get_notes.dart';
+import 'package:fantavacanze_official/features/league/domain/use_cases/remote/rules/get_rules.dart';
+import 'package:fantavacanze_official/features/league/domain/use_cases/remote/league/join_league.dart';
+import 'package:fantavacanze_official/features/league/domain/use_cases/remote/notifications/listen_to_notification.dart';
+import 'package:fantavacanze_official/features/league/domain/use_cases/remote/daily_challenges/mark_challenge_as_completed.dart';
+import 'package:fantavacanze_official/features/league/domain/use_cases/remote/memory/remove_memory.dart';
+import 'package:fantavacanze_official/features/league/domain/use_cases/remote/league/remove_team_participants.dart';
+import 'package:fantavacanze_official/features/league/domain/use_cases/remote/notes/save_note.dart';
+import 'package:fantavacanze_official/features/league/domain/use_cases/remote/league/search_league.dart';
+import 'package:fantavacanze_official/features/league/domain/use_cases/remote/daily_challenges/update_challenge_refresh_status.dart';
+import 'package:fantavacanze_official/features/league/domain/use_cases/remote/rules/update_rule.dart';
+import 'package:fantavacanze_official/features/league/domain/use_cases/remote/league/update_team_name.dart';
+import 'package:fantavacanze_official/features/league/domain/use_cases/remote/league/upload_image.dart';
+import 'package:fantavacanze_official/features/league/domain/use_cases/remote/league/upload_team_logo.dart';
+import 'package:fantavacanze_official/features/league/domain/use_cases/remote/league/update_team_logo.dart';
+import 'package:fantavacanze_official/features/league/domain/use_cases/remote/league/add_administrators.dart';
+import 'package:fantavacanze_official/features/league/domain/use_cases/remote/league/remove_participants.dart';
+import 'package:fantavacanze_official/features/league/domain/use_cases/remote/league/update_league_info.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:fantavacanze_official/features/league/domain/use_cases/delete_league.dart';
+import 'package:fantavacanze_official/features/league/domain/use_cases/remote/league/delete_league.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_event.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_state.dart';
 
@@ -56,13 +67,27 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
   final RemoveParticipants removeParticipants;
   final UpdateLeagueInfo updateLeagueInfo;
   final DeleteLeague deleteLeague;
+
+  //cubits
   final AppUserCubit appUserCubit;
   final AppLeagueCubit appLeagueCubit;
+  final NotificationCountCubit notificationCountCubit;
 
   // Daily challenges and notifications
   final GetDailyChallenges getDailyChallenges;
   final MarkChallengeAsCompleted markChallengeAsCompleted;
   final UpdateChallengeRefreshStatus updateChallengeRefreshStatus;
+  final ListenToNotification listenToNotification;
+
+  // Add missing notification use case properties
+  final GetNotifications getNotifications;
+  final MarkNotificationAsRead markNotificationAsRead;
+  final DeleteNotification deleteNotification;
+  final ApproveDailyChallenge approveDailyChallenge;
+  final RejectDailyChallenge rejectDailyChallenge;
+
+  // Stream subscription for notifications
+  StreamSubscription<RemoteNotification>? _notificationSubscription;
 
   LeagueBloc({
     required this.createLeague,
@@ -89,11 +114,21 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
     required this.uploadImage,
     required this.uploadTeamLogo,
     required this.updateTeamLogo,
+    //cubits
+    required this.appUserCubit,
+    required this.appLeagueCubit,
+    required this.notificationCountCubit,
+    //challenges
     required this.getDailyChallenges,
     required this.markChallengeAsCompleted,
     required this.updateChallengeRefreshStatus,
-    required this.appUserCubit,
-    required this.appLeagueCubit,
+    required this.approveDailyChallenge,
+    required this.rejectDailyChallenge,
+    //notifications
+    required this.listenToNotification,
+    required this.getNotifications,
+    required this.markNotificationAsRead,
+    required this.deleteNotification,
   }) : super(LeagueInitial()) {
     on<CreateLeagueEvent>(_onCreateLeague);
     on<GetLeagueEvent>(_onGetLeague);
@@ -122,6 +157,12 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
     on<GetDailyChallengesEvent>(_onGetDailyChallenges);
     on<MarkChallengeAsCompletedEvent>(_onMarkChallengeAsCompleted);
     on<RefreshDailyChallengeEvent>(_onRefreshDailyChallenge);
+    on<ListenToNotificationEvent>(_onListenToNotification);
+    on<GetNotificationsEvent>(_onGetNotifications);
+    on<MarkNotificationAsReadEvent>(_onMarkNotificationAsRead);
+    on<DeleteNotificationEvent>(_onDeleteNotification);
+    on<ApproveDailyChallengeEvent>(_onApproveDailyChallenge);
+    on<RejectDailyChallengeEvent>(_onRejectDailyChallenge);
   }
 
   // -----------------------------------------------------------
@@ -281,8 +322,11 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
 
       result.fold(
         (failure) => emit(LeagueError(message: failure.message)),
-        (league) =>
-            emit(LeagueSuccess(league: league, operation: 'get_league')),
+        (league) {
+          appLeagueCubit.selectLeague(league);
+
+          emit(LeagueSuccess(league: league, operation: 'get_league'));
+        },
       );
     } catch (e) {
       emit(LeagueError(message: e.toString()));
@@ -324,12 +368,6 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
   ) async {
     try {
       emit(LeagueLoading());
-
-      // Validate mode parameter
-      if (event.mode != "hard" && event.mode != "soft") {
-        emit(const LeagueError(message: "Invalid mode. Use 'hard' or 'soft'"));
-        return;
-      }
 
       final result = await getRules(event.mode);
 
@@ -692,7 +730,7 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
       (failure) => emit(LeagueError(message: failure.message)),
       (logoUrl) => emit(TeamLogoUploadSuccess(
         logoUrl: logoUrl,
-        teamName: event.teamName, // Changed from teamId to teamName
+        teamName: event.teamName,
       )),
     );
   }
@@ -826,6 +864,7 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
     final result = await getDailyChallenges.call(
       GetDailyChallengesParams(
         userId: event.userId,
+        leagueId: event.leagueId,
       ),
     );
 
@@ -840,8 +879,13 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
     MarkChallengeAsCompletedEvent event,
     Emitter<LeagueState> emit,
   ) async {
+    // First emit loading state
     emit(LeagueLoading());
 
+    // This allows the UI to update before the server responds
+    emit(ChallengeMarkedAsCompleted(challenge: event.challenge));
+
+    // Now call the repository to persist the change
     final result = await markChallengeAsCompleted.call(
       MarkChallengeAsCompletedParams(
         challenge: event.challenge,
@@ -850,11 +894,39 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
       ),
     );
 
+    // Handle any errors from the repository
     result.fold(
       (failure) => emit(LeagueError(message: failure.message)),
       (_) {
-        // Successfully marked challenge as completed
-        emit(ChallengeMarkedAsCompleted(challenge: event.challenge));
+        // If admin completed the challenge, also refresh the league to get updated events
+        if (event.league.admins.contains(event.userId)) {
+          // Fetch updated league data to refresh events
+          add(GetLeagueEvent(leagueId: event.league.id));
+        }
+      },
+    );
+  }
+
+  // R E F R E S H   D A I L Y   C H A L L E N G E
+  Future<void> _onRefreshDailyChallenge(
+    RefreshDailyChallengeEvent event,
+    Emitter<LeagueState> emit,
+  ) async {
+    emit(LeagueLoading());
+
+    final result = await updateChallengeRefreshStatus(
+      UpdateChallengeRefreshStatusParams(
+        challengeId: event.challengeId,
+        userId: event.userId,
+        isRefreshed: true,
+      ),
+    );
+
+    result.fold(
+      (failure) => emit(LeagueError(message: failure.message)),
+      (_) {
+        // First emit ChallengeRefreshed to notify the UI
+        emit(ChallengeRefreshed(challengeId: event.challengeId));
       },
     );
   }
@@ -862,6 +934,168 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
   // -----------------------------------------------------------
   // N O T I F I C A T I O N S   O P E R A T I O N S
   // -----------------------------------------------------------
+
+  Future<void> _onListenToNotification(
+    ListenToNotificationEvent event,
+    Emitter<LeagueState> emit,
+  ) async {
+    emit(LeagueLoading());
+
+    // Cancella eventuali subscription precedenti
+    _notificationSubscription?.cancel();
+
+    // Ottieni il risultato del usecase
+    final result = await listenToNotification.call(NoParams());
+
+    // Gestisci il risultato usando fold
+    result.fold(
+      // In caso di fallimento
+      (failure) {
+        emit(LeagueError(message: failure.message));
+      },
+      // In caso di successo, estrai lo stream e usa emit.forEach
+      (notificationStream) async {
+        await emit.forEach<RemoteNotification>(
+          notificationStream,
+          onData: (notification) {
+            notificationCountCubit.increment();
+            return NotificationReceived(
+              notification: notification,
+              data: {},
+            );
+          },
+          onError: (error, stackTrace) {
+            return LeagueError(message: error.toString());
+          },
+        );
+      },
+    );
+  }
+
+  // M E T O D O   P E R   L A   C H I U S U R A
+  @override
+  Future<void> close() {
+    _notificationSubscription?.cancel();
+    return super.close();
+  }
+
+  // Fix the _onGetNotifications method to use the correct use case
+  Future<void> _onGetNotifications(
+    GetNotificationsEvent event,
+    Emitter<LeagueState> emit,
+  ) async {
+    emit(LeagueLoading());
+
+    // Use getNotifications use case instead of listenToNotification
+    final result = await getNotifications(NoParams());
+
+    result.fold((failure) => emit(LeagueError(message: failure.message)),
+        (notifications) {
+      // Update notification count in the cubit
+      final unreadCount = notifications.where((n) => !n.isRead).length;
+      notificationCountCubit.setCount(unreadCount);
+
+      emit(NotificationsLoaded(notifications: notifications));
+    });
+  }
+
+  // Fix the notification methods to use the correct use cases
+  Future<void> _onMarkNotificationAsRead(
+    MarkNotificationAsReadEvent event,
+    Emitter<LeagueState> emit,
+  ) async {
+    emit(LeagueLoading());
+
+    final result =
+        await markNotificationAsRead.call(MarkNotificationAsReadParams(
+      notificationId: event.notificationId,
+    ));
+
+    result.fold(
+      (failure) => emit(LeagueError(message: failure.message)),
+      (_) {
+        final currentCount = notificationCountCubit.state;
+
+        if (currentCount > 0) {
+          notificationCountCubit.decrement();
+        }
+
+        emit(NotificationActionSuccess(
+          action: 'mark_as_read',
+          notificationId: event.notificationId,
+        ));
+      },
+    );
+  }
+
+  Future<void> _onDeleteNotification(
+    DeleteNotificationEvent event,
+    Emitter<LeagueState> emit,
+  ) async {
+    emit(LeagueLoading());
+
+    final result = await deleteNotification.call(DeleteNotificationParams(
+      notificationId: event.notificationId,
+    ));
+
+    result.fold(
+      (failure) => emit(LeagueError(message: failure.message)),
+      (_) {
+        final currentCount = notificationCountCubit.state;
+
+        if (currentCount > 0) {
+          notificationCountCubit.decrement();
+        }
+
+        emit(NotificationActionSuccess(
+          action: 'delete',
+          notificationId: event.notificationId,
+        ));
+      },
+    );
+  }
+
+  Future<void> _onApproveDailyChallenge(
+    ApproveDailyChallengeEvent event,
+    Emitter<LeagueState> emit,
+  ) async {
+    emit(LeagueLoading());
+
+    final result = await approveDailyChallenge.call(
+      ApproveDailyChallengeParams(notificationId: event.notificationId),
+    );
+
+    result.fold(
+      (failure) => emit(LeagueError(message: failure.message)),
+      (_) {
+        // First emit notification action success
+        emit(NotificationActionSuccess(action: 'approve'));
+
+        // Then refresh the selected league to get updated events
+        final leagueState = appLeagueCubit.state;
+
+        if (leagueState is AppLeagueExists) {
+          add(GetLeagueEvent(leagueId: leagueState.selectedLeague.id));
+        }
+      },
+    );
+  }
+
+  Future<void> _onRejectDailyChallenge(
+    RejectDailyChallengeEvent event,
+    Emitter<LeagueState> emit,
+  ) async {
+    emit(LeagueLoading());
+
+    final result = await rejectDailyChallenge.call(
+      RejectDailyChallengeParams(notificationId: event.notificationId),
+    );
+
+    result.fold(
+      (failure) => emit(LeagueError(message: failure.message)),
+      (_) => emit(NotificationActionSuccess(action: 'reject')),
+    );
+  }
 
   // -----------------------------------------------------------
   // U T I L I T Y   M E T H O D S
@@ -884,35 +1118,5 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
     }
 
     return false;
-  }
-
-  // -----------------------------------------------------------
-  // D A I L Y   C H A L L E N G E S   O P E R A T I O N S
-  // -----------------------------------------------------------
-
-  // R E F R E S H   D A I L Y   C H A L L E N G E
-  Future<void> _onRefreshDailyChallenge(
-    RefreshDailyChallengeEvent event,
-    Emitter<LeagueState> emit,
-  ) async {
-    emit(LeagueLoading());
-
-    final result = await updateChallengeRefreshStatus(
-      UpdateChallengeRefreshStatusParams(
-        challengeId: event.challengeId,
-        userId: event.userId,
-        isRefreshed: true,
-        primaryIndex: event.primaryIndex,
-      ),
-    );
-
-    result.fold(
-      (failure) => emit(LeagueError(message: failure.message)),
-      (_) {
-        // After refreshing the challenge, reload all challenges
-        emit(ChallengeRefreshed());
-        add(GetDailyChallengesEvent(userId: event.userId));
-      },
-    );
   }
 }

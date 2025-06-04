@@ -2,7 +2,7 @@ import 'package:fantavacanze_official/core/cubits/app_league/app_league_cubit.da
 import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:fantavacanze_official/core/utils/show_snackbar.dart';
-import 'package:fantavacanze_official/features/league/data/models/note_model.dart';
+import 'package:fantavacanze_official/features/league/data/models/note_model/note_model.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/individual_participant.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/league.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/participant.dart';

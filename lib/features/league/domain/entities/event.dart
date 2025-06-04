@@ -1,4 +1,4 @@
-import 'package:fantavacanze_official/features/league/domain/entities/rule.dart';
+import 'package:fantavacanze_official/features/league/domain/entities/rule/rule.dart';
 import 'package:flutter/foundation.dart';
 
 @immutable

@@ -13,6 +13,7 @@ abstract interface class AuthRepository {
     required String name,
     required String email,
     required String password,
+    required String gender,
     required String hCaptcha,
     required bool isAdult,
     required bool isTermsAccepted,
@@ -52,4 +53,6 @@ abstract interface class AuthRepository {
     required bool isAdult,
     required bool isTermsAccepted,
   });
+
+  Future<Either<Failure, User>> updateGender({required String gender});
 }

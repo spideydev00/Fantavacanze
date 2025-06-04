@@ -1,7 +1,7 @@
 import 'package:fantavacanze_official/core/extensions/context_extension.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
-import 'package:fantavacanze_official/features/league/data/models/note_model.dart';
+import 'package:fantavacanze_official/features/league/data/models/note_model/note_model.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';

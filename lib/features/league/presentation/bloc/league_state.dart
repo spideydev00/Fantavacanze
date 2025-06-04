@@ -1,8 +1,10 @@
 import 'package:equatable/equatable.dart';
-import 'package:fantavacanze_official/features/league/data/models/note_model.dart';
+import 'package:fantavacanze_official/features/league/data/models/note_model/note_model.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/daily_challenge.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/league.dart';
-import 'package:fantavacanze_official/features/league/domain/entities/rule.dart';
+import 'package:fantavacanze_official/features/league/domain/entities/notification.dart';
+import 'package:fantavacanze_official/features/league/domain/entities/rule/rule.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 
 abstract class LeagueState extends Equatable {
   const LeagueState();
@@ -169,4 +171,50 @@ class ChallengeMarkedAsCompleted extends LeagueState {
   List<Object?> get props => [challenge];
 }
 
-class ChallengeRefreshed extends LeagueState {}
+class ChallengeRefreshed extends LeagueState {
+  final String challengeId;
+
+  const ChallengeRefreshed({
+    required this.challengeId,
+  });
+
+  @override
+  List<Object?> get props => [challengeId];
+}
+
+class NotificationReceived extends LeagueState {
+  final RemoteNotification notification;
+  final Map<String, dynamic>? data;
+
+  const NotificationReceived({
+    required this.notification,
+    this.data,
+  });
+
+  @override
+  List<Object?> get props => [notification, data];
+}
+
+class NotificationsLoaded extends LeagueState {
+  final List<Notification> notifications;
+
+  const NotificationsLoaded({
+    required this.notifications,
+  });
+
+  @override
+  List<Object?> get props => [notifications];
+}
+
+class NotificationActionSuccess extends LeagueState {
+  final String action;
+  final String? notificationId;
+
+  const NotificationActionSuccess({
+    required this.action,
+    this.notificationId,
+  });
+
+  @override
+  List<Object?> get props => [action, notificationId];
+}

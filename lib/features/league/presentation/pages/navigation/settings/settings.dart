@@ -1,3 +1,4 @@
+import 'package:fantavacanze_official/core/cubits/app_league/app_league_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/app_theme/app_theme_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit.dart';
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
@@ -115,13 +116,20 @@ class SettingsPage extends StatelessWidget {
         onExit: () async {
           // 1) chiudo il dialog
           navigatorKey.currentState!.pop();
-          // 2) azzero tutto lo stack e mostro solo SocialLoginPage
+
+          // 2) pulisco la cache delle leghe
+          await context.read<AppLeagueCubit>().clearCache();
+
+          // 3) azzero tutto lo stack e mostro solo SocialLoginPage
           navigatorKey.currentState!.pushAndRemoveUntil(
             SocialLoginPage.route,
             (route) => false,
           );
-          // 3) eseguo il signOut sul cubit
-          await context.read<AppUserCubit>().signOut();
+
+          // 4) eseguo il signOut sul cubit
+          if (context.mounted) {
+            await context.read<AppUserCubit>().signOut();
+          }
         },
       ),
     );

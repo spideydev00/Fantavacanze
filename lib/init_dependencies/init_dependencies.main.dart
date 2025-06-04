@@ -20,31 +20,7 @@ Future<void> initDependencies() async {
     serviceLocator.registerLazySingleton(() => supabase.client);
 
     // Initialize Hive
-    final dir = await getApplicationDocumentsDirectory();
-    Hive.defaultDirectory = dir.path;
-
-    //hive boxes
-    serviceLocator
-      ..registerLazySingleton<Box<Map<dynamic, dynamic>>>(
-        () => Hive.box<Map<dynamic, dynamic>>(),
-        instanceName: 'leagues_box',
-      )
-      ..registerLazySingleton<Box<Map<dynamic, dynamic>>>(
-        () => Hive.box<Map<dynamic, dynamic>>(),
-        instanceName: 'rules_box',
-      )
-      ..registerLazySingleton<Box<Map<dynamic, dynamic>>>(
-        () => Hive.box<Map<dynamic, dynamic>>(),
-        instanceName: 'notes_box',
-      )
-      ..registerLazySingleton<Box<Map<dynamic, dynamic>>>(
-        () => Hive.box<Map<dynamic, dynamic>>(),
-        instanceName: 'challenges_box',
-      )
-      ..registerLazySingleton<Box<Map<dynamic, dynamic>>>(
-        () => Hive.box<Map<dynamic, dynamic>>(),
-        instanceName: 'notifications_box',
-      );
+    await _initializeHive();
 
     serviceLocator.registerFactory(
       () => InternetConnection(),
@@ -71,6 +47,7 @@ Future<void> initDependencies() async {
           updatePassword: serviceLocator(),
           deleteAccount: serviceLocator(),
           removeConsents: serviceLocator(),
+          // appLeagueCubit: serviceLocator(),
         ),
       )
       //2. navigation cubit
@@ -87,20 +64,96 @@ Future<void> initDependencies() async {
       ..registerLazySingleton(
         () => AppLeagueCubit(
           getUserLeagues: serviceLocator(),
+          // clearLocalCache: serviceLocator(),
           prefs: serviceLocator<SharedPreferences>(),
-          appUserCubit: serviceLocator<AppUserCubit>(),
+          appUserCubit: serviceLocator(),
+          clearLocalCache: serviceLocator<ClearLocalCache>(),
         ),
       )
-      //5. connection checker
+      //7. notification count cubit
+      ..registerLazySingleton(
+        () => NotificationCountCubit(),
+      )
+      //6. connection checker
       ..registerFactory<ConnectionChecker>(
         () => ConnectionCheckerImpl(
           serviceLocator(),
         ),
       );
-    debugPrint("Dependencies initialized successfully with get_it");
+    debugPrint("⬆ Dipendenze inizializzate correttamente con get_it");
   } catch (e) {
-    debugPrint("Error initializing dependencies: $e");
+    debugPrint("Errore di inizializzazione delle dipendenze: $e");
     // Rethrow to be caught by main()
+    rethrow;
+  }
+}
+
+/// Initialize Hive with proper error handling
+Future<void> _initializeHive() async {
+  try {
+    final dir = await getApplicationDocumentsDirectory();
+    Hive.init(dir.path);
+
+    // Register adapters with error handling
+    _registerHiveAdapters();
+
+    // Open boxes with proper error handling
+    await _openHiveBoxes();
+
+    debugPrint("✅ Hive inizializzato correttamente");
+  } catch (e) {
+    debugPrint("Errore nell'inizializzazione di Hive: $e");
+    rethrow;
+  }
+}
+
+/// Register all Hive adapters
+void _registerHiveAdapters() {
+  Hive.registerAdapter(DailyChallengeModelAdapter());
+  Hive.registerAdapter(EventModelAdapter());
+  Hive.registerAdapter(IndividualParticipantModelAdapter());
+  Hive.registerAdapter(LeagueModelAdapter());
+  Hive.registerAdapter(MemoryModelAdapter());
+  Hive.registerAdapter(NoteModelAdapter());
+  Hive.registerAdapter(DailyChallengeNotificationModelAdapter());
+  Hive.registerAdapter(NotificationModelAdapter());
+  Hive.registerAdapter(RuleModelAdapter());
+  Hive.registerAdapter(SimpleParticipantModelAdapter());
+  Hive.registerAdapter(TeamParticipantModelAdapter());
+  Hive.registerAdapter(RuleTypeAdapter());
+
+  debugPrint("🔌 Tutti gli adapter di Hive registrati correttamente");
+}
+
+/// Open all Hive boxes
+Future<void> _openHiveBoxes() async {
+  try {
+    // Open boxes one by one with error handling
+    final leaguesBox = await Hive.openBox<LeagueModel>('leagues_box');
+
+    final rulesBox = await Hive.openBox<List<RuleModel>>('rules_box');
+
+    final notesBox = await Hive.openBox<NoteModel>('notes_box');
+
+    final challengesBox =
+        await Hive.openBox<DailyChallengeModel>('challenges_box');
+
+    await challengesBox.clear();
+
+    final notificationsBox =
+        await Hive.openBox<NotificationModel>('notifications_box');
+
+    // Register boxes in GetIt
+    serviceLocator
+      ..registerLazySingleton(() => leaguesBox)
+      ..registerLazySingleton(() => rulesBox)
+      ..registerLazySingleton(() => notesBox)
+      ..registerLazySingleton(() => challengesBox)
+      ..registerLazySingleton(() => notificationsBox);
+
+    debugPrint("📦 Tutti i box di Hive aperti correttamente");
+  } catch (e) {
+    debugPrint("Errore nell'apertura dei box di Hive: $e");
     rethrow;
   }
 }
@@ -157,6 +210,9 @@ void _initAuth() {
     ..registerFactory(
       () => UpdateConsents(authRepository: serviceLocator()),
     )
+    ..registerFactory(
+      () => UpdateGender(authRepository: serviceLocator()),
+    )
     //bloc
     ..registerLazySingleton(
       () => AuthBloc(
@@ -169,6 +225,7 @@ void _initAuth() {
         appLeagueCubit: serviceLocator(),
         changeIsOnboardedValue: serviceLocator(),
         updateConsents: serviceLocator(),
+        updateGender: serviceLocator(),
       ),
     );
 }
@@ -185,16 +242,11 @@ void _initLeague() {
     )
     ..registerFactory<LeagueLocalDataSource>(
       () => LeagueLocalDataSourceImpl(
-        leaguesBox: serviceLocator<Box<Map<dynamic, dynamic>>>(
-            instanceName: 'leagues_box'),
-        rulesBox: serviceLocator<Box<Map<dynamic, dynamic>>>(
-            instanceName: 'rules_box'),
-        notesBox: serviceLocator<Box<Map<dynamic, dynamic>>>(
-            instanceName: 'notes_box'),
-        challengesBox: serviceLocator<Box<Map<dynamic, dynamic>>>(
-            instanceName: 'challenges_box'),
-        notificationsBox: serviceLocator<Box<Map<dynamic, dynamic>>>(
-            instanceName: 'notifications_box'),
+        leaguesBox: serviceLocator(),
+        rulesBox: serviceLocator(),
+        notesBox: serviceLocator(),
+        challengesBox: serviceLocator(),
+        notificationsBox: serviceLocator(),
       ),
     )
 
@@ -292,7 +344,30 @@ void _initLeague() {
     ..registerFactory(
       () => UpdateChallengeRefreshStatus(leagueRepository: serviceLocator()),
     )
-
+    ..registerFactory(
+      () => ClearLocalCache(leagueRepository: serviceLocator()),
+    )
+    ..registerFactory(
+      () => ListenToNotification(leagueRepository: serviceLocator()),
+    )
+    ..registerFactory(
+      () => ApproveDailyChallenge(leagueRepository: serviceLocator()),
+    )
+    ..registerFactory(
+      () => DeleteNotification(leagueRepository: serviceLocator()),
+    )
+    ..registerFactory(
+      () => GetNotifications(leagueRepository: serviceLocator()),
+    )
+    ..registerFactory(
+      () => MarkNotificationAsRead(leagueRepository: serviceLocator()),
+    )
+    ..registerFactory(
+      () => RejectDailyChallenge(leagueRepository: serviceLocator()),
+    )
+    ..registerFactory(
+      () => SendChallengeNotification(leagueRepository: serviceLocator()),
+    )
     // bloc
     ..registerFactory(
       () => LeagueBloc(
@@ -310,6 +385,7 @@ void _initLeague() {
         deleteRule: serviceLocator(),
         appUserCubit: serviceLocator(),
         appLeagueCubit: serviceLocator(),
+        notificationCountCubit: serviceLocator(),
         removeTeamParticipants: serviceLocator(),
         searchLeague: serviceLocator(),
         getNotes: serviceLocator(),
@@ -325,6 +401,12 @@ void _initLeague() {
         getDailyChallenges: serviceLocator(),
         markChallengeAsCompleted: serviceLocator(),
         updateChallengeRefreshStatus: serviceLocator(),
+        listenToNotification: serviceLocator(),
+        getNotifications: serviceLocator(),
+        markNotificationAsRead: serviceLocator(),
+        deleteNotification: serviceLocator(),
+        approveDailyChallenge: serviceLocator(),
+        rejectDailyChallenge: serviceLocator(),
       ),
     );
 }

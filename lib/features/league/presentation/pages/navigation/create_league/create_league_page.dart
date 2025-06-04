@@ -2,8 +2,8 @@ import 'package:fantavacanze_official/core/constants/game_mode.dart';
 import 'package:fantavacanze_official/core/extensions/context_extension.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/utils/show_snackbar.dart';
-import 'package:fantavacanze_official/features/league/data/models/rule_model.dart';
-import 'package:fantavacanze_official/features/league/domain/entities/rule.dart';
+import 'package:fantavacanze_official/features/league/data/models/rule_model/rule_model.dart';
+import 'package:fantavacanze_official/features/league/domain/entities/rule/rule.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
@@ -35,14 +35,15 @@ class _CreateLeaguePageState extends State<CreateLeaguePage> {
   List<Rule> _rules = [];
   bool _isCreating = false;
   int _currentStep = 0;
-  GameMode _selectedRuleMode = GameMode.hot;
+  GameMode _selectedRuleMode = GameMode.allTogether;
   bool _isLoadingRules = false;
   bool _rulesLoaded = false;
 
   // Maps to store rules locally for each mode
   final Map<String, List<Rule>> _cachedRules = {
-    'hard': [],
-    'soft': [],
+    'male': [],
+    'female': [],
+    'mixed': [],
     'custom': [],
   };
 
@@ -53,9 +54,9 @@ class _CreateLeaguePageState extends State<CreateLeaguePage> {
   @override
   void initState() {
     super.initState();
-    // Load hot mode rules by default
+    // Load mixed mode rules by default (previously was "hard")
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _loadPredefinedRules("hard");
+      _loadPredefinedRules(_selectedRuleMode.apiMode);
     });
 
     // Add scroll listener
@@ -95,7 +96,7 @@ class _CreateLeaguePageState extends State<CreateLeaguePage> {
 
   void _loadPredefinedRules(String mode) {
     // First check if we have cached rules for this mode
-    if (_cachedRules[mode]!.isNotEmpty) {
+    if (_cachedRules.containsKey(mode) && _cachedRules[mode]!.isNotEmpty) {
       setState(() {
         _isLoadingRules = false;
         _rulesLoaded = true;
@@ -142,14 +143,7 @@ class _CreateLeaguePageState extends State<CreateLeaguePage> {
               }
 
               // Update the cache for the current mode
-              String currentModeKey;
-              if (_selectedRuleMode == GameMode.hot) {
-                currentModeKey = 'hard';
-              } else if (_selectedRuleMode == GameMode.soft) {
-                currentModeKey = 'soft';
-              } else {
-                currentModeKey = 'custom';
-              }
+              String currentModeKey = _selectedRuleMode.apiMode;
               _cachedRules[currentModeKey] = List<Rule>.from(_rules);
             });
           },
@@ -182,30 +176,7 @@ class _CreateLeaguePageState extends State<CreateLeaguePage> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Type selector (disabled for edit to maintain consistency)
-              Text(
-                'Tipo di Regola',
-                style: context.textTheme.titleMedium,
-              ),
-              const SizedBox(height: ThemeSizes.sm),
-              Row(
-                children: [
-                  Expanded(
-                    child: TypeSelector(
-                      selectedType: RuleType.bonus,
-                      onTypeChanged: (_) {},
-                    ),
-                  ),
-                  const SizedBox(width: ThemeSizes.sm),
-                  Expanded(
-                    child: TypeSelector(
-                      selectedType: RuleType.malus,
-                      onTypeChanged: (_) {},
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: ThemeSizes.md),
+              // Remove the duplicate type selectors since we can't change rule type when editing
               // Name field
               TextField(
                 controller: nameController,
@@ -253,14 +224,7 @@ class _CreateLeaguePageState extends State<CreateLeaguePage> {
                 );
 
                 // Update the cache for the current mode
-                String currentModeKey;
-                if (_selectedRuleMode == GameMode.hot) {
-                  currentModeKey = 'hard';
-                } else if (_selectedRuleMode == GameMode.soft) {
-                  currentModeKey = 'soft';
-                } else {
-                  currentModeKey = 'custom';
-                }
+                String currentModeKey = _selectedRuleMode.apiMode;
                 _cachedRules[currentModeKey] = List<Rule>.from(_rules);
               });
 
@@ -277,19 +241,15 @@ class _CreateLeaguePageState extends State<CreateLeaguePage> {
       _rules.removeAt(index);
 
       // Update the cache for the current mode
-      String currentModeKey;
-      if (_selectedRuleMode == GameMode.hot) {
-        currentModeKey = 'hard';
-      } else if (_selectedRuleMode == GameMode.soft) {
-        currentModeKey = 'soft';
-      } else {
-        currentModeKey = 'custom';
-      }
+      String currentModeKey = _selectedRuleMode.apiMode;
       _cachedRules[currentModeKey] = List<Rule>.from(_rules);
     });
   }
 
   void _submitForm() {
+    // Dismiss keyboard when submitting form
+    FocusManager.instance.primaryFocus?.unfocus();
+
     if (_formKey.currentState!.validate()) {
       if (_rules.isEmpty) {
         showSnackBar(
@@ -342,33 +302,22 @@ class _CreateLeaguePageState extends State<CreateLeaguePage> {
         },
       );
 
-      // Delay to show the loader for a better UX
-      Future.delayed(const Duration(seconds: 2), () {
-        // Only proceed if the widget is still mounted
-        if (mounted) {
-          context.read<LeagueBloc>().add(
-                CreateLeagueEvent(
-                  name: _nameController.text.trim(),
-                  description: _descriptionController.text.trim(),
-                  isTeamBased: _isTeamBased,
-                  rules: _rules,
-                ),
-              );
-        }
-      });
+      {
+        context.read<LeagueBloc>().add(
+              CreateLeagueEvent(
+                name: _nameController.text.trim(),
+                description: _descriptionController.text.trim(),
+                isTeamBased: _isTeamBased,
+                rules: _rules,
+              ),
+            );
+      }
     }
   }
 
   void _handleRuleModeChanged(GameMode mode) {
     // Store current rules in cache before switching
-    String currentModeKey;
-    if (_selectedRuleMode == GameMode.hot) {
-      currentModeKey = 'hard';
-    } else if (_selectedRuleMode == GameMode.soft) {
-      currentModeKey = 'soft';
-    } else {
-      currentModeKey = 'custom';
-    }
+    String currentModeKey = _selectedRuleMode.apiMode;
 
     // Save current rules to cache
     if (_rules.isNotEmpty) {
@@ -383,11 +332,7 @@ class _CreateLeaguePageState extends State<CreateLeaguePage> {
     });
 
     // Load rules for the new mode
-    if (mode == GameMode.hot) {
-      _loadPredefinedRules("hard");
-    } else if (mode == GameMode.soft) {
-      _loadPredefinedRules("soft");
-    } else {
+    if (mode == GameMode.custom) {
       // For custom mode, either load cached custom rules or set empty
       if (_cachedRules['custom']!.isNotEmpty) {
         setState(() {
@@ -399,6 +344,9 @@ class _CreateLeaguePageState extends State<CreateLeaguePage> {
           _rulesLoaded = true;
         });
       }
+    } else {
+      // For predefined modes, load from the appropriate table
+      _loadPredefinedRules(mode.apiMode);
     }
   }
 
@@ -466,7 +414,12 @@ class _CreateLeaguePageState extends State<CreateLeaguePage> {
       builder: (context, state) {
         return Scaffold(
           appBar: AppBar(
-            title: const Text('Crea Lega'),
+            title: Text(
+              'Crea Lega',
+              style: context.textTheme.titleMedium!.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
             elevation: 0,
             leading: BackButton(
               onPressed: Navigator.of(context).pop,
@@ -583,7 +536,9 @@ class _CreateLeaguePageState extends State<CreateLeaguePage> {
                               Expanded(
                                 flex: 3,
                                 child: OutlinedButton(
-                                  onPressed: details.onStepCancel,
+                                  onPressed: () {
+                                    details.onStepCancel?.call();
+                                  },
                                   child: const Text('Indietro'),
                                 ),
                               ),
@@ -592,8 +547,14 @@ class _CreateLeaguePageState extends State<CreateLeaguePage> {
                             Expanded(
                               flex: 4,
                               child: ElevatedButton(
-                                onPressed:
-                                    _isCreating ? null : details.onStepContinue,
+                                onPressed: _isCreating
+                                    ? null
+                                    : () {
+                                        FocusManager.instance.primaryFocus
+                                            ?.unfocus();
+
+                                        details.onStepContinue?.call();
+                                      },
                                 style: ElevatedButton.styleFrom(
                                   fixedSize: null,
                                   padding: const EdgeInsets.symmetric(
@@ -660,7 +621,11 @@ class _CreateLeaguePageState extends State<CreateLeaguePage> {
                         Expanded(
                           flex: 4,
                           child: ElevatedButton(
-                            onPressed: _isCreating ? null : _submitForm,
+                            onPressed: _isCreating
+                                ? null
+                                : () {
+                                    _submitForm();
+                                  },
                             style: ElevatedButton.styleFrom(
                               fixedSize: null,
                               padding: const EdgeInsets.symmetric(
@@ -723,22 +688,11 @@ class _AddRuleDialogState extends State<_AddRuleDialog> {
           Text('Tipo di Regola',
               style: Theme.of(context).textTheme.titleMedium),
           const SizedBox(height: ThemeSizes.sm),
-          Row(
-            children: [
-              Expanded(
-                child: TypeSelector(
-                  selectedType: RuleType.bonus,
-                  onTypeChanged: (type) => setState(() => ruleType = type),
-                ),
-              ),
-              const SizedBox(width: ThemeSizes.sm),
-              Expanded(
-                child: TypeSelector(
-                  selectedType: RuleType.malus,
-                  onTypeChanged: (type) => setState(() => ruleType = type),
-                ),
-              ),
-            ],
+          TypeSelector(
+            selectedType: ruleType,
+            onTypeChanged: (type) => setState(
+              () => ruleType = type,
+            ),
           ),
           const SizedBox(height: ThemeSizes.md),
           TextField(

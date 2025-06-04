@@ -1,29 +1,34 @@
 import 'package:flutter/material.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
-import 'package:fantavacanze_official/main.dart';
+import 'package:fantavacanze_official/main.dart'; // Import main.dart to access messengerKey
 
-/// Mostra una SnackBar utilizzando il messengerKey globale.
-/// - [message]: testo da visualizzare
-/// - [color]: colore di sfondo (default il primario)
-/// - [duration]: durata della SnackBar
 void showSnackBar(
-  String content, {
-  Color? color,
-  Duration duration = const Duration(seconds: 3),
+  String message, {
+  Color color = ColorPalette.error,
+  Duration duration = const Duration(seconds: 2),
+  SnackBarAction? action,
 }) {
-  messengerKey.currentState
-    ?..hideCurrentSnackBar()
-    ..showSnackBar(
+  if (messengerKey.currentState != null) {
+    // Hide any existing snackbars
+    messengerKey.currentState!.hideCurrentSnackBar();
+
+    messengerKey.currentState!.showSnackBar(
       SnackBar(
         content: Text(
-          content,
+          message,
           style: TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.bold,
           ),
         ),
-        backgroundColor: color ?? ColorPalette.error,
+        backgroundColor: color,
         duration: duration,
+        action: action,
+        behavior: SnackBarBehavior.floating,
       ),
     );
+  } else {
+    debugPrint(
+        '⚠️ ScaffoldMessengerKey not initialized for snackbar: $message');
+  }
 }

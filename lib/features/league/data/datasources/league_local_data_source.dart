@@ -1,47 +1,70 @@
-import 'package:fantavacanze_official/core/errors/exceptions.dart';
-import 'package:fantavacanze_official/features/league/data/models/daily_challenge_model.dart';
-import 'package:fantavacanze_official/features/league/data/models/league_model.dart';
-import 'package:fantavacanze_official/features/league/data/models/note_model.dart';
-import 'package:fantavacanze_official/features/league/data/models/notification_model.dart';
-import 'package:fantavacanze_official/features/league/data/models/rule_model.dart';
+import 'package:fantavacanze_official/features/league/data/models/notification_model/daily_challenge_notification/daily_challenge_notification_model.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 
+import 'package:fantavacanze_official/core/errors/exceptions.dart';
+import 'package:fantavacanze_official/features/league/data/models/league_model/league_model.dart';
+import 'package:fantavacanze_official/features/league/data/models/rule_model/rule_model.dart';
+import 'package:fantavacanze_official/features/league/data/models/note_model/note_model.dart';
+import 'package:fantavacanze_official/features/league/data/models/daily_challenge_model/daily_challenge_model.dart';
+import 'package:fantavacanze_official/features/league/data/models/notification_model/notification/notification_model.dart';
+
 abstract interface class LeagueLocalDataSource {
+  // =====================================================================
+  // LEAGUE OPERATIONS
+  // =====================================================================
   Future<void> cacheLeagues(List<LeagueModel> leagues);
   Future<List<LeagueModel>> getCachedLeagues();
-
   Future<void> cacheLeague(LeagueModel league);
   Future<LeagueModel?> getCachedLeague(String leagueId);
   Future<void> removeLeagueFromCache(String leagueId);
 
-  Future<void> cacheRules(List<RuleModel> rules, String mode);
-  Future<List<RuleModel>> getCachedRules(String mode);
+  // =====================================================================
+  // RULE OPERATIONS
+  // =====================================================================
+  // Future<void> cacheRules(List<RuleModel> rules, String mode);
+  // Future<List<RuleModel>> getCachedRules(String mode);
 
-  // Daily Challenges methods
+  // =====================================================================
+  // DAILY CHALLENGE OPERATIONS
+  // =====================================================================
   Future<void> cacheDailyChallenges(
-      List<DailyChallengeModel> challenges, String userId);
-  Future<List<DailyChallengeModel>> getCachedDailyChallenges(String userId);
+      List<DailyChallengeModel> challenges, String leagueId);
+  Future<List<DailyChallengeModel>> getCachedDailyChallenges(
+    String leagueId,
+  );
+  Future<void> updateCachedChallenge(
+      String challengeId, String leagueId, bool isRefreshed);
+  Future<String> findLeagueIdForChallenge(String challengeId);
 
-  // Notifications methods
-  Future<void> cacheNotifications(
-      List<NotificationModel> notifications, String userId);
-  Future<List<NotificationModel>> getCachedNotifications(String userId);
-
-  Future<void> clearCache();
-
-  // Notes methods
+  // =====================================================================
+  // NOTE OPERATIONS
+  // =====================================================================
   Future<List<NoteModel>> getNotes(String leagueId);
-  Future<void> saveNote(String leagueId, NoteModel note);
-  Future<void> deleteNote(String leagueId, String noteId);
+  Future<void> saveNote(NoteModel note, String leagueId);
+  Future<void> deleteNote(String noteId, String leagueId);
+
+  // =====================================================================
+  // NOTIFICATION OPERATIONS
+  // =====================================================================
+  Future<void> cacheNotification(NotificationModel notification);
+  Future<List<NotificationModel>> getCachedNotifications();
+  Future<void> markNotificationAsRead(String notificationId);
+  Future<void> deleteNotificationFromCache(String notificationId);
+  Future<void> updateNotification(NotificationModel notification);
+
+  // =====================================================================
+  // CACHE MANAGEMENT
+  // =====================================================================
+  Future<void> clearCache();
 }
 
 class LeagueLocalDataSourceImpl implements LeagueLocalDataSource {
-  final Box<Map<dynamic, dynamic>> leaguesBox;
-  final Box<Map<dynamic, dynamic>> rulesBox;
-  final Box<Map<dynamic, dynamic>> notesBox;
-  final Box<Map<dynamic, dynamic>> challengesBox;
-  final Box<Map<dynamic, dynamic>> notificationsBox;
+  final Box<LeagueModel> leaguesBox;
+  final Box<List<RuleModel>> rulesBox;
+  final Box<NoteModel> notesBox;
+  final Box<DailyChallengeModel> challengesBox;
+  final Box<NotificationModel> notificationsBox;
 
   LeagueLocalDataSourceImpl({
     required this.leaguesBox,
@@ -51,383 +74,339 @@ class LeagueLocalDataSourceImpl implements LeagueLocalDataSource {
     required this.notificationsBox,
   });
 
+  // =====================================================================
+  // LEAGUE OPERATIONS IMPLEMENTATION
+  // =====================================================================
+
   @override
   Future<void> cacheLeagues(List<LeagueModel> leagues) async {
     try {
-      final Map<String, dynamic> leaguesMap = {
-        'timestamp': DateTime.now().toIso8601String(),
-        'data': leagues.map((league) => league.toJson()).toList(),
-      };
+      for (final league in leagues) {
+        await leaguesBox.put(league.id, league);
+      }
 
-      leaguesBox.write(() {
-        leaguesBox.put('user_leagues', leaguesMap);
-      });
-
-      debugPrint("📦 Cached ${leagues.length} leagues");
+      debugPrint("📦 ${leagues.length} leghe cachate");
     } catch (e) {
-      throw CacheException(
-          'Errore nel salvare le leghe in cache: ${e.toString()}');
+      throw CacheException('Errore nel salvare le leghe: $e');
     }
   }
 
   @override
   Future<List<LeagueModel>> getCachedLeagues() async {
     try {
-      List<LeagueModel> leagues = [];
+      final leagues = leaguesBox.values.toList();
 
-      leaguesBox.read(() {
-        final leaguesData = leaguesBox.get('user_leagues');
-        if (leaguesData != null) {
-          final List<dynamic> leaguesList = leaguesData['data'] as List;
-          leagues = leaguesList
-              .map((league) =>
-                  LeagueModel.fromJson(Map<String, dynamic>.from(league)))
-              .toList();
-
-          debugPrint("📤 Loaded ${leagues.length} leagues from cache)");
-        } else {
-          debugPrint("📤 No cached leagues found.");
-        }
-      });
+      if (leagues.isEmpty) {
+        return [];
+      }
 
       return leagues;
     } catch (e) {
-      throw CacheException(
-          'Errore nel recuperare le leghe dalla cache: ${e.toString()}');
+      throw CacheException('Errore nel recuperare le leghe: $e');
     }
   }
 
   @override
   Future<void> cacheLeague(LeagueModel league) async {
     try {
-      final leagueData = {
-        'timestamp': DateTime.now().toIso8601String(),
-        'data': league.toJson(),
-      };
+      await leaguesBox.put(league.id, league);
 
-      leaguesBox.write(() {
-        leaguesBox.put(league.id, leagueData);
-      });
-
-      debugPrint("📦 Cached league [${league.id}]");
+      debugPrint("📦 Cachata la lega [${league.id}]");
     } catch (e) {
-      throw CacheException(
-          'Errore nel salvare la lega in cache: ${e.toString()}');
+      throw CacheException('Errore nel salvare la lega: $e');
     }
   }
 
   @override
   Future<LeagueModel?> getCachedLeague(String leagueId) async {
     try {
-      LeagueModel? league;
+      final league = leaguesBox.get(leagueId);
 
-      leaguesBox.read(() {
-        final leagueData = leaguesBox.get(leagueId);
-        if (leagueData != null) {
-          league = LeagueModel.fromJson(
-              Map<String, dynamic>.from(leagueData['data']));
-          debugPrint("📤 Loaded league [$leagueId] from cache)");
-        } else {
-          debugPrint("📤 League [$leagueId] not found in cache.");
-        }
-      });
+      if (league == null) {
+        return null;
+      }
 
       return league;
     } catch (e) {
-      throw CacheException(
-          'Errore nel recuperare la lega dalla cache: ${e.toString()}');
+      throw CacheException('Errore nel recuperare la lega: $e');
     }
   }
 
   @override
   Future<void> removeLeagueFromCache(String leagueId) async {
     try {
-      leaguesBox.write(() {
-        leaguesBox.delete(leagueId);
+      await leaguesBox.delete(leagueId);
 
-        final userLeaguesData = leaguesBox.get('user_leagues');
-        if (userLeaguesData != null) {
-          final List<dynamic> leaguesList = userLeaguesData['data'] as List;
-          final updatedLeaguesList = leaguesList.where((leagueData) {
-            final league =
-                LeagueModel.fromJson(Map<String, dynamic>.from(leagueData));
-            return league.id != leagueId;
-          }).toList();
-
-          final updatedUserLeaguesData = {
-            'timestamp': DateTime.now().toIso8601String(),
-            'data': updatedLeaguesList,
-          };
-
-          leaguesBox.put('user_leagues', updatedUserLeaguesData);
-
-          debugPrint(
-              "🗑️ Removed league [$leagueId] and updated user_leagues cache.");
-        }
-      });
+      debugPrint("🗑️ Rimossa lega [$leagueId]");
     } catch (e) {
-      throw CacheException(
-          'Errore nel rimuovere la lega dalla cache: ${e.toString()}');
+      throw CacheException('Errore nel rimuovere la lega: $e');
     }
   }
 
-  @override
-  Future<void> cacheRules(List<RuleModel> rules, String mode) async {
-    try {
-      final rulesData = {
-        'timestamp': DateTime.now().toIso8601String(),
-        'data': rules.map((rule) => rule.toJson()).toList(),
-      };
+  // =====================================================================
+  // RULE OPERATIONS IMPLEMENTATION
+  // =====================================================================
 
-      rulesBox.write(() {
-        rulesBox.put('rules_$mode', rulesData);
-      });
+  // @override
+  // Future<void> cacheRules(List<RuleModel> rules, String mode) async {
+  //   try {
+  //     rulesBox.put("${mode}_rules", rules);
+  //
+  //     debugPrint("📦${rules.length} regole cachate");
+  //   } catch (e) {
+  //     throw CacheException('Errore nel salvare le regole: $e');
+  //   }
+  // }
 
-      debugPrint("📦 Cached ${rules.length} rules for mode [$mode]");
-    } catch (e) {
-      throw CacheException(
-          'Errore nel salvare le regole in cache: ${e.toString()}');
-    }
-  }
+  // @override
+  // Future<List<RuleModel>> getCachedRules(String mode) async {
+  //   try {
+  //     final rules = rulesBox.get("${mode}_rules") ?? [];
+  //
+  //     if (rules.isEmpty) {
+  //       return [];
+  //     }
+  //
+  //     debugPrint("Caricate ${rules.length} regole");
+  //
+  //     return rules;
+  //   } catch (e) {
+  //     throw CacheException('Errore nel recuperare le regole: $e');
+  //   }
+  // }
 
-  @override
-  Future<List<RuleModel>> getCachedRules(String mode) async {
-    try {
-      List<RuleModel> rules = [];
-
-      rulesBox.read(() {
-        final rulesData = rulesBox.get('rules_$mode');
-        if (rulesData != null) {
-          final List<dynamic> rulesList = rulesData['data'] as List;
-          rules = rulesList
-              .map(
-                  (rule) => RuleModel.fromJson(Map<String, dynamic>.from(rule)))
-              .toList();
-
-          debugPrint(
-              "📤 Loaded ${rules.length} rules for mode [$mode] from cache)");
-        } else {
-          debugPrint("📤 No cached rules found for mode [$mode].");
-        }
-      });
-
-      return rules;
-    } catch (e) {
-      throw CacheException(
-          'Errore nel recuperare le regole dalla cache: ${e.toString()}');
-    }
-  }
+  // =====================================================================
+  // NOTE OPERATIONS IMPLEMENTATION
+  // =====================================================================
 
   @override
   Future<List<NoteModel>> getNotes(String leagueId) async {
     try {
-      final List<NoteModel> notes = [];
+      final notes =
+          notesBox.values.where((note) => note.leagueId == leagueId).toList();
 
-      notesBox.read(() {
-        final notesData = notesBox.get('notes');
-        if (notesData != null) {
-          final List<dynamic> notesList = notesData['data'] as List;
-          notes.addAll(notesList
-              .map(
-                  (note) => NoteModel.fromJson(Map<String, dynamic>.from(note)))
-              .where((note) => note.leagueId == leagueId) // Filter by leagueId
-              .toList());
-
-          debugPrint(
-              "📤 Loaded ${notes.length} notes for league [$leagueId] from cache");
-        } else {
-          debugPrint("📤 No cached notes found.");
-        }
-      });
+      debugPrint("📤 Caricate ${notes.length} note per la lega $leagueId");
 
       return notes;
     } catch (e) {
-      throw CacheException(
-          'Error retrieving notes from cache: ${e.toString()}');
+      throw CacheException('Errore nel recuperare le note: $e');
     }
   }
 
   @override
-  Future<void> saveNote(String leagueId, NoteModel note) async {
+  Future<void> saveNote(NoteModel note, String leagueId) async {
     try {
-      // Get all existing notes
-      List<NoteModel> allNotes = [];
+      final key = "${leagueId}_${note.id}";
 
-      notesBox.read(() {
-        final notesData = notesBox.get('notes');
-        if (notesData != null) {
-          final List<dynamic> notesList = notesData['data'] as List;
-          allNotes = notesList
-              .map(
-                  (note) => NoteModel.fromJson(Map<String, dynamic>.from(note)))
-              .toList();
-        }
-      });
+      await notesBox.put(key, note);
 
-      // Add the new note
-      allNotes = [note, ...allNotes];
-
-      final updatedNotesData = {
-        'timestamp': DateTime.now().toIso8601String(),
-        'data': allNotes.map((note) => note.toJson()).toList(),
-      };
-
-      notesBox.write(() {
-        notesBox.put('notes', updatedNotesData);
-      });
-
-      debugPrint("📦 Saved note [${note.id}] for league [$leagueId]");
+      debugPrint("📦 Nota salvata [${note.id}] nella lega $leagueId");
     } catch (e) {
-      throw CacheException('Error saving note to cache: ${e.toString()}');
+      throw CacheException('Errore nel salvare la nota: $e');
     }
   }
 
   @override
-  Future<void> deleteNote(String leagueId, String noteId) async {
+  Future<void> deleteNote(String noteId, String leagueId) async {
     try {
-      // Get all existing notes
-      List<NoteModel> allNotes = [];
+      final key = "${leagueId}_$noteId";
 
-      notesBox.read(() {
-        final notesData = notesBox.get('notes');
-        if (notesData != null) {
-          final List<dynamic> notesList = notesData['data'] as List;
-          allNotes = notesList
-              .map(
-                  (note) => NoteModel.fromJson(Map<String, dynamic>.from(note)))
-              .toList();
-        }
-      });
+      await notesBox.delete(key);
 
-      // Remove the note with the specified ID
-      allNotes.removeWhere((note) => note.id == noteId);
-
-      final updatedNotesData = {
-        'timestamp': DateTime.now().toIso8601String(),
-        'data': allNotes.map((note) => note.toJson()).toList(),
-      };
-
-      notesBox.write(() {
-        notesBox.put('notes', updatedNotesData);
-      });
-
-      debugPrint("🗑️ Deleted note [$noteId] for league [$leagueId]");
+      debugPrint("🗑️ Eliminata la nota [$noteId]");
     } catch (e) {
-      throw CacheException('Error deleting note from cache: ${e.toString()}');
+      throw CacheException('Errore nel cancellare la nota: $e');
     }
   }
+
+  // =====================================================================
+  // DAILY CHALLENGE OPERATIONS IMPLEMENTATION
+  // =====================================================================
 
   @override
   Future<void> cacheDailyChallenges(
-      List<DailyChallengeModel> challenges, String userId) async {
+    List<DailyChallengeModel> challenges,
+    String leagueId,
+  ) async {
     try {
-      final Map<String, dynamic> challengesData = {
-        'timestamp': DateTime.now().toIso8601String(),
-        'data': challenges.map((challenge) => challenge.toJson()).toList(),
-      };
+      for (final challenge in challenges) {
+        final key = "${leagueId}_${challenge.id}";
 
-      challengesBox.write(() {
-        challengesBox.put('daily_challenges_$userId', challengesData);
-      });
+        await challengesBox.put(key, challenge);
+      }
 
       debugPrint(
-          "📦 Cached ${challenges.length} daily challenges for user $userId");
+          "📦 Cachate ${challenges.length} daily challenges nella lega $leagueId");
     } catch (e) {
-      throw CacheException('Error caching daily challenges: ${e.toString()}');
+      throw CacheException('Errore nel salvare le sfide: $e');
     }
   }
 
   @override
   Future<List<DailyChallengeModel>> getCachedDailyChallenges(
-      String userId) async {
+    String leagueId,
+  ) async {
     try {
       List<DailyChallengeModel> challenges = [];
 
-      challengesBox.read(() {
-        final challengesData = challengesBox.get('daily_challenges_$userId');
-        if (challengesData != null) {
-          final List<dynamic> challengesList = challengesData['data'] as List;
-          challenges = challengesList
-              .map((challenge) => DailyChallengeModel.fromJson(
-                  Map<String, dynamic>.from(challenge)))
-              .toList();
-
-          debugPrint(
-              "📤 Loaded ${challenges.length} daily challenges for user $userId from cache");
-        } else {
-          debugPrint("📤 No cached daily challenges found for user $userId.");
-        }
+      challengesBox.values
+          .where((challenge) => challenge.leagueId == leagueId)
+          .forEach((challenge) {
+        challenges.add(challenge);
       });
 
       return challenges;
     } catch (e) {
-      throw CacheException(
-          'Error retrieving daily challenges from cache: ${e.toString()}');
+      throw CacheException('Errore nel recuperare le sfide: $e');
     }
   }
 
   @override
-  Future<void> cacheNotifications(
-      List<NotificationModel> notifications, String userId) async {
+  Future<void> updateCachedChallenge(
+      String challengeId, String leagueId, bool isRefreshed) async {
     try {
-      final Map<String, dynamic> notificationsData = {
-        'timestamp': DateTime.now().toIso8601String(),
-        'data':
-            notifications.map((notification) => notification.toJson()).toList(),
-      };
+      final challenges = await getCachedDailyChallenges(leagueId);
 
-      notificationsBox.write(() {
-        notificationsBox.put('notifications_$userId', notificationsData);
-      });
+      final updatedChallenges = challenges.map((challenge) {
+        if (challenge.id == challengeId) {
+          return challenge.copyWith(
+            isRefreshed: isRefreshed,
+            refreshedAt: DateTime.now(),
+          );
+        }
+        return challenge;
+      }).toList();
+
+      await cacheDailyChallenges(updatedChallenges, leagueId);
 
       debugPrint(
-          "📦 Cached ${notifications.length} notifications for user $userId");
+          "📦 Aggiornata la challenge $challengeId nella cache per la lega $leagueId");
     } catch (e) {
-      throw CacheException('Error caching notifications: ${e.toString()}');
+      throw CacheException('Errore nell\'aggiornare la sfida: $e');
     }
   }
 
   @override
-  Future<List<NotificationModel>> getCachedNotifications(String userId) async {
+  Future<String> findLeagueIdForChallenge(String challengeId) async {
     try {
-      List<NotificationModel> notifications = [];
+      // Get all cached leagues
+      final leagues = getCachedLeagues();
 
-      notificationsBox.read(() {
-        final notificationsData = notificationsBox.get('notifications_$userId');
-        if (notificationsData != null) {
-          final List<dynamic> notificationsList =
-              notificationsData['data'] as List;
-          notifications = notificationsList
-              .map((notification) => NotificationModel.fromJson(
-                  Map<String, dynamic>.from(notification)))
-              .toList();
-
-          debugPrint(
-              "📤 Loaded ${notifications.length} notifications for user $userId from cache");
-        } else {
-          debugPrint("📤 No cached notifications found for user $userId.");
+      // Check each league's challenges
+      for (final league in await leagues) {
+        final challenges = await getCachedDailyChallenges(league.id);
+        if (challenges.any((c) => c.id == challengeId)) {
+          return league.id;
         }
-      });
+      }
+
+      debugPrint("⚠️ Challenge non trovata in nessuna delle leghe cachate.");
+      return '';
+    } catch (e) {
+      debugPrint("⚠️ Errore nel trovare challenge nella lega: $e");
+      return '';
+    }
+  }
+
+  // =====================================================================
+  // NOTIFICATION OPERATIONS IMPLEMENTATION
+  // =====================================================================
+
+  @override
+  Future<void> cacheNotification(NotificationModel notification) async {
+    try {
+      await notificationsBox.put(notification.id, notification);
+
+      debugPrint("📦 Notifica cachata [${notification.id}]");
+    } catch (e) {
+      throw CacheException('Errore nel salvare la notifica: $e');
+    }
+  }
+
+  @override
+  Future<List<NotificationModel>> getCachedNotifications() async {
+    try {
+      final notifications = notificationsBox.values.toList();
+
+      // Sort by creation date (newest first)
+      notifications.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+
+      debugPrint("📤 Caricate ${notifications.length} notifiche dalla cache");
 
       return notifications;
     } catch (e) {
-      throw CacheException(
-          'Error retrieving notifications from cache: ${e.toString()}');
+      throw CacheException('Errore nel recuperare le notifiche: $e');
     }
   }
+
+  @override
+  Future<void> markNotificationAsRead(String notificationId) async {
+    try {
+      final notification = notificationsBox.get(notificationId);
+
+      if (notification != null) {
+        // Since NotificationModel is immutable, we need to create a new instance
+        // We'll use a dynamic approach to handle both base NotificationModel and subclasses
+
+        Map<String, dynamic> json = notification.toJson();
+        json['is_read'] = true;
+
+        NotificationModel updatedNotification;
+
+        // Check if it's a DailyChallengeNotification or base Notification
+        if (json.containsKey('challenge_id')) {
+          updatedNotification = DailyChallengeNotificationModel.fromJson(json);
+        } else {
+          updatedNotification = NotificationModel.fromJson(json);
+        }
+
+        await notificationsBox.put(notificationId, updatedNotification);
+
+        debugPrint("📝 Notifica [$notificationId] segnata come letta");
+      }
+    } catch (e) {
+      throw CacheException('Errore nel marcare la notifica come letta: $e');
+    }
+  }
+
+  @override
+  Future<void> deleteNotificationFromCache(String notificationId) async {
+    try {
+      await notificationsBox.delete(notificationId);
+
+      debugPrint("🗑️ Notifica [$notificationId] eliminata dalla cache");
+    } catch (e) {
+      throw CacheException('Errore nell\'eliminare la notifica: $e');
+    }
+  }
+
+  @override
+  Future<void> updateNotification(NotificationModel notification) async {
+    try {
+      await notificationsBox.put(notification.id, notification);
+
+      debugPrint("🔄 Notifica [${notification.id}] aggiornata nella cache");
+    } catch (e) {
+      throw CacheException('Errore nell\'aggiornare la notifica: $e');
+    }
+  }
+
+  // =====================================================================
+  // CACHE MANAGEMENT IMPLEMENTATION
+  // =====================================================================
 
   @override
   Future<void> clearCache() async {
     try {
-      leaguesBox.clear();
-      rulesBox.clear();
-      notesBox.clear();
-      challengesBox.clear();
-      notificationsBox.clear();
-      debugPrint(
-          "🧹 Cleared all league, rules, notes, challenges, and notifications cache");
+      await leaguesBox.clear();
+      await rulesBox.clear();
+      await notesBox.clear();
+      await challengesBox.clear();
+      await notificationsBox.clear();
+
+      debugPrint("🧹Tutte le cache Hive sono state svuotate");
     } catch (e) {
-      throw CacheException('Error cleaning local cache: ${e.toString()}');
+      throw CacheException('Errore nel pulire la cache: $e');
     }
   }
 }

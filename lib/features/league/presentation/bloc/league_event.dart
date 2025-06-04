@@ -1,7 +1,7 @@
 import 'package:equatable/equatable.dart';
-import 'package:fantavacanze_official/features/league/data/models/note_model.dart';
+import 'package:fantavacanze_official/features/league/data/models/note_model/note_model.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/daily_challenge.dart';
-import 'package:fantavacanze_official/features/league/domain/entities/rule.dart';
+import 'package:fantavacanze_official/features/league/domain/entities/rule/rule.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/league.dart';
 import 'dart:io';
 
@@ -136,8 +136,14 @@ class AddMemoryEvent extends LeagueEvent {
   });
 
   @override
-  List<Object?> get props =>
-      [league, imageUrl, text, userId, relatedEventId, eventName];
+  List<Object?> get props => [
+        league,
+        imageUrl,
+        text,
+        userId,
+        relatedEventId,
+        eventName,
+      ];
 }
 
 class RemoveMemoryEvent extends LeagueEvent {
@@ -360,13 +366,15 @@ class DeleteLeagueEvent extends LeagueEvent {
 // Daily challenges events
 class GetDailyChallengesEvent extends LeagueEvent {
   final String userId;
+  final String leagueId;
 
   const GetDailyChallengesEvent({
     required this.userId,
+    required this.leagueId,
   });
 
   @override
-  List<Object?> get props => [userId];
+  List<Object?> get props => [userId, leagueId];
 }
 
 class MarkChallengeAsCompletedEvent extends LeagueEvent {
@@ -386,15 +394,55 @@ class MarkChallengeAsCompletedEvent extends LeagueEvent {
 
 class RefreshDailyChallengeEvent extends LeagueEvent {
   final String challengeId;
+  final String leagueId;
   final String userId;
-  final int primaryIndex;
 
   const RefreshDailyChallengeEvent({
     required this.challengeId,
+    required this.leagueId,
     required this.userId,
-    required this.primaryIndex,
   });
 
   @override
-  List<Object?> get props => [challengeId, userId, primaryIndex];
+  List<Object?> get props => [challengeId, leagueId, userId];
+}
+
+class ListenToNotificationEvent extends LeagueEvent {}
+
+class GetNotificationsEvent extends LeagueEvent {}
+
+class MarkNotificationAsReadEvent extends LeagueEvent {
+  final String notificationId;
+
+  const MarkNotificationAsReadEvent({required this.notificationId});
+
+  @override
+  List<Object?> get props => [notificationId];
+}
+
+class DeleteNotificationEvent extends LeagueEvent {
+  final String notificationId;
+
+  const DeleteNotificationEvent({required this.notificationId});
+
+  @override
+  List<Object?> get props => [notificationId];
+}
+
+class ApproveDailyChallengeEvent extends LeagueEvent {
+  final String notificationId;
+
+  const ApproveDailyChallengeEvent({required this.notificationId});
+
+  @override
+  List<Object?> get props => [notificationId];
+}
+
+class RejectDailyChallengeEvent extends LeagueEvent {
+  final String notificationId;
+
+  const RejectDailyChallengeEvent({required this.notificationId});
+
+  @override
+  List<Object?> get props => [notificationId];
 }

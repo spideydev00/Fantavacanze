@@ -18,7 +18,7 @@ class AppThemeCubit extends Cubit<AppThemeState> {
     if (savedTheme != null) {
       // Explicitly emit the loaded theme
       emit(AppThemeState(_themeFromString(savedTheme)));
-      debugPrint('AppThemeCubit: Loaded saved theme: $savedTheme');
+      debugPrint('🎨 AppThemeCubit - Tema caricato: $savedTheme');
     } else {
       // Use dark theme as the default
       final themeMode = ThemeMode.dark;
@@ -28,7 +28,8 @@ class AppThemeCubit extends Cubit<AppThemeState> {
 
   Future<void> setTheme(ThemeMode themeMode) async {
     await _prefs.setString(_prefKey, _themeToString(themeMode));
-    debugPrint('AppThemeCubit: Setting theme to ${_themeToString(themeMode)}');
+    debugPrint(
+        '🎨 AppThemeCubit: Tema cambiato a ${_themeToString(themeMode)}');
     emit(AppThemeState(themeMode));
   }
 

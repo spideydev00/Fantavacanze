@@ -6,13 +6,8 @@ class Notification extends Equatable {
   final String message;
   final DateTime createdAt;
   final bool isRead;
-  final dynamic type;
-  final String? userId;
-  final String? leagueId;
-  final String? challengeId;
-  final String? challengeName;
-  final double? challengePoints;
-  final String targetUserId;
+  final String type;
+  final String leagueId;
 
   const Notification({
     required this.id,
@@ -21,27 +16,10 @@ class Notification extends Equatable {
     required this.createdAt,
     required this.isRead,
     required this.type,
-    this.userId,
-    this.leagueId,
-    this.challengeId,
-    this.challengeName,
-    this.challengePoints,
-    required this.targetUserId,
+    required this.leagueId,
   });
 
   @override
-  List<Object?> get props => [
-        id,
-        title,
-        message,
-        createdAt,
-        isRead,
-        type,
-        userId,
-        leagueId,
-        challengeId,
-        challengeName,
-        challengePoints,
-        targetUserId,
-      ];
+  List<Object?> get props =>
+      [id, title, message, createdAt, isRead, type, leagueId];
 }

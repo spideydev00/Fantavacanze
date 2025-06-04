@@ -95,8 +95,6 @@ class LeagueDropdown extends StatelessWidget {
             );
 
             context.read<AppLeagueCubit>().selectLeague(newLeague);
-            debugPrint(
-                "🧊AppLeagueCubit: Changing selected league to: ${newLeague.name}");
 
             // Force dropdown to close to trigger UI refresh
             FocusScope.of(context).requestFocus(FocusNode());

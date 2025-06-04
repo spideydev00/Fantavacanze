@@ -121,6 +121,8 @@ class _ChooseTeamPageState extends State<ChooseTeamPage>
   /// _createNewTeam: crea nuova squadra e diventa capitano
   /// ------------------------------
   void _createNewTeam() {
+    FocusManager.instance.primaryFocus?.unfocus();
+
     final trimmedName = _teamNameController.text.trim();
     if (_userId == null || trimmedName.isEmpty) return;
     setState(() => _joiningAction = JoiningAction.creatingTeam);
