@@ -1,5 +1,6 @@
 import 'package:fantavacanze_official/core/cubits/app_league/app_league_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit.dart';
+import 'package:fantavacanze_official/core/cubits/notification_count/notification_count_cubit.dart';
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/extensions/context_extension.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
@@ -17,8 +18,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class NotificationsPage extends StatefulWidget {
+  static const String routeName = '/notifications';
+
   static get route => MaterialPageRoute(
         builder: (context) => const NotificationsPage(),
+        settings: const RouteSettings(name: routeName),
       );
 
   const NotificationsPage({super.key});
@@ -30,10 +34,25 @@ class NotificationsPage extends StatefulWidget {
 class _NotificationsPageState extends State<NotificationsPage> {
   List<app_notification.Notification> _notifications = [];
 
+  // Set to track only regular notifications that need to be marked as read
+  final Set<String> _regularNotificationsToMarkAsRead = {};
+
+  // Set to track notifications being processed (approval/rejection in progress)
+  final Set<String> _processingNotifications = {};
+
   @override
   void initState() {
     super.initState();
     _loadNotifications();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Process regular notifications to mark as read after each build
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _processRegularNotificationsAsRead();
+    });
   }
 
   Future<void> _loadNotifications() async {
@@ -41,19 +60,54 @@ class _NotificationsPageState extends State<NotificationsPage> {
     context.read<LeagueBloc>().add(GetNotificationsEvent());
   }
 
-  // Auto-mark notifications as read when loaded
-  void _markAllNotificationsAsRead() {
-    // Only process unread notifications
-    final unreadNotifications = _notifications.where((n) => !n.isRead).toList();
+  // Only mark regular notifications as read, NOT daily challenge notifications
+  void _markRegularNotificationAsRead(String notificationId) {
+    // Only send event to backend
+    context.read<LeagueBloc>().add(
+          MarkNotificationAsReadEvent(
+            notificationId: notificationId,
+          ),
+        );
 
-    // Mark each unread notification as read
-    for (final notification in unreadNotifications) {
-      context.read<LeagueBloc>().add(
-            MarkNotificationAsReadEvent(
-              notificationId: notification.id,
-            ),
-          );
+    // Update local state to mark as read without removing
+    setState(() {
+      _notifications = _notifications.map((notification) {
+        if (notification.id == notificationId) {
+          return notification.copyWith(isRead: true);
+        }
+        return notification;
+      }).toList();
+    });
+  }
+
+  // Process regular notifications to mark as read
+  void _processRegularNotificationsAsRead() {
+    if (_regularNotificationsToMarkAsRead.isNotEmpty) {
+      final notificationsToProcess =
+          Set<String>.from(_regularNotificationsToMarkAsRead);
+
+      _regularNotificationsToMarkAsRead.clear();
+
+      // Mark each regular notification as read
+      for (final id in notificationsToProcess) {
+        _markRegularNotificationAsRead(id);
+      }
     }
+  }
+
+  // Count unread notifications and update cubit
+  void _updateUnreadCount() {
+    final unreadCount = _notifications.where((n) => !n.isRead).length;
+    context.read<NotificationCountCubit>().setCount(unreadCount);
+  }
+
+  // Immediately mark notification as being processed to prevent UI issues
+  void _markNotificationAsProcessing(String notificationId) {
+    setState(() {
+      _processingNotifications.add(notificationId);
+      // Also immediately remove from UI to avoid flickering
+      _notifications.removeWhere((n) => n.id == notificationId);
+    });
   }
 
   @override
@@ -62,41 +116,63 @@ class _NotificationsPageState extends State<NotificationsPage> {
       listener: (context, state) {
         if (state is NotificationsLoaded) {
           setState(() {
-            _notifications = state.notifications;
+            // Only keep notifications that aren't being processed
+            _notifications = state.notifications
+                .where((n) => !_processingNotifications.contains(n.id))
+                .toList();
           });
 
-          // Auto-mark notifications as read when they're loaded
-          if (_notifications.isNotEmpty) {
-            _markAllNotificationsAsRead();
-          }
+          // Update unread count whenever notifications are loaded
+          _updateUnreadCount();
         } else if (state is NotificationActionSuccess) {
-          // After a notification action succeeds, reload the notifications
-          _loadNotifications();
+          // For approve/reject/delete actions, remove from view
+          if (state.action == 'approve' ||
+              state.action == 'reject' ||
+              state.action == 'delete') {
+            // First, clear from processing set
+            _processingNotifications.remove(state.notificationId);
 
-          if (state.action == 'approve') {
-            showSnackBar(
-              "Sfida approvata con successo!",
-              color: ColorPalette.success,
-            );
-          } else if (state.action == 'reject') {
-            showSnackBar(
-              "Sfida rifiutata",
-              color: ColorPalette.warning,
-            );
-          } else if (state.action == 'delete') {
-            showSnackBar(
-              "Notifica eliminata",
-              color: ColorPalette.error,
-            );
+            // Remove from the notifications list
+            setState(() {
+              _notifications.removeWhere((n) => n.id == state.notificationId);
+            });
+
+            // Update UI based on action
+            if (state.action == 'approve') {
+              showSnackBar(
+                "Sfida approvata con successo!",
+                color: ColorPalette.success,
+              );
+            } else if (state.action == 'reject') {
+              showSnackBar(
+                "Sfida rifiutata",
+                color: ColorPalette.warning,
+              );
+            } else if (state.action == 'delete') {
+              showSnackBar(
+                "Notifica eliminata",
+                color: ColorPalette.error,
+              );
+            }
+
+            // Update the notification count after removing a notification
+            _updateUnreadCount();
           }
         } else if (state is LeagueError) {
+          // On error, clear processing state for all notifications
+          _processingNotifications.clear();
           showSnackBar(state.message);
+
+          // Reload notifications to restore proper state
+          _loadNotifications();
         } else if (state is NotificationReceived) {
           // Refresh notifications when a new one is received
           _loadNotifications();
         }
       },
       builder: (context, state) {
+        final bool isLoading = state is LeagueLoading;
+
         return Scaffold(
           appBar: AppBar(
             title: Text(
@@ -107,16 +183,18 @@ class _NotificationsPageState extends State<NotificationsPage> {
             ),
             centerTitle: true,
           ),
-          body: _notifications.isEmpty
-              ? _buildEmptyState()
-              : _buildNotificationsList(),
+          body: isLoading && _notifications.isEmpty
+              ? const Center(child: CircularProgressIndicator())
+              : _notifications.isEmpty
+                  ? _buildEmptyState()
+                  : _buildNotificationsList(),
         );
       },
     );
   }
 
   Widget _buildEmptyState() {
-    return EmptyState(
+    return const EmptyState(
         icon: Icons.notifications_none_rounded,
         title: "Nessuna Notifica",
         subtitle:
@@ -134,14 +212,16 @@ class _NotificationsPageState extends State<NotificationsPage> {
           final notification = _notifications[index];
           final bool isAdmin = _isUserAdmin();
 
+          // IMPORTANT: Only add regular notifications to be marked as read
+          // Do NOT mark daily challenge notifications as read
+          if (!notification.isRead &&
+              (notification is! DailyChallengeNotification)) {
+            _regularNotificationsToMarkAsRead.add(notification.id);
+          }
+
           return NotificationCard(
             notification: notification,
             isAdmin: isAdmin,
-            onTap: () {
-              if (!notification.isRead) {
-                _markNotificationAsRead(notification.id);
-              }
-            },
             onApprove: notification is DailyChallengeNotification && isAdmin
                 ? () => _handleDailyChallengeApproval(notification)
                 : null,
@@ -165,7 +245,11 @@ class _NotificationsPageState extends State<NotificationsPage> {
     return false;
   }
 
+  // Handle approval - this will add points, mark as completed, and delete notification
   void _handleDailyChallengeApproval(DailyChallengeNotification notification) {
+    // Mark as processing immediately to provide instant feedback
+    _markNotificationAsProcessing(notification.id);
+
     context.read<LeagueBloc>().add(
           ApproveDailyChallengeEvent(
             notificationId: notification.id,
@@ -173,18 +257,15 @@ class _NotificationsPageState extends State<NotificationsPage> {
         );
   }
 
+  // Handle rejection - this will NOT add points, mark as not pending, and delete notification
   void _handleDailyChallengeRejection(DailyChallengeNotification notification) {
+    // Mark as processing immediately to provide instant feedback
+    _markNotificationAsProcessing(notification.id);
+
     context.read<LeagueBloc>().add(
           RejectDailyChallengeEvent(
             notificationId: notification.id,
-          ),
-        );
-  }
-
-  void _markNotificationAsRead(String notificationId) {
-    context.read<LeagueBloc>().add(
-          MarkNotificationAsReadEvent(
-            notificationId: notificationId,
+            challengeId: notification.challengeId,
           ),
         );
   }

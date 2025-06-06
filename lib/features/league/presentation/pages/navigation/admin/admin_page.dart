@@ -21,8 +21,12 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fantavacanze_official/core/widgets/buttons/danger_action_button.dart';
 
 class AdminPage extends StatefulWidget {
-  static Route get route =>
-      MaterialPageRoute(builder: (context) => const AdminPage());
+  static const String routeName = '/admin';
+
+  static Route get route => MaterialPageRoute(
+        builder: (context) => const AdminPage(),
+        settings: const RouteSettings(name: routeName),
+      );
 
   const AdminPage({super.key});
 

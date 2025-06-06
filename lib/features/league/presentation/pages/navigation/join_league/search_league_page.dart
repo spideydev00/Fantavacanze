@@ -17,20 +17,17 @@ import 'package:fantavacanze_official/core/widgets/info_banner.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-/// ------------------------------
-/// Definisce lo stato della ricerca (iniziale o in corso)
-/// ------------------------------
 enum SearchingStatus {
   initial,
   searching,
 }
 
-/// ------------------------------
-/// Widget di pagina per cercare una lega tramite codice invito
-/// ------------------------------
 class SearchLeaguePage extends StatefulWidget {
+  static const String routeName = '/search_league';
+
   static Route get route => MaterialPageRoute(
         builder: (context) => const SearchLeaguePage(),
+        settings: const RouteSettings(name: routeName),
       );
 
   const SearchLeaguePage({super.key});

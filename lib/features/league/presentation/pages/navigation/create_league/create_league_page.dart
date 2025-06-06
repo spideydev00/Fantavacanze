@@ -2,7 +2,6 @@ import 'package:fantavacanze_official/core/constants/game_mode.dart';
 import 'package:fantavacanze_official/core/extensions/context_extension.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/utils/show_snackbar.dart';
-import 'package:fantavacanze_official/features/league/data/models/rule_model/rule_model.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/rule/rule.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -19,8 +18,13 @@ import 'package:fantavacanze_official/features/league/presentation/pages/navigat
 import 'package:fantavacanze_official/core/widgets/rules/type_selector.dart';
 
 class CreateLeaguePage extends StatefulWidget {
-  static get route =>
-      MaterialPageRoute(builder: (context) => const CreateLeaguePage());
+  static const String routeName = '/create_league';
+
+  static get route => MaterialPageRoute(
+        builder: (context) => const CreateLeaguePage(),
+        settings: const RouteSettings(name: routeName),
+      );
+
   const CreateLeaguePage({super.key});
 
   @override
@@ -123,7 +127,7 @@ class _CreateLeaguePageState extends State<CreateLeaguePage> {
       transitionDuration: const Duration(milliseconds: 200),
       pageBuilder: (context, animation1, animation2) {
         return _AddRuleDialog(
-          onAdd: (RuleModel newRule) {
+          onAdd: (Rule newRule) {
             setState(() {
               if (newRule.type == RuleType.bonus) {
                 int lastBonusIndex = -1;
@@ -216,7 +220,7 @@ class _CreateLeaguePageState extends State<CreateLeaguePage> {
               }
 
               setState(() {
-                _rules[index] = RuleModel(
+                _rules[index] = Rule(
                   name: name,
                   type: rule.type,
                   points: points,
@@ -661,7 +665,7 @@ class _CreateLeaguePageState extends State<CreateLeaguePage> {
 
 // Widget custom per gestire lo stato del tipo di regola
 class _AddRuleDialog extends StatefulWidget {
-  final void Function(RuleModel) onAdd;
+  final void Function(Rule) onAdd;
   const _AddRuleDialog({required this.onAdd});
 
   @override
@@ -726,7 +730,7 @@ class _AddRuleDialogState extends State<_AddRuleDialog> {
         final String pointsText = pointsController.text.trim();
         if (name.isNotEmpty && pointsText.isNotEmpty) {
           final double points = double.tryParse(pointsText) ?? 0;
-          widget.onAdd(RuleModel(
+          widget.onAdd(Rule(
             name: name,
             type: ruleType,
             points: ruleType == RuleType.bonus ? points.abs() : -points.abs(),

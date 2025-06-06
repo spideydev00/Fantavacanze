@@ -22,8 +22,11 @@ import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/dashboard/sections/bottom_navigation_bar.dart';
 
 class DashboardScreen extends StatefulWidget {
+  static const String routeName = '/dashboard';
+
   static get route => MaterialPageRoute(
         builder: (context) => const DashboardScreen(),
+        settings: const RouteSettings(name: routeName),
       );
 
   const DashboardScreen({super.key});
@@ -62,6 +65,9 @@ class _DashboardScreenState extends State<DashboardScreen>
         curve: Curves.fastOutSlowIn,
       ),
     );
+
+    // Carica le notifiche
+    context.read<LeagueBloc>().add(GetNotificationsEvent());
 
     // Inizializza l'ascolto delle notifiche
     context.read<LeagueBloc>().add(ListenToNotificationEvent());
@@ -105,7 +111,6 @@ class _DashboardScreenState extends State<DashboardScreen>
             context: context,
             builder: (context) => NotificationDialog.fromNotification(
               notification: state.notification,
-              data: state.data,
             ),
           );
         }

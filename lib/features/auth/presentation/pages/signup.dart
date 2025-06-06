@@ -16,8 +16,12 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
 
 class SignUpPage extends StatefulWidget {
-  static get route =>
-      MaterialPageRoute(builder: (context) => const SignUpPage());
+  static const String routeName = '/signup';
+
+  static get route => MaterialPageRoute(
+        builder: (context) => const SignUpPage(),
+        settings: const RouteSettings(name: routeName),
+      );
   const SignUpPage({super.key});
 
   @override

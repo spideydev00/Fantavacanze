@@ -3,7 +3,6 @@ import 'package:fantavacanze_official/core/utils/show_snackbar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/league.dart';
-import 'package:fantavacanze_official/features/league/data/models/league_model/league_model.dart';
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/extensions/context_extension.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
@@ -24,9 +23,7 @@ class LeagueCard extends StatelessWidget {
     final participantsCount = league.participants.length;
     final formattedDate = DateFormat('dd/MM/yyyy').format(league.createdAt);
 
-    // Get invite code if available (from LeagueModel)
-    final String? inviteCode =
-        league is LeagueModel ? (league as LeagueModel).inviteCode : null;
+    final String inviteCode = league.inviteCode;
 
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
@@ -121,80 +118,76 @@ class LeagueCard extends StatelessWidget {
                   ),
                 ],
               ),
-
-              // Show invite code if available
-              if (inviteCode != null)
-                Padding(
-                  padding: const EdgeInsets.only(top: ThemeSizes.md),
-                  child: InkWell(
-                    onTap: () {
-                      Clipboard.setData(ClipboardData(text: inviteCode));
-                      showSnackBar(
-                        'Codice invito copiato negli appunti!',
-                        color: ColorPalette.success,
-                      );
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: ThemeSizes.sm,
-                        vertical: ThemeSizes.sm,
-                      ),
-                      decoration: BoxDecoration(
-                        color: context.secondaryBgColor,
-                        borderRadius:
-                            BorderRadius.circular(ThemeSizes.borderRadiusMd),
-                        border: Border.all(color: context.borderColor),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            Icons.share,
-                            size: 16,
-                            color: context.primaryColor,
+              Padding(
+                padding: const EdgeInsets.only(top: ThemeSizes.md),
+                child: InkWell(
+                  onTap: () {
+                    Clipboard.setData(ClipboardData(text: inviteCode));
+                    showSnackBar(
+                      'Codice invito copiato negli appunti!',
+                      color: ColorPalette.success,
+                    );
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: ThemeSizes.sm,
+                      vertical: ThemeSizes.sm,
+                    ),
+                    decoration: BoxDecoration(
+                      color: context.secondaryBgColor,
+                      borderRadius:
+                          BorderRadius.circular(ThemeSizes.borderRadiusMd),
+                      border: Border.all(color: context.borderColor),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.share,
+                          size: 16,
+                          color: context.primaryColor,
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          'Codice Invito:',
+                          style: context.textTheme.bodySmall?.copyWith(
+                            fontWeight: FontWeight.w500,
                           ),
-                          const SizedBox(width: 6),
-                          Text(
-                            'Codice Invito:',
+                        ),
+                        const SizedBox(width: 6),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color: context.primaryColor.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(
+                                ThemeSizes.borderRadiusSm),
+                            border: Border.all(
+                                color: context.primaryColor
+                                    .withValues(alpha: 0.2)),
+                          ),
+                          child: Text(
+                            inviteCode,
                             style: context.textTheme.bodySmall?.copyWith(
-                              fontWeight: FontWeight.w500,
+                              color: context.primaryColor,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 0.5,
                             ),
                           ),
-                          const SizedBox(width: 6),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 6,
-                              vertical: 2,
-                            ),
-                            decoration: BoxDecoration(
-                              color:
-                                  context.primaryColor.withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(
-                                  ThemeSizes.borderRadiusSm),
-                              border: Border.all(
-                                  color: context.primaryColor
-                                      .withValues(alpha: 0.2)),
-                            ),
-                            child: Text(
-                              inviteCode,
-                              style: context.textTheme.bodySmall?.copyWith(
-                                color: context.primaryColor,
-                                fontWeight: FontWeight.bold,
-                                letterSpacing: 0.5,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 6),
-                          Icon(
-                            Icons.copy,
-                            size: 14,
-                            color: context.textSecondaryColor,
-                          ),
-                        ],
-                      ),
+                        ),
+                        const SizedBox(width: 6),
+                        Icon(
+                          Icons.copy,
+                          size: 14,
+                          color: context.textSecondaryColor,
+                        ),
+                      ],
                     ),
                   ),
                 ),
+              ),
             ],
           ),
         ),

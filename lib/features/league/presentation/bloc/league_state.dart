@@ -1,10 +1,9 @@
 import 'package:equatable/equatable.dart';
-import 'package:fantavacanze_official/features/league/data/models/note_model/note_model.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/daily_challenge.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/league.dart';
+import 'package:fantavacanze_official/features/league/domain/entities/note.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/notification.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/rule/rule.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
 
 abstract class LeagueState extends Equatable {
   const LeagueState();
@@ -99,7 +98,7 @@ class TeammatesRemovedState extends LeagueState {
 // Replace the three note-specific states with a single success state
 class NoteSuccess extends LeagueState {
   final String operation; // "get", "save", or "delete"
-  final List<NoteModel>? notes;
+  final List<Note>? notes;
   final String leagueId;
 
   const NoteSuccess({
@@ -182,17 +181,17 @@ class ChallengeRefreshed extends LeagueState {
   List<Object?> get props => [challengeId];
 }
 
+class ChallengeUnlocked extends LeagueState {}
+
 class NotificationReceived extends LeagueState {
-  final RemoteNotification notification;
-  final Map<String, dynamic>? data;
+  final Notification notification;
 
   const NotificationReceived({
     required this.notification,
-    this.data,
   });
 
   @override
-  List<Object?> get props => [notification, data];
+  List<Object?> get props => [notification];
 }
 
 class NotificationsLoaded extends LeagueState {

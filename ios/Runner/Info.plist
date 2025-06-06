@@ -1,97 +1,164 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
-<dict>
-	<key>CADisableMinimumFrameDurationOnPhone</key>
-	<true/>
-	<key>CFBundleDevelopmentRegion</key>
-	<string>$(DEVELOPMENT_LANGUAGE)</string>
-	<key>CFBundleDisplayName</key>
-	<string>Fantavacanze Official</string>
-	<key>CFBundleExecutable</key>
-	<string>$(EXECUTABLE_NAME)</string>
-	<key>CFBundleIdentifier</key>
-	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
-	<key>CFBundleInfoDictionaryVersion</key>
-	<string>6.0</string>
-	<key>CFBundleName</key>
-	<string>fantavacanze_official</string>
-	<key>CFBundlePackageType</key>
-	<string>APPL</string>
-	<key>CFBundleShortVersionString</key>
-	<string>$(FLUTTER_BUILD_NAME)</string>
-	<key>CFBundleSignature</key>
-	<string>????</string>
-	<key>CFBundleURLTypes</key>
-	<array>
-		<dict>
-			<key>CFBundleURLSchemes</key>
-			<array>
-				<string>fb952626859621154</string>
-			</array>
-		</dict>
-		<dict>
-			<key>CFBundleTypeRole</key>
-			<string>Editor</string>
-			<key>CFBundleURLSchemes</key>
-			<array>
-				<string>com.googleusercontent.apps.531436741316-1bvhvp1ckeg4u8bf9ksnmds0j617dp8k</string>
-				<string>afbnmosmovvcsnxpflyi.supabase.co</string>
-			</array>
-		</dict>
-		<dict>
-			<key>CFBundleTypeRole</key>
-			<string>Editor</string>
-			<key>CFBundleURLSchemes</key>
-			<array>
-				<string>io.supabase.fantavacanze</string>
-			</array>
-		</dict>
-	</array>
-	<key>CFBundleVersion</key>
-	<string>$(FLUTTER_BUILD_NUMBER)</string>
-	<key>FacebookAppID</key>
-	<string>952626859621154</string>
-	<key>FacebookClientToken</key>
-	<string>dfe4634f4705b3dcf2cb4d7749e027be</string>
-	<key>FacebookDisplayName</key>
-	<string>Fantavacanze</string>
-	<key>LSApplicationQueriesSchemes</key>
-	<array>
-		<string>https</string>
-	</array>
-	<key>LSRequiresIPhoneOS</key>
-	<true/>
-	<key>NSCameraUsageDescription</key>
-	<string>L'app richiede l'accesso alla fotocamera per permetterti di scattare foto da salvare come ricordi.</string>
-	<key>NSMicrophoneUsageDescription</key>
-	<string>L'app richiede l'accesso al microfono per permetterti di registrare video con audio.</string>
-	<key>NSPhotoLibraryUsageDescription</key>
-	<string>L'app richiede l'accesso alla galleria fotografica per permetterti di selezionare immagini da salvare come ricordi.</string>
-	<key>UIApplicationSupportsIndirectInputEvents</key>
-	<true/>
-	<key>UIBackgroundModes</key>
-	<array>
-		<string>remote-notification</string>
-	</array>
-	<key>UILaunchStoryboardName</key>
-	<string>LaunchScreen</string>
-	<key>UIMainStoryboardFile</key>
-	<string>Main</string>
-	<key>UIStatusBarHidden</key>
-	<false/>
-	<key>UISupportedInterfaceOrientations</key>
-	<array>
-		<string>UIInterfaceOrientationPortrait</string>
-		<string>UIInterfaceOrientationLandscapeLeft</string>
-		<string>UIInterfaceOrientationLandscapeRight</string>
-	</array>
-	<key>UISupportedInterfaceOrientations~ipad</key>
-	<array>
-		<string>UIInterfaceOrientationPortrait</string>
-		<string>UIInterfaceOrientationPortraitUpsideDown</string>
-		<string>UIInterfaceOrientationLandscapeLeft</string>
-		<string>UIInterfaceOrientationLandscapeRight</string>
-	</array>
-</dict>
+  <dict>
+    <!-- Disabilita la limitazione di framerate minimo su iPhone, utile per animazioni più fluide -->
+    <key>CADisableMinimumFrameDurationOnPhone</key>
+    <true/>
+    
+    <!-- Lingua di default per i testi di sistema (di solito “en” o “it”) -->
+    <key>CFBundleDevelopmentRegion</key>
+    <string>$(DEVELOPMENT_LANGUAGE)</string>
+    
+    <!-- Nome visualizzato sotto l’icona dell’app nella SpringBoard -->
+    <key>CFBundleDisplayName</key>
+    <string>Fantavacanze</string>
+    
+    <!-- Nome dell’eseguibile, di solito coincide con il bundle name -->
+    <key>CFBundleExecutable</key>
+    <string>$(EXECUTABLE_NAME)</string>
+    
+    <!-- Identificatore univoco del bundle, definito nel provisioning profile -->
+    <key>CFBundleIdentifier</key>
+    <string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+    
+    <!-- Versione del formato Info.plist (non si tocca quasi mai) -->
+    <key>CFBundleInfoDictionaryVersion</key>
+    <string>6.0</string>
+    
+    <!-- Nome breve interno all’app (usato anche per identificare risorse) -->
+    <key>CFBundleName</key>
+    <string>Fantavacanze</string>
+    
+    <!-- Tipo di pacchetto; “APPL” indica un’applicazione iOS -->
+    <key>CFBundlePackageType</key>
+    <string>APPL</string>
+    
+    <!-- Versione visibile all’utente (es. “1.0.0”) -->
+    <key>CFBundleShortVersionString</key>
+    <string>$(FLUTTER_BUILD_NAME)</string>
+    
+    <!-- Firma del bundle, di solito lasciato con “????” in build di debug -->
+    <key>CFBundleSignature</key>
+    <string>????</string>
+    
+    <!-- Configurazione degli URL scheme per deep linking e integrazioni di terze parti -->
+    <key>CFBundleURLTypes</key>
+    <array>
+      <!-- Primo elemento: schema Facebook per login/social share -->
+      <dict>
+        <key>CFBundleURLSchemes</key>
+        <array>
+          <!-- ID Facebook prefisso “fb” per l’app -->
+          <string>fb952626859621154</string>
+        </array>
+      </dict>
+      <!-- Secondo elemento: schema per Google Sign-In e Supabase auth -->
+      <dict>
+        <!-- Ruolo generico (Editor) indicato da Apple, non strettamente rilevante in pratica -->
+        <key>CFBundleTypeRole</key>
+        <string>Editor</string>
+        <key>CFBundleURLSchemes</key>
+        <array>
+          <!-- Client ID di Google OAuth per login (trovato in GoogleService-Info.plist) -->
+          <string>com.googleusercontent.apps.531436741316-1bvhvp1ckeg4u8bf9ksnmds0j617dp8k</string>
+          <!-- Dominio Supabase usato per redirezione OAuth -->
+          <string>afbnmosmovvcsnxpflyi.supabase.co</string>
+        </array>
+      </dict>
+      <!-- Terzo elemento: schema personalizzato dell’app per deep linking interno -->
+      <dict>
+        <key>CFBundleTypeRole</key>
+        <string>Editor</string>
+        <key>CFBundleURLSchemes</key>
+        <array>
+          <!-- Schema “io.supabase.fantavacanze” per aprire l’app da link esterni -->
+          <string>io.supabase.fantavacanze</string>
+        </array>
+      </dict>
+    </array>
+    
+    <!-- Numero di build interno (incrementato ogni rilascio su App Store) -->
+    <key>CFBundleVersion</key>
+    <string>$(FLUTTER_BUILD_NUMBER)</string>
+    
+    <!-- ID dell’applicazione Facebook, necessario per SDK e login -->
+    <key>FacebookAppID</key>
+    <string>952626859621154</string>
+    
+    <!-- Token cliente per alcune funzionalità del Facebook SDK -->
+    <key>FacebookClientToken</key>
+    <string>dfe4634f4705b3dcf2cb4d7749e027be</string>
+    
+    <!-- Nome visualizzato per l’app in contesto Facebook (login, condivisione, ecc.) -->
+    <key>FacebookDisplayName</key>
+    <string>Fantavacanze</string>
+    
+    <!-- Consente di interrogare schemi di URL specifici senza crashare (per iOS 9+) -->
+    <key>LSApplicationQueriesSchemes</key>
+    <array>
+      <!-- Aggiungiamo “https” per poter verificare link sicuri dal dispositivo -->
+      <string>https</string>
+    </array>
+    
+    <!-- Impone che l’app richieda un dispositivo iPhone/iPad, non funziona su Mac Catalyst -->
+    <key>LSRequiresIPhoneOS</key>
+    <true/>
+    
+    <!-- Descrizione che appare quando l’app richiede accesso alla fotocamera -->
+    <key>NSCameraUsageDescription</key>
+    <string>L'app richiede l'accesso alla fotocamera per permetterti di scattare foto da salvare come ricordi.</string>
+    
+    <!-- Descrizione che appare quando l'app richiede accesso al microfono -->
+    <key>NSMicrophoneUsageDescription</key>
+    <string>L'app richiede l'accesso al microfono per permetterti di registrare video con audio.</string>
+    
+    <!-- Descrizione che appare quando l'app richiede accesso alla libreria foto -->
+    <key>NSPhotoLibraryUsageDescription</key>
+    <string>L'app richiede l'accesso alla galleria fotografica per permetterti di selezionare immagini da salvare come ricordi.</string>
+    
+    <!-- Abilita il supporto per input da dispositivi esterni (es. tastiere) -->
+    <key>UIApplicationSupportsIndirectInputEvents</key>
+    <true/>
+    
+    <!-- Modalità in background abilitate (qui, remote-notification per push notifications) -->
+    <key>UIBackgroundModes</key>
+    <array>
+      <!-- Remote notification per poter ricevere notifiche push anche a app chiusa/in background -->
+      <string>remote-notification</string>
+    </array>
+    
+    <!-- Nome dello storyboard usato per lo splash screen al lancio dell’app -->
+    <key>UILaunchStoryboardName</key>
+    <string>LaunchScreen</string>
+    
+    <!-- Nome del file storyboard principale (di solito usato nelle app non-Flutter, ma può rimanere) -->
+    <key>UIMainStoryboardFile</key>
+    <string>Main</string>
+    
+    <!-- Indica se lo status bar deve essere nascosto all’avvio (qui è visibile) -->
+    <key>UIStatusBarHidden</key>
+    <false/>
+    
+    <!-- Orientamenti supportati su iPhone/iPod -->
+    <key>UISupportedInterfaceOrientations</key>
+    <array>
+      <string>UIInterfaceOrientationPortrait</string> <!-- Verticale -->
+      <string>UIInterfaceOrientationLandscapeLeft</string> <!-- Orizzontale a sinistra -->
+      <string>UIInterfaceOrientationLandscapeRight</string> <!-- Orizzontale a destra -->
+    </array>
+    
+    <!-- Inserisci l’ID di AdMob per l’inizializzazione dell’SDK Google Mobile Ads -->
+    <key>GADApplicationIdentifier</key>
+    <string>ca-app-pub-3901741339849014~3314092261</string>
+    
+    <!-- Orientamenti supportati su iPad (include anche il rovescio verticale) -->
+    <key>UISupportedInterfaceOrientations~ipad</key>
+    <array>
+      <string>UIInterfaceOrientationPortrait</string>
+      <string>UIInterfaceOrientationPortraitUpsideDown</string>
+      <string>UIInterfaceOrientationLandscapeLeft</string>
+      <string>UIInterfaceOrientationLandscapeRight</string>
+    </array>
+  </dict>
 </plist>

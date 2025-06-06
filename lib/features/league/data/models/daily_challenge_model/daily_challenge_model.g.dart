@@ -29,13 +29,14 @@ class DailyChallengeModelAdapter extends TypeAdapter<DailyChallengeModel> {
       refreshedAt: fields[6] as DateTime,
       createdAt: fields[11] as DateTime,
       position: fields[7] as int,
+      isUnlocked: fields[12] as bool,
     );
   }
 
   @override
   void write(BinaryWriter writer, DailyChallengeModel obj) {
     writer
-      ..writeByte(12)
+      ..writeByte(13)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -59,7 +60,9 @@ class DailyChallengeModelAdapter extends TypeAdapter<DailyChallengeModel> {
       ..writeByte(10)
       ..write(obj.tableChallengeId)
       ..writeByte(11)
-      ..write(obj.createdAt);
+      ..write(obj.createdAt)
+      ..writeByte(12)
+      ..write(obj.isUnlocked);
   }
 
   @override

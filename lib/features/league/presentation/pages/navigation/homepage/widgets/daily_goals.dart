@@ -1,5 +1,10 @@
+import 'package:fantavacanze_official/core/constants/lock_type.dart';
+import 'package:fantavacanze_official/core/utils/ad_helper.dart';
 import 'package:fantavacanze_official/core/utils/show_snackbar.dart';
+import 'package:fantavacanze_official/core/widgets/dialogs/premium_access_dialog.dart';
+import 'package:fantavacanze_official/features/league/domain/entities/daily_challenge.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/league.dart';
+import 'package:fantavacanze_official/init_dependencies/init_dependencies.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -9,7 +14,6 @@ import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:fantavacanze_official/core/widgets/divider.dart';
 import 'package:fantavacanze_official/core/widgets/loader.dart';
-import 'package:fantavacanze_official/features/league/data/models/daily_challenge_model/daily_challenge_model.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_event.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_state.dart';
@@ -26,7 +30,7 @@ class DailyGoals extends StatefulWidget {
 }
 
 class _DailyGoalsState extends State<DailyGoals> {
-  List<DailyChallengeModel>? _allChallenges;
+  List<DailyChallenge>? _allChallenges;
   bool _isLoading = false;
 
   @override
@@ -42,7 +46,9 @@ class _DailyGoalsState extends State<DailyGoals> {
     final appLeagueState = context.read<AppLeagueCubit>().state;
 
     if (userState is AppUserIsLoggedIn && appLeagueState is AppLeagueExists) {
-      setState(() => _isLoading = true);
+      setState(
+        () => _isLoading = true,
+      );
 
       context.read<LeagueBloc>().add(
             GetDailyChallengesEvent(
@@ -128,7 +134,7 @@ class _DailyGoalsState extends State<DailyGoals> {
             );
           } else if (state is DailyChallengesLoaded) {
             setState(() {
-              _allChallenges = state.challenges as List<DailyChallengeModel>;
+              _allChallenges = state.challenges;
               _isLoading = false;
             });
           }
@@ -160,8 +166,6 @@ class _DailyGoalsState extends State<DailyGoals> {
   Widget _buildChallengeList(BuildContext context) {
     // Get app state
     final userState = context.read<AppUserCubit>().state;
-    final isPremium =
-        userState is AppUserIsLoggedIn && userState.user.isPremium;
     final userId = userState is AppUserIsLoggedIn ? userState.user.id : null;
 
     // Get league state
@@ -179,18 +183,18 @@ class _DailyGoalsState extends State<DailyGoals> {
       return _buildPlaceholderGoals();
     }
 
-    // NEW SIMPLIFIED APPROACH - Sort challenges by ID for consistent ordering
-    final challengesList = List<DailyChallengeModel>.from(_allChallenges!)
-      ..sort((a, b) => a.id.compareTo(b.id));
+    // Sort challenges by position for consistent ordering
+    final challengesList = List<DailyChallenge>.from(_allChallenges!)
+      ..sort((a, b) => a.position.compareTo(b.position));
 
     // Get primary challenges (first 3) and substitute challenges (next 3)
     final primaryChallenges = challengesList.take(3).toList();
     final substituteChallenges = challengesList.length > 3
         ? challengesList.sublist(3, min(challengesList.length, 6))
-        : <DailyChallengeModel>[];
+        : <DailyChallenge>[];
 
     // Process each position to determine what to display
-    final displayChallenges = <DailyChallengeModel>[];
+    final displayChallenges = <DailyChallenge>[];
 
     for (int i = 0; i < primaryChallenges.length; i++) {
       final primary = primaryChallenges[i];
@@ -204,8 +208,7 @@ class _DailyGoalsState extends State<DailyGoals> {
       }
     }
 
-    // Changed: Always show all challenges, up to 3 maximum
-    // This ensures non-premium users see all cards (with locked status)
+    // Always show all challenges, up to 3 maximum
     final maxToShow = min(displayChallenges.length, 3);
     final challengesToShow = displayChallenges.take(maxToShow).toList();
 
@@ -217,9 +220,18 @@ class _DailyGoalsState extends State<DailyGoals> {
           final colorIndex = index % 3;
           final colorPair = ColorPalette.getChallengeGradient(colorIndex);
 
-          // Changed: Determine if this challenge is locked (for non-premium users)
-          // Only the first challenge is unlocked, others require premium
-          final bool isLocked = !isPremium && index > 0;
+          // Use isUnlocked from the challenge instead of checking isPremium
+          LockType lockType = LockType.none;
+          bool isLocked = false;
+
+          if (!challenge.isUnlocked) {
+            isLocked = true;
+            if (index == 1) {
+              lockType = LockType.ads;
+            } else if (index == 2) {
+              lockType = LockType.premium;
+            }
+          }
 
           // Determine if this is a substitute (position > 3)
           final bool isSubstitute = substituteChallenges.contains(challenge);
@@ -241,15 +253,31 @@ class _DailyGoalsState extends State<DailyGoals> {
               name: challenge.name,
               score: challenge.points,
               isLocked: isLocked,
+              lockType: lockType,
               startColor: colorPair[0],
               endColor: colorPair[1],
               isRefreshed: isSubstitute || challenge.isRefreshed,
               isCompleted: challenge.isCompleted,
               onRefresh: canRefresh
-                  ? () => _refreshChallenge(challenge, selectedLeagueId, userId)
+                  ? () => _refreshChallenge(
+                        challenge,
+                        selectedLeagueId,
+                        userId,
+                      )
                   : null,
               onComplete: !isLocked && !challenge.isCompleted
-                  ? () => _completeChallenge(challenge, selectedLeague, userId)
+                  ? () => _completeChallenge(
+                        challenge,
+                        selectedLeague,
+                        userId,
+                      )
+                  : null,
+              onLockedTap: isLocked
+                  ? () => _handleLockedCardTap(
+                        lockType,
+                        challenge.id,
+                        selectedLeagueId,
+                      )
                   : null,
             ),
           );
@@ -258,9 +286,131 @@ class _DailyGoalsState extends State<DailyGoals> {
     );
   }
 
+  // Modified to take the challengeId parameter
+  void _handleLockedCardTap(
+      LockType lockType, String challengeId, String leagueId) {
+    // Show the premium access dialog with appropriate options
+    showDialog(
+      context: context,
+      builder: (context) => PremiumAccessDialog(
+        // Only show premium option for the third challenge
+        premiumOnly: lockType == LockType.premium,
+        description: lockType == LockType.premium
+            ? 'Per sbloccare tutte le sfide è necessario un abbonamento premium!'
+            : 'Scegli come sbloccare questa sfida giornaliera: ',
+        onAdsBtnTapped: () => _handleAdsButton(lockType, challengeId, leagueId),
+        onPremiumBtnTapped: () => _handlePremiumButton(),
+      ),
+    );
+  }
+
+  // Handle ads button tap for daily challenges - modified to use challengeId
+  Future<void> _handleAdsButton(
+      LockType lockType, String challengeId, String leagueId) async {
+    if (lockType != LockType.ads) return;
+
+    // Create an overlay entry for the loading indicator
+    final overlayState = Overlay.of(context);
+    final loadingOverlay = OverlayEntry(
+      builder: (context) => Container(
+        color: Colors.black.withValues(alpha: 0.5),
+        child: const Center(
+          child: CircularProgressIndicator(),
+        ),
+      ),
+    );
+
+    // Show loading overlay
+    overlayState.insert(loadingOverlay);
+
+    try {
+      final adHelper = serviceLocator<AdHelper>();
+
+      // Show first rewarded ad
+      final bool firstAdWatched = await adHelper.showRewardedAd();
+
+      if (!firstAdWatched) {
+        // Remove loading overlay
+        loadingOverlay.remove();
+
+        // Show error message
+        showSnackBar(
+          "Non è stato possibile mostrare la pubblicità. Riprova più tardi.",
+          color: ColorPalette.error,
+        );
+        return;
+      }
+
+      // Small delay between ads
+      await Future.delayed(const Duration(milliseconds: 500));
+
+      // Show second rewarded ad
+      final bool secondAdWatched = await adHelper.showRewardedAd();
+
+      // Remove loading overlay
+      loadingOverlay.remove();
+
+      if (secondAdWatched && mounted) {
+        // Successfully watched both ads
+        context.read<LeagueBloc>().add(
+              UnlockDailyChallengeEvent(
+                challengeId: challengeId,
+                leagueId: leagueId,
+                isUnlocked: true,
+              ),
+            );
+        // For now, just update the UI state
+        setState(() {
+          if (_allChallenges != null) {
+            // Find and update the challenge in our local state
+            final index =
+                _allChallenges!.indexWhere((c) => c.id == challengeId);
+            if (index != -1) {
+              _allChallenges![index] = _allChallenges![index].copyWith(
+                isUnlocked: true,
+              );
+
+              // Force a UI refresh
+              _allChallenges = List.from(_allChallenges!);
+            }
+          }
+        });
+
+        // Show success message
+        showSnackBar(
+          "Sfida sbloccata con successo!",
+          color: ColorPalette.success,
+        );
+      } else {
+        // Failed to earn reward
+        showSnackBar(
+          "Non è stato possibile completare la visione degli annunci.",
+          color: ColorPalette.error,
+        );
+      }
+    } catch (e) {
+      // Remove loading overlay
+      loadingOverlay.remove();
+
+      // Show error message
+      showSnackBar(
+        "Si è verificato un errore. Riprova più tardi.",
+        color: ColorPalette.error,
+      );
+    }
+  }
+
+  void _handlePremiumButton() {
+    // TODO: Implement premium subscription flow
+    showSnackBar(
+      "Funzionalità premium in arrivo!",
+      color: ColorPalette.warning,
+    );
+  }
+
   // Update the _completeChallenge method to properly handle notifications and loading state
   void _completeChallenge(
-    DailyChallengeModel challenge,
+    DailyChallenge challenge,
     League league,
     String userId,
   ) {
@@ -289,7 +439,7 @@ class _DailyGoalsState extends State<DailyGoals> {
   }
 
   void _refreshChallenge(
-      DailyChallengeModel challenge, String leagueId, String userId) {
+      DailyChallenge challenge, String leagueId, String userId) {
     // 1. Update local state IMMEDIATELY to ensure UI updates
     setState(() {
       if (_allChallenges != null) {

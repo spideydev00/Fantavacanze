@@ -5,6 +5,7 @@ import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/notification_count/notification_count_cubit.dart';
 import 'package:fantavacanze_official/core/network/connection_checker.dart';
 import 'package:fantavacanze_official/core/secrets/app_secrets.dart';
+import 'package:fantavacanze_official/core/utils/ad_helper.dart';
 import 'package:fantavacanze_official/features/auth/data/datasources/auth_remote_data_source.dart';
 import 'package:fantavacanze_official/features/auth/data/repository/auth_repository_impl.dart';
 import 'package:fantavacanze_official/features/auth/domain/repository/auth_repository.dart';
@@ -16,6 +17,7 @@ import 'package:fantavacanze_official/features/auth/domain/use-cases/email_sign_
 import 'package:fantavacanze_official/features/auth/domain/use-cases/get_current_user.dart';
 import 'package:fantavacanze_official/features/auth/domain/use-cases/google_sign_in.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/remote/daily_challenges/approve_daily_challenge.dart';
+import 'package:fantavacanze_official/features/league/domain/use_cases/remote/daily_challenges/unlock_daily_challenge.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/remote/notifications/delete_notification.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/remote/notifications/get_notifications.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/remote/notifications/listen_to_notification.dart';
@@ -76,10 +78,12 @@ import 'package:fantavacanze_official/features/league/domain/use_cases/remote/le
 import 'package:fantavacanze_official/features/league/domain/use_cases/remote/league/upload_team_logo.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc.dart';
 import 'package:fantavacanze_official/firebase_options.dart';
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:hive/hive.dart';
 import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
 import 'package:path_provider/path_provider.dart';

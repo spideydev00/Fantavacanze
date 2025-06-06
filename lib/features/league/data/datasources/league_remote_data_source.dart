@@ -3,7 +3,6 @@ import 'dart:io';
 import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit.dart';
 import 'package:fantavacanze_official/core/errors/exceptions.dart';
 import 'package:fantavacanze_official/features/league/data/models/daily_challenge_model/daily_challenge_model.dart';
-import 'package:fantavacanze_official/features/league/data/models/event_model/event_model.dart';
 import 'package:fantavacanze_official/features/league/data/models/individual_participant_model/individual_participant_model.dart';
 import 'package:fantavacanze_official/features/league/data/models/league_model/league_model.dart';
 import 'package:fantavacanze_official/features/league/data/models/memory_model/memory_model.dart';
@@ -152,6 +151,13 @@ abstract class LeagueRemoteDataSource {
     required String leagueId,
   });
 
+  Future<void> unlockDailyChallenge({
+    required String challengeId,
+    required bool isUnlocked,
+    required String leagueId,
+    int primaryPosition = 2,
+  });
+
   Future<void> sendChallengeNotification({
     required LeagueModel league,
     required DailyChallengeModel challenge,
@@ -173,7 +179,7 @@ abstract class LeagueRemoteDataSource {
   // =====================================================================
   // NOTIFICATION OPERATIONS
   // =====================================================================
-  Stream<RemoteNotification> listenToNotification();
+  Stream<NotificationModel> listenToNotification();
 
   Future<List<NotificationModel>> getNotifications();
 
@@ -183,7 +189,10 @@ abstract class LeagueRemoteDataSource {
 
   Future<void> approveDailyChallenge(String notificationId);
 
-  Future<void> rejectDailyChallenge(String notificationId);
+  Future<void> rejectDailyChallenge(
+    String notificationId,
+    String challengeId,
+  );
 }
 
 class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
@@ -195,21 +204,23 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
   String? _cachedUserId;
   String? _cachedUserName;
 
-  // StreamController to handle incoming notifications
-  final StreamController<RemoteNotification> _notificationController =
-      StreamController<RemoteNotification>.broadcast();
+  final _notificationModelController =
+      StreamController<NotificationModel>.broadcast();
 
-  // Expose the notification stream to listen for incoming notifications
-  Stream<RemoteNotification> get notificationStream =>
-      _notificationController.stream;
+  Stream<NotificationModel> get notificationModelStream =>
+      _notificationModelController.stream;
 
   void initNotificationListener() {
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       if (message.notification != null) {
-        _notificationController.add(message.notification!);
-        debugPrint('📨 Notifica ricevuta: ${message.notification!.title}');
-      } else {
-        debugPrint('📨 Messaggio ricevuto senza notifica');
+        // Converti direttamente in NotificationModel
+        convertRemoteNotificationToModel(message.notification!, message)
+            .then((notificationModel) {
+          if (notificationModel != null) {
+            _notificationModelController.add(notificationModel);
+            debugPrint('📨 Notifica convertita: ${notificationModel.title}');
+          }
+        });
       }
     });
   }
@@ -383,7 +394,10 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
   @override
   Future<void> deleteLeague(String leagueId) async {
     return _tryDatabaseOperation(() async {
-      await supabaseClient.from('leagues').delete().eq('id', leagueId);
+      await supabaseClient.from('leagues').delete().eq(
+            'id',
+            leagueId,
+          );
     });
   }
 
@@ -491,12 +505,13 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
     required String userId,
   }) async {
     return _tryDatabaseOperation(() async {
-      // Handle different league types efficiently
-      if (league.isTeamBased) {
-        await _exitTeamLeague(league, userId);
-      } else {
-        await _exitIndividualLeague(league, userId);
-      }
+      await supabaseClient.rpc(
+        'exit_league',
+        params: {
+          'p_user_id': userId,
+          'p_league_id': league.id,
+        },
+      );
     });
   }
 
@@ -508,59 +523,17 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
     required String requestingUserId,
   }) async {
     return _tryDatabaseOperation(() async {
-      // Find the team
-      final teamResult = _findTeamByName(league, teamName);
-      if (!teamResult.found) {
-        throw ServerException('Team non trovato');
-      }
-
-      final teamIndex = teamResult.index;
-      final teamParticipant =
-          league.participants[teamIndex] as TeamParticipantModel;
-
-      // Verify permissions
-      _verifyTeamRemovalPermissions(
-        league: league,
-        teamParticipant: teamParticipant,
-        requestingUserId: requestingUserId,
-        userIdsToRemove: userIdsToRemove,
-      );
-
-      // Filter members
-      final updatedMembers = teamParticipant.members
-          .where((member) => !userIdsToRemove.contains(member.userId))
-          .toList();
-
-      // Verify at least one member remains
-      if (updatedMembers.isEmpty) {
-        throw ServerException(
-            'Non puoi rimuovere tutti i membri del team. Il team deve avere almeno un membro.');
-      }
-
-      // Create updated team
-      final updatedTeam = TeamParticipantModel(
-        members: updatedMembers,
-        captainId: teamParticipant.captainId,
-        name: teamParticipant.name,
-        points: teamParticipant.points,
-        malusTotal: teamParticipant.malusTotal,
-        bonusTotal: teamParticipant.bonusTotal,
-        teamLogoUrl: teamParticipant.teamLogoUrl,
-      );
-
-      // Update the participants list
-      final List<dynamic> updatedParticipants = [...league.participants];
-      updatedParticipants[teamIndex] = updatedTeam;
-
-      // Update in database
-      return await _updateLeagueInDb(
-        leagueId: league.id,
-        updateData: {
-          'participants': updatedParticipants
-              .map((p) => (p as ParticipantModel).toJson())
-              .toList(),
+      final response = await supabaseClient.rpc(
+        'remove_team_participants',
+        params: {
+          'p_league_id': league.id,
+          'p_team_name': teamName,
+          'p_user_ids_to_remove': userIdsToRemove,
+          'p_requesting_user_id': requestingUserId,
         },
       );
+
+      return _convertResponseToModel(response);
     });
   }
 
@@ -681,48 +654,21 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
     String? description,
   }) async {
     return _tryDatabaseOperation(() async {
-      // Find the target participant
-      final targetResult = _findTargetParticipantData(
-        league: league,
-        targetUser: targetUser,
-        isTeamMember: isTeamMember,
-      );
-
-      if (targetResult.participant == null) {
-        throw ServerException('Destinatario non trovato nella lega');
-      }
-
-      // Create event
-      final eventData = _createEventData(
-        name: name,
-        points: points,
-        creatorId: creatorId,
-        targetUser: targetResult.actualTargetUser,
-        type: type,
-        description: description,
-        isTeamMember: isTeamMember,
-      );
-
-      // Update events list
-      final updatedEvents = _getUpdatedEventsList(league.events, eventData);
-
-      // Update participant score
-      final updatedParticipants = _updateParticipantScore(
-        league: league,
-        targetParticipant: targetResult.participant!,
-        targetUser: targetResult.actualTargetUser,
-        points: points,
-        isTeamMember: isTeamMember,
-      );
-
-      // Update in Supabase in a single operation
-      return await _updateLeagueInDb(
-        leagueId: league.id,
-        updateData: {
-          'participants': updatedParticipants,
-          'events': updatedEvents.map((e) => e.toJson()).toList(),
+      final response = await supabaseClient.rpc(
+        'add_event',
+        params: {
+          'p_league_id': league.id,
+          'p_event_name': name,
+          'p_points': points,
+          'p_creator_id': creatorId,
+          'p_target_user': targetUser,
+          'p_rule_type': type.toString().split('.').last,
+          'p_is_team_member': isTeamMember,
+          'p_description': description,
         },
       );
+
+      return _convertResponseToModel(response);
     });
   }
 
@@ -1020,7 +966,7 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
     return _tryDatabaseOperation(() async {
       // Call the RPC function to get challenges efficiently
       final response = await supabaseClient.rpc(
-        'get_daily_challenges',
+        'get_user_daily_challenges',
         params: {
           'p_user_id': userId,
           'p_league_id': leagueId,
@@ -1039,6 +985,30 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
           .toList();
 
       return result;
+    });
+  }
+
+  @override
+  Future<void> unlockDailyChallenge({
+    required String challengeId,
+    required bool isUnlocked,
+    required String leagueId,
+    int primaryPosition = 2,
+  }) async {
+    return _tryDatabaseOperation(() async {
+      // Calculate the substitute position (primary position + 3)
+      final substitutePosition = primaryPosition + 3;
+
+      // Use a new RPC function to unlock both challenges at once
+      await supabaseClient.rpc(
+        'unlock_daily_challenges',
+        params: {
+          'p_league_id': leagueId,
+          'p_primary_position': primaryPosition,
+          'p_substitute_position': substitutePosition,
+          'p_is_unlocked': isUnlocked,
+        },
+      );
     });
   }
 
@@ -1220,21 +1190,88 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
   }
 
   @override
-  Future<void> rejectDailyChallenge(String notificationId) async {
+  Future<void> rejectDailyChallenge(
+      String notificationId, String challengeId) async {
     return _tryDatabaseOperation(() async {
+      // 1. If we have a challenge ID, update its pending status
+      await supabaseClient.from('user_daily_challenges').update({
+        'is_pending_approval': false,
+      }).eq('id', challengeId);
+
+      // 3. Delete the notification
       await deleteNotification(notificationId);
     });
   }
 
-  /// Notification listener
   @override
-  Stream<RemoteNotification> listenToNotification() {
+  Stream<NotificationModel> listenToNotification() {
     try {
-      return notificationStream;
+      return notificationModelStream;
     } catch (e) {
       throw ServerException(
-        'Errore durante l\'ascolto delle notifiche: ${_extractErrorMessage(e)}',
-      );
+          'Errore nell\'ascolto delle notifiche: ${_extractErrorMessage(e)}');
+    }
+  }
+
+  Future<NotificationModel?> convertRemoteNotificationToModel(
+    RemoteNotification notification,
+    RemoteMessage message,
+  ) async {
+    try {
+      final data = message.data;
+      if (data.isEmpty) return null;
+
+      // Ottieni i dati dal payload FCM o usa valori di default
+      final id = data['id'] ?? const Uuid().v4();
+      final title = data['title'] ?? notification.title ?? 'Nuova notifica';
+      final messageText = data['message'] ?? notification.body ?? '';
+      final type = data['type'] ?? 'generic';
+      final userId = data['user_id'] ?? _getCurrentUserId() ?? '';
+      final leagueId = data['league_id'] ?? '';
+      final createdAt = data['created_at'] != null
+          ? DateTime.parse(data['created_at'])
+          : DateTime.now();
+      final isRead = data['is_read'] == 'true';
+
+      // Parsing di target_user_ids
+      List<String> targetUserIds = [];
+      if (data['target_user_ids'] != null) {
+        final rawIds = data['target_user_ids'].toString();
+        targetUserIds = rawIds.split(',').where((id) => id.isNotEmpty).toList();
+      }
+
+      // Crea il modello appropriato in base al tipo
+      if (type == 'daily_challenge') {
+        return DailyChallengeNotificationModel(
+          id: id,
+          title: title,
+          message: messageText,
+          createdAt: createdAt,
+          isRead: isRead,
+          type: type,
+          userId: userId,
+          leagueId: leagueId,
+          challengeId: data['challenge_id'] ?? '',
+          challengeName: data['challenge_name'] ?? '',
+          challengePoints:
+              double.tryParse(data['challenge_points'] ?? '0') ?? 0.0,
+          targetUserIds: targetUserIds,
+        );
+      } else {
+        // Notifica generica
+        return NotificationModel(
+          id: id,
+          title: title,
+          message: messageText,
+          createdAt: createdAt,
+          isRead: isRead,
+          type: type,
+          leagueId: leagueId,
+        );
+      }
+    } catch (e) {
+      debugPrint("⚠️ Errore nella conversione della notifica: $e");
+      return null;
     }
   }
 
@@ -1378,37 +1415,6 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
     }
   }
 
-  /// Verifies permissions for team member removal
-  void _verifyTeamRemovalPermissions({
-    required LeagueModel league,
-    required TeamParticipantModel teamParticipant,
-    required String requestingUserId,
-    required List<String> userIdsToRemove,
-  }) {
-    // Check if user has permission (admin or captain)
-    final bool isAdmin = league.admins.contains(requestingUserId);
-    final bool isCaptain = teamParticipant.captainId == requestingUserId;
-
-    if (!isAdmin && !isCaptain) {
-      throw ServerException(
-          'Solo gli amministratori o il capitano del team possono rimuovere membri');
-    }
-
-    // Check if trying to remove admins
-    for (final userId in userIdsToRemove) {
-      if (league.admins.contains(userId)) {
-        throw ServerException(
-            'Non puoi rimuovere un amministratore. Gli amministratori possono solo uscire autonomamente dalla lega.');
-      }
-    }
-
-    // Check if trying to remove captain
-    if (userIdsToRemove.contains(teamParticipant.captainId)) {
-      throw ServerException(
-          'Il capitano non può essere rimosso dal team. Trasferisci prima il ruolo di capitano a un altro membro.');
-    }
-  }
-
   /// Finds team index by name with result object
   ({bool found, int index}) _findTeamByName(
       LeagueModel league, String teamName) {
@@ -1466,125 +1472,15 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
 
   /// Check if any participants to remove are admins
   void _checkForAdminsInParticipants(
-      LeagueModel league, List<String> participantIds) {
+    LeagueModel league,
+    List<String> participantIds,
+  ) {
     for (final userId in participantIds) {
       if (league.admins.contains(userId)) {
         throw ServerException(
             'Non puoi rimuovere un amministratore. Gli amministratori possono solo uscire autonomamente dalla lega.');
       }
     }
-  }
-
-  /// Handles exit from a team-based league
-  Future<void> _exitTeamLeague(LeagueModel league, String userId) async {
-    // Find user's team
-    int teamIndex = -1;
-    TeamParticipantModel? team;
-
-    for (int i = 0; i < league.participants.length; i++) {
-      final participant = league.participants[i];
-      if (participant is TeamParticipantModel &&
-          participant.members.any((member) => member.userId == userId)) {
-        teamIndex = i;
-        team = participant;
-        break;
-      }
-    }
-
-    if (teamIndex == -1 || team == null) {
-      throw ServerException('Utente non trovato in nessun team della lega');
-    }
-
-    // If last member, handle team removal
-    if (team.members.length == 1) {
-      if (league.participants.length == 1) {
-        // If last team in league, delete league
-        await deleteLeague(league.id);
-        return;
-      }
-
-      // Remove the team
-      final updatedParticipants = List<dynamic>.from(league.participants)
-        ..removeAt(teamIndex);
-
-      await _updateLeagueInDb(
-        leagueId: league.id,
-        updateData: {
-          'participants': updatedParticipants
-              .map((p) => (p as ParticipantModel).toJson())
-              .toList(),
-        },
-      );
-      return;
-    }
-
-    // Remove user from team
-    final updatedMembers =
-        team.members.where((member) => member.userId != userId).toList();
-
-    // Create updated team
-    final updatedTeam = TeamParticipantModel(
-      members: updatedMembers,
-      captainId: team.captainId == userId
-          ? updatedMembers.first.userId
-          : team.captainId,
-      name: team.name,
-      points: team.points,
-      malusTotal: team.malusTotal,
-      bonusTotal: team.bonusTotal,
-      teamLogoUrl: team.teamLogoUrl,
-    );
-
-    // Update participants list
-    final updatedParticipants = List<dynamic>.from(league.participants);
-    updatedParticipants[teamIndex] = updatedTeam;
-
-    await _updateLeagueInDb(
-      leagueId: league.id,
-      updateData: {
-        'participants': updatedParticipants
-            .map((p) => (p as ParticipantModel).toJson())
-            .toList(),
-      },
-    );
-  }
-
-  /// Handles exit from an individual league
-  Future<void> _exitIndividualLeague(LeagueModel league, String userId) async {
-    // Find participant index
-    int participantIndex = -1;
-
-    for (int i = 0; i < league.participants.length; i++) {
-      final participant = league.participants[i];
-      if (participant is IndividualParticipantModel &&
-          participant.userId == userId) {
-        participantIndex = i;
-        break;
-      }
-    }
-
-    if (participantIndex == -1) {
-      throw ServerException('Utente non trovato nei partecipanti della lega');
-    }
-
-    // If last participant, delete league
-    if (league.participants.length == 1) {
-      await deleteLeague(league.id);
-      return;
-    }
-
-    // Remove participant
-    final updatedParticipants = List<dynamic>.from(league.participants)
-      ..removeAt(participantIndex);
-
-    await _updateLeagueInDb(
-      leagueId: league.id,
-      updateData: {
-        'participants': updatedParticipants
-            .map((p) => (p as ParticipantModel).toJson())
-            .toList(),
-      },
-    );
   }
 
   /// Finds user's team index
@@ -1597,48 +1493,6 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
       }
     }
     return -1;
-  }
-
-  /// Creates event data
-  EventModel _createEventData({
-    required String name,
-    required double points,
-    required String creatorId,
-    required String targetUser,
-    required RuleType type,
-    String? description,
-    bool isTeamMember = false,
-  }) {
-    final eventId = uuid.v4();
-    return EventModel(
-      id: eventId,
-      name: name,
-      points: points,
-      creatorId: creatorId,
-      targetUser: targetUser,
-      createdAt: DateTime.now(),
-      type: type,
-      description: description,
-      isTeamMember: isTeamMember,
-    );
-  }
-
-  /// Updates events list with new event
-  List<EventModel> _getUpdatedEventsList(
-      List<dynamic> currentEvents, EventModel newEvent) {
-    // Add new event
-    List<EventModel> updatedEvents = [
-      ...currentEvents.map((e) => e as EventModel),
-      newEvent,
-    ];
-
-    // If more than 10 events, remove oldest
-    if (updatedEvents.length > 10) {
-      updatedEvents.sort((a, b) => a.createdAt.compareTo(b.createdAt));
-      updatedEvents = updatedEvents.sublist(1); // Remove oldest
-    }
-
-    return updatedEvents;
   }
 
   /// Creates memory data
@@ -1678,129 +1532,6 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
       }
     }
     return "Utente";
-  }
-
-  /// Finds target participant with additional information
-  ({ParticipantModel? participant, String actualTargetUser})
-      _findTargetParticipantData({
-    required LeagueModel league,
-    required String targetUser,
-    bool isTeamMember = false,
-  }) {
-    if (league.isTeamBased && isTeamMember) {
-      // Find team containing the member
-      for (final p in league.participants) {
-        if (p is TeamParticipantModel) {
-          for (final member in p.members) {
-            if (member.userId == targetUser) {
-              return (participant: p, actualTargetUser: targetUser);
-            }
-          }
-        }
-      }
-    } else {
-      // Standard participant lookup
-      for (final p in league.participants) {
-        if (p is ParticipantModel) {
-          if (league.isTeamBased) {
-            if (p is TeamParticipantModel && p.name == targetUser) {
-              return (participant: p, actualTargetUser: targetUser);
-            }
-          } else if (p is IndividualParticipantModel &&
-              p.userId == targetUser) {
-            return (participant: p, actualTargetUser: targetUser);
-          }
-        }
-      }
-    }
-    return (participant: null, actualTargetUser: targetUser);
-  }
-
-  /// Updates participant score and returns updated participants
-  List<dynamic> _updateParticipantScore({
-    required LeagueModel league,
-    required ParticipantModel targetParticipant,
-    required String targetUser,
-    required double points,
-    bool isTeamMember = false,
-  }) {
-    final participantJson = targetParticipant.toJson();
-
-    // Ensure all values are doubles
-    double currentPoints = participantJson['points'] is int
-        ? (participantJson['points'] as int).toDouble()
-        : (participantJson['points'] as double);
-
-    double updatedScore = currentPoints + points;
-
-    // Update bonus/malus totals
-    double updatedBonusTotal = participantJson['bonusTotal'] is int
-        ? (participantJson['bonusTotal'] as int).toDouble()
-        : (participantJson['bonusTotal'] as double? ?? 0.0);
-
-    double updatedMalusTotal = participantJson['malusTotal'] is int
-        ? (participantJson['malusTotal'] as int).toDouble()
-        : (participantJson['malusTotal'] as double? ?? 0.0);
-
-    if (points > 0) {
-      updatedBonusTotal += points;
-    } else if (points < 0) {
-      updatedMalusTotal += points.abs();
-    }
-
-    // Create updated participant data
-    final updatedParticipantData = {
-      ...participantJson,
-      'points': updatedScore,
-      'bonusTotal': updatedBonusTotal,
-      'malusTotal': updatedMalusTotal,
-    };
-
-    // Handle team member scoring
-    if (league.isTeamBased && targetParticipant is TeamParticipantModel) {
-      if (isTeamMember) {
-        // Update specific member
-        final updatedMembers = targetParticipant.members.map((member) {
-          if (member.userId == targetUser) {
-            double memberPoints = member.points is int
-                ? (member.points as int).toDouble()
-                : member.points;
-            return {
-              ...(member as SimpleParticipantModel).toJson(),
-              'points': memberPoints + points,
-            };
-          }
-          return (member as SimpleParticipantModel).toJson();
-        }).toList();
-        updatedParticipantData['members'] = updatedMembers;
-      } else {
-        // Distribute points to all members
-        final int memberCount = targetParticipant.members.length;
-        final double pointsPerMember =
-            memberCount > 0 ? points / memberCount : 0;
-
-        final updatedMembers = targetParticipant.members.map((member) {
-          double memberPoints = member.points is int
-              ? (member.points as int).toDouble()
-              : member.points;
-          return {
-            ...(member as SimpleParticipantModel).toJson(),
-            'points': memberPoints + pointsPerMember,
-          };
-        }).toList();
-        updatedParticipantData['members'] = updatedMembers;
-      }
-    }
-
-    // Update participant in list
-    return league.participants.map((p) {
-      if (p is ParticipantModel) {
-        if (p == targetParticipant) {
-          return updatedParticipantData;
-        }
-      }
-      return p is ParticipantModel ? p.toJson() : p;
-    }).toList();
   }
 
   /// Inserts a rule in the correct position based on type

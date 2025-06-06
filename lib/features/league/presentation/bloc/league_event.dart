@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
-import 'package:fantavacanze_official/features/league/data/models/note_model/note_model.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/daily_challenge.dart';
+import 'package:fantavacanze_official/features/league/domain/entities/note.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/rule/rule.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/league.dart';
 import 'dart:io';
@@ -244,7 +244,7 @@ class GetNotesEvent extends LeagueEvent {
 
 class SaveNoteEvent extends LeagueEvent {
   final String leagueId;
-  final NoteModel note;
+  final Note note;
 
   const SaveNoteEvent({
     required this.leagueId,
@@ -429,6 +429,25 @@ class DeleteNotificationEvent extends LeagueEvent {
   List<Object?> get props => [notificationId];
 }
 
+class UnlockDailyChallengeEvent extends LeagueEvent {
+  final String challengeId;
+  final String leagueId;
+  final int primaryPosition;
+
+  final bool isUnlocked;
+
+  const UnlockDailyChallengeEvent({
+    required this.challengeId,
+    required this.leagueId,
+    required this.isUnlocked,
+    this.primaryPosition = 2,
+  });
+
+  @override
+  List<Object?> get props =>
+      [challengeId, leagueId, primaryPosition, isUnlocked];
+}
+
 class ApproveDailyChallengeEvent extends LeagueEvent {
   final String notificationId;
 
@@ -440,9 +459,11 @@ class ApproveDailyChallengeEvent extends LeagueEvent {
 
 class RejectDailyChallengeEvent extends LeagueEvent {
   final String notificationId;
+  final String challengeId;
 
-  const RejectDailyChallengeEvent({required this.notificationId});
+  const RejectDailyChallengeEvent(
+      {required this.notificationId, required this.challengeId});
 
   @override
-  List<Object?> get props => [notificationId];
+  List<Object?> get props => [notificationId, challengeId];
 }

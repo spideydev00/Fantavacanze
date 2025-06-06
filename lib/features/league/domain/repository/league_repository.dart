@@ -2,9 +2,9 @@ import 'package:fantavacanze_official/core/errors/failure.dart';
 import 'package:fantavacanze_official/features/league/data/models/note_model/note_model.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/daily_challenge.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/league.dart';
+import 'package:fantavacanze_official/features/league/domain/entities/note.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/notification.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/rule/rule.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:fpdart/fpdart.dart';
 import 'dart:io';
 
@@ -106,7 +106,7 @@ abstract class LeagueRepository {
 
   // Note operations
   Future<Either<Failure, List<NoteModel>>> getNotes(String leagueId);
-  Future<Either<Failure, void>> saveNote(String leagueId, NoteModel note);
+  Future<Either<Failure, void>> saveNote(String leagueId, Note note);
   Future<Either<Failure, void>> deleteNote(String leagueId, String noteId);
 
   // Image operations
@@ -151,6 +151,13 @@ abstract class LeagueRepository {
     required String leagueId,
   });
 
+  Future<Either<Failure, void>> unlockDailyChallenge({
+    required String challengeId,
+    required String leagueId,
+    required bool isUnlocked,
+    int primaryPosition = 2,
+  });
+
   Future<Either<Failure, void>> sendChallengeNotification({
     required League league,
     required DailyChallenge challenge,
@@ -177,7 +184,10 @@ abstract class LeagueRepository {
 
   Future<Either<Failure, void>> approveDailyChallenge(String notificationId);
 
-  Future<Either<Failure, void>> rejectDailyChallenge(String notificationId);
+  Future<Either<Failure, void>> rejectDailyChallenge(
+    String notificationId,
+    String challengeId,
+  );
 
-  Either<Failure, Stream<RemoteNotification>> listenToNotification();
+  Either<Failure, Stream<Notification>> listenToNotification();
 }

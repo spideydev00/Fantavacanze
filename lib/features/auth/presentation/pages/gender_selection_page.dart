@@ -12,12 +12,12 @@ import 'package:fantavacanze_official/features/league/presentation/pages/dashboa
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-/// ------------------------------
-/// Widget di pagina per la selezione obbligatoria del genere
-/// ------------------------------
 class GenderSelectionPage extends StatefulWidget {
-  static Route get route => MaterialPageRoute(
+  static const String routeName = '/gender_selection';
+
+  static get route => MaterialPageRoute(
         builder: (context) => const GenderSelectionPage(),
+        settings: const RouteSettings(name: routeName),
       );
 
   const GenderSelectionPage({super.key});

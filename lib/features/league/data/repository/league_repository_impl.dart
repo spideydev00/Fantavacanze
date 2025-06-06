@@ -5,7 +5,7 @@ import 'package:fantavacanze_official/features/league/data/models/note_model/not
 import 'package:fantavacanze_official/features/league/data/models/notification_model/notification/notification_model.dart';
 import 'package:fantavacanze_official/features/league/data/models/rule_model/rule_model.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/daily_challenge.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:fantavacanze_official/features/league/domain/entities/note.dart';
 import 'package:flutter/material.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:fantavacanze_official/core/errors/failure.dart';
@@ -550,10 +550,10 @@ class LeagueRepositoryImpl implements LeagueRepository {
   @override
   Future<Either<Failure, void>> saveNote(
     String leagueId,
-    NoteModel note,
+    Note note,
   ) async {
     try {
-      await localDataSource.saveNote(note, leagueId);
+      await localDataSource.saveNote(note as NoteModel, leagueId);
       return const Right(null);
     } on CacheException catch (e) {
       return Left(Failure('Errore nel salvare la nota: ${e.message}'));
@@ -798,6 +798,56 @@ class LeagueRepositoryImpl implements LeagueRepository {
   }
 
   @override
+  Future<Either<Failure, void>> unlockDailyChallenge({
+    required String challengeId,
+    required String leagueId,
+    required bool isUnlocked,
+    int primaryPosition = 2,
+  }) async {
+    try {
+      if (!await connectionChecker.isConnected) {
+        return Left(Failure(
+            'Nessuna connessione ad internet, riprova appena sarai connesso.'));
+      }
+
+      final res = await remoteDataSource.unlockDailyChallenge(
+        challengeId: challengeId,
+        isUnlocked: isUnlocked,
+        leagueId: leagueId,
+        primaryPosition: primaryPosition,
+      );
+
+      // Update the challenges in the cache
+      final cachedChallenges =
+          await localDataSource.getCachedDailyChallenges(leagueId);
+
+      // Calculate substitute position
+      final substitutePosition = primaryPosition + 3;
+
+      // Update both the primary challenge by ID and any challenge at the substitute position
+      final updatedChallenges = cachedChallenges.map((cachedChallenge) {
+        // Update specific challenge by ID
+        if (cachedChallenge.id == challengeId) {
+          return cachedChallenge.copyWith(isUnlocked: isUnlocked);
+        }
+
+        // Also update the substitute challenge at position + 3
+        if (cachedChallenge.position == substitutePosition) {
+          return cachedChallenge.copyWith(isUnlocked: isUnlocked);
+        }
+
+        return cachedChallenge;
+      }).toList();
+
+      await localDataSource.cacheDailyChallenges(updatedChallenges, leagueId);
+
+      return Right(res);
+    } on ServerException catch (e) {
+      return Left(Failure(e.message));
+    }
+  }
+
+  @override
   Future<Either<Failure, void>> sendChallengeNotification({
     required League league,
     required DailyChallenge challenge,
@@ -899,26 +949,34 @@ class LeagueRepositoryImpl implements LeagueRepository {
   @override
   Future<Either<Failure, List<NotificationModel>>> getNotifications() async {
     try {
-      if (!await connectionChecker.isConnected) {
-        // If offline, return cached notifications
-        final cachedNotifications =
-            await localDataSource.getCachedNotifications();
-        debugPrint(
-            "📱 Usando ${cachedNotifications.length} notifiche dalla cache perché offline");
+      // Prima prova a prendere le notifiche dalla cache
+      final cachedNotifications =
+          await localDataSource.getCachedNotifications();
+
+      // Esegui pulizia delle notifiche vecchie
+      await localDataSource.cleanupOldNotifications();
+
+      // Se ci sono notifiche nella cache, restituiscile
+      if (cachedNotifications.isNotEmpty) {
         return Right(cachedNotifications);
       }
 
-      // Otherwise get from server
+      // Altrimenti, verifica la connessione
+      if (!await connectionChecker.isConnected) {
+        return Left(Failure('Nessuna connessione internet disponibile'));
+      }
+
+      // Ottieni le notifiche dal server
       final notifications = await remoteDataSource.getNotifications();
 
-      // Cache all notifications
-      for (final notification in notifications) {
-        await localDataSource.cacheNotification(notification);
-      }
+      // Salva le notifiche nella cache
+      await localDataSource.cacheNotifications(notifications);
 
       return Right(notifications);
     } on ServerException catch (e) {
       return Left(Failure(e.message));
+    } on CacheException catch (e) {
+      return Left(Failure('Errore nella cache: ${e.message}'));
     }
   }
 
@@ -986,7 +1044,9 @@ class LeagueRepositoryImpl implements LeagueRepository {
 
   @override
   Future<Either<Failure, void>> rejectDailyChallenge(
-      String notificationId) async {
+    String notificationId,
+    String challengeId,
+  ) async {
     try {
       if (!await connectionChecker.isConnected) {
         return Left(Failure(
@@ -994,7 +1054,7 @@ class LeagueRepositoryImpl implements LeagueRepository {
       }
 
       // Reject on server
-      await remoteDataSource.rejectDailyChallenge(notificationId);
+      await remoteDataSource.rejectDailyChallenge(notificationId, challengeId);
 
       // Delete from cache since it's been processed
       await localDataSource.deleteNotificationFromCache(notificationId);
@@ -1006,15 +1066,19 @@ class LeagueRepositoryImpl implements LeagueRepository {
   }
 
   @override
-  Either<Failure, Stream<RemoteNotification>> listenToNotification() {
+  Either<Failure, Stream<NotificationModel>> listenToNotification() {
     try {
-      final res = remoteDataSource.listenToNotification();
+      final stream = remoteDataSource.listenToNotification();
 
-      return Right(res);
+      stream.listen((notificationModel) async {
+        // Salva direttamente nella cache
+        await localDataSource.cacheNotification(notificationModel);
+      });
+
+      return Right(stream);
     } on ServerException catch (e) {
       return Left(
-        Failure(e.message),
-      );
+          Failure('Errore nell\'ascolto delle notifiche: ${e.message}'));
     }
   }
 }
