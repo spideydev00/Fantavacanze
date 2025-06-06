@@ -1,13 +1,13 @@
 import 'package:fantavacanze_official/core/extensions/context_extension.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
-import 'package:fantavacanze_official/features/league/data/models/note_model/note_model.dart';
+import 'package:fantavacanze_official/features/league/domain/entities/note.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 
 class NoteCard extends StatelessWidget {
-  final NoteModel note;
+  final Note note;
   final VoidCallback? onTap;
   final VoidCallback? onDelete;
   final EdgeInsetsGeometry margin;
@@ -177,7 +177,7 @@ class NoteCard extends StatelessWidget {
     );
   }
 
-  static void showNoteDetails(BuildContext context, NoteModel note) {
+  static void showNoteDetails(BuildContext context, Note note) {
     final gradient = ColorPalette.getGradientFromId(note.id);
 
     showDialog(

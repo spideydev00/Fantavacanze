@@ -53,6 +53,10 @@ class DailyChallengeModel extends DailyChallenge {
   @override
   DateTime get createdAt => super.createdAt;
 
+  @HiveField(12)
+  @override
+  bool get isUnlocked => super.isUnlocked;
+
   const DailyChallengeModel({
     required super.id,
     required super.userId,
@@ -66,6 +70,7 @@ class DailyChallengeModel extends DailyChallenge {
     required super.refreshedAt,
     required super.createdAt,
     required super.position,
+    required super.isUnlocked,
   });
 
   factory DailyChallengeModel.fromJson(Map<String, dynamic> json) {
@@ -85,11 +90,12 @@ class DailyChallengeModel extends DailyChallenge {
           : DateTime.now(),
       createdAt: json['created_at'] != null
           ? DateTime.parse(json['created_at'] as String)
-          : DateTime.now(), // Default to now if not provided
+          : DateTime.now(),
       completedAt: json['completed_at'] != null
           ? DateTime.parse(json['completed_at'] as String)
           : null,
       position: json['position'] as int? ?? 0,
+      isUnlocked: json['is_unlocked'] as bool? ?? false,
     );
   }
 
@@ -107,9 +113,11 @@ class DailyChallengeModel extends DailyChallenge {
       'created_at': createdAt.toIso8601String(),
       'completed_at': completedAt?.toIso8601String(),
       'position': position,
+      'is_unlocked': isUnlocked,
     };
   }
 
+  @override
   DailyChallengeModel copyWith({
     String? id,
     String? userId,
@@ -123,6 +131,7 @@ class DailyChallengeModel extends DailyChallenge {
     DateTime? createdAt,
     DateTime? completedAt,
     int? position,
+    bool? isUnlocked, // Add to copyWith
   }) {
     return DailyChallengeModel(
       id: id ?? this.id,
@@ -137,6 +146,7 @@ class DailyChallengeModel extends DailyChallenge {
       createdAt: createdAt ?? this.createdAt,
       completedAt: completedAt ?? this.completedAt,
       position: position ?? this.position,
+      isUnlocked: isUnlocked ?? this.isUnlocked, // Include in copyWith
     );
   }
 }

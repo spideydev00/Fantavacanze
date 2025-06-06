@@ -13,8 +13,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class UserProfileMenu extends StatelessWidget {
+  static const String routeName = '/user_profile_menu';
+
   static get route => MaterialPageRoute(
         builder: (context) => const UserProfileMenu(),
+        settings: const RouteSettings(name: routeName),
       );
 
   const UserProfileMenu({super.key});

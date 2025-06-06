@@ -2,8 +2,8 @@
 dart run build_runner build --delete-conflicting-outputs
 
 # Deploy both edge functions to Supabase
-supabase functions deploy daily-challenge-notification
-supabase functions deploy daily-challenge-reminder
+supabase functions deploy daily-challenge-notification --no-verify-jwt
+supabase functions deploy daily-challenge-reminder --no-verify-jwt
 
 # If you need to test the functions locally first:
 supabase functions serve daily-challenge-notification --env-file .env.local

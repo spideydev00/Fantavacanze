@@ -10,8 +10,12 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
 class OnBoardingScreen extends StatefulWidget {
-  static get route =>
-      MaterialPageRoute(builder: (context) => const OnBoardingScreen());
+  static const String routeName = '/onboarding';
+
+  static get route => MaterialPageRoute(
+        builder: (context) => const OnBoardingScreen(),
+        settings: const RouteSettings(name: routeName),
+      );
   const OnBoardingScreen({super.key});
 
   @override

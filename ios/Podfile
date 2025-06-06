@@ -37,6 +37,10 @@ target 'Runner' do
   # Facebook Login
   pod 'FBSDKLoginKit'
 
+  # Firebase
+  pod 'Firebase/Core'
+  pod 'FirebaseAnalytics'
+
   flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
   target 'RunnerTests' do
     inherit! :search_paths

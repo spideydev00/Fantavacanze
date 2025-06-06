@@ -8,6 +8,7 @@ import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/widgets/become_premium_button.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/dashboard/widgets/side_menu/league_dropdown.dart';
+import 'package:fantavacanze_official/features/league/presentation/pages/navigation/settings/privacy_policy.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fantavacanze_official/core/constants/constants.dart';
@@ -191,7 +192,7 @@ class SideMenu extends StatelessWidget {
       children: [
         const SizedBox(height: 30),
         Text(
-          "© Fantavacanze - 2024", // Considera di aggiornare l'anno dinamicamente
+          "© Fantavacanze - 2025",
           style: context.textTheme.bodySmall!.copyWith(
             color: context.textSecondaryColor.withValues(alpha: 0.6),
           ),
@@ -199,7 +200,7 @@ class SideMenu extends StatelessWidget {
         const SizedBox(height: 5),
         GestureDetector(
           onTap: () {
-            // TODO: Implementa apertura link policy
+            Navigator.of(context).push(PrivacyPolicyPage.route);
           },
           child: RichText(
             text: TextSpan(
@@ -231,12 +232,12 @@ Widget _buildUserInfo(BuildContext context, String name, String email) {
   return Row(
     crossAxisAlignment: CrossAxisAlignment.center,
     children: [
+      // TODO: Aggiungi l'immagine dell'avatar + logica per modificarlo
       Image.asset(
         "assets/images/avatar.png",
         width: ThemeSizes.avatarSize,
         height: ThemeSizes.avatarSize,
       ),
-      const SizedBox(width: ThemeSizes.md), // Aggiunto spazio
       Expanded(
         // Usa Expanded per evitare overflow se il testo è lungo
         child: Column(

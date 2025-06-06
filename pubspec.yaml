@@ -67,6 +67,9 @@ dependencies:
   path_provider: ^2.1.5
   hive: ^2.2.3
   hive_flutter: ^1.1.0
+  rename_app: ^1.6.3
+  firebase_analytics: ^11.4.6
+  google_mobile_ads: ^6.0.0
   
 dev_dependencies:
   flutter_test:
@@ -160,6 +163,8 @@ flutter:
   - assets/images/icons/homepage_icons/custom-rules-icon.png
   - assets/images/icons/homepage_icons/mixed-genders-icon.png
   - assets/images/icons/other/notification-icon.svg
+  - assets/images/icons/homepage_icons/drink-game-preview.svg
+  - assets/images/icons/homepage_icons/drink-games-page-icon.svg
   
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-assets/images

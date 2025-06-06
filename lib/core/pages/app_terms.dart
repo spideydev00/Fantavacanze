@@ -5,8 +5,11 @@ import 'package:fantavacanze_official/core/widgets/divider.dart';
 import 'package:flutter/material.dart';
 
 class AppTermsPage extends StatelessWidget {
+  static const String routeName = '/app_terms';
+
   static get route => MaterialPageRoute(
         builder: (context) => const AppTermsPage(),
+        settings: const RouteSettings(name: routeName),
       );
 
   const AppTermsPage({super.key});

@@ -4,22 +4,30 @@ final serviceLocator = GetIt.instance;
 
 Future<void> initDependencies() async {
   try {
+    // SUPABASE
     final supabase = await Supabase.initialize(
       anonKey: AppSecrets.supabaseKey,
       url: AppSecrets.supabaseUrl,
     );
 
+    serviceLocator.registerLazySingleton(() => supabase.client);
+
+    // FIREBASE
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
     );
-
+    await FirebaseAnalytics.instance.setAnalyticsCollectionEnabled(true);
     serviceLocator.registerLazySingleton<FirebaseMessaging>(
       () => FirebaseMessaging.instance,
     );
 
-    serviceLocator.registerLazySingleton(() => supabase.client);
+    // GOOGLE ADS
+    await MobileAds.instance.initialize();
 
-    // Initialize Hive
+    serviceLocator.registerLazySingleton(() => AdHelper());
+    await serviceLocator<AdHelper>().initialize();
+
+    // HIVE
     await _initializeHive();
 
     serviceLocator.registerFactory(
@@ -142,6 +150,8 @@ Future<void> _openHiveBoxes() async {
 
     final notificationsBox =
         await Hive.openBox<NotificationModel>('notifications_box');
+
+    await notificationsBox.clear();
 
     // Register boxes in GetIt
     serviceLocator
@@ -368,6 +378,9 @@ void _initLeague() {
     ..registerFactory(
       () => SendChallengeNotification(leagueRepository: serviceLocator()),
     )
+    ..registerFactory(
+      () => UnlockDailyChallenge(leagueRepository: serviceLocator()),
+    )
     // bloc
     ..registerFactory(
       () => LeagueBloc(
@@ -399,6 +412,7 @@ void _initLeague() {
         updateLeagueInfo: serviceLocator(),
         deleteLeague: serviceLocator(),
         getDailyChallenges: serviceLocator(),
+        unlockDailyChallenge: serviceLocator(),
         markChallengeAsCompleted: serviceLocator(),
         updateChallengeRefreshStatus: serviceLocator(),
         listenToNotification: serviceLocator(),

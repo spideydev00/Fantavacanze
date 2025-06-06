@@ -2,9 +2,9 @@ import 'package:fantavacanze_official/core/cubits/app_league/app_league_cubit.da
 import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:fantavacanze_official/core/utils/show_snackbar.dart';
-import 'package:fantavacanze_official/features/league/data/models/note_model/note_model.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/individual_participant.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/league.dart';
+import 'package:fantavacanze_official/features/league/domain/entities/note.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/participant.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/team_participant.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc.dart';
@@ -33,7 +33,7 @@ class _NotesPageState extends State<NotesPage> {
   final FocusNode _noteFocusNode = FocusNode();
   final Uuid _uuid = const Uuid();
 
-  List<NoteModel> _notes = [];
+  List<Note> _notes = [];
   Participant? _selectedParticipant;
   String? _selectedUserId;
   String? _currentLeagueId;
@@ -86,7 +86,7 @@ class _NotesPageState extends State<NotesPage> {
     final league = _getCurrentLeague();
     if (league == null) return;
 
-    final newNote = NoteModel(
+    final newNote = Note(
       id: _uuid.v4(),
       participantId: targetId,
       participantName: _getParticipantName(),

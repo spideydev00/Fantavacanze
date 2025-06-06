@@ -1,7 +1,7 @@
-import 'package:fantavacanze_official/features/league/data/models/individual_participant_model/individual_participant_model.dart';
-import 'package:fantavacanze_official/features/league/data/models/team_participant_model/team_participant_model.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/event.dart';
+import 'package:fantavacanze_official/features/league/domain/entities/individual_participant.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/league.dart';
+import 'package:fantavacanze_official/features/league/domain/entities/team_participant.dart';
 
 /// Utility class for resolving participant names from events and IDs
 class ParticipantNameResolver {
@@ -10,7 +10,7 @@ class ParticipantNameResolver {
     // Handle team member events
     if (event.isTeamMember) {
       for (final participant in league.participants) {
-        if (participant is TeamParticipantModel) {
+        if (participant is TeamParticipant) {
           for (final member in participant.members) {
             if (member.userId == event.targetUser) {
               return "${member.name} (${participant.name})";
@@ -31,7 +31,7 @@ class ParticipantNameResolver {
     // Handle individual events
     else {
       for (final participant in league.participants) {
-        if (participant is IndividualParticipantModel &&
+        if (participant is IndividualParticipant &&
             participant.userId == event.targetUser) {
           return participant.name;
         }

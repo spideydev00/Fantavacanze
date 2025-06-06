@@ -1,5 +1,6 @@
 import 'dart:ui';
 
+import 'package:fantavacanze_official/core/constants/lock_type.dart';
 import 'package:flutter/material.dart';
 import 'package:fantavacanze_official/core/extensions/context_extension.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
@@ -17,6 +18,8 @@ class DailyGoalCard extends StatefulWidget {
   final VoidCallback? onRefresh;
   final VoidCallback? onComplete;
   final String challengeId;
+  final LockType lockType;
+  final VoidCallback? onLockedTap;
 
   const DailyGoalCard({
     super.key,
@@ -30,6 +33,8 @@ class DailyGoalCard extends StatefulWidget {
     this.onRefresh,
     this.onComplete,
     required this.challengeId,
+    this.lockType = LockType.premium,
+    this.onLockedTap,
   });
 
   @override
@@ -440,131 +445,139 @@ class _DailyGoalCardState extends State<DailyGoalCard>
   }
 
   Widget _buildLockedContent(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: ThemeSizes.lg),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusMd),
-        child: Stack(
-          children: [
-            // Gradient background
-            Container(
-              constraints: const BoxConstraints(minHeight: 60),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    widget.startColor.withValues(alpha: 0.5),
-                    widget.endColor.withValues(alpha: 0.5)
+    return GestureDetector(
+      onTap: widget.onLockedTap,
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: ThemeSizes.lg),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusMd),
+          child: Stack(
+            children: [
+              // Gradient background
+              Container(
+                constraints: const BoxConstraints(minHeight: 60),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      widget.startColor.withValues(alpha: 0.5),
+                      widget.endColor.withValues(alpha: 0.5)
+                    ],
+                  ),
+                  borderRadius:
+                      BorderRadius.circular(ThemeSizes.borderRadiusMd),
+                  boxShadow: [
+                    BoxShadow(
+                      color: widget.endColor.withValues(alpha: 0.3),
+                      blurRadius: 8,
+                      offset: const Offset(0, 4),
+                    ),
                   ],
                 ),
-                borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusMd),
-                boxShadow: [
-                  BoxShadow(
-                    color: widget.endColor.withValues(alpha: 0.3),
-                    blurRadius: 8,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
               ),
-            ),
 
-            // Blurred + dark overlay with layout matching unlockedContent
-            Positioned.fill(
-              child: ImageFiltered(
-                imageFilter: ImageFilter.blur(sigmaX: 3, sigmaY: 3),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: ThemeSizes.md,
-                    vertical: ThemeSizes.xs,
-                  ),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Expanded(
-                        child: Text(
-                          widget.name,
-                          style: context.textTheme.labelSmall?.copyWith(
-                            color: Colors.white.withValues(alpha: 0.4),
-                            fontWeight: FontWeight.w600,
-                            shadows: [
-                              Shadow(
-                                blurRadius: 3,
-                                color: Colors.black.withValues(alpha: 0.3),
-                                offset: const Offset(0, 1),
+              // Blurred + dark overlay with layout matching unlockedContent
+              Positioned.fill(
+                child: ImageFiltered(
+                  imageFilter: ImageFilter.blur(sigmaX: 3, sigmaY: 3),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: ThemeSizes.md,
+                      vertical: ThemeSizes.xs,
+                    ),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            widget.name,
+                            style: context.textTheme.labelSmall?.copyWith(
+                              color: Colors.white.withValues(alpha: 0.4),
+                              fontWeight: FontWeight.w600,
+                              shadows: [
+                                Shadow(
+                                  blurRadius: 3,
+                                  color: Colors.black.withValues(alpha: 0.3),
+                                  offset: const Offset(0, 1),
+                                ),
+                              ],
+                            ),
+                            maxLines: 10,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        const SizedBox(width: ThemeSizes.xs),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: ThemeSizes.sm,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(
+                                ThemeSizes.borderRadiusSm),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.stars_rounded,
+                                color: Colors.white.withValues(alpha: 0.4),
+                                size: 14,
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                "${widget.score}",
+                                style: context.textTheme.bodySmall?.copyWith(
+                                  color: Colors.white.withValues(alpha: 0.4),
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                             ],
                           ),
-                          maxLines: 10,
-                          overflow: TextOverflow.ellipsis,
                         ),
-                      ),
-                      const SizedBox(width: ThemeSizes.xs),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: ThemeSizes.sm,
-                          vertical: 4,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.1),
-                          borderRadius:
-                              BorderRadius.circular(ThemeSizes.borderRadiusSm),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              Icons.stars_rounded,
-                              color: Colors.white.withValues(alpha: 0.4),
-                              size: 14,
-                            ),
-                            const SizedBox(width: 4),
-                            Text(
-                              "${widget.score}",
-                              style: context.textTheme.bodySmall?.copyWith(
-                                color: Colors.white.withValues(alpha: 0.4),
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               ),
-            ),
 
-            // Lock overlay centered
-            Positioned.fill(
-              child: Center(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: ThemeSizes.md,
-                    vertical: ThemeSizes.xs,
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(
-                        Icons.lock_rounded,
-                        color: Colors.white,
-                        size: 16,
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        "Premium",
-                        style: context.textTheme.bodySmall?.copyWith(
+              // Lock overlay centered - Change text based on lock type
+              Positioned.fill(
+                child: Center(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: ThemeSizes.md,
+                      vertical: ThemeSizes.xs,
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          widget.lockType == LockType.ads
+                              ? Icons.ondemand_video
+                              : Icons.lock_rounded,
                           color: Colors.white,
-                          fontWeight: FontWeight.bold,
+                          size: 16,
                         ),
-                      ),
-                    ],
+                        const SizedBox(width: 8),
+                        Text(
+                          widget.lockType == LockType.ads
+                              ? "Sblocca"
+                              : "Premium",
+                          style: context.textTheme.bodySmall?.copyWith(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

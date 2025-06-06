@@ -1,6 +1,6 @@
 import 'package:fantavacanze_official/core/errors/failure.dart';
 import 'package:fantavacanze_official/core/use-case/usecase.dart';
-import 'package:fantavacanze_official/features/league/data/models/note_model/note_model.dart';
+import 'package:fantavacanze_official/features/league/domain/entities/note.dart';
 import 'package:fantavacanze_official/features/league/domain/repository/league_repository.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:flutter/foundation.dart';
@@ -19,7 +19,7 @@ class SaveNote implements Usecase<void, SaveNoteParams> {
 @immutable
 class SaveNoteParams {
   final String leagueId;
-  final NoteModel note;
+  final Note note;
 
   const SaveNoteParams({
     required this.leagueId,

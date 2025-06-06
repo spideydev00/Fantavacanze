@@ -2,9 +2,10 @@ import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/extensions/context_extension.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:fantavacanze_official/features/league/domain/entities/notification.dart'
+    as app_notification;
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
+import 'package:flutter_svg/svg.dart';
 
 class NotificationDialog extends StatelessWidget {
   final String title;
@@ -23,15 +24,13 @@ class NotificationDialog extends StatelessWidget {
   });
 
   factory NotificationDialog.fromNotification({
-    required RemoteNotification notification,
-    Map<String, dynamic>? data,
+    required app_notification.Notification notification,
   }) {
     return NotificationDialog(
-      title: notification.title ?? 'Notifica',
-      message: notification.body ?? 'Hai ricevuto una nuova notifica',
-      notificationType: data?['type'] ?? 'generic',
-      notificationId: data?['notification_id'],
-      data: data,
+      title: notification.title,
+      message: notification.message,
+      notificationType: notification.type,
+      notificationId: notification.id,
     );
   }
 

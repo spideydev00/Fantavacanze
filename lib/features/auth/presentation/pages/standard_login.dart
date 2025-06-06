@@ -17,8 +17,12 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
 
 class StandardLoginPage extends StatefulWidget {
-  static get route =>
-      MaterialPageRoute(builder: (context) => const StandardLoginPage());
+  static const String routeName = '/standard_login';
+
+  static get route => MaterialPageRoute(
+        builder: (context) => const StandardLoginPage(),
+        settings: const RouteSettings(name: routeName),
+      );
   const StandardLoginPage({super.key});
 
   @override

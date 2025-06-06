@@ -192,4 +192,32 @@ class ColorPalette {
     final index = id.hashCode.abs() % noteGradients.length;
     return noteGradients[index];
   }
+
+  // Premium feature gradients - updated with darker colors for better text contrast
+  static const List<Color> premiumGradient = [
+    Color(0xFFAA8500), // Darker Gold
+    Color(0xFFD78100), // Darker Orange
+    Color(0xFFB35900), // Very Dark Orange
+  ];
+
+  static const List<Color> adsGradient = [
+    Color(0xFF56ab2f), // Vibrant Green
+    Color(0xFF2FAD6E), // Medium Green
+    Color(0xFF00CCBB), // Teal
+  ];
+
+  // Premium feature gradient backgrounds
+  static LinearGradient getPremiumGradient() => const LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: premiumGradient,
+        stops: [0.0, 0.5, 1.0],
+      );
+
+  static LinearGradient getAdsGradient() => const LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: adsGradient,
+        stops: [0.0, 0.5, 1.0],
+      );
 }

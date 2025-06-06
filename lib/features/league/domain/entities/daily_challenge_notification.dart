@@ -21,4 +21,35 @@ class DailyChallengeNotification extends Notification {
     required this.challengePoints,
     required this.targetUserIds,
   });
+
+  @override
+  DailyChallengeNotification copyWith({
+    String? id,
+    String? title,
+    String? message,
+    DateTime? createdAt,
+    bool? isRead,
+    String? type,
+    String? leagueId,
+    String? userId,
+    String? challengeId,
+    String? challengeName,
+    double? challengePoints,
+    List<String>? targetUserIds,
+  }) {
+    return DailyChallengeNotification(
+      id: id ?? this.id,
+      title: title ?? this.title,
+      message: message ?? this.message,
+      createdAt: createdAt ?? this.createdAt,
+      isRead: isRead ?? this.isRead,
+      type: type ?? this.type,
+      leagueId: leagueId ?? this.leagueId,
+      userId: userId ?? this.userId,
+      challengeId: challengeId ?? this.challengeId,
+      challengeName: challengeName ?? this.challengeName,
+      challengePoints: challengePoints ?? this.challengePoints,
+      targetUserIds: targetUserIds ?? this.targetUserIds,
+    );
+  }
 }

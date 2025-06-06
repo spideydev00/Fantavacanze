@@ -48,9 +48,11 @@ abstract interface class LeagueLocalDataSource {
   // NOTIFICATION OPERATIONS
   // =====================================================================
   Future<void> cacheNotification(NotificationModel notification);
+  Future<void> cacheNotifications(List<NotificationModel> notifications);
   Future<List<NotificationModel>> getCachedNotifications();
   Future<void> markNotificationAsRead(String notificationId);
   Future<void> deleteNotificationFromCache(String notificationId);
+  Future<void> cleanupOldNotifications();
   Future<void> updateNotification(NotificationModel notification);
 
   // =====================================================================
@@ -84,8 +86,6 @@ class LeagueLocalDataSourceImpl implements LeagueLocalDataSource {
       for (final league in leagues) {
         await leaguesBox.put(league.id, league);
       }
-
-      debugPrint("📦 ${leagues.length} leghe cachate");
     } catch (e) {
       throw CacheException('Errore nel salvare le leghe: $e');
     }
@@ -110,8 +110,6 @@ class LeagueLocalDataSourceImpl implements LeagueLocalDataSource {
   Future<void> cacheLeague(LeagueModel league) async {
     try {
       await leaguesBox.put(league.id, league);
-
-      debugPrint("📦 Cachata la lega [${league.id}]");
     } catch (e) {
       throw CacheException('Errore nel salvare la lega: $e');
     }
@@ -137,7 +135,7 @@ class LeagueLocalDataSourceImpl implements LeagueLocalDataSource {
     try {
       await leaguesBox.delete(leagueId);
 
-      debugPrint("🗑️ Rimossa lega [$leagueId]");
+      debugPrint("🗑️ Rimossa lega [$leagueId] dalla cache");
     } catch (e) {
       throw CacheException('Errore nel rimuovere la lega: $e');
     }
@@ -324,6 +322,26 @@ class LeagueLocalDataSourceImpl implements LeagueLocalDataSource {
   }
 
   @override
+  Future<void> cacheNotifications(List<NotificationModel> notifications) async {
+    try {
+      for (final notification in notifications) {
+        // Controlliamo se la notifica esiste già
+        final existingNotification = notificationsBox.get(notification.id);
+
+        // Se non esiste, la salviamo
+        if (existingNotification == null) {
+          await notificationsBox.put(notification.id, notification);
+        }
+      }
+
+      debugPrint("📦 Cachate ${notifications.length} notifiche");
+    } catch (e) {
+      throw CacheException('Errore nel cachare le notifiche: $e');
+    }
+  }
+
+  // Modifica il metodo getCachedNotifications per gestire il numero massimo
+  @override
   Future<List<NotificationModel>> getCachedNotifications() async {
     try {
       final notifications = notificationsBox.values.toList();
@@ -331,9 +349,15 @@ class LeagueLocalDataSourceImpl implements LeagueLocalDataSource {
       // Sort by creation date (newest first)
       notifications.sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
-      debugPrint("📤 Caricate ${notifications.length} notifiche dalla cache");
+      // Limita il numero di notifiche restituite
+      const int maxNotifications = 50;
+      final result = notifications.length > maxNotifications
+          ? notifications.sublist(0, maxNotifications)
+          : notifications;
 
-      return notifications;
+      debugPrint("📤 Caricate ${result.length} notifiche dalla cache");
+
+      return result;
     } catch (e) {
       throw CacheException('Errore nel recuperare le notifiche: $e');
     }
@@ -345,9 +369,6 @@ class LeagueLocalDataSourceImpl implements LeagueLocalDataSource {
       final notification = notificationsBox.get(notificationId);
 
       if (notification != null) {
-        // Since NotificationModel is immutable, we need to create a new instance
-        // We'll use a dynamic approach to handle both base NotificationModel and subclasses
-
         Map<String, dynamic> json = notification.toJson();
         json['is_read'] = true;
 
@@ -361,22 +382,69 @@ class LeagueLocalDataSourceImpl implements LeagueLocalDataSource {
         }
 
         await notificationsBox.put(notificationId, updatedNotification);
-
-        debugPrint("📝 Notifica [$notificationId] segnata come letta");
       }
     } catch (e) {
       throw CacheException('Errore nel marcare la notifica come letta: $e');
     }
   }
 
+  // Modifica deleteNotificationFromCache per eliminare solo se necessario
   @override
   Future<void> deleteNotificationFromCache(String notificationId) async {
     try {
-      await notificationsBox.delete(notificationId);
+      final notification = notificationsBox.get(notificationId);
 
-      debugPrint("🗑️ Notifica [$notificationId] eliminata dalla cache");
+      // Elimina solo se è una notifica di tipo daily_challenge
+      if (notification != null) {
+        if (notification.type == 'daily_challenge') {
+          await notificationsBox.delete(notificationId);
+          debugPrint(
+              "🗑️ Notifica sfida [$notificationId] eliminata dalla cache");
+        } else {
+          // Per altre notifiche, lasciamo nella cache ma aggiorniamo isRead
+          final updatedNotification = NotificationModel(
+            id: notification.id,
+            title: notification.title,
+            message: notification.message,
+            createdAt: notification.createdAt,
+            isRead: true,
+            type: notification.type,
+            leagueId: notification.leagueId,
+          );
+          await notificationsBox.put(notificationId, updatedNotification);
+          debugPrint(
+              "📝 Notifica generica [$notificationId] segnata come letta nella cache");
+        }
+      }
     } catch (e) {
       throw CacheException('Errore nell\'eliminare la notifica: $e');
+    }
+  }
+
+  @override
+  Future<void> cleanupOldNotifications() async {
+    try {
+      final notifications = notificationsBox.values.toList();
+
+      const int maxCacheNotifications = 100;
+      if (notifications.length <= maxCacheNotifications) return;
+
+      // Ordina per data (più vecchie prima)
+      notifications.sort((a, b) => a.createdAt.compareTo(b.createdAt));
+
+      // Prendi quelle da eliminare
+      final toDelete = notifications.sublist(
+          0, notifications.length - maxCacheNotifications);
+
+      // Elimina le notifiche più vecchie
+      for (final notification in toDelete) {
+        await notificationsBox.delete(notification.id);
+      }
+
+      debugPrint(
+          "🧹 Eliminate ${toDelete.length} notifiche vecchie dalla cache");
+    } catch (e) {
+      debugPrint("⚠️ Errore nella pulizia delle vecchie notifiche: $e");
     }
   }
 

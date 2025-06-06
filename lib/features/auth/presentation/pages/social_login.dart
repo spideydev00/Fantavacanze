@@ -16,8 +16,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class SocialLoginPage extends StatefulWidget {
-  static get route =>
-      MaterialPageRoute(builder: (context) => const SocialLoginPage());
+  static const String routeName = '/social_login';
+
+  static get route => MaterialPageRoute(
+        builder: (context) => const SocialLoginPage(),
+        settings: const RouteSettings(name: routeName),
+      );
 
   const SocialLoginPage({super.key});
 
