@@ -1,6 +1,9 @@
+import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
+import 'package:fantavacanze_official/core/widgets/loader.dart';
+import 'package:fantavacanze_official/init_dependencies/init_dependencies.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:get_it/get_it.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fantavacanze_official/core/widgets/info_banner.dart';
 import 'package:fantavacanze_official/core/widgets/dialogs/premium_access_dialog.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
@@ -8,6 +11,7 @@ import 'package:fantavacanze_official/core/utils/ad_helper.dart';
 import 'package:fantavacanze_official/core/utils/show_snackbar.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/features/games/presentation/pages/drink_games_selection.dart';
+import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit.dart';
 
 class DrinkGames extends StatelessWidget {
   static const String routeName = '/drink_games';
@@ -67,22 +71,13 @@ class DrinkGames extends StatelessWidget {
                   // Central button
                   Center(
                     child: ElevatedButton.icon(
-                      onPressed: () {
-                        showDialog(
-                          context: context,
-                          builder: (context) => PremiumAccessDialog(
-                            description: "Scegli come sbloccare: ",
-                            onAdsBtnTapped: () => _handleAdsButton(context),
-                            onPremiumBtnTapped: () =>
-                                _handlePremiumButton(context),
-                          ),
-                        );
-                      },
+                      onPressed: () => _checkPremiumAndNavigate(context),
                       icon: SvgPicture.asset(
-                          'assets/images/icons/other/arrow-right-circle.svg'),
-                      label: const Text(
-                        'Giochi Alcolici',
+                        'assets/images/icons/other/arrow-right-circle.svg',
+                        width: 24,
+                        height: 24,
                       ),
+                      label: const Text('Giochi Alcolici'),
                     ),
                   ),
 
@@ -96,81 +91,95 @@ class DrinkGames extends StatelessWidget {
     );
   }
 
-  // Handle ads button tap
-  Future<void> _handleAdsButton(BuildContext context) async {
-    // Show loading dialog
-    final loadingOverlay = _showLoadingOverlay(context);
+  void _checkPremiumAndNavigate(BuildContext context) {
+    final userState = context.read<AppUserCubit>().state;
+    final isPremium =
+        userState is AppUserIsLoggedIn && userState.user.isPremium;
+
+    if (isPremium) {
+      Navigator.push(context, DrinkGamesSelection.route);
+    } else {
+      // Catturo il context “di pagina” prima di aprire il dialog
+      final pageContext = context;
+
+      showDialog(
+        context: pageContext,
+        builder: (_) => PremiumAccessDialog(
+          description: "Scegli come sbloccare:",
+          onAdsBtnTapped: () => _handleAdsButton(pageContext),
+          onPremiumBtnTapped: () => _handlePremiumButton(pageContext),
+        ),
+      );
+    }
+  }
+
+  Future<void> _handleAdsButton(BuildContext pageContext) async {
+    final navigator = Navigator.of(pageContext);
+
+    // Mostra overlay di caricamento
+    final loadingOverlay = _showLoadingOverlay(pageContext);
 
     try {
-      final adHelper = GetIt.instance<AdHelper>();
+      final adHelper = serviceLocator<AdHelper>();
 
-      // Show first rewarded ad
-      debugPrint('Showing first rewarded ad...');
-      final bool firstAdWatched = await adHelper.showRewardedAd();
+      // Esegue gli ads in sequenza
+      final bool adsWatched = await adHelper.showSequentialRewardedAds();
 
-      if (!firstAdWatched) {
-        // If first ad fails, show error and return
-        loadingOverlay.remove();
-        showSnackBar(
-          "Non è stato possibile mostrare la pubblicità. Riprova più tardi.",
-          color: ColorPalette.error,
-        );
-        return;
-      }
+      // Rimuovo overlay
+      if (loadingOverlay.mounted) loadingOverlay.remove();
 
-      // Small delay between ads
-      await Future.delayed(const Duration(milliseconds: 500));
+      // Se la pagina è ancora montata, procedo
+      if (!pageContext.mounted) return;
 
-      // Show second rewarded ad
-      debugPrint('Showing second rewarded ad...');
-      final bool secondAdWatched = await adHelper.showRewardedAd();
-
-      loadingOverlay.remove();
-
-      if (secondAdWatched) {
-        // Successfully watched both ads, navigate to games selection
-        if (context.mounted) {
-          Navigator.push(context, DrinkGamesSelection.route);
-        }
-
-        // Show success message
+      if (adsWatched) {
         showSnackBar(
           "Accesso sbloccato con successo!",
           color: ColorPalette.success,
         );
+        await Future.delayed(const Duration(milliseconds: 300));
+
+        navigator.push(DrinkGamesSelection.route);
       } else {
-        // Failed to earn reward
         showSnackBar(
-          "Non è stato possibile completare la visione degli annunci.",
+          "Non è stato possibile completare la visione degli annunci. Riprova tra qualche minuto.",
           color: ColorPalette.error,
         );
       }
     } catch (e) {
-      // Handle any errors
-      loadingOverlay.remove();
-      showSnackBar(
-        "Si è verificato un errore. Riprova più tardi.",
-        color: ColorPalette.error,
-      );
+      debugPrint('Error in _handleAdsButton: $e');
+      if (loadingOverlay.mounted) loadingOverlay.remove();
+      if (pageContext.mounted) {
+        showSnackBar(
+          "Si è verificato un errore. Riprova più tardi.",
+          color: ColorPalette.error,
+        );
+      }
     }
   }
 
   void _handlePremiumButton(BuildContext context) {
     // TODO: Implement premium subscription flow
-    showSnackBar(
-      "Funzionalità premium in arrivo!",
-      color: ColorPalette.warning,
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          "Funzionalità premium in arrivo",
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        backgroundColor: ColorPalette.premiumGradient[1],
+        duration: Duration(seconds: 2),
+        behavior: SnackBarBehavior.floating,
+      ),
     );
   }
 
-  // Helper method to show a loading overlay
   OverlayEntry _showLoadingOverlay(BuildContext context) {
     final overlay = OverlayEntry(
       builder: (context) => Container(
         color: Colors.black.withValues(alpha: 0.5),
-        child: const Center(
-          child: CircularProgressIndicator(),
-        ),
+        child: Loader(color: context.primaryColor),
       ),
     );
 

@@ -893,6 +893,38 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.2.1+1"
+  in_app_purchase:
+    dependency: "direct main"
+    description:
+      name: in_app_purchase
+      sha256: "5cddd7f463f3bddb1d37a72b95066e840d5822d66291331d7f8f05ce32c24b6c"
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.2.3"
+  in_app_purchase_android:
+    dependency: transitive
+    description:
+      name: in_app_purchase_android
+      sha256: fd76e5612da6facadcfe8a3477da092908227260a9f6ec7db9a66dd989c69b02
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.4.0+2"
+  in_app_purchase_platform_interface:
+    dependency: transitive
+    description:
+      name: in_app_purchase_platform_interface
+      sha256: "1d353d38251da5b9fea6635c0ebfc6bb17a2d28d0e86ea5e083bf64244f1fb4c"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.4.0"
+  in_app_purchase_storekit:
+    dependency: transitive
+    description:
+      name: in_app_purchase_storekit
+      sha256: "9c2b438aa8ef95ac1c1f5ab1aaace8d6edd0ba3745b8b8df832f7baa2e7492f7"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.4.1"
   internet_connection_checker_plus:
     dependency: "direct main"
     description:
@@ -1269,6 +1301,22 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.28.0"
+  share_plus:
+    dependency: "direct main"
+    description:
+      name: share_plus
+      sha256: b2961506569e28948d75ec346c28775bb111986bb69dc6a20754a457e3d97fa0
+      url: "https://pub.dev"
+    source: hosted
+    version: "11.0.0"
+  share_plus_platform_interface:
+    dependency: transitive
+    description:
+      name: share_plus_platform_interface
+      sha256: "1032d392bc5d2095a77447a805aa3f804d2ae6a4d5eef5e6ebb3bd94c1bc19ef"
+      url: "https://pub.dev"
+    source: hosted
+    version: "6.0.0"
   shared_preferences:
     dependency: "direct main"
     description:
@@ -1746,6 +1794,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.22.0"
+  win32:
+    dependency: transitive
+    description:
+      name: win32
+      sha256: "329edf97fdd893e0f1e3b9e88d6a0e627128cc17cc316a8d67fda8f1451178ba"
+      url: "https://pub.dev"
+    source: hosted
+    version: "5.13.0"
   xdg_directories:
     dependency: transitive
     description:

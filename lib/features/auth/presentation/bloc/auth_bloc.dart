@@ -55,6 +55,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         _updateConsents = updateConsents,
         _updateGender = updateGender,
         super(AuthInitial()) {
+    // =====================================================================
+    // EVENT REGISTRATION
+    // =====================================================================
     on<AuthGoogleSignIn>(_onGoogleSignIn);
     on<AuthAppleSignIn>(_onAppleSignIn);
     on<AuthEmailSignIn>(_onEmailSignIn);
@@ -64,6 +67,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<AuthUpdateConsents>(_onUpdateConsents);
     on<AuthUpdateGender>(_onUpdateGender);
   }
+
+  // =====================================================================
+  // SOCIAL AUTHENTICATION HANDLERS
+  // =====================================================================
 
   Future<void> _onGoogleSignIn(
       AuthGoogleSignIn event, Emitter<AuthState> emit) async {
@@ -108,6 +115,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       },
     );
   }
+
+  // =====================================================================
+  // EMAIL AUTHENTICATION HANDLERS
+  // =====================================================================
 
   Future<void> _onEmailSignIn(
       AuthEmailSignIn event, Emitter<AuthState> emit) async {
@@ -157,6 +168,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     );
   }
 
+  // =====================================================================
+  // USER PROFILE OPERATIONS
+  // =====================================================================
+
   Future<void> _onChangeIsOnboardedValue(
       AuthChangeIsOnboardedValue event, Emitter<AuthState> emit) async {
     emit(AuthLoading());
@@ -176,6 +191,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       _emitLogoutSuccess(emit);
     });
   }
+
+  // =====================================================================
+  // CONSENT MANAGEMENT
+  // =====================================================================
 
   Future<void> _onUpdateConsents(
       AuthUpdateConsents event, Emitter<AuthState> emit) async {
@@ -211,6 +230,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       },
     );
   }
+
+  // =====================================================================
+  // UTILITY METHODS
+  // =====================================================================
 
   //Save information about user state (logged in or not)
   _emitAuthSuccess(User user, Emitter<AuthState> emit) {

@@ -40,6 +40,7 @@ Future<void> initDependencies() async {
 
     _initAuth();
     _initLeague();
+    _initGames(); // Add this line
 
     // Register UUID generator
     serviceLocator.registerLazySingleton(() => const Uuid());
@@ -423,4 +424,71 @@ void _initLeague() {
         rejectDailyChallenge: serviceLocator(),
       ),
     );
+}
+
+// Add this new function
+void _initGames() {
+  // DataSources
+  serviceLocator
+    ..registerFactory<GameRemoteDataSource>(
+        () => GameRemoteDataSourceImpl(supabaseClient: serviceLocator()))
+    ..registerFactory<TruthOrDareRemoteDataSource>(
+        () => TruthOrDareRemoteDataSourceImpl(supabaseClient: serviceLocator()))
+    ..registerFactory<WordBombRemoteDataSource>(
+        () => WordBombRemoteDataSourceImpl(supabaseClient: serviceLocator()));
+
+  // Repositories
+  serviceLocator
+    ..registerFactory<GameRepository>(() => GameRepositoryImpl(
+        remoteDataSource: serviceLocator(),
+        connectionChecker: serviceLocator()))
+    ..registerFactory<TruthOrDareRepository>(() => TruthOrDareRepositoryImpl(
+        remoteDataSource: serviceLocator(),
+        connectionChecker: serviceLocator()))
+    ..registerFactory<WordBombRepository>(() => WordBombRepositoryImpl(
+        remoteDataSource: serviceLocator(),
+        connectionChecker: serviceLocator()));
+
+  // UseCases - Generic Game
+  serviceLocator
+    ..registerFactory(() => CreateGameSession(serviceLocator()))
+    ..registerFactory(() => JoinGameSession(serviceLocator()))
+    ..registerFactory(() => LeaveGameSession(serviceLocator()))
+    ..registerFactory(() => StreamGameSession(serviceLocator()))
+    ..registerFactory(() => StreamLobbyPlayers(serviceLocator()))
+    ..registerFactory(() => UpdateGameState(serviceLocator()))
+    ..registerFactory(() => UpdateGamePlayer(serviceLocator()));
+
+  // UseCases - Truth Or Dare
+  serviceLocator.registerFactory(() => GetTruthOrDareCards(serviceLocator()));
+
+  // UseCases - Word Bomb
+  serviceLocator.registerFactory(() => GetWordBombCategories(serviceLocator()));
+
+  // BLoCs
+  serviceLocator
+    ..registerFactory(() => LobbyBloc(
+          createGameSession: serviceLocator(),
+          joinGameSession: serviceLocator(),
+          leaveGameSession: serviceLocator(),
+          streamGameSession: serviceLocator(),
+          streamLobbyPlayers: serviceLocator(),
+          updateGameState: serviceLocator(),
+          appUserCubit: serviceLocator(),
+        ))
+    ..registerFactory(() => TruthOrDareBloc(
+          getTruthOrDareCards: serviceLocator(),
+          updateGameState: serviceLocator(),
+          streamGameSession: serviceLocator(),
+          streamLobbyPlayers: serviceLocator(),
+          appUserCubit: serviceLocator(),
+        ))
+    ..registerFactory(() => WordBombBloc(
+          updateGameState: serviceLocator(),
+          updateGamePlayer: serviceLocator(),
+          getWordBombCategories: serviceLocator(),
+          streamGameSession: serviceLocator(),
+          streamLobbyPlayers: serviceLocator(),
+          appUserCubit: serviceLocator(),
+        ));
 }

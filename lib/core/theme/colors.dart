@@ -195,9 +195,9 @@ class ColorPalette {
 
   // Premium feature gradients - updated with darker colors for better text contrast
   static const List<Color> premiumGradient = [
-    Color(0xFFAA8500), // Darker Gold
-    Color(0xFFD78100), // Darker Orange
-    Color(0xFFB35900), // Very Dark Orange
+    Color.fromARGB(255, 197, 159, 21), // Darker Gold
+    Color.fromARGB(255, 219, 145, 34), // Darker Orange
+    Color.fromARGB(255, 192, 113, 33), // Very Dark Orange
   ];
 
   static const List<Color> adsGradient = [

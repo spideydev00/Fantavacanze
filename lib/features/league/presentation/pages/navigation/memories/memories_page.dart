@@ -10,6 +10,7 @@ import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:fantavacanze_official/core/utils/show_snackbar.dart';
 import 'package:fantavacanze_official/core/utils/sort_by_date.dart';
 import 'package:fantavacanze_official/core/widgets/buttons/gradient_option_button.dart';
+import 'package:fantavacanze_official/core/widgets/loader.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/event.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/league.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/memory.dart';
@@ -472,10 +473,10 @@ class _MemoriesPageState extends State<MemoriesPage>
                             imageUrl: memory.imageUrl,
                             fit: BoxFit.cover,
                             placeholder: (context, url) => Container(
-                              color: context.secondaryBgColor,
-                              child: const Center(
-                                  child: CircularProgressIndicator()),
-                            ),
+                                color: context.secondaryBgColor,
+                                child: Loader(
+                                  color: ColorPalette.info,
+                                )),
                             errorWidget: (context, url, error) => Container(
                               color: context.secondaryBgColor,
                               child: const Icon(Icons.error),

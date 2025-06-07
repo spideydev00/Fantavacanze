@@ -5,6 +5,7 @@ import 'package:fantavacanze_official/core/cubits/app_league/app_league_cubit.da
 import 'package:fantavacanze_official/core/cubits/app_theme/app_theme_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/notification_count/notification_count_cubit.dart';
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
+import 'package:fantavacanze_official/core/utils/ad_helper.dart';
 import 'package:fantavacanze_official/core/widgets/dialogs/notification_dialog.dart';
 import 'package:fantavacanze_official/core/widgets/notification_badge.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc.dart';
@@ -14,6 +15,7 @@ import 'package:fantavacanze_official/features/league/presentation/pages/navigat
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/settings/settings.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/dashboard/widgets/side_menu/custom_menu_icon.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/dashboard/sections/side_menu.dart';
+import 'package:fantavacanze_official/init_dependencies/init_dependencies.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fantavacanze_official/core/constants/constants.dart';
@@ -38,6 +40,7 @@ class DashboardScreen extends StatefulWidget {
 class _DashboardScreenState extends State<DashboardScreen>
     with SingleTickerProviderStateMixin {
   bool isSideMenuOpen = false;
+  AdHelper? _adHelper;
 
   late AnimationController _animationController;
   late Animation<double> animation;
@@ -71,10 +74,27 @@ class _DashboardScreenState extends State<DashboardScreen>
 
     // Inizializza l'ascolto delle notifiche
     context.read<LeagueBloc>().add(ListenToNotificationEvent());
+
+    // Inizializza l'AdHelper e avvia il timer per gli interstitial ads
+    _initializeAds();
+  }
+
+  Future<void> _initializeAds() async {
+    // Get AdHelper from service locator
+    _adHelper = serviceLocator<AdHelper>();
+
+    // Start the periodic ad timer after a short delay
+    Future.delayed(const Duration(seconds: 5), () {
+      if (mounted) {
+        _adHelper?.startAdTimer(context);
+      }
+    });
   }
 
   @override
   void dispose() {
+    // Stop the ad timer when the dashboard is disposed
+    _adHelper?.stopAdTimer();
     _animationController.dispose();
     super.dispose();
   }
@@ -193,9 +213,8 @@ class _DashboardScreenState extends State<DashboardScreen>
                                       count: count,
                                       child: Icon(
                                         Icons.notifications_outlined,
-                                        size: 22,
-                                        color: context.textPrimaryColor
-                                            .withValues(alpha: 0.9),
+                                        size: 24,
+                                        color: context.textPrimaryColor,
                                       ),
                                     ),
                                   ),
@@ -212,9 +231,8 @@ class _DashboardScreenState extends State<DashboardScreen>
                                     const EdgeInsets.only(right: ThemeSizes.lg),
                                 child: Icon(
                                   Icons.settings,
-                                  size: 22,
-                                  color: context.textPrimaryColor
-                                      .withValues(alpha: 0.9),
+                                  size: 24,
+                                  color: context.textPrimaryColor,
                                 ),
                               ),
                             ),

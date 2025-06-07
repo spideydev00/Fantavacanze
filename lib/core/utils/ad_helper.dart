@@ -14,18 +14,13 @@ class AdHelper {
   bool _isInterstitialLoading = false;
   bool _isRewardedLoading = false;
 
+  // Track if any ad is currently being displayed
+  bool _isAnyAdShowing = false;
+
   // Timer for periodic ads
   Timer? _adTimer;
   DateTime? _lastAdShown;
   final Duration _minAdInterval = const Duration(minutes: 2);
-
-  // Current route for checking exclusions
-  String _currentRoute = '/';
-
-  // Set of route names that should be excluded from showing recurring ads
-  final Set<String> _excludedRoutes = {
-    '/drink_games_selection',
-  };
 
   // Test Ad Unit IDs - Use these during development
   static String get testInterstitialAdUnitId {
@@ -91,7 +86,6 @@ class AdHelper {
               loadInterstitialAd();
             },
             onAdFailedToShowFullScreenContent: (ad, error) {
-              debugPrint('❌ Errore nel mostrare l\'ad: $error');
               _interstitialAd = null;
               ad.dispose();
               loadInterstitialAd();
@@ -99,7 +93,6 @@ class AdHelper {
           );
         },
         onAdFailedToLoad: (LoadAdError error) {
-          debugPrint('❌ Errore nel mostrare l\'ad: $error');
           _isInterstitialLoading = false;
           // Retry after a delay
           Future.delayed(const Duration(minutes: 1), loadInterstitialAd);
@@ -130,7 +123,6 @@ class AdHelper {
               loadRewardedAd();
             },
             onAdFailedToShowFullScreenContent: (ad, error) {
-              debugPrint('❌ Errore nel mostrare l\'ad: $error');
               _rewardedAd = null;
               ad.dispose();
               loadRewardedAd();
@@ -138,7 +130,6 @@ class AdHelper {
           );
         },
         onAdFailedToLoad: (LoadAdError error) {
-          debugPrint('❌ Errore nel mostrare l\'ad: $error');
           _isRewardedLoading = false;
           // Retry after a delay
           Future.delayed(
@@ -152,11 +143,15 @@ class AdHelper {
 
   // Show interstitial ad if available and enough time has passed
   Future<bool> showInterstitialAd({bool ignoreTimeLimit = true}) async {
+    // Skip if another ad is currently showing
+    if (_isAnyAdShowing) {
+      return false;
+    }
+
     // Check if enough time has passed since last ad
     if (!ignoreTimeLimit && _lastAdShown != null) {
       final timeSinceLastAd = DateTime.now().difference(_lastAdShown!);
       if (timeSinceLastAd < _minAdInterval) {
-        debugPrint('❌ Impossibile mostrare: Troppo presto dopo l\'ultimo ad');
         return false;
       }
     }
@@ -171,18 +166,27 @@ class AdHelper {
 
     final completer = Completer<bool>();
 
+    // Mark that an ad is now showing
+    _isAnyAdShowing = true;
+
     _interstitialAd!.fullScreenContentCallback = FullScreenContentCallback(
       onAdDismissedFullScreenContent: (ad) {
         _lastAdShown = DateTime.now();
         _interstitialAd = null;
         ad.dispose();
+        // Load a new ad immediately
         loadInterstitialAd();
+        // Mark that no ad is showing anymore
+        _isAnyAdShowing = false;
         completer.complete(true);
       },
       onAdFailedToShowFullScreenContent: (ad, error) {
         _interstitialAd = null;
         ad.dispose();
+        // Load a new ad immediately
         loadInterstitialAd();
+        // Mark that no ad is showing anymore
+        _isAnyAdShowing = false;
         completer.complete(false);
       },
     );
@@ -193,28 +197,44 @@ class AdHelper {
 
   // Show rewarded ad and return true if user earned reward
   Future<bool> showRewardedAd() async {
+    // Skip if another ad is currently showing
+    if (_isAnyAdShowing) {
+      return false;
+    }
+
     if (_rewardedAd == null) {
       await loadRewardedAd();
       // Wait a moment for ad to load
       await Future.delayed(const Duration(seconds: 1));
-      if (_rewardedAd == null) return false;
+      if (_rewardedAd == null) {
+        return false;
+      }
     }
 
     final completer = Completer<bool>();
     bool userEarnedReward = false;
+
+    // Mark that an ad is now showing
+    _isAnyAdShowing = true;
 
     _rewardedAd!.fullScreenContentCallback = FullScreenContentCallback(
       onAdDismissedFullScreenContent: (ad) {
         _lastAdShown = DateTime.now();
         _rewardedAd = null;
         ad.dispose();
+        // Load a new ad immediately
         loadRewardedAd();
+        // Mark that no ad is showing anymore
+        _isAnyAdShowing = false;
         completer.complete(userEarnedReward);
       },
       onAdFailedToShowFullScreenContent: (ad, error) {
         _rewardedAd = null;
         ad.dispose();
+        // Load a new ad immediately
         loadRewardedAd();
+        // Mark that no ad is showing anymore
+        _isAnyAdShowing = false;
         completer.complete(false);
       },
     );
@@ -228,34 +248,6 @@ class AdHelper {
     return completer.future;
   }
 
-  // Update current route safely
-  void updateCurrentRoute(String? routeName) {
-    if (routeName != null && routeName.isNotEmpty) {
-      _currentRoute = routeName;
-      debugPrint('🧭 Route updated: $_currentRoute');
-    }
-  }
-
-  // Check if current route is excluded
-  bool get isCurrentRouteExcluded {
-    return _excludedRoutes.contains(_currentRoute);
-  }
-
-  // Add a route to the exclusion list - works with null safety
-  void excludeRouteFromAds(String? routeName) {
-    if (routeName != null && routeName.isNotEmpty) {
-      _excludedRoutes.add(routeName);
-      debugPrint('🚫 Route excluded from ads: $routeName');
-    }
-  }
-
-  // Remove a route from the exclusion list - null safe
-  void includeRouteInAds(String? routeName) {
-    if (routeName != null && routeName.isNotEmpty) {
-      _excludedRoutes.remove(routeName);
-    }
-  }
-
   // Start timer for periodic interstitial ads
   void startAdTimer(BuildContext context) {
     _adTimer?.cancel();
@@ -263,8 +255,7 @@ class AdHelper {
     // Check every minute, but only show ad every 2 minutes
     _adTimer = Timer.periodic(const Duration(minutes: 1), (timer) {
       // Skip if keyboard is open or current route is excluded
-      if (MediaQuery.of(context).viewInsets.bottom > 0 ||
-          isCurrentRouteExcluded) {
+      if (MediaQuery.of(context).viewInsets.bottom > 0) {
         return;
       }
 
@@ -281,12 +272,15 @@ class AdHelper {
   }
 
   void stopAdTimer() {
-    _adTimer?.cancel();
-    _adTimer = null;
+    if (_adTimer != null) {
+      _adTimer?.cancel();
+      _adTimer = null;
+    }
   }
 
   // Initialize ads
   Future<void> initialize() async {
+    // Load both types of ads immediately
     await loadInterstitialAd();
     await loadRewardedAd();
   }
@@ -308,18 +302,45 @@ class AdHelper {
 
   // Show two rewarded ads in sequence for premium content
   Future<bool> showSequentialRewardedAds() async {
+    debugPrint('🔄 Inizio sequenza rewarded ads');
+
     // Show first rewarded ad
     bool firstAdWatched = await showRewardedAd();
 
-    if (!firstAdWatched) return false;
+    if (!firstAdWatched) {
+      return false;
+    }
 
-    // Small delay between ads
-    await Future.delayed(const Duration(milliseconds: 500));
+    // Wait for the second ad to load with timeout
+    bool secondAdLoaded = false;
+    int retryCount = 0;
+    const maxRetries = 10;
 
-    // Show second rewarded ad
+    while (!secondAdLoaded && retryCount < maxRetries) {
+      // Check if we have a rewarded ad ready
+      if (_rewardedAd != null) {
+        secondAdLoaded = true;
+        break;
+      }
+
+      // Wait a bit before checking again
+      await Future.delayed(const Duration(milliseconds: 500));
+      retryCount++;
+    }
+
+    if (!secondAdLoaded) {
+      return false;
+    }
+
+    // Now show the second rewarded ad
     bool secondAdWatched = await showRewardedAd();
 
     // Both must complete successfully
-    return firstAdWatched && secondAdWatched;
+    final result = firstAdWatched && secondAdWatched;
+    if (result) {
+      debugPrint('✅ Sequenza completata');
+    }
+
+    return result;
   }
 }

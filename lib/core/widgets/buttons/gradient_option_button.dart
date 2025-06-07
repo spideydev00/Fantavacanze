@@ -24,7 +24,7 @@ class GradientOptionButton extends StatelessWidget {
     this.secondaryColor = Colors.transparent,
     this.description,
     this.iconSize = 32,
-    this.labelFontSize = 16,
+    this.labelFontSize = 13,
     this.descriptionFontSize = 12,
   });
 

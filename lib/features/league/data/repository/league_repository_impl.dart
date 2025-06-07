@@ -65,6 +65,8 @@ class LeagueRepositoryImpl implements LeagueRepository {
       return Right(league);
     } on ServerException catch (e) {
       return Left(Failure(e.message));
+    } on CacheException catch (e) {
+      return Left(Failure('Errore nella cache: ${e.message}'));
     }
   }
 
@@ -96,6 +98,8 @@ class LeagueRepositoryImpl implements LeagueRepository {
         }
       } catch (_) {}
       return Left(Failure(e.message));
+    } on CacheException catch (e) {
+      return Left(Failure('Errore nella cache: ${e.message}'));
     }
   }
 
@@ -115,6 +119,8 @@ class LeagueRepositoryImpl implements LeagueRepository {
       return Right(leagues);
     } on ServerException catch (e) {
       return Left(Failure(e.message));
+    } on CacheException catch (e) {
+      return Left(Failure('Errore nella cache: ${e.message}'));
     }
   }
 
@@ -145,6 +151,8 @@ class LeagueRepositoryImpl implements LeagueRepository {
       return Right(league);
     } on ServerException catch (e) {
       return Left(Failure(e.message));
+    } on CacheException catch (e) {
+      return Left(Failure('Errore nella cache: ${e.message}'));
     }
   }
 
@@ -164,6 +172,8 @@ class LeagueRepositoryImpl implements LeagueRepository {
       return const Right(null);
     } on ServerException catch (e) {
       return Left(Failure(e.message));
+    } on CacheException catch (e) {
+      return Left(Failure('Errore nella cache: ${e.message}'));
     }
   }
 
@@ -217,6 +227,8 @@ class LeagueRepositoryImpl implements LeagueRepository {
       return Right(league);
     } on ServerException catch (e) {
       return Left(Failure(e.message, data: e.data));
+    } on CacheException catch (e) {
+      return Left(Failure('Errore nella cache: ${e.message}'));
     }
   }
 
@@ -243,6 +255,8 @@ class LeagueRepositoryImpl implements LeagueRepository {
       return const Right(null);
     } on ServerException catch (e) {
       return Left(Failure(e.message));
+    } on CacheException catch (e) {
+      return Left(Failure('Errore nella cache: ${e.message}'));
     }
   }
 
@@ -272,6 +286,8 @@ class LeagueRepositoryImpl implements LeagueRepository {
       return Right(updatedLeague);
     } on ServerException catch (e) {
       return Left(Failure(e.message));
+    } on CacheException catch (e) {
+      return Left(Failure('Errore nella cache: ${e.message}'));
     }
   }
 
@@ -311,6 +327,8 @@ class LeagueRepositoryImpl implements LeagueRepository {
       return Right(updatedLeague);
     } on ServerException catch (e) {
       return Left(Failure(e.message));
+    } on CacheException catch (e) {
+      return Left(Failure('Errore nella cache: ${e.message}'));
     }
   }
 
@@ -346,6 +364,8 @@ class LeagueRepositoryImpl implements LeagueRepository {
       return Right(updatedLeague);
     } on ServerException catch (e) {
       return Left(Failure(e.message));
+    } on CacheException catch (e) {
+      return Left(Failure('Errore nella cache: ${e.message}'));
     }
   }
 
@@ -373,6 +393,8 @@ class LeagueRepositoryImpl implements LeagueRepository {
       return Right(updatedLeague);
     } on ServerException catch (e) {
       return Left(Failure(e.message));
+    } on CacheException catch (e) {
+      return Left(Failure('Errore nella cache: ${e.message}'));
     }
   }
 
@@ -428,6 +450,8 @@ class LeagueRepositoryImpl implements LeagueRepository {
       return Right(updatedLeague);
     } on ServerException catch (e) {
       return Left(Failure(e.message));
+    } on CacheException catch (e) {
+      return Left(Failure('Errore nella cache: ${e.message}'));
     }
   }
 
@@ -455,6 +479,8 @@ class LeagueRepositoryImpl implements LeagueRepository {
       return Right(updatedLeague);
     } on ServerException catch (e) {
       return Left(Failure(e.message));
+    } on CacheException catch (e) {
+      return Left(Failure('Errore nella cache: ${e.message}'));
     }
   }
 
@@ -489,6 +515,8 @@ class LeagueRepositoryImpl implements LeagueRepository {
       return Right(updatedLeague);
     } on ServerException catch (e) {
       return Left(Failure(e.message));
+    } on CacheException catch (e) {
+      return Left(Failure('Errore nella cache: ${e.message}'));
     }
   }
 
@@ -520,6 +548,8 @@ class LeagueRepositoryImpl implements LeagueRepository {
       return Right(leagueModel);
     } on ServerException catch (e) {
       return Left(Failure(e.message));
+    } on CacheException catch (e) {
+      return Left(Failure('Errore nella cache: ${e.message}'));
     } catch (e) {
       return Left(Failure(e.toString()));
     }
@@ -653,6 +683,8 @@ class LeagueRepositoryImpl implements LeagueRepository {
       return Right(updatedLeague);
     } on ServerException catch (e) {
       return Left(Failure(e.message));
+    } on CacheException catch (e) {
+      return Left(Failure('Errore nella cache: ${e.message}'));
     } catch (e) {
       return Left(
           Failure('Errore durante l\'aggiornamento del logo: ${e.toString()}'));
@@ -683,6 +715,8 @@ class LeagueRepositoryImpl implements LeagueRepository {
       return Right(updatedLeague);
     } on ServerException catch (e) {
       return Left(Failure(e.message));
+    } on CacheException catch (e) {
+      return Left(Failure('Errore nella cache: ${e.message}'));
     }
   }
 
@@ -710,6 +744,8 @@ class LeagueRepositoryImpl implements LeagueRepository {
       return Right(updatedLeague);
     } on ServerException catch (e) {
       return Left(Failure(e.message));
+    } on CacheException catch (e) {
+      return Left(Failure('Errore nella cache: ${e.message}'));
     }
   }
 
@@ -739,6 +775,8 @@ class LeagueRepositoryImpl implements LeagueRepository {
       return Right(updatedLeague);
     } on ServerException catch (e) {
       return Left(Failure(e.message));
+    } on CacheException catch (e) {
+      return Left(Failure('Errore nella cache: ${e.message}'));
     }
   }
 
@@ -794,6 +832,8 @@ class LeagueRepositoryImpl implements LeagueRepository {
       return Right(challenges);
     } on ServerException catch (e) {
       return Left(Failure(e.message));
+    } on CacheException catch (e) {
+      return Left(Failure('Errore nella cache: ${e.message}'));
     }
   }
 
@@ -844,6 +884,8 @@ class LeagueRepositoryImpl implements LeagueRepository {
       return Right(res);
     } on ServerException catch (e) {
       return Left(Failure(e.message));
+    } on CacheException catch (e) {
+      return Left(Failure('Errore nella cache: ${e.message}'));
     }
   }
 
@@ -908,6 +950,8 @@ class LeagueRepositoryImpl implements LeagueRepository {
       return const Right(null);
     } on ServerException catch (e) {
       return Left(Failure(e.message));
+    } on CacheException catch (e) {
+      return Left(Failure('Errore nella cache: ${e.message}'));
     }
   }
 
@@ -943,6 +987,8 @@ class LeagueRepositoryImpl implements LeagueRepository {
       return const Right(null);
     } on ServerException catch (e) {
       return Left(Failure(e.message));
+    } on CacheException catch (e) {
+      return Left(Failure('Errore nella cache: ${e.message}'));
     }
   }
 
@@ -959,11 +1005,6 @@ class LeagueRepositoryImpl implements LeagueRepository {
       // Se ci sono notifiche nella cache, restituiscile
       if (cachedNotifications.isNotEmpty) {
         return Right(cachedNotifications);
-      }
-
-      // Altrimenti, verifica la connessione
-      if (!await connectionChecker.isConnected) {
-        return Left(Failure('Nessuna connessione internet disponibile'));
       }
 
       // Ottieni le notifiche dal server
@@ -997,6 +1038,8 @@ class LeagueRepositoryImpl implements LeagueRepository {
       return const Right(null);
     } on ServerException catch (e) {
       return Left(Failure(e.message));
+    } on CacheException catch (e) {
+      return Left(Failure('Errore nella cache: ${e.message}'));
     }
   }
 
@@ -1018,6 +1061,8 @@ class LeagueRepositoryImpl implements LeagueRepository {
       return const Right(null);
     } on ServerException catch (e) {
       return Left(Failure(e.message));
+    } on CacheException catch (e) {
+      return Left(Failure('Errore nella cache: ${e.message}'));
     }
   }
 
@@ -1039,6 +1084,8 @@ class LeagueRepositoryImpl implements LeagueRepository {
       return const Right(null);
     } on ServerException catch (e) {
       return Left(Failure(e.message));
+    } on CacheException catch (e) {
+      return Left(Failure('Errore nella cache: ${e.message}'));
     }
   }
 
@@ -1062,6 +1109,8 @@ class LeagueRepositoryImpl implements LeagueRepository {
       return const Right(null);
     } on ServerException catch (e) {
       return Left(Failure(e.message));
+    } on CacheException catch (e) {
+      return Left(Failure('Errore nella cache: ${e.message}'));
     }
   }
 
