@@ -1,7 +1,9 @@
 import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit.dart';
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
+import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:fantavacanze_official/core/widgets/dialogs/confirmation_dialog.dart';
+import 'package:fantavacanze_official/core/widgets/loader.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -93,12 +95,9 @@ class _EditProfileDialogState extends State<EditProfileDialog> {
               },
             ),
             if (_isLoading)
-              const Padding(
-                padding: EdgeInsets.only(top: ThemeSizes.md),
-                child: Center(
-                  child: CircularProgressIndicator(),
-                ),
-              ),
+              Padding(
+                  padding: EdgeInsets.only(top: ThemeSizes.md),
+                  child: Loader(color: ColorPalette.success)),
           ],
         ),
       ),

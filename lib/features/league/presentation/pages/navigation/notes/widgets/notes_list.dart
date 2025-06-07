@@ -1,4 +1,6 @@
+import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
+import 'package:fantavacanze_official/core/widgets/loader.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/note.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/notes/widgets/note_card.dart';
 import 'package:flutter/material.dart';
@@ -28,13 +30,7 @@ class NotesList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (isLoading) {
-      return loadingWidget ??
-          const Center(
-            child: Padding(
-              padding: EdgeInsets.all(ThemeSizes.lg),
-              child: CircularProgressIndicator(),
-            ),
-          );
+      return loadingWidget ?? Loader(color: context.primaryColor);
     }
 
     if (notes.isEmpty && showEmptyState) {

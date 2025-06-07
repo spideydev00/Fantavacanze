@@ -315,7 +315,9 @@ class _DailyGoalsState extends State<DailyGoals> {
       builder: (context) => Container(
         color: Colors.black.withValues(alpha: 0.5),
         child: const Center(
-          child: CircularProgressIndicator(),
+          child: Loader(
+            color: ColorPalette.success,
+          ),
         ),
       ),
     );
@@ -404,7 +406,7 @@ class _DailyGoalsState extends State<DailyGoals> {
     // TODO: Implement premium subscription flow
     showSnackBar(
       "Funzionalità premium in arrivo!",
-      color: ColorPalette.warning,
+      color: ColorPalette.premiumGradient[1],
     );
   }
 

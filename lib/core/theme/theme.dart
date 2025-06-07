@@ -49,6 +49,20 @@ class AppTheme {
       primaryColor: context.primaryColor,
       canvasColor: context.secondaryBgColor, // This affects Stepper background
       /* ---------------------------------------------------------------- */
+      // BOTTOM SHEET THEME
+      bottomSheetTheme: BottomSheetThemeData(
+        backgroundColor: context.secondaryBgColor,
+        modalBackgroundColor: context.secondaryBgColor,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(20),
+            topRight: Radius.circular(20),
+          ),
+        ),
+        showDragHandle: true,
+        dragHandleColor: context.primaryColor,
+      ),
+      /* ---------------------------------------------------------------- */
       // SWITCH THEME
       switchTheme: SwitchThemeData(
         thumbColor: WidgetStateProperty.resolveWith<Color>((states) {

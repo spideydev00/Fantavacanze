@@ -6,6 +6,7 @@ import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:fantavacanze_official/core/utils/show_snackbar.dart';
 import 'package:fantavacanze_official/core/widgets/dialogs/confirmation_dialog.dart';
+import 'package:fantavacanze_official/core/widgets/loader.dart';
 import 'package:fantavacanze_official/features/auth/presentation/pages/social_login.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -111,9 +112,10 @@ class _DeleteAccountDialogState extends State<DeleteAccountDialog> {
           ),
           if (_isLoading)
             const Padding(
-              padding: EdgeInsets.only(top: ThemeSizes.md),
-              child: Center(child: CircularProgressIndicator()),
-            ),
+                padding: EdgeInsets.only(top: ThemeSizes.md),
+                child: Loader(
+                  color: ColorPalette.success,
+                )),
         ],
       ),
     );

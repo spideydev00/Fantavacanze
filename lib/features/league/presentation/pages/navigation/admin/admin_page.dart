@@ -125,9 +125,8 @@ class _AdminPageState extends State<AdminPage> {
           ),
           elevation: 0,
         ),
-        body: _isLoading
-            ? Center(child: Loader(color: context.primaryColor))
-            : _buildContent(),
+        body:
+            _isLoading ? Loader(color: context.primaryColor) : _buildContent(),
       ),
     );
   }

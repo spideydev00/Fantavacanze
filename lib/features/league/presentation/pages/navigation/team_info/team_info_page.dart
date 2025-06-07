@@ -585,11 +585,10 @@ class _TeamBasedInfoState extends State<_TeamBasedInfo>
                     imageUrl: logoUrl!,
                     fit: BoxFit.cover,
                     placeholder: (context, url) => Container(
-                      color: context.primaryColor.withValues(alpha: 0.2),
-                      child: const Center(
-                        child: CircularProgressIndicator(),
-                      ),
-                    ),
+                        color: context.primaryColor.withValues(alpha: 0.2),
+                        child: Loader(
+                          color: context.primaryColor,
+                        )),
                     errorWidget: (context, url, error) => Container(
                       color: context.primaryColor.withValues(alpha: 0.2),
                       child: const Icon(
@@ -617,10 +616,8 @@ class _TeamBasedInfoState extends State<_TeamBasedInfo>
                 color: Colors.black.withValues(alpha: 0.5),
                 shape: BoxShape.circle,
               ),
-              child: const Center(
-                child: CircularProgressIndicator(
-                  color: Colors.white,
-                ),
+              child: Loader(
+                color: Colors.white,
               ),
             ),
           ),

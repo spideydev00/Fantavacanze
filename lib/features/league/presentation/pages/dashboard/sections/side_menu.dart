@@ -5,7 +5,7 @@ import 'package:fantavacanze_official/core/cubits/app_league/app_league_cubit.da
 import 'package:fantavacanze_official/core/cubits/app_theme/app_theme_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit.dart';
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
-import 'package:fantavacanze_official/core/widgets/become_premium_button.dart';
+// import 'package:fantavacanze_official/core/widgets/become_premium_button.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/dashboard/widgets/side_menu/league_dropdown.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/settings/privacy_policy.dart';
@@ -73,12 +73,13 @@ class SideMenu extends StatelessWidget {
                           );
                         },
                       ),
-                      Padding(
-                        padding:
-                            const EdgeInsets.symmetric(vertical: ThemeSizes.md),
-                        child: CustomDivider(text: "Sostienici"),
-                      ),
-                      BecomePremiumButton(onPressed: () {}),
+                      // TODO: Aggiungi become premium button
+                      // Padding(
+                      //   padding:
+                      //       const EdgeInsets.symmetric(vertical: ThemeSizes.md),
+                      //   child: CustomDivider(text: "Sostienici"),
+                      // ),
+                      // BecomePremiumButton(onPressed: () {}),
                       const SizedBox(height: 20),
                     ],
                   ),

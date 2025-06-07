@@ -1,7 +1,9 @@
 import 'package:fantavacanze_official/core/cubits/app_league/app_league_cubit.dart';
+import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/widgets/custom_tab.dart';
 import 'package:fantavacanze_official/core/widgets/custom_tab_bar.dart';
+import 'package:fantavacanze_official/core/widgets/loader.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/league.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/rule/rule.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc.dart';
@@ -142,7 +144,9 @@ class _RulesPageState extends State<RulesPage>
           );
         }
 
-        return const Center(child: CircularProgressIndicator());
+        return Loader(
+          color: context.primaryColor,
+        );
       },
     );
   }

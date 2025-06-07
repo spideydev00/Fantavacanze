@@ -17,6 +17,10 @@ class AuthRepositoryImpl implements AuthRepository {
     required this.connectionChecker,
   });
 
+  // =====================================================================
+  // SOCIAL AUTHENTICATION METHODS
+  // =====================================================================
+
   //Google
   @override
   Future<Either<Failure, User>> googleSignIn() async {
@@ -49,6 +53,10 @@ class AuthRepositoryImpl implements AuthRepository {
     }
   }
 
+  // =====================================================================
+  // CONSENT MANAGEMENT
+  // =====================================================================
+
   @override
   Future<Either<Failure, void>> removeConsents({
     required bool isAdult,
@@ -69,6 +77,31 @@ class AuthRepositoryImpl implements AuthRepository {
       return left(Failure(e.message));
     }
   }
+
+  @override
+  Future<Either<Failure, User>> updateConsents({
+    required bool isAdult,
+    required bool isTermsAccepted,
+  }) async {
+    try {
+      if (!await connectionChecker.isConnected) {
+        return left(
+            Failure("Connessione a internet assente. Riprova più tardi."));
+      }
+
+      final user = await authRemoteDataSource.updateConsents(
+        isAdult: isAdult,
+        isTermsAccepted: isTermsAccepted,
+      );
+      return right(user);
+    } on ServerException catch (e) {
+      return left(Failure(e.message));
+    }
+  }
+
+  // =====================================================================
+  // EMAIL AUTHENTICATION
+  // =====================================================================
 
   //E-mail
   @override
@@ -134,6 +167,10 @@ class AuthRepositoryImpl implements AuthRepository {
     }
   }
 
+  // =====================================================================
+  // USER PROFILE MANAGEMENT
+  // =====================================================================
+
   @override
   Future<Either<Failure, User>> changeIsOnboardedValue(
       {required bool newValue}) async {
@@ -179,7 +216,6 @@ class AuthRepositoryImpl implements AuthRepository {
     }
   }
 
-  // New methods for user profile management
   @override
   Future<Either<Failure, User>> updateDisplayName(String newName) async {
     try {
@@ -228,27 +264,6 @@ class AuthRepositoryImpl implements AuthRepository {
 
       await authRemoteDataSource.deleteAccount();
       return right(null);
-    } on ServerException catch (e) {
-      return left(Failure(e.message));
-    }
-  }
-
-  @override
-  Future<Either<Failure, User>> updateConsents({
-    required bool isAdult,
-    required bool isTermsAccepted,
-  }) async {
-    try {
-      if (!await connectionChecker.isConnected) {
-        return left(
-            Failure("Connessione a internet assente. Riprova più tardi."));
-      }
-
-      final user = await authRemoteDataSource.updateConsents(
-        isAdult: isAdult,
-        isTermsAccepted: isTermsAccepted,
-      );
-      return right(user);
     } on ServerException catch (e) {
       return left(Failure(e.message));
     }

@@ -455,29 +455,36 @@ class _DailyGoalCardState extends State<DailyGoalCard>
             children: [
               // Gradient background
               Container(
-                constraints: const BoxConstraints(minHeight: 60),
                 decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      widget.startColor.withValues(alpha: 0.5),
-                      widget.endColor.withValues(alpha: 0.5)
+                  color: Colors.black.withValues(
+                    alpha: 0.9,
+                  ),
+                ),
+                child: Container(
+                  constraints: const BoxConstraints(minHeight: 60),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        widget.startColor.withValues(alpha: 0.8),
+                        widget.endColor.withValues(alpha: 0.8)
+                      ],
+                    ),
+                    borderRadius:
+                        BorderRadius.circular(ThemeSizes.borderRadiusMd),
+                    boxShadow: [
+                      BoxShadow(
+                        color: widget.endColor.withValues(alpha: 0.3),
+                        blurRadius: 8,
+                        offset: const Offset(0, 4),
+                      ),
                     ],
                   ),
-                  borderRadius:
-                      BorderRadius.circular(ThemeSizes.borderRadiusMd),
-                  boxShadow: [
-                    BoxShadow(
-                      color: widget.endColor.withValues(alpha: 0.3),
-                      blurRadius: 8,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
                 ),
               ),
 
-              // Blurred + dark overlay with layout matching unlockedContent
+              // Blurred
               Positioned.fill(
                 child: ImageFiltered(
                   imageFilter: ImageFilter.blur(sigmaX: 3, sigmaY: 3),
@@ -495,13 +502,6 @@ class _DailyGoalCardState extends State<DailyGoalCard>
                             style: context.textTheme.labelSmall?.copyWith(
                               color: Colors.white.withValues(alpha: 0.4),
                               fontWeight: FontWeight.w600,
-                              shadows: [
-                                Shadow(
-                                  blurRadius: 3,
-                                  color: Colors.black.withValues(alpha: 0.3),
-                                  offset: const Offset(0, 1),
-                                ),
-                              ],
                             ),
                             maxLines: 10,
                             overflow: TextOverflow.ellipsis,

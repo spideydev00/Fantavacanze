@@ -11,6 +11,10 @@ class DrinkGamesSelection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Center(child: Text('Giochi Alcolici Selection'));
+    return Scaffold(
+      body: const Center(
+        child: Text('Giochi Alcolici Selection'),
+      ),
+    );
   }
 }

@@ -7,6 +7,7 @@ import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:fantavacanze_official/core/utils/show_snackbar.dart';
 import 'package:fantavacanze_official/core/widgets/empty_state.dart';
+import 'package:fantavacanze_official/core/widgets/loader.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/daily_challenge_notification.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/notification.dart'
     as app_notification;
@@ -184,7 +185,9 @@ class _NotificationsPageState extends State<NotificationsPage> {
             centerTitle: true,
           ),
           body: isLoading && _notifications.isEmpty
-              ? const Center(child: CircularProgressIndicator())
+              ? Loader(
+                  color: ColorPalette.warning,
+                )
               : _notifications.isEmpty
                   ? _buildEmptyState()
                   : _buildNotificationsList(),

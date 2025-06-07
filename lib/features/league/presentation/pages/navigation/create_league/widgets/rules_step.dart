@@ -1,4 +1,5 @@
 import 'package:fantavacanze_official/core/constants/game_mode.dart';
+import 'package:fantavacanze_official/core/widgets/loader.dart';
 import 'package:flutter/material.dart';
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/extensions/context_extension.dart';
@@ -64,7 +65,7 @@ class RulesStep extends StatelessWidget {
     return Center(
       child: Column(
         children: [
-          CircularProgressIndicator(color: context.primaryColor),
+          Loader(color: context.primaryColor),
           const SizedBox(height: ThemeSizes.md),
           Text(
             'Caricamento regole...',

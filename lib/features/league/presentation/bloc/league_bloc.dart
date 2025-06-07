@@ -38,7 +38,6 @@ import 'package:fantavacanze_official/features/league/domain/use_cases/remote/le
 import 'package:fantavacanze_official/features/league/domain/use_cases/remote/league/add_administrators.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/remote/league/remove_participants.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/remote/league/update_league_info.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/remote/league/delete_league.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_event.dart';
@@ -90,7 +89,7 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
   final RejectDailyChallenge rejectDailyChallenge;
 
   // Stream subscription for notifications
-  StreamSubscription<RemoteNotification>? _notificationSubscription;
+  StreamSubscription<Notification>? _notificationSubscription;
 
   LeagueBloc({
     required this.createLeague,
@@ -134,6 +133,9 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
     required this.markNotificationAsRead,
     required this.deleteNotification,
   }) : super(LeagueInitial()) {
+    // =====================================================================
+    // EVENT REGISTRATION
+    // =====================================================================
     on<CreateLeagueEvent>(_onCreateLeague);
     on<GetLeagueEvent>(_onGetLeague);
     on<SearchLeagueEvent>(_handleSearchLeague);
@@ -170,9 +172,9 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
     on<UnlockDailyChallengeEvent>(_onUnlockDailyChallenge);
   }
 
-  // -----------------------------------------------------------
-  // L E A G U E   M A I N   O P E R A T I O N S
-  // -----------------------------------------------------------
+  // =====================================================================
+  // LEAGUE MAIN OPERATIONS
+  // =====================================================================
 
   // C R E A T E   L E A G U E
   Future<void> _onCreateLeague(
@@ -362,9 +364,9 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
     );
   }
 
-  // -----------------------------------------------------------
-  // R U L E S   M A N A G E M E N T
-  // -----------------------------------------------------------
+  // =====================================================================
+  // RULES MANAGEMENT
+  // =====================================================================
 
   // G E T   R U L E S
   Future<void> _onGetRules(
@@ -451,9 +453,9 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
     );
   }
 
-  // -----------------------------------------------------------
-  // M E M B E R S H I P   O P E R A T I O N S
-  // -----------------------------------------------------------
+  // =====================================================================
+  // MEMBERSHIP OPERATIONS
+  // =====================================================================
 
   // U P D A T E   T E A M   N A M E
   Future<void> _onUpdateTeamName(
@@ -491,9 +493,9 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
     }
   }
 
-  // -----------------------------------------------------------
-  // C O N T E N T   M A N A G E M E N T
-  // -----------------------------------------------------------
+  // =====================================================================
+  // CONTENT MANAGEMENT
+  // =====================================================================
 
   // A D D   E V E N T
   Future<void> _onAddEventEvent(
@@ -620,9 +622,9 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
     }
   }
 
-  // -----------------------------------------------------------
-  // N O T E S   M A N A G E M E N T
-  // -----------------------------------------------------------
+  // =====================================================================
+  // NOTES MANAGEMENT
+  // =====================================================================
 
   // G E T   N O T E S
   Future<void> _onGetNotes(
@@ -688,9 +690,9 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
     );
   }
 
-  // -----------------------------------------------------------
-  // I M A G E   U P L O A D
-  // -----------------------------------------------------------
+  // =====================================================================
+  // IMAGE UPLOAD
+  // =====================================================================
 
   // Handle image upload
   Future<void> _onUploadImage(
@@ -712,9 +714,9 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
     );
   }
 
-  // -----------------------------------------------------------
-  // T E A M   L O G O   M A N A G E M E N T
-  // -----------------------------------------------------------
+  // =====================================================================
+  // TEAM LOGO MANAGEMENT
+  // =====================================================================
 
   // Handle team logo upload
   Future<void> _onUploadTeamLogo(
@@ -764,9 +766,9 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
     );
   }
 
-  // -----------------------------------------------------------
-  // A D M I N   O P E R A T I O N S
-  // -----------------------------------------------------------
+  // =====================================================================
+  // ADMIN OPERATIONS
+  // =====================================================================
 
   // Add Administrators
   Future<void> _onAddAdministrators(
@@ -855,9 +857,9 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
     );
   }
 
-  // -----------------------------------------------------------
-  // D A I L Y   C H A L L E N G E S   O P E R A T I O N S
-  // -----------------------------------------------------------
+  // =====================================================================
+  // DAILY CHALLENGES OPERATIONS
+  // =====================================================================
 
   // G E T   D A I L Y   C H A L L E N G E S
   Future<void> _onGetDailyChallenges(
@@ -957,9 +959,9 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
     );
   }
 
-  // -----------------------------------------------------------
-  // N O T I F I C A T I O N S   O P E R A T I O N S
-  // -----------------------------------------------------------
+  // =====================================================================
+  // NOTIFICATIONS OPERATIONS
+  // =====================================================================
 
   Future<void> _onListenToNotification(
     ListenToNotificationEvent event,
@@ -967,31 +969,25 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
   ) async {
     emit(LeagueLoading());
 
-    // Cancella eventuali subscription precedenti
     _notificationSubscription?.cancel();
 
-    // Ottieni il risultato del usecase
     final result = await listenToNotification.call(NoParams());
 
-    // Gestisci il risultato usando fold
     result.fold(
-      // In caso di fallimento
       (failure) {
         emit(LeagueError(message: failure.message));
       },
-      // In caso di successo, estrai lo stream e usa emit.forEach
-      (notification) async {
+      (notificationStream) async {
         await emit.forEach<Notification>(
-          notification,
+          notificationStream,
           onData: (notification) {
+            // Increment notification count
             notificationCountCubit.increment();
-            return NotificationReceived(
-              notification: notification,
-            );
+            // Return the notification state that will be emitted
+            return NotificationReceived(notification: notification);
           },
-          onError: (error, stackTrace) {
-            return LeagueError(message: error.toString());
-          },
+          onError: (error, stackTrace) =>
+              LeagueError(message: error.toString()),
         );
       },
     );
@@ -1135,9 +1131,9 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
     );
   }
 
-  // -----------------------------------------------------------
-  // U T I L I T Y   M E T H O D S
-  // -----------------------------------------------------------
+  // =====================================================================
+  // UTILITY METHODS
+  // =====================================================================
 
   // Helper method to check if current user is admin of the selected league
   bool isAdmin() {

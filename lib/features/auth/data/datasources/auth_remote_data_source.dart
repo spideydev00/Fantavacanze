@@ -13,6 +13,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:fantavacanze_official/init_dependencies/init_dependencies.dart';
 
 abstract interface class AuthRemoteDataSource {
+  // AUTHENTICATION METHODS
   Future<UserModel> signInWithGoogle();
   Future<UserModel> signInWithApple();
   Future<void> signUpWithEmailPassword({
@@ -30,6 +31,8 @@ abstract interface class AuthRemoteDataSource {
     required String hCaptcha,
   });
   Future<void> signOut();
+
+  // USER PROFILE METHODS
   Future<UserModel> changeIsOnboardedValue({
     required bool newValue,
   });
@@ -37,6 +40,8 @@ abstract interface class AuthRemoteDataSource {
   Future<void> updatePassword(
       String oldPassword, String newPassword, String captchaToken);
   Future<void> deleteAccount();
+
+  // CONSENTS MANAGEMENT
   Future<void> removeConsents({
     required bool isAdult,
     required bool isTermsAccepted,
@@ -46,6 +51,8 @@ abstract interface class AuthRemoteDataSource {
     required bool isTermsAccepted,
   });
   Future<UserModel> updateGender({required String gender});
+
+  // USER DATA ACCESS
   Future<UserModel?> getCurrentUserData();
   Session? get currentSession;
 }
@@ -59,7 +66,9 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
 
   AuthRemoteDataSourceImpl({required this.supabaseClient});
 
-  // ------------------ Helper per “ripulire” l’errore ------------------
+  // =====================================================================
+  // ERROR HANDLING UTILITIES
+  // =====================================================================
 
   String _extractErrorMessage(Object e) {
     if (e is ServerException) return e.message;
@@ -69,11 +78,17 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     return e.toString();
   }
 
-  // ------------------ GET CURRENT SESSION ------------------ //
+  // =====================================================================
+  // SESSION MANAGEMENT
+  // =====================================================================
+
   @override
   Session? get currentSession => supabaseClient.auth.currentSession;
 
-  // ------------------ GET USER DATA ------------------ //
+  // =====================================================================
+  // USER DATA ACCESS
+  // =====================================================================
+
   @override
   Future<UserModel?> getCurrentUserData() async {
     try {
@@ -110,6 +125,10 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       throw ServerException(_extractErrorMessage(e));
     }
   }
+
+  // =====================================================================
+  // AUTHENTICATION METHODS
+  // =====================================================================
 
   // ------------------ APPLE SIGN-IN ------------------ //
   @override
@@ -259,6 +278,10 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     }
   }
 
+  // =====================================================================
+  // USER PROFILE MANAGEMENT
+  // =====================================================================
+
   // ------------------ CHANGE IS_ONBOARDED ------------------ //
   @override
   Future<UserModel> changeIsOnboardedValue({required bool newValue}) async {
@@ -330,6 +353,10 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     }
   }
 
+  // =====================================================================
+  // CONSENT MANAGEMENT
+  // =====================================================================
+
   // ------------------ REMOVE CONSENTS ------------------ //
   @override
   Future<void> removeConsents({
@@ -386,7 +413,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     }
   }
 
-  //------------------ UPDATE GENDER ------------------ //
+  // ------------------ UPDATE GENDER ------------------ //
   @override
   Future<UserModel> updateGender({required String gender}) async {
     try {
@@ -410,7 +437,10 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     }
   }
 
-// // ------------------ FCM TOKEN MANAGEMENT ------------------ //
+  // =====================================================================
+  // FCM TOKEN MANAGEMENT
+  // =====================================================================
+
   Future<StreamSubscription<String>> initTokenSubscription(
       {String? userId}) async {
     try {
