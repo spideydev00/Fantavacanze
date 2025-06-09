@@ -12,7 +12,10 @@ class ConsentSettingsDialog extends StatefulWidget {
   static Future<void> show(BuildContext context) async {
     return showDialog(
       context: context,
-      builder: (_) => const ConsentSettingsDialog(),
+      builder: (_) => BlocProvider.value(
+        value: context.read<AppUserCubit>(),
+        child: const ConsentSettingsDialog(),
+      ),
     );
   }
 
@@ -35,6 +38,7 @@ class _ConsentSettingsDialogState extends State<ConsentSettingsDialog> {
       _isAdult = userState.user.isAdult;
       _isTermsAccepted = userState.user.isTermsAccepted;
     } else {
+      // Should not happen if dialog is shown for logged-in user
       _isAdult = true;
       _isTermsAccepted = true;
     }
@@ -57,6 +61,7 @@ class _ConsentSettingsDialogState extends State<ConsentSettingsDialog> {
   Future<void> _saveChanges() async {
     final cubit = context.read<AppUserCubit>();
 
+    // This part handles app-specific consent (age, terms) and potential logout
     if (!_isAdult || !_isTermsAccepted) {
       // First remove consents, which will then trigger logout
       await cubit.removeConsents(
@@ -65,7 +70,7 @@ class _ConsentSettingsDialogState extends State<ConsentSettingsDialog> {
       );
 
       // chiudo il dialog
-      navigatorKey.currentState!.pop();
+      if (mounted) Navigator.of(context).pop(); // Pop this dialog
 
       // ripulisco lo stack portando a login
       navigatorKey.currentState!.pushAndRemoveUntil(
@@ -74,21 +79,25 @@ class _ConsentSettingsDialogState extends State<ConsentSettingsDialog> {
       );
     } else {
       // solo chiudi il dialog
-      navigatorKey.currentState!.pop();
+      if (mounted) Navigator.of(context).pop();
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return ConfirmationDialog(
-      title: 'Modifica Consensi',
+      title: 'Consensi App',
       message:
-          'La modifica di questi consensi potrebbe richiedere il logout. Assicurati di comprendere le implicazioni prima di procedere.',
+          'Gestisci i tuoi consensi relativi all\'età e ai termini di servizio dell\'applicazione.',
       confirmText: 'Salva',
       cancelText: 'Annulla',
-      icon: Icons.gpp_good,
+      icon: Icons.fact_check_rounded,
       iconColor: context.primaryColor,
-      onConfirm: _hasChanges ? _saveChanges : () {},
+      onConfirm: _hasChanges
+          ? _saveChanges
+          : () {
+              if (mounted) Navigator.of(context).pop();
+            },
       additionalContent: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -137,7 +146,7 @@ class _ConsentSettingsDialogState extends State<ConsentSettingsDialog> {
             ),
           ),
 
-          // Warning about consequences
+          // Warning about consequences for app consents
           if (_hasChanges && (!_isAdult || !_isTermsAccepted))
             Container(
               padding: const EdgeInsets.all(ThemeSizes.sm),

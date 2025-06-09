@@ -27,6 +27,8 @@ Future<void> initDependencies() async {
     serviceLocator.registerLazySingleton(() => AdHelper());
     await serviceLocator<AdHelper>().initialize();
 
+    serviceLocator.registerLazySingleton(() => GdprService());
+
     // HIVE
     await _initializeHive();
 

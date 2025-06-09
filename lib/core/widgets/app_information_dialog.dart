@@ -33,7 +33,7 @@ class AppInformationDialog extends StatelessWidget {
       backgroundColor: Colors.transparent,
       child: Container(
         decoration: BoxDecoration(
-          color: context.secondaryBgColor,
+          color: context.bgColor,
           borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusLg),
           boxShadow: [
             BoxShadow(
@@ -54,7 +54,7 @@ class AppInformationDialog extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(ThemeSizes.md),
               decoration: BoxDecoration(
-                color: context.secondaryBgColor,
+                color: context.bgColor,
                 borderRadius: const BorderRadius.only(
                   topLeft: Radius.circular(ThemeSizes.borderRadiusLg),
                   topRight: Radius.circular(ThemeSizes.borderRadiusLg),
@@ -150,6 +150,8 @@ class AppInformationDialog extends StatelessWidget {
                 bottom: ThemeSizes.xs,
               ),
               child: Row(
+                crossAxisAlignment:
+                    CrossAxisAlignment.start, // Align items to the start
                 children: [
                   if (section.icon != null) ...[
                     Icon(
@@ -159,11 +161,14 @@ class AppInformationDialog extends StatelessWidget {
                     ),
                     const SizedBox(width: ThemeSizes.xs),
                   ],
-                  Text(
-                    section.title!,
-                    style: context.textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: section.titleColor,
+                  Expanded(
+                    // Wrap title with Expanded
+                    child: Text(
+                      section.title!,
+                      style: context.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: section.titleColor,
+                      ),
                     ),
                   ),
                 ],
@@ -210,12 +215,12 @@ class FeatureItem extends StatelessWidget {
   final String description;
 
   const FeatureItem({
-    Key? key,
+    super.key,
     required this.icon,
     required this.iconColor,
     required this.title,
     required this.description,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

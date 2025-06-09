@@ -24,7 +24,7 @@ part 'word_bomb_state.dart';
 // =====================================================================
 // CONSTANTS
 // =====================================================================
-const int _wordBombRoundDurationMs = 1000000;
+const int _wordBombRoundDurationMs = 600000;
 const int _timerIntervalMs = 100;
 const int _buyTimeBonusMs = 10000;
 
