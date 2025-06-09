@@ -169,6 +169,7 @@ class SideMenu extends StatelessWidget {
       int originalItemIndex, bool hasLeagues) {
     if (item.title == "Crea Lega" ||
         item.title == "Cerca Lega" ||
+        item.title == "Nuovo Evento" ||
         item.title == "Admin") {
       Navigator.push(
         context,

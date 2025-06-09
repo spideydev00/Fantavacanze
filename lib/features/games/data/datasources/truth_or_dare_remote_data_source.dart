@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:fantavacanze_official/core/errors/exceptions.dart';
 import 'package:fantavacanze_official/features/games/data/models/truth_or_dare_question_model.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -11,28 +12,46 @@ class TruthOrDareRemoteDataSourceImpl implements TruthOrDareRemoteDataSource {
 
   TruthOrDareRemoteDataSourceImpl({required this.supabaseClient});
 
+  // =====================================================================
+  // ERROR HANDLING UTILITIES
+  // =====================================================================
+
+  // ------------------ EXTRACT ERROR MESSAGE ------------------ //
+  String _extractErrorMessage(Object e) {
+    if (e is ServerException) return e.message;
+    if (e is PostgrestException) return e.message;
+    if (e is TimeoutException) return e.message ?? 'Operazione scaduta';
+    return e.toString();
+  }
+
+  // ------------------ TRY DATABASE OPERATION ------------------ //
+  Future<T> _tryDatabaseOperation<T>(Future<T> Function() operation) async {
+    try {
+      return await operation();
+    } catch (e) {
+      throw ServerException(_extractErrorMessage(e));
+    }
+  }
+
+  // =====================================================================
+  // CARD RETRIEVAL
+  // =====================================================================
+
+  // ------------------ GET TRUTH OR DARE CARDS ------------------ //
   @override
   Future<List<TruthOrDareQuestionModel>> getTruthOrDareCards(
-      {int limit = 50}) async {
-    try {
-      // Fetch random questions. Supabase doesn't directly support ORDER BY RANDOM() easily in RPC or views for RLS.
-      // A common workaround is to fetch IDs from a function or fetch more and pick randomly client-side.
-      // For simplicity, fetching with a limit. For true randomness, a DB function is better.
-      final response = await supabaseClient
-          .from('truth_or_dare_questions')
-          .select()
-          .limit(limit); // This is not random, just limited.
+      {int limit = 100}) async {
+    return _tryDatabaseOperation(() async {
+      final response = await supabaseClient.rpc(
+        'get_random_questions',
+        params: {'quantity_per_type': limit},
+      );
 
-      // If you have a Postgres function like 'get_random_tod_questions(limit_count INT)'
-      // final response = await supabaseClient.rpc('get_random_tod_questions', params: {'limit_count': limit});
-
-      return response
+      final List<TruthOrDareQuestionModel> questions = (response as List)
           .map((item) => TruthOrDareQuestionModel.fromJson(item))
           .toList();
-    } on PostgrestException catch (e) {
-      throw ServerException(e.message);
-    } catch (e) {
-      throw ServerException(e.toString());
-    }
+
+      return questions;
+    });
   }
 }

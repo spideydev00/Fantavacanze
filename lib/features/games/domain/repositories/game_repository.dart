@@ -5,19 +5,19 @@ import 'package:fantavacanze_official/features/games/domain/entities/game_sessio
 import 'package:fantavacanze_official/features/games/domain/entities/game_type_enum.dart';
 
 abstract interface class GameRepository {
-  Future<Either<Failure, GameSession>> createGameSession({
-    required String adminId,
-    required GameType gameType,
-  });
+  Future<Either<Failure, GameSession>> createGameSession(
+      {required String adminId,
+      required GameType gameType,
+      required String userName});
 
   Future<Either<Failure, GameSession>> joinGameSession({
     required String inviteCode,
     required String userId,
     required String userName,
-    String? userAvatarUrl,
   });
 
-  Future<Either<Failure, void>> leaveGameSession({
+  Future<Either<Failure, bool>> leaveGameSession({
+    // Return type changed
     required String sessionId,
     required String userId,
   });
@@ -32,17 +32,33 @@ abstract interface class GameRepository {
 
   Future<Either<Failure, GameSession>> updateGameState({
     required String sessionId,
-    required Map<String, dynamic> newGameState,
+    Map<String, dynamic>? newGameState,
     String? currentTurnUserId,
-    String? status, // GameStatus as string
+    String? status,
   });
 
   Future<Either<Failure, GamePlayer>> updateGamePlayer({
-    required String playerId, // This is GamePlayer's own ID
-    required String sessionId, // session_id for targeting the right player
-    required String userId, // user_id for targeting the right player
+    required String playerId,
+    required String sessionId,
+    required String userId,
     int? score,
     bool? isGhost,
     bool? hasUsedSpecialAbility,
+    bool? hasUsedGhostProtocol,
+    int? changeCategoryUsesLeft,
   });
+
+  Future<Either<Failure, void>> updateGamePlayerNameInLobby({
+    required String playerId,
+    required String newName,
+    required String
+        sessionId, // Added sessionId for context if needed by backend/rules
+  });
+
+  Future<Either<Failure, void>> removeGamePlayerFromLobby({
+    required String playerId,
+    required String sessionId,
+  });
+
+  Future<Either<Failure, void>> killSession({required String sessionId});
 }

@@ -5,23 +5,57 @@ class TruthOrDareQuestionModel extends TruthOrDareQuestion {
     required super.id,
     required super.content,
     required super.type,
+    super.difficulty,
+    super.author,
   });
 
-  factory TruthOrDareQuestionModel.fromJson(Map<String, dynamic> map) {
+  factory TruthOrDareQuestionModel.fromJson(Map<String, dynamic> json) {
+    final dynamic idValue = json['id'];
+
+    String idString;
+    if (idValue is int) {
+      idString = idValue.toString();
+    } else if (idValue is String) {
+      idString = idValue;
+    } else {
+      idString = '';
+    }
+
+    final content = json['content'] as String;
+    final typeString = json['type'] as String?;
+    final difficulty = json['difficulty'] as String?;
+    final author = json['author'] as String?;
+
     return TruthOrDareQuestionModel(
-      id: (map['id'] as int).toString(), // Assuming id is BIGINT
-      content: map['content'] as String,
-      type: (map['type'] as String) == 'truth'
-          ? TruthOrDareCardType.truth
-          : TruthOrDareCardType.dare,
+      id: idString,
+      content: content,
+      type: _cardTypeFromString(typeString),
+      difficulty: difficulty,
+      author: author,
     );
+  }
+
+  static TruthOrDareCardType _cardTypeFromString(String? typeStr) {
+    if (typeStr == null) {
+      return TruthOrDareCardType.unknown;
+    }
+    // Compare with the exact strings used in your database ENUM/values
+    if (typeStr == 'Verità') {
+      return TruthOrDareCardType.truth;
+    } else if (typeStr == 'Obbligo') {
+      return TruthOrDareCardType.dare;
+    }
+
+    return TruthOrDareCardType.unknown;
   }
 
   Map<String, dynamic> toJson() {
     return {
-      'id': int.parse(id),
+      'id': id,
       'content': content,
-      'type': type == TruthOrDareCardType.truth ? 'truth' : 'dare',
+      'type': type.toString().split('.').last,
+      'difficulty': difficulty,
+      'author': author,
     };
   }
 }

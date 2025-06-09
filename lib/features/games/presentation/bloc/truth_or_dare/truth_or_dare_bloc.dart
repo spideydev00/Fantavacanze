@@ -18,17 +18,22 @@ part 'truth_or_dare_event.dart';
 part 'truth_or_dare_state.dart';
 
 class TruthOrDareBloc extends Bloc<TruthOrDareEvent, TruthOrDareState> {
+  // =====================================================================
+  // PROPERTIES
+  // =====================================================================
   final GetTruthOrDareCards _getTruthOrDareCards;
-  final UpdateGameState _updateGameState;
   final StreamGameSession _streamGameSession;
   final StreamLobbyPlayers _streamLobbyPlayers;
+  final UpdateGameState _updateGameState;
   final AppUserCubit _appUserCubit;
 
   StreamSubscription<dynamic>? _sessionSubscription;
   StreamSubscription<dynamic>? _playersSubscription;
-  List<TruthOrDareQuestion> _availableTruths = [];
-  List<TruthOrDareQuestion> _availableDares = [];
+  List<TruthOrDareQuestion> _allQuestionsList = [];
 
+  // =====================================================================
+  // GETTERS
+  // =====================================================================
   auth_user.User? get _currentUser {
     final userState = _appUserCubit.state;
     if (userState is AppUserIsLoggedIn) {
@@ -37,227 +42,345 @@ class TruthOrDareBloc extends Bloc<TruthOrDareEvent, TruthOrDareState> {
     return null;
   }
 
-  bool _isAdmin(GameSession session) => _currentUser?.id == session.adminId;
+  // =====================================================================
+  // HELPER METHODS (INSTANCE)
+  // =====================================================================
+  bool _isAdmin(GameSession? session) =>
+      session != null && _currentUser?.id == session.adminId;
 
+  // =====================================================================
+  // CONSTRUCTOR
+  // =====================================================================
   TruthOrDareBloc({
     required GetTruthOrDareCards getTruthOrDareCards,
-    required UpdateGameState updateGameState,
     required StreamGameSession streamGameSession,
     required StreamLobbyPlayers streamLobbyPlayers,
+    required UpdateGameState updateGameState,
     required AppUserCubit appUserCubit,
   })  : _getTruthOrDareCards = getTruthOrDareCards,
-        _updateGameState = updateGameState,
         _streamGameSession = streamGameSession,
         _streamLobbyPlayers = streamLobbyPlayers,
+        _updateGameState = updateGameState,
         _appUserCubit = appUserCubit,
         super(TruthOrDareInitial()) {
     on<InitializeTruthOrDareGame>(_onInitializeTruthOrDareGame);
     on<CardTypeChosen>(_onCardTypeChosen);
-    on<NextPlayerTurn>(_onNextPlayerTurn);
-    on<_GameStateUpdated>(_onGameStateUpdated);
-    on<_TruthOrDareErrorOccurred>(_onErrorOccurred);
+    on<PlayerTaskOutcomeSubmitted>(_onPlayerTaskOutcomeSubmitted);
+    on<ChangeQuestionRequested>(_onChangeQuestionRequested);
+    on<_TruthOrDareSessionUpdated>(_onSessionUpdated);
+    on<_TruthOrDarePlayersUpdated>(_onPlayersUpdated);
+    on<_TruthOrDareStreamErrorOccurred>(_onStreamErrorOccurred);
   }
 
+  // =====================================================================
+  // EVENT HANDLERS
+  // =====================================================================
+
+  // ------------------ ON INITIALIZE TRUTH OR DARE GAME ------------------ //
   Future<void> _onInitializeTruthOrDareGame(
       InitializeTruthOrDareGame event, Emitter<TruthOrDareState> emit) async {
     emit(TruthOrDareLoading());
+    final result = await _getTruthOrDareCards(GetTruthOrDareCardsParams());
 
-    final cardsResult = await _getTruthOrDareCards(
-        GetTruthOrDareCardsParams(limit: 100)); // Fetch more cards
-
-    await cardsResult.fold(
-      (failure) async => emit(TruthOrDareError(failure.message)),
+    await result.fold(
+      (failure) async {
+        emit(TruthOrDareError(failure.message));
+      },
       (questions) async {
-        _availableTruths = questions
-            .where((q) => q.type == TruthOrDareCardType.truth)
-            .toList();
-        _availableDares =
-            questions.where((q) => q.type == TruthOrDareCardType.dare).toList();
+        _allQuestionsList = questions;
+        _startStreams(event.initialSession.id);
 
-        _startStreams(event.initialSession.id, emit);
+        final playersEither =
+            await _streamLobbyPlayers(event.initialSession.id).first;
 
-        // Fetch initial players list
-        final playersStream = _streamLobbyPlayers(event.initialSession.id);
-        final eitherPlayers = await playersStream
-            .first; // Get the first emission for initial state
-
-        eitherPlayers.fold(
-            (failure) => emit(TruthOrDareError(
-                "Errore caricamento giocatori: ${failure.message}")),
-            (initialPlayers) {
-          emit(TruthOrDareGameReady(
-            session: event.initialSession,
-            allQuestions: questions,
-            players: initialPlayers,
-            isAdmin: _isAdmin(event.initialSession),
-          ));
-          // If no current turn user, admin sets it.
-          if (event.initialSession.currentTurnUserId == null &&
-              _isAdmin(event.initialSession) &&
-              initialPlayers.isNotEmpty) {
-            add(NextPlayerTurn(initialPlayers.first.userId));
+        await playersEither.fold((fail) async {
+          emit(TruthOrDareError("Failed to load players: ${fail.message}"));
+        }, (initialPlayers) async {
+          TruthOrDareQuestion? initialQuestion;
+          if (event.initialSession.gameState != null &&
+              event.initialSession.gameState!['current_question_id'] != null) {
+            final questionId = event
+                .initialSession.gameState!['current_question_id'] as String;
+            try {
+              initialQuestion =
+                  _allQuestionsList.firstWhere((q) => q.id == questionId);
+            } catch (e) {
+              // If question not found, initialQuestion remains null
+            }
           }
+
+          final initialState = TruthOrDareGameReady(
+            session: event.initialSession,
+            players: initialPlayers,
+            allQuestions: _allQuestionsList,
+            isAdmin: _isAdmin(event.initialSession),
+            currentQuestion: initialQuestion,
+            canChangeCurrentQuestion: initialQuestion == null,
+          );
+          emit(initialState);
         });
       },
     );
   }
 
-  void _startStreams(String sessionId, Emitter<TruthOrDareState> emit) {
-    _sessionSubscription?.cancel();
-    _sessionSubscription = _streamGameSession(sessionId).listen(
-      (eitherSession) => eitherSession.fold(
-        (failure) => add(_TruthOrDareErrorOccurred(
-            'Errore stream sessione: ${failure.message}')),
-        (session) => add(_GameStateUpdated(session)),
-      ),
-      onError: (error) =>
-          add(_TruthOrDareErrorOccurred('Errore stream sessione: $error')),
-    );
-
-    _playersSubscription?.cancel();
-    _playersSubscription = _streamLobbyPlayers(sessionId).listen(
-      (eitherPlayers) => eitherPlayers.fold((failure) {
-        /* Optionally handle player stream error */
-      }, (players) {
-        if (state is TruthOrDareGameReady) {
-          final currentReadyState = state as TruthOrDareGameReady;
-          emit(currentReadyState.copyWith(players: players));
-        }
-      }),
-    );
-  }
-
+  // ------------------ ON CARD TYPE CHOSEN ------------------ //
   Future<void> _onCardTypeChosen(
       CardTypeChosen event, Emitter<TruthOrDareState> emit) async {
+    if (state is TruthOrDareGameReady) {
+      final currentReadyState = state as TruthOrDareGameReady;
+      final List<TruthOrDareQuestion> availableQuestions =
+          _allQuestionsList.where((q) => q.type == event.cardType).toList();
+
+      if (availableQuestions.isNotEmpty) {
+        final randomQuestion =
+            availableQuestions[Random().nextInt(availableQuestions.length)];
+
+        final immediateState = currentReadyState.copyWith(
+          currentQuestion: randomQuestion,
+          canChangeCurrentQuestion: true,
+          allQuestions: _allQuestionsList,
+        );
+        emit(immediateState);
+
+        final newGameState = {
+          'current_question_id': randomQuestion.id,
+          'current_question_type': randomQuestion.type.name,
+        };
+        final result = await _updateGameState(UpdateGameStateParams(
+          sessionId: currentReadyState.session.id,
+          newGameState: newGameState,
+        ));
+
+        result.fold((failure) {
+          emit(currentReadyState.copyWith(
+              currentQuestion: null, allQuestions: _allQuestionsList));
+          emit(TruthOrDareError("Errore selezione carta: ${failure.message}"));
+        }, (_) {
+          // State already updated optimistically, stream will confirm or correct
+        });
+      } else {
+        emit(TruthOrDareError(
+            "Nessuna domanda disponibile per ${event.cardType}."));
+        Future.delayed(const Duration(seconds: 2), () {
+          if (state is TruthOrDareError) {
+            emit(currentReadyState.copyWith(allQuestions: _allQuestionsList));
+          }
+        });
+      }
+    }
+  }
+
+  // ------------------ ON PLAYER TASK OUTCOME SUBMITTED ------------------ //
+  Future<void> _onPlayerTaskOutcomeSubmitted(
+      PlayerTaskOutcomeSubmitted event, Emitter<TruthOrDareState> emit) async {
     if (state is! TruthOrDareGameReady) return;
     final currentReadyState = state as TruthOrDareGameReady;
+    final String? currentTurnUserId =
+        currentReadyState.session.currentTurnUserId;
 
-    if (!_isAdmin(currentReadyState.session)) {
-      // Non-admin cannot choose card type, this should be prevented by UI
-      return;
-    }
-    if (currentReadyState.session.currentTurnUserId == null) {
-      emit(TruthOrDareError("Seleziona prima un giocatore."));
-      emit(currentReadyState); // Re-emit to clear error after a bit
+    if (currentTurnUserId == null || currentReadyState.players.isEmpty) {
+      emit(TruthOrDareError(
+          "Stato del gioco non valido per determinare il prossimo turno."));
       return;
     }
 
-    TruthOrDareQuestion? chosenQuestion;
-    if (event.cardType == TruthOrDareCardType.truth) {
-      if (_availableTruths.isNotEmpty) {
-        chosenQuestion = _availableTruths
-            .removeAt(Random().nextInt(_availableTruths.length));
-      } else {
-        emit(TruthOrDareError("Finite le carte Verità!"));
-        emit(currentReadyState); // Re-emit to clear error
-        return;
-      }
-    } else {
-      if (_availableDares.isNotEmpty) {
-        chosenQuestion =
-            _availableDares.removeAt(Random().nextInt(_availableDares.length));
-      } else {
-        emit(TruthOrDareError("Finite le carte Obbligo!"));
-        emit(currentReadyState); // Re-emit to clear error
-        return;
-      }
-    }
+    final nextPlayerUserId = currentReadyState.players.length > 1
+        ? _getNextPlayerUserId(currentTurnUserId, currentReadyState.players)
+        : currentTurnUserId;
 
     final newGameState = {
-      'current_question_id': chosenQuestion.id,
-      'current_question_text': chosenQuestion.content,
-      'current_question_type':
-          chosenQuestion.type == TruthOrDareCardType.truth ? 'truth' : 'dare',
+      'current_question_id': null,
+      'current_question_type': null,
     };
 
     final result = await _updateGameState(UpdateGameStateParams(
       sessionId: currentReadyState.session.id,
       newGameState: newGameState,
-      // currentTurnUserId remains the same until NextPlayerTurn
+      currentTurnUserId: nextPlayerUserId,
+      status: GameStatus.inProgress,
     ));
 
-    result.fold(
-      (failure) => emit(TruthOrDareError(failure.message)),
-      (_) {
-        // Game state will be updated via stream, no need to emit here
-        // The local state's currentQuestion will be updated in _onGameStateUpdated
-      },
-    );
-  }
-
-  Future<void> _onNextPlayerTurn(
-      NextPlayerTurn event, Emitter<TruthOrDareState> emit) async {
-    if (state is! TruthOrDareGameReady) return;
-    final currentReadyState = state as TruthOrDareGameReady;
-
-    if (!_isAdmin(currentReadyState.session)) {
-      return;
-    } // Only admin can change turn for now
-
-    final result = await _updateGameState(UpdateGameStateParams(
-      sessionId: currentReadyState.session.id,
-      newGameState: {}, // Clear current question from game state
-      currentTurnUserId: event.nextPlayerId,
-    ));
-
-    result.fold((failure) => emit(TruthOrDareError(failure.message)), (_) {
-      // State will update via stream. Local currentQuestion will be cleared in _onGameStateUpdated
+    result.fold((failure) {
+      emit(TruthOrDareError("Errore avanzamento turno: ${failure.message}"));
+    }, (_) {
+      // Stream will update the state
     });
   }
 
-  void _onGameStateUpdated(
-      _GameStateUpdated event, Emitter<TruthOrDareState> emit) {
+  // ------------------ ON CHANGE QUESTION REQUESTED ------------------ //
+  void _onChangeQuestionRequested(
+      ChangeQuestionRequested event, Emitter<TruthOrDareState> emit) async {
     if (state is TruthOrDareGameReady) {
       final currentReadyState = state as TruthOrDareGameReady;
-      TruthOrDareQuestion? newCurrentQuestion;
-      bool shouldClearQuestion = true;
 
-      if (event.session.gameState != null &&
-          event.session.gameState!.containsKey('current_question_id')) {
-        final qId = event.session.gameState!['current_question_id'].toString();
-        final qContent =
-            event.session.gameState!['current_question_text'] as String;
-        final qTypeString =
-            event.session.gameState!['current_question_type'] as String;
-        newCurrentQuestion = TruthOrDareQuestion(
-          id: qId,
-          content: qContent,
-          type: qTypeString == 'truth'
-              ? TruthOrDareCardType.truth
-              : TruthOrDareCardType.dare,
-        );
-        shouldClearQuestion = false;
+      if (currentReadyState.currentQuestion == null ||
+          !currentReadyState.canChangeCurrentQuestion) {
+        return;
       }
 
-      emit(currentReadyState.copyWith(
-        session: event.session,
-        currentQuestion: newCurrentQuestion, // Update or clear the question
-        clearCurrentQuestion:
-            shouldClearQuestion, // Explicitly clear if no question in game state
-        isAdmin: _isAdmin(
-            event.session), // Re-evaluate admin status if session changes
-      ));
+      final currentType = currentReadyState.currentQuestion!.type;
+      final List<TruthOrDareQuestion> availableQuestions = _allQuestionsList
+          .where((q) =>
+              q.type == currentType &&
+              q.id != currentReadyState.currentQuestion!.id)
+          .toList();
 
-      if (event.session.status == GameStatus.finished ||
-          event.session.status == GameStatus.waiting) {
-        _cancelSubscriptions();
-        // Potentially navigate away or show "Game Over" screen
-        // For now, just stop listening. UI should react to status change.
+      if (availableQuestions.isNotEmpty) {
+        final randomQuestion =
+            availableQuestions[Random().nextInt(availableQuestions.length)];
+        emit(currentReadyState.copyWith(
+          currentQuestion: randomQuestion,
+          canChangeCurrentQuestion: false,
+          allQuestions: _allQuestionsList,
+        ));
+
+        final newGameState = {
+          'current_question_id': randomQuestion.id,
+          'current_question_type': randomQuestion.type.name,
+        };
+        final result = await _updateGameState(UpdateGameStateParams(
+          sessionId: currentReadyState.session.id,
+          newGameState: newGameState,
+        ));
+
+        result.fold((failure) {
+          emit(currentReadyState.copyWith(
+              currentQuestion: currentReadyState.currentQuestion,
+              canChangeCurrentQuestion: true,
+              allQuestions: _allQuestionsList));
+          emit(TruthOrDareError("Errore cambio domanda: ${failure.message}"));
+        }, (_) {
+          // State already updated optimistically, stream will confirm or correct
+        });
+      } else {
+        emit(currentReadyState.copyWith(
+          canChangeCurrentQuestion: false,
+          allQuestions: _allQuestionsList,
+        ));
       }
-    } else if (state is TruthOrDareInitial || state is TruthOrDareLoading) {
-      // This might happen if stream fires before full initialization.
-      // Or if recovering from an error.
-      // We need allQuestions and players to emit TruthOrDareGameReady.
-      // This path should ideally be covered by _onInitializeTruthOrDareGame.
     }
   }
 
-  void _onErrorOccurred(
-      _TruthOrDareErrorOccurred event, Emitter<TruthOrDareState> emit) {
-    emit(TruthOrDareError(event.message));
-    _cancelSubscriptions(); // Stop listening on fatal error
+  // =====================================================================
+  // INTERNAL EVENT HANDLERS / STREAM UPDATERS
+  // =====================================================================
+
+  // ------------------ ON SESSION UPDATED ------------------ //
+  void _onSessionUpdated(
+      _TruthOrDareSessionUpdated event, Emitter<TruthOrDareState> emit) {
+    if (state is TruthOrDareGameReady) {
+      final currentReadyState = state as TruthOrDareGameReady;
+      final previousTurnUserId = currentReadyState.session.currentTurnUserId;
+
+      if (event.session.status != GameStatus.inProgress) {
+        _cancelSubscriptions();
+        emit(TruthOrDareInitial());
+        return;
+      }
+
+      bool turnChanged = previousTurnUserId != event.session.currentTurnUserId;
+      TruthOrDareQuestion? updatedQuestion;
+
+      if (event.session.gameState != null &&
+          event.session.gameState!['current_question_id'] != null) {
+        final questionId =
+            event.session.gameState!['current_question_id'] as String;
+        try {
+          updatedQuestion =
+              _allQuestionsList.firstWhere((q) => q.id == questionId);
+        } catch (e) {
+          updatedQuestion = null;
+        }
+      } else {
+        updatedQuestion = null;
+      }
+
+      final newState = currentReadyState.copyWith(
+        session: event.session,
+        players: currentReadyState.players,
+        allQuestions: _allQuestionsList,
+        isAdmin: _isAdmin(event.session),
+        currentQuestion: updatedQuestion,
+        clearCurrentQuestion: updatedQuestion == null,
+        canChangeCurrentQuestion: turnChanged
+            ? true
+            : (updatedQuestion == null
+                ? true
+                : currentReadyState.canChangeCurrentQuestion),
+      );
+      emit(newState);
+    } else if (state is TruthOrDareLoading && _sessionSubscription != null) {
+      // Still loading, session update might be the first one.
+      // The _onInitializeTruthOrDareGame should handle emitting GameReady.
+    } else {
+      // Potentially an unexpected state, or game ended and state is TruthOrDareInitial.
+    }
   }
 
+  // ------------------ ON PLAYERS UPDATED ------------------ //
+  void _onPlayersUpdated(
+      _TruthOrDarePlayersUpdated event, Emitter<TruthOrDareState> emit) {
+    if (state is TruthOrDareGameReady) {
+      final currentReadyState = state as TruthOrDareGameReady;
+      emit(currentReadyState.copyWith(
+        players: event.players,
+        allQuestions: _allQuestionsList,
+      ));
+    } else if (state is TruthOrDareLoading && _playersSubscription != null) {
+      // Still loading, players update might come.
+      // The _onInitializeTruthOrDareGame should handle emitting GameReady with initial players.
+    }
+  }
+
+  // ------------------ ON STREAM ERROR OCCURRED ------------------ //
+  void _onStreamErrorOccurred(
+      _TruthOrDareStreamErrorOccurred event, Emitter<TruthOrDareState> emit) {
+    emit(TruthOrDareError(event.message));
+  }
+
+  // =====================================================================
+  // UTILITY METHODS
+  // =====================================================================
+
+  // ------------------ START STREAMS ------------------ //
+  void _startStreams(String sessionId) {
+    _cancelSubscriptions();
+
+    _sessionSubscription = _streamGameSession(sessionId).listen(
+      (eitherSession) => eitherSession.fold(
+        (failure) => add(_TruthOrDareStreamErrorOccurred(
+            'Errore sessione: ${failure.message}')),
+        (session) => add(_TruthOrDareSessionUpdated(session)),
+      ),
+      onError: (error) => add(
+          _TruthOrDareStreamErrorOccurred('Errore stream sessione: $error')),
+    );
+
+    _playersSubscription = _streamLobbyPlayers(sessionId).listen(
+      (eitherPlayers) => eitherPlayers.fold(
+        (failure) => add(_TruthOrDareStreamErrorOccurred(
+            'Errore giocatori: ${failure.message}')),
+        (players) => add(_TruthOrDarePlayersUpdated(players)),
+      ),
+      onError: (error) => add(
+          _TruthOrDareStreamErrorOccurred('Errore stream giocatori: $error')),
+    );
+  }
+
+  // ------------------ GET NEXT PLAYER USER ID ------------------ //
+  String _getNextPlayerUserId(String currentUserId, List<GamePlayer> players) {
+    if (players.isEmpty) {
+      return currentUserId;
+    }
+    final currentIndex = players.indexWhere((p) => p.userId == currentUserId);
+    if (currentIndex == -1) {
+      return players.first.userId;
+    }
+    final nextIndex = (currentIndex + 1) % players.length;
+    return players[nextIndex].userId;
+  }
+
+  // ------------------ CANCEL SUBSCRIPTIONS ------------------ //
   void _cancelSubscriptions() {
     _sessionSubscription?.cancel();
     _sessionSubscription = null;
@@ -265,6 +388,11 @@ class TruthOrDareBloc extends Bloc<TruthOrDareEvent, TruthOrDareState> {
     _playersSubscription = null;
   }
 
+  // =====================================================================
+  // LIFECYCLE METHODS
+  // =====================================================================
+
+  // ------------------ CLOSE ------------------ //
   @override
   Future<void> close() {
     _cancelSubscriptions();

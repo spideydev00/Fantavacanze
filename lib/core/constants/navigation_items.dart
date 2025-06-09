@@ -1,5 +1,6 @@
 import 'package:fantavacanze_official/core/navigation/navigation_item.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/admin/admin_page.dart';
+import 'package:fantavacanze_official/features/league/presentation/pages/navigation/events/add_event_page.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/homepage/home.dart';
 import 'package:fantavacanze_official/features/games/presentation/pages/drink_games.dart';
 // import 'package:fantavacanze_official/features/games/presentation/pages/quick_challenge.dart';
@@ -131,6 +132,14 @@ List<NavigationItem> participantNavbarItems = [
         'assets/images/icons/homepage_icons/search-league-icon-dark.svg',
     screen: const SearchLeaguePage(),
     subsection: "Nuova Lega",
+  ),
+  NavigationItem(
+    title: "Nuovo Evento",
+    darkSvgIcon: 'assets/images/icons/homepage_icons/event-icon.svg',
+    lightSvgIcon: 'assets/images/icons/homepage_icons/event-icon-dark.svg',
+    screen: const AddEventPage(),
+    subsection: "Gestione Lega",
+    isAdminOnly: true,
   ),
   NavigationItem(
     title: "Admin",

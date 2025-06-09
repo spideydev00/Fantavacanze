@@ -1,8 +1,11 @@
+import 'dart:async';
+
 import 'package:fantavacanze_official/core/errors/exceptions.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 abstract interface class WordBombRemoteDataSource {
-  Future<List<String>> getWordBombCategories();
+  Future<bool> setWordBombTrialStatus(
+      {required bool isActive, required String userId});
 }
 
 class WordBombRemoteDataSourceImpl implements WordBombRemoteDataSource {
@@ -10,16 +13,42 @@ class WordBombRemoteDataSourceImpl implements WordBombRemoteDataSource {
 
   WordBombRemoteDataSourceImpl({required this.supabaseClient});
 
-  @override
-  Future<List<String>> getWordBombCategories() async {
+  // =====================================================================
+  // ERROR HANDLING UTILITIES
+  // =====================================================================
+
+  // ------------------ EXTRACT ERROR MESSAGE ------------------ //
+  String _extractErrorMessage(Object e) {
+    if (e is ServerException) return e.message;
+    if (e is PostgrestException) return e.message;
+    if (e is TimeoutException) return e.message ?? 'Operazione scaduta';
+    return e.toString();
+  }
+
+  // ------------------ TRY DATABASE OPERATION ------------------ //
+  Future<T> _tryDatabaseOperation<T>(Future<T> Function() operation) async {
     try {
-      final response =
-          await supabaseClient.from('word_bomb_categories').select('name');
-      return response.map((item) => item['name'] as String).toList();
-    } on PostgrestException catch (e) {
-      throw ServerException(e.message);
+      return await operation();
     } catch (e) {
-      throw ServerException(e.toString());
+      throw ServerException(_extractErrorMessage(e));
     }
+  }
+
+  // =====================================================================
+  // TRIAL MANAGEMENT
+  // =====================================================================
+
+  // ------------------ SET WORD BOMB TRIAL STATUS ------------------ //
+  @override
+  Future<bool> setWordBombTrialStatus(
+      {required bool isActive, required String userId}) async {
+    return _tryDatabaseOperation(
+      () async {
+        await supabaseClient.from('profiles').update(
+            {'is_word_bomb_trial_available': isActive}).eq('id', userId);
+
+        return isActive;
+      },
+    );
   }
 }

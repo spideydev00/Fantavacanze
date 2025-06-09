@@ -14,6 +14,9 @@ class ConfirmationDialog extends StatelessWidget {
   /// Callback executed when user confirms the action
   final VoidCallback onConfirm;
 
+  /// Callback executed when user cancels the action (optional)
+  final VoidCallback? onCancel;
+
   /// Text for the confirm button (default: "Conferma")
   final String confirmText;
 
@@ -39,11 +42,15 @@ class ConfirmationDialog extends StatelessWidget {
 
   final ButtonStyle? elevatedButtonStyle;
 
+  final Color? backgroundColor;
+
   const ConfirmationDialog({
     super.key,
     required this.title,
     required this.message,
     required this.onConfirm,
+    this.backgroundColor,
+    this.onCancel,
     this.confirmText = 'Conferma',
     this.cancelText = 'Annulla',
     this.icon = Icons.check_circle_outline,
@@ -198,7 +205,7 @@ class ConfirmationDialog extends StatelessWidget {
       ),
       child: Container(
         decoration: BoxDecoration(
-          color: context.secondaryBgColor,
+          color: backgroundColor ?? context.secondaryBgColor,
           borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusLg),
           boxShadow: [
             BoxShadow(
@@ -263,7 +270,10 @@ class ConfirmationDialog extends StatelessWidget {
                     Expanded(
                       child: OutlinedButton(
                         style: outlinedButtonStyle,
-                        onPressed: () => Navigator.pop(context),
+                        onPressed: () {
+                          Navigator.pop(context);
+                          onCancel?.call(); // Call onCancel if provided
+                        },
                         child: Text(cancelText),
                       ),
                     ),

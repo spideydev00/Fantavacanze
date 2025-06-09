@@ -9,6 +9,7 @@ class User {
   final bool isTermsAccepted;
   final String authProvider;
   final String? fcmToken;
+  final bool isWordBombTrialAvailable;
 
   const User({
     required this.id,
@@ -21,5 +22,35 @@ class User {
     required this.isTermsAccepted,
     this.authProvider = '',
     this.fcmToken,
+    required this.isWordBombTrialAvailable,
   });
+
+  User copyWith({
+    String? id,
+    String? email,
+    String? name,
+    String? gender,
+    bool? isPremium,
+    bool? isOnboarded,
+    bool? isAdult,
+    bool? isTermsAccepted,
+    String? authProvider,
+    String? fcmToken,
+    bool? isWordBombTrialAvailable,
+  }) {
+    return User(
+      id: id ?? this.id,
+      email: email ?? this.email,
+      name: name ?? this.name,
+      gender: gender ?? this.gender,
+      isPremium: isPremium ?? this.isPremium,
+      isOnboarded: isOnboarded ?? this.isOnboarded,
+      isAdult: isAdult ?? this.isAdult,
+      isTermsAccepted: isTermsAccepted ?? this.isTermsAccepted,
+      authProvider: authProvider ?? this.authProvider,
+      fcmToken: fcmToken ?? this.fcmToken,
+      isWordBombTrialAvailable:
+          isWordBombTrialAvailable ?? this.isWordBombTrialAvailable,
+    );
+  }
 }

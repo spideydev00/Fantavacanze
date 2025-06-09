@@ -14,11 +14,17 @@ import 'package:fantavacanze_official/features/games/domain/usecases/leave_game_
 import 'package:fantavacanze_official/features/games/domain/usecases/stream_game_session.dart';
 import 'package:fantavacanze_official/features/games/domain/usecases/stream_lobby_players.dart';
 import 'package:fantavacanze_official/features/games/domain/usecases/update_game_state.dart';
+import 'package:fantavacanze_official/features/games/domain/usecases/kill_game_session.dart';
+import 'package:fantavacanze_official/features/games/domain/usecases/update_game_player_name_in_lobby.dart';
+import 'package:fantavacanze_official/features/games/domain/usecases/remove_game_player_from_lobby.dart';
 
 part 'lobby_event.dart';
 part 'lobby_state.dart';
 
 class LobbyBloc extends Bloc<LobbyEvent, LobbyState> {
+  // =====================================================================
+  // PROPERTIES
+  // =====================================================================
   final CreateGameSession _createGameSession;
   final JoinGameSession _joinGameSession;
   final LeaveGameSession _leaveGameSession;
@@ -26,10 +32,16 @@ class LobbyBloc extends Bloc<LobbyEvent, LobbyState> {
   final StreamLobbyPlayers _streamLobbyPlayers;
   final UpdateGameState _updateGameState;
   final AppUserCubit _appUserCubit;
+  final KillGameSession _killGameSession;
+  final UpdateGamePlayerNameInLobby _updateGamePlayerNameInLobby;
+  final RemoveGamePlayerFromLobby _removeGamePlayerFromLobby;
 
   StreamSubscription<dynamic>? _sessionSubscription;
   StreamSubscription<dynamic>? _playersSubscription;
 
+  // =====================================================================
+  // CONSTRUCTOR
+  // =====================================================================
   LobbyBloc({
     required CreateGameSession createGameSession,
     required JoinGameSession joinGameSession,
@@ -38,6 +50,9 @@ class LobbyBloc extends Bloc<LobbyEvent, LobbyState> {
     required StreamLobbyPlayers streamLobbyPlayers,
     required UpdateGameState updateGameState,
     required AppUserCubit appUserCubit,
+    required KillGameSession killGameSession,
+    required UpdateGamePlayerNameInLobby updateGamePlayerNameInLobby,
+    required RemoveGamePlayerFromLobby removeGamePlayerFromLobby,
   })  : _createGameSession = createGameSession,
         _joinGameSession = joinGameSession,
         _leaveGameSession = leaveGameSession,
@@ -45,16 +60,25 @@ class LobbyBloc extends Bloc<LobbyEvent, LobbyState> {
         _streamLobbyPlayers = streamLobbyPlayers,
         _updateGameState = updateGameState,
         _appUserCubit = appUserCubit,
+        _killGameSession = killGameSession,
+        _updateGamePlayerNameInLobby = updateGamePlayerNameInLobby,
+        _removeGamePlayerFromLobby = removeGamePlayerFromLobby,
         super(LobbyInitial()) {
     on<CreateSessionRequested>(_onCreateSessionRequested);
     on<JoinSessionRequested>(_onJoinSessionRequested);
     on<LeaveSessionRequested>(_onLeaveSessionRequested);
     on<StartGameRequested>(_onStartGameRequested);
+    on<KillSessionRequested>(_onKillSessionRequested);
+    on<EditPlayerNameRequested>(_onEditPlayerNameRequested);
+    on<RemovePlayerFromLobbyRequested>(_onRemovePlayerFromLobbyRequested);
     on<_SessionUpdated>(_onSessionUpdated);
     on<_PlayersUpdated>(_onPlayersUpdated);
     on<_StreamErrorOccurred>(_onStreamErrorOccurred);
   }
 
+  // =====================================================================
+  // GETTERS
+  // =====================================================================
   auth_user.User? get _currentUser {
     final userState = _appUserCubit.state;
     if (userState is AppUserIsLoggedIn) {
@@ -63,8 +87,15 @@ class LobbyBloc extends Bloc<LobbyEvent, LobbyState> {
     return null;
   }
 
+  // =====================================================================
+  // EVENT HANDLERS
+  // =====================================================================
+
+  // ------------------ ON CREATE SESSION REQUESTED ------------------ //
   Future<void> _onCreateSessionRequested(
-      CreateSessionRequested event, Emitter<LobbyState> emit) async {
+    CreateSessionRequested event,
+    Emitter<LobbyState> emit,
+  ) async {
     emit(const LobbyLoading(message: 'Creazione sessione...'));
     final user = _currentUser;
     if (user == null) {
@@ -73,22 +104,30 @@ class LobbyBloc extends Bloc<LobbyEvent, LobbyState> {
     }
 
     final result = await _createGameSession(
-        CreateGameSessionParams(adminId: user.id, gameType: event.gameType));
+      CreateGameSessionParams(
+        adminId: user.id,
+        gameType: event.gameType,
+        userName: _currentUser!.name,
+      ),
+    );
 
     result.fold(
       (failure) => emit(LobbyError(failure.message)),
       (session) {
         _initStreams(session.id, emit);
-        // Emit initial active state, streams will update it
         emit(LobbySessionActive(session: session, players: const []));
       },
     );
   }
 
+  // ------------------ ON JOIN SESSION REQUESTED ------------------ //
   Future<void> _onJoinSessionRequested(
-      JoinSessionRequested event, Emitter<LobbyState> emit) async {
+    JoinSessionRequested event,
+    Emitter<LobbyState> emit,
+  ) async {
     emit(const LobbyLoading(message: 'Accesso alla sessione...'));
     final user = _currentUser;
+
     if (user == null) {
       emit(const LobbyError('Utente non autenticato.'));
       return;
@@ -98,7 +137,6 @@ class LobbyBloc extends Bloc<LobbyEvent, LobbyState> {
       inviteCode: event.inviteCode,
       userId: user.id,
       userName: user.name,
-      // userAvatarUrl: user.avatarUrl, // If you have avatar URL in User entity
     ));
 
     result.fold(
@@ -110,14 +148,17 @@ class LobbyBloc extends Bloc<LobbyEvent, LobbyState> {
     );
   }
 
+  // ------------------ ON LEAVE SESSION REQUESTED ------------------ //
   Future<void> _onLeaveSessionRequested(
-      LeaveSessionRequested event, Emitter<LobbyState> emit) async {
+    LeaveSessionRequested event,
+    Emitter<LobbyState> emit,
+  ) async {
     final user = _currentUser;
     if (user == null) {
       emit(const LobbyError('Utente non autenticato.'));
       return;
     }
-    // No loading state change here, let streams handle UI update or navigation
+
     final result = await _leaveGameSession(LeaveGameSessionParams(
       sessionId: event.sessionId,
       userId: user.id,
@@ -126,53 +167,281 @@ class LobbyBloc extends Bloc<LobbyEvent, LobbyState> {
     result.fold(
       (failure) {
         if (state is LobbySessionActive) {
-          // Show error on current screen if possible, or rely on stream to clear session
-          emit(LobbyError('Errore durante l\'uscita: ${failure.message}'));
-          // Potentially re-emit LobbySessionActive if you want to show the error within the lobby
+          emit((state as LobbySessionActive)
+              .copyWith(isLoadingNextAction: false));
         } else {
           emit(LobbyError(failure.message));
         }
       },
-      (_) {
-        // Successfully left, streams should update. If no longer part of session,
-        // _sessionSubscription might error or return empty, leading to LobbyInitial.
-        // Or, explicitly emit LobbyInitial after cancelling streams.
+      (sessionWasKilled) {
         _cancelSubscriptions();
         emit(LobbyInitial());
       },
     );
   }
 
+  // ------------------ ON START GAME REQUESTED ------------------ //
   Future<void> _onStartGameRequested(
-      StartGameRequested event, Emitter<LobbyState> emit) async {
+    StartGameRequested event,
+    Emitter<LobbyState> emit,
+  ) async {
     if (state is LobbySessionActive) {
       final currentLobbyState = state as LobbySessionActive;
       final user = _currentUser;
+
       if (user == null || user.id != currentLobbyState.session.adminId) {
         emit(LobbyError("Solo l'admin può iniziare la partita."));
-        // Re-emit current state to clear error after a delay or on next event
+
         emit(currentLobbyState.copyWith());
+
         return;
       }
 
+      if (currentLobbyState.players.isEmpty) {
+        emit(LobbyError(
+            "Non ci sono giocatori nella lobby per iniziare la partita."));
+
+        emit(currentLobbyState.copyWith(isLoadingNextAction: false));
+        return;
+      }
+
+      // ---------- UNCOMMENTE IF YOU WANT TO ENFORCE MINIMUM PLAYERS ---------
+      // if (currentLobbyState.players.length < 2 &&
+      //     currentLobbyState.session.gameType != GameType.wordBomb) {
+      //   // WordBomb can be played solo
+      //   emit(LobbyError(
+      //       "Sono necessari almeno 2 giocatori per iniziare questa partita."));
+      //   emit(currentLobbyState.copyWith(isLoadingNextAction: false));
+      //   return;
+      // }
+
       emit(currentLobbyState.copyWith(isLoadingNextAction: true));
 
-      final result = await _updateGameState(UpdateGameStateParams(
-        sessionId: event.sessionId,
-        newGameState: {}, // Initial empty game state, or specific to game type
-        status: GameStatus.inProgress,
-      ));
+      final String firstPlayerUserId = currentLobbyState.players.first.userId;
 
-      result.fold((failure) => emit(LobbyError(failure.message)),
-          // Success: Session stream will update the state to inProgress.
-          // LobbySessionActive will then be handled by GameHostPage to navigate.
-          // No need to emit a new state here as the stream will do it.
-          (_) {
-        // The isLoadingNextAction will be cleared by the next _SessionUpdated event
+      final result = await _updateGameState(
+        UpdateGameStateParams(
+          sessionId: event.sessionId,
+          status: GameStatus.inProgress,
+          currentTurnUserId: firstPlayerUserId,
+        ),
+      );
+
+      result.fold((failure) {
+        emit(LobbyError(failure.message));
+        emit(
+          currentLobbyState.copyWith(
+            isLoadingNextAction: false,
+          ),
+        );
+      }, (_) {
+        // Session stream will update the state to inProgress.
       });
     }
   }
 
+  // ------------------ ON KILL SESSION REQUESTED ------------------ //
+  Future<void> _onKillSessionRequested(
+    KillSessionRequested event,
+    Emitter<LobbyState> emit,
+  ) async {
+    final user = _currentUser;
+
+    if (user == null) {
+      emit(const LobbyError('Utente non autenticato.'));
+      return;
+    }
+
+    if (state is LobbySessionActive) {
+      final currentLobbyState = state as LobbySessionActive;
+
+      if (user.id != currentLobbyState.session.adminId) {
+        emit(LobbyError("Solo l'admin può terminare la sessione."));
+        return;
+      }
+
+      emit(currentLobbyState.copyWith(isLoadingNextAction: true));
+    } else {
+      emit(const LobbyLoading(message: "Terminazione sessione..."));
+    }
+
+    final result = await _killGameSession(event.sessionId);
+
+    result.fold(
+      (failure) {
+        if (state is LobbySessionActive) {
+          emit(
+            (state as LobbySessionActive).copyWith(isLoadingNextAction: false),
+          );
+        } else {
+          emit(LobbyError(failure.message));
+        }
+      },
+      (_) {
+        _cancelSubscriptions();
+        emit(LobbyInitial());
+      },
+    );
+  }
+
+  // ------------------ ON EDIT PLAYER NAME REQUESTED ------------------ //
+  Future<void> _onEditPlayerNameRequested(
+    EditPlayerNameRequested event,
+    Emitter<LobbyState> emit,
+  ) async {
+    final user = _currentUser;
+    if (user == null ||
+        (state is! LobbySessionActive ||
+            (state as LobbySessionActive).session.adminId != user.id)) {
+      emit(const LobbyError("Solo l'admin può modificare i nomi."));
+      return;
+    }
+
+    if (state is LobbySessionActive) {
+      // Optionally show loading for this specific action on the player item
+      // For now, relying on stream to update UI
+      final result = await _updateGamePlayerNameInLobby(
+        UpdateGamePlayerNameInLobbyParams(
+          playerId: event.playerId,
+          newName: event.newName,
+          sessionId: event.sessionId,
+        ),
+      );
+      result.fold(
+        (failure) => emit(LobbyError(failure.message)),
+        (_) {
+          // Name updated, stream should refresh the player list
+          // No explicit state change needed here if streams are working correctly
+        },
+      );
+    }
+  }
+
+  // ------------------ ON REMOVE PLAYER FROM LOBBY REQUESTED ------------------ //
+  Future<void> _onRemovePlayerFromLobbyRequested(
+    RemovePlayerFromLobbyRequested event,
+    Emitter<LobbyState> emit,
+  ) async {
+    final user = _currentUser;
+
+    if (user == null) {
+      emit(const LobbyError("Utente non autenticato."));
+      return;
+    }
+
+    if (state is! LobbySessionActive) {
+      emit(const LobbyError("Stato della lobby non valido."));
+      return;
+    }
+
+    final currentLobbyState = state as LobbySessionActive;
+    if (currentLobbyState.session.adminId != user.id) {
+      emit(const LobbyError("Solo l'admin può rimuovere giocatori."));
+      return;
+    }
+
+    GamePlayer? playerToRemove;
+    try {
+      playerToRemove = currentLobbyState.players.firstWhere(
+        (p) => p.id == event.playerId,
+      );
+    } catch (e) {
+      emit(LobbyError(
+          "Giocatore da rimuovere non trovato nella lobby attuale."));
+      return;
+    }
+
+    if (playerToRemove.userId == user.id) {
+      emit(LobbyError(
+          "L'admin non può auto-rimuoversi da qui. Usa 'Esci dalla Lobby'."));
+      return;
+    }
+
+    final result = await _removeGamePlayerFromLobby(
+      RemoveGamePlayerFromLobbyParams(
+        playerId: event.playerId,
+        sessionId: event.sessionId,
+      ),
+    );
+    result.fold(
+      (failure) {
+        emit(LobbyError(failure.message));
+      },
+      (_) {
+        // Player removed, stream should refresh the player list
+      },
+    );
+  }
+
+  // =====================================================================
+  // INTERNAL EVENT HANDLERS / STREAM UPDATERS
+  // =====================================================================
+
+  // ------------------ ON SESSION UPDATED ------------------ //
+  void _onSessionUpdated(_SessionUpdated event, Emitter<LobbyState> emit) {
+    if (state is LobbySessionActive) {
+      final current = state as LobbySessionActive;
+      if (event.session.id != current.session.id ||
+          event.session.status == GameStatus.finished) {
+        _cancelSubscriptions();
+        emit(LobbyInitial());
+        return;
+      }
+
+      emit(
+        current.copyWith(session: event.session, isLoadingNextAction: false),
+      );
+    } else if (state is LobbyInitial || state is LobbyLoading) {
+      emit(LobbySessionActive(session: event.session, players: const []));
+    }
+  }
+
+  // ------------------ ON PLAYERS UPDATED ------------------ //
+  void _onPlayersUpdated(_PlayersUpdated event, Emitter<LobbyState> emit) {
+    if (state is LobbySessionActive) {
+      final currentLobbyState = state as LobbySessionActive;
+      final currentUser = _currentUser;
+
+      if (currentUser != null) {
+        // Check if the current user is still in the updated list of players
+        final currentPlayerInList = event.players.any(
+          (player) => player.userId == currentUser.id,
+        );
+
+        if (!currentPlayerInList &&
+            currentLobbyState.session.adminId != currentUser.id) {
+          // Current user is no longer in the player list and is not the admin
+          // (admin leaving is handled by LeaveSessionRequested or KillSessionRequested)
+          // This means they were likely removed by the admin.
+          _cancelSubscriptions();
+          emit(LobbyInitial()); // Or a specific "KickedFromLobby" state
+          // Optionally, emit a specific message/event to show a snackbar like "Sei stato rimosso dalla lobby."
+          // For now, LobbyInitial will take them out of the GameHostPage.
+          return;
+        }
+      }
+      emit(currentLobbyState.copyWith(players: event.players));
+    } else if (state is LobbyInitial ||
+        state is LobbyLoading && _sessionSubscription != null) {
+      // Assume _SessionUpdated sets up LobbySessionActive first.
+      // This part should ideally not be hit if _SessionUpdated correctly sets state.
+    }
+  }
+
+  // ------------------ ON STREAM ERROR OCCURRED ------------------ //
+  void _onStreamErrorOccurred(
+    _StreamErrorOccurred event,
+    Emitter<LobbyState> emit,
+  ) {
+    _cancelSubscriptions();
+    emit(LobbyError(event.message));
+  }
+
+  // =====================================================================
+  // UTILITY METHODS
+  // =====================================================================
+
+  // ------------------ INIT STREAMS ------------------ //
   void _initStreams(String sessionId, Emitter<LobbyState> emit) {
     _cancelSubscriptions();
 
@@ -197,49 +466,7 @@ class LobbyBloc extends Bloc<LobbyEvent, LobbyState> {
     );
   }
 
-  void _onSessionUpdated(_SessionUpdated event, Emitter<LobbyState> emit) {
-    if (state is LobbySessionActive) {
-      final current = state as LobbySessionActive;
-      // If session ID changes or status is finished, might indicate we should leave lobby
-      if (event.session.id != current.session.id ||
-          event.session.status == GameStatus.finished) {
-        _cancelSubscriptions();
-        emit(LobbyInitial());
-        return;
-      }
-      emit(
-          current.copyWith(session: event.session, isLoadingNextAction: false));
-    } else if (state is LobbyInitial || state is LobbyLoading) {
-      // This can happen if streams are initialized before LobbySessionActive is emitted
-      // or if an error occurred and we are recovering.
-      emit(LobbySessionActive(session: event.session, players: const []));
-    }
-    // If game becomes inProgress, GameHostPage will handle navigation.
-    // This BLoC continues to provide session data.
-  }
-
-  void _onPlayersUpdated(_PlayersUpdated event, Emitter<LobbyState> emit) {
-    if (state is LobbySessionActive) {
-      final current = state as LobbySessionActive;
-      emit(current.copyWith(players: event.players));
-    } else if (state is LobbyInitial ||
-        state is LobbyLoading && _sessionSubscription != null) {
-      // This case is less likely if _SessionUpdated always fires first to establish LobbySessionActive
-      // However, to be safe, if we have players but no session state yet, we might need to wait
-      // or handle it based on whether a session object is available.
-      // For now, assume _SessionUpdated sets up LobbySessionActive first.
-    }
-  }
-
-  void _onStreamErrorOccurred(
-      _StreamErrorOccurred event, Emitter<LobbyState> emit) {
-    // Decide if error is fatal for the lobby
-    _cancelSubscriptions(); // Stop listening on error
-    emit(LobbyError(event.message));
-    // Optionally, transition to LobbyInitial after showing error
-    // Future.delayed(Duration(seconds:3), () => emit(LobbyInitial()));
-  }
-
+  // ------------------ CANCEL SUBSCRIPTIONS ------------------ //
   void _cancelSubscriptions() {
     _sessionSubscription?.cancel();
     _sessionSubscription = null;
@@ -247,6 +474,11 @@ class LobbyBloc extends Bloc<LobbyEvent, LobbyState> {
     _playersSubscription = null;
   }
 
+  // =====================================================================
+  // LIFECYCLE METHODS
+  // =====================================================================
+
+  // ------------------ CLOSE ------------------ //
   @override
   Future<void> close() {
     _cancelSubscriptions();

@@ -435,19 +435,36 @@ void _initGames() {
     ..registerFactory<TruthOrDareRemoteDataSource>(
         () => TruthOrDareRemoteDataSourceImpl(supabaseClient: serviceLocator()))
     ..registerFactory<WordBombRemoteDataSource>(
-        () => WordBombRemoteDataSourceImpl(supabaseClient: serviceLocator()));
+        () => WordBombRemoteDataSourceImpl(supabaseClient: serviceLocator()))
+    ..registerFactory<NeverHaveIEverRemoteDataSource>(() =>
+        NeverHaveIEverRemoteDataSourceImpl(supabaseClient: serviceLocator()));
 
   // Repositories
   serviceLocator
-    ..registerFactory<GameRepository>(() => GameRepositoryImpl(
+    ..registerFactory<GameRepository>(
+      () => GameRepositoryImpl(
         remoteDataSource: serviceLocator(),
-        connectionChecker: serviceLocator()))
-    ..registerFactory<TruthOrDareRepository>(() => TruthOrDareRepositoryImpl(
+        connectionChecker: serviceLocator(),
+      ),
+    )
+    ..registerFactory<TruthOrDareRepository>(
+      () => TruthOrDareRepositoryImpl(
         remoteDataSource: serviceLocator(),
-        connectionChecker: serviceLocator()))
-    ..registerFactory<WordBombRepository>(() => WordBombRepositoryImpl(
+        connectionChecker: serviceLocator(),
+      ),
+    )
+    ..registerFactory<WordBombRepository>(
+      () => WordBombRepositoryImpl(
         remoteDataSource: serviceLocator(),
-        connectionChecker: serviceLocator()));
+        connectionChecker: serviceLocator(),
+      ),
+    )
+    ..registerFactory<NeverHaveIEverRepository>(
+      () => NeverHaveIEverRepositoryImpl(
+        remoteDataSource: serviceLocator(),
+        connectionChecker: serviceLocator(),
+      ),
+    );
 
   // UseCases - Generic Game
   serviceLocator
@@ -457,13 +474,30 @@ void _initGames() {
     ..registerFactory(() => StreamGameSession(serviceLocator()))
     ..registerFactory(() => StreamLobbyPlayers(serviceLocator()))
     ..registerFactory(() => UpdateGameState(serviceLocator()))
-    ..registerFactory(() => UpdateGamePlayer(serviceLocator()));
+    ..registerFactory(() => UpdateGamePlayer(serviceLocator()))
+    ..registerFactory(() => KillGameSession(serviceLocator()))
+    ..registerFactory(() => UpdateGamePlayerNameInLobby(serviceLocator()))
+    ..registerFactory(() => RemoveGamePlayerFromLobby(serviceLocator()));
 
-  // UseCases - Truth Or Dare
-  serviceLocator.registerFactory(() => GetTruthOrDareCards(serviceLocator()));
-
-  // UseCases - Word Bomb
-  serviceLocator.registerFactory(() => GetWordBombCategories(serviceLocator()));
+  serviceLocator
+    // UseCases - Truth Or Dare
+    ..registerFactory(
+      () => GetTruthOrDareCards(
+        serviceLocator(),
+      ),
+    )
+    // UseCases - Word Bomb (add these new ones)
+    ..registerFactory(
+      () => SetWordBombTrialStatus(
+        serviceLocator(),
+      ),
+    )
+    // UseCases - Never Have I Ever
+    ..registerFactory(
+      () => GetNeverHaveIEverCards(
+        serviceLocator(),
+      ),
+    );
 
   // BLoCs
   serviceLocator
@@ -471,11 +505,15 @@ void _initGames() {
           createGameSession: serviceLocator(),
           joinGameSession: serviceLocator(),
           leaveGameSession: serviceLocator(),
+          killGameSession: serviceLocator(),
           streamGameSession: serviceLocator(),
           streamLobbyPlayers: serviceLocator(),
           updateGameState: serviceLocator(),
           appUserCubit: serviceLocator(),
+          updateGamePlayerNameInLobby: serviceLocator(),
+          removeGamePlayerFromLobby: serviceLocator(),
         ))
+    // Game-specific BLoCs should be singletons to maintain state during the game session.
     ..registerFactory(() => TruthOrDareBloc(
           getTruthOrDareCards: serviceLocator(),
           updateGameState: serviceLocator(),
@@ -483,12 +521,23 @@ void _initGames() {
           streamLobbyPlayers: serviceLocator(),
           appUserCubit: serviceLocator(),
         ))
-    ..registerFactory(() => WordBombBloc(
-          updateGameState: serviceLocator(),
-          updateGamePlayer: serviceLocator(),
-          getWordBombCategories: serviceLocator(),
-          streamGameSession: serviceLocator(),
-          streamLobbyPlayers: serviceLocator(),
-          appUserCubit: serviceLocator(),
-        ));
+    ..registerFactory(
+      () => WordBombBloc(
+        updateGameState: serviceLocator(),
+        updateGamePlayer: serviceLocator(),
+        streamGameSession: serviceLocator(),
+        streamLobbyPlayers: serviceLocator(),
+        appUserCubit: serviceLocator(),
+        setWordBombTrialStatus: serviceLocator(),
+      ),
+    )
+    ..registerFactory(
+      () => NeverHaveIEverBloc(
+        getNeverHaveIEverCards: serviceLocator(),
+        streamGameSession: serviceLocator(),
+        streamLobbyPlayers: serviceLocator(),
+        updateGameState: serviceLocator(),
+        appUserCubit: serviceLocator(),
+      ),
+    );
 }

@@ -58,7 +58,8 @@ class _SignUpPageState extends State<SignUpPage> {
       _isTermsAccepted &&
       _genderValid;
 
-  List<String> genders = ["Maschio", "Femmina"];
+  // Opzioni di genere abbreviate
+  final List<String> genders = ["Uomo", "Donna"];
 
   @override
   void dispose() {
@@ -70,14 +71,28 @@ class _SignUpPageState extends State<SignUpPage> {
 
   void _rebuild() => setState(() {});
 
+  // Funzione aggiornata per le nuove opzioni
   String _getGenderText(String gender) {
     switch (gender) {
-      case "Maschio":
+      case "M":
         return 'male';
-      case "Femmina":
+      case "F":
         return 'female';
       default:
+        // Default a un valore per sicurezza, anche se non dovrebbe accadere
         return 'male';
+    }
+  }
+
+  // Funzione aggiornata per le nuove opzioni
+  IconData _getGenderIcon(String gender) {
+    switch (gender) {
+      case "Uomo":
+        return Icons.male;
+      case "Donna":
+        return Icons.female;
+      default:
+        return Icons.person;
     }
   }
 
@@ -103,7 +118,7 @@ class _SignUpPageState extends State<SignUpPage> {
                   children: [
                     // Nome field
                     Expanded(
-                      flex: 7,
+                      flex: 7, // Ripristinato flex
                       child: AuthField(
                         controller: _nameCtrl,
                         hintText: "Nome",
@@ -117,7 +132,6 @@ class _SignUpPageState extends State<SignUpPage> {
                             width: 35,
                           ),
                         ),
-                        // validazione on user interaction solo per questo campo
                         autovalidateMode: AutovalidateMode.onUserInteraction,
                         onChanged: (_) => _rebuild(),
                         validator: (v) {
@@ -128,38 +142,33 @@ class _SignUpPageState extends State<SignUpPage> {
                         },
                       ),
                     ),
-                    SizedBox(width: 8),
+                    const SizedBox(width: 8),
                     // Gender selector
                     Expanded(
-                      flex: 5,
-                      child: Container(
-                        height: 64,
-                        decoration: BoxDecoration(
-                          color: ColorPalette.white,
-                          borderRadius:
-                              BorderRadius.circular(ThemeSizes.borderRadiusMd),
-                          border: Border.all(
-                            color: context.borderColor.withValues(alpha: 0.3),
-                            width: 1,
+                      flex: 5, // Ripristinato Expanded con flex
+                      child: DropdownButton2<String>(
+                        isExpanded: true,
+                        value: _selectedGender,
+                        hint: Text(
+                          "Sesso",
+                          style: TextStyle(
+                            color: ColorPalette.darkerGrey,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w500,
                           ),
                         ),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                          child: DropdownButtonHideUnderline(
-                            child: DropdownButton2(
-                              isExpanded: true,
-                              value: _selectedGender,
-                              hint: Text(
-                                genders.first,
-                                style: TextStyle(
-                                  color: ColorPalette.darkerGrey,
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w500,
+                        items: genders.map((String gender) {
+                          return DropdownMenuItem<String>(
+                            value: gender,
+                            child: Row(
+                              children: [
+                                Icon(
+                                  _getGenderIcon(gender),
+                                  size: 22,
+                                  color: ColorPalette.darkGrey,
                                 ),
-                              ),
-                              items: genders.map((String gender) {
-                                return DropdownMenuItem<String>(
-                                  value: gender,
+                                const SizedBox(width: ThemeSizes.sm),
+                                Expanded(
                                   child: Text(
                                     gender,
                                     style: TextStyle(
@@ -167,29 +176,50 @@ class _SignUpPageState extends State<SignUpPage> {
                                       fontSize: 13,
                                       fontWeight: FontWeight.w500,
                                     ),
+                                    overflow: TextOverflow.ellipsis,
                                   ),
-                                );
-                              }).toList(),
-                              onChanged: (String? newValue) {
-                                setState(() {
-                                  _selectedGender = newValue;
-                                });
-                              },
-                              iconStyleData: IconStyleData(
-                                icon: Icon(
-                                  Icons.arrow_drop_down,
-                                  color: ColorPalette.darkGrey,
                                 ),
-                                iconSize: 24,
-                              ),
-                              dropdownStyleData: DropdownStyleData(
-                                decoration: BoxDecoration(
-                                  color: ColorPalette.white,
-                                  borderRadius: BorderRadius.circular(
-                                      ThemeSizes.borderRadiusMd),
-                                ),
-                              ),
+                              ],
                             ),
+                          );
+                        }).toList(),
+                        onChanged: (String? newValue) {
+                          setState(() {
+                            _selectedGender = newValue;
+                          });
+                        },
+                        underline: const SizedBox(),
+
+                        // Stile del bottone
+                        buttonStyleData: ButtonStyleData(
+                          height: 64,
+                          padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                          decoration: BoxDecoration(
+                            color: ColorPalette.white,
+                            borderRadius: BorderRadius.circular(
+                                ThemeSizes.borderRadiusMd),
+                            border: Border.all(
+                              color: context.borderColor.withValues(alpha: 0.3),
+                              width: 1,
+                            ),
+                          ),
+                        ),
+
+                        // Stile dell'icona
+                        iconStyleData: IconStyleData(
+                          icon: const Icon(
+                            Icons.arrow_drop_down,
+                            color: ColorPalette.darkGrey,
+                          ),
+                          iconSize: 24,
+                        ),
+
+                        // Stile del menu a tendina
+                        dropdownStyleData: DropdownStyleData(
+                          decoration: BoxDecoration(
+                            color: ColorPalette.white,
+                            borderRadius: BorderRadius.circular(
+                                ThemeSizes.borderRadiusMd),
                           ),
                         ),
                       ),

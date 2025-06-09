@@ -12,6 +12,7 @@ class UserModel extends User {
     required super.isTermsAccepted,
     required super.authProvider,
     super.fcmToken,
+    required super.isWordBombTrialAvailable,
   });
 
   factory UserModel.fromJson(Map<String, dynamic> map) {
@@ -35,9 +36,11 @@ class UserModel extends User {
       isTermsAccepted: map['is_terms_accepted'] == true,
       authProvider: authProvider,
       fcmToken: map['fcm_token'] as String?,
+      isWordBombTrialAvailable: map['is_word_bomb_trial_available'] == true,
     );
   }
 
+  @override
   UserModel copyWith({
     String? id,
     String? email,
@@ -49,6 +52,7 @@ class UserModel extends User {
     bool? isTermsAccepted,
     String? authProvider,
     String? fcmToken,
+    bool? isWordBombTrialAvailable,
   }) {
     return UserModel(
       id: id ?? this.id,
@@ -61,6 +65,8 @@ class UserModel extends User {
       isTermsAccepted: isTermsAccepted ?? this.isTermsAccepted,
       authProvider: authProvider ?? this.authProvider,
       fcmToken: fcmToken ?? this.fcmToken,
+      isWordBombTrialAvailable:
+          isWordBombTrialAvailable ?? this.isWordBombTrialAvailable,
     );
   }
 }

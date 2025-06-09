@@ -1,0 +1,2 @@
+id,invite_code,admin_id,game_type,status,current_turn_user_id,game_state,created_at
+ab5d893f-890e-47bc-a114-9f85a5adbd68,25279,1c653926-d26f-4fdd-a53d-c4ba64386920,word_bomb,in_progress,1c653926-d26f-4fdd-a53d-c4ba64386920,{},2025-06-09 00:53:42.591091+00

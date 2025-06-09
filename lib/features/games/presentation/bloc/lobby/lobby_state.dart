@@ -18,7 +18,7 @@ final class LobbyLoading extends LobbyState {
 final class LobbySessionActive extends LobbyState {
   final GameSession session;
   final List<GamePlayer> players;
-  final bool isLoadingNextAction; // e.g. when "Start Game" is pressed
+  final bool isLoadingNextAction;
 
   const LobbySessionActive({
     required this.session,

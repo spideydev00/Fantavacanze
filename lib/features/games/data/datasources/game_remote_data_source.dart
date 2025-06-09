@@ -1,8 +1,7 @@
-import 'dart:math';
+import 'dart:async';
 import 'package:fantavacanze_official/core/errors/exceptions.dart';
 import 'package:fantavacanze_official/features/games/data/models/game_player_model.dart';
 import 'package:fantavacanze_official/features/games/data/models/game_session_model.dart';
-import 'package:fantavacanze_official/features/games/domain/entities/game_status_enum.dart';
 import 'package:fantavacanze_official/features/games/domain/entities/game_type_enum.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -10,16 +9,16 @@ abstract interface class GameRemoteDataSource {
   Future<GameSessionModel> createGameSession({
     required String adminId,
     required GameType gameType,
+    required String userName,
   });
 
   Future<GameSessionModel> joinGameSession({
     required String inviteCode,
     required String userId,
     required String userName,
-    String? userAvatarUrl,
   });
 
-  Future<void> leaveGameSession({
+  Future<bool> leaveGameSession({
     required String sessionId,
     required String userId,
   });
@@ -34,7 +33,7 @@ abstract interface class GameRemoteDataSource {
 
   Future<GameSessionModel> updateGameState({
     required String sessionId,
-    required Map<String, dynamic> newGameState,
+    Map<String, dynamic>? newGameState,
     String? currentTurnUserId,
     String? status,
   });
@@ -46,7 +45,21 @@ abstract interface class GameRemoteDataSource {
     int? score,
     bool? isGhost,
     bool? hasUsedSpecialAbility,
+    bool? hasUsedGhostProtocol,
+    int? changeCategoryUsesLeft,
   });
+
+  Future<void> updateGamePlayerNameInLobbyDb({
+    required String playerId,
+    required String newName,
+  });
+
+  Future<void> removeGamePlayerFromLobbyDb({
+    required String playerId,
+    required String sessionId,
+  });
+
+  Future<void> killSession({required String sessionId});
 }
 
 class GameRemoteDataSourceImpl implements GameRemoteDataSource {
@@ -54,122 +67,92 @@ class GameRemoteDataSourceImpl implements GameRemoteDataSource {
 
   GameRemoteDataSourceImpl({required this.supabaseClient});
 
-  String _generateInviteCode(int length) {
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-    final random = Random();
-    return String.fromCharCodes(Iterable.generate(
-        length, (_) => chars.codeUnitAt(random.nextInt(chars.length))));
+  // =====================================================================
+  // ERROR HANDLING UTILITIES
+  // =====================================================================
+
+  // ------------------ EXTRACT ERROR MESSAGE ------------------ //
+  String _extractErrorMessage(Object e) {
+    if (e is ServerException) return e.message;
+    if (e is PostgrestException) return e.message;
+    if (e is TimeoutException) return e.message ?? 'Operazione scaduta';
+    return e.toString();
   }
 
+  // ------------------ TRY DATABASE OPERATION ------------------ //
+  Future<T> _tryDatabaseOperation<T>(Future<T> Function() operation) async {
+    try {
+      return await operation();
+    } catch (e) {
+      throw ServerException(_extractErrorMessage(e));
+    }
+  }
+
+  // =====================================================================
+  // SESSION MANAGEMENT
+  // =====================================================================
+
+  // ------------------ CREATE GAME SESSION ------------------ //
   @override
   Future<GameSessionModel> createGameSession({
     required String adminId,
+    required String userName,
     required GameType gameType,
   }) async {
-    try {
-      final inviteCode = _generateInviteCode(6);
+    return _tryDatabaseOperation(() async {
+      final params = {
+        'p_admin_id': adminId,
+        'p_user_name': userName,
+        'p_game_type': gameTypeToString(gameType),
+      };
+
       final response = await supabaseClient
-          .from('game_sessions')
-          .insert({
-            'admin_id': adminId,
-            'game_type': gameTypeToString(gameType),
-            'invite_code': inviteCode,
-            'status': 'waiting', // Default status
-          })
-          .select()
+          .rpc('create_session_and_add_admin', params: params)
           .single();
 
       final gameSession = GameSessionModel.fromJson(response);
 
-      // Automatically add admin as a player
-      await supabaseClient.from('profiles').select().eq('id', adminId).single();
-
-      // final adminUser = UserModel.fromJson(adminProfile);
-
-      await supabaseClient.from('game_players').insert({
-        'session_id': gameSession.id,
-        'user_id': adminId,
-        'score': 0,
-        // 'user_name': adminUser.name, // Not needed if joining profiles table on read
-        // 'user_avatar_url': adminUser.avatarUrl, // Not needed
-      });
-
       return gameSession;
-    } on PostgrestException catch (e) {
-      throw ServerException(e.message);
-    } catch (e) {
-      throw ServerException(e.toString());
-    }
+    });
   }
 
+  // ------------------ JOIN GAME SESSION ------------------ //
   @override
   Future<GameSessionModel> joinGameSession({
     required String inviteCode,
     required String userId,
     required String userName,
-    String? userAvatarUrl,
   }) async {
-    try {
-      final sessionResponse = await supabaseClient
-          .from('game_sessions')
-          .select()
-          .eq('invite_code', inviteCode)
-          .single();
+    return _tryDatabaseOperation(() async {
+      final params = {
+        'p_invite_code': inviteCode.toUpperCase(),
+        'p_user_id': userId,
+        'p_user_name': userName,
+      };
 
-      final gameSession = GameSessionModel.fromJson(sessionResponse);
+      final response =
+          await supabaseClient.rpc('join_session', params: params).single();
 
-      if (gameSession.status != GameStatus.waiting) {
-        throw ServerException(
-            'Impossibile unirsi, la partita è già iniziata o conclusa.');
-      }
-
-      // Check if player already exists
-      final existingPlayer = await supabaseClient
-          .from('game_players')
-          .select()
-          .eq('session_id', gameSession.id)
-          .eq('user_id', userId)
-          .maybeSingle();
-
-      if (existingPlayer == null) {
-        await supabaseClient.from('game_players').insert({
-          'session_id': gameSession.id,
-          'user_id': userId,
-          'score': 0,
-          // 'user_name': userName, // Not needed if joining profiles table on read
-          // 'user_avatar_url': userAvatarUrl, // Not needed
-        });
-      }
-      return gameSession;
-    } on PostgrestException catch (e) {
-      if (e.code == 'PGRST116') {
-        // No rows found
-        throw ServerException('Codice invito non valido.');
-      }
-      throw ServerException(e.message);
-    } catch (e) {
-      throw ServerException(e.toString());
-    }
+      return GameSessionModel.fromJson(response);
+    });
   }
 
+  // ------------------ LEAVE GAME SESSION ------------------ //
   @override
-  Future<void> leaveGameSession(
-      {required String sessionId, required String userId}) async {
-    try {
-      await supabaseClient
-          .from('game_players')
-          .delete()
-          .match({'session_id': sessionId, 'user_id': userId});
-
-      // Optional: If admin leaves, handle session (e.g., assign new admin or end session)
-      // This logic might be better suited in a use case or BLoC after checking if user is admin.
-    } on PostgrestException catch (e) {
-      throw ServerException(e.message);
-    } catch (e) {
-      throw ServerException(e.toString());
-    }
+  Future<bool> leaveGameSession({
+    required String sessionId,
+    required String userId,
+  }) async {
+    return _tryDatabaseOperation(() async {
+      final result = await supabaseClient.rpc(
+        'leave_game_session',
+        params: {'p_session_id': sessionId, 'p_user_id': userId},
+      );
+      return result as bool;
+    });
   }
 
+  // ------------------ STREAM GAME SESSION ------------------ //
   @override
   Stream<GameSessionModel> streamGameSession({required String sessionId}) {
     try {
@@ -177,21 +160,36 @@ class GameRemoteDataSourceImpl implements GameRemoteDataSource {
           .from('game_sessions')
           .stream(primaryKey: ['id'])
           .eq('id', sessionId)
-          .map((maps) {
-            if (maps.isEmpty) {
-              throw ServerException('Sessione non trovata o accesso negato.');
-            }
-            return GameSessionModel.fromJson(maps.first);
-          });
+          .map(
+            (maps) {
+              if (maps.isEmpty) {
+                throw ServerException('Sessione non trovata o accesso negato.');
+              }
+              return GameSessionModel.fromJson(maps.first);
+            },
+          );
     } catch (e) {
-      // This catch might not be effective for stream errors in the same way.
-      // Stream errors are typically handled by the listener.
-      // Consider wrapping the stream subscription in the repository/use case with error handling.
       throw ServerException(
-          'Errore nello streaming della sessione: ${e.toString()}');
+          'Errore nello streaming della sessione: ${_extractErrorMessage(e)}');
     }
   }
 
+  // ------------------ KILL SESSION ------------------ //
+  @override
+  Future<void> killSession({required String sessionId}) async {
+    return _tryDatabaseOperation(() async {
+      await supabaseClient.rpc(
+        'kill_game_session',
+        params: {'session_id_to_delete': sessionId},
+      );
+    });
+  }
+
+  // =====================================================================
+  // PLAYER MANAGEMENT
+  // =====================================================================
+
+  // ------------------ STREAM LOBBY PLAYERS ------------------ //
   @override
   Stream<List<GamePlayerModel>> streamLobbyPlayers(
       {required String sessionId}) {
@@ -200,30 +198,112 @@ class GameRemoteDataSourceImpl implements GameRemoteDataSource {
           .from('game_players')
           .stream(primaryKey: ['id'])
           .eq('session_id', sessionId)
-          .map((listOfMaps) {
-            // Each playerMap here will be from the 'game_players' table directly.
-            // GamePlayerModel.fromJson needs to handle this.
-            // If 'userName' and 'userAvatarUrl' were solely dependent on the 'profiles' join,
-            // they might be null or default here.
-            return listOfMaps
-                .map((playerMap) => GamePlayerModel.fromJson(playerMap))
-                .toList();
-          });
+          .map(
+            (listOfMaps) {
+              return listOfMaps.map((playerMap) {
+                return GamePlayerModel.fromJson(playerMap);
+              }).toList();
+            },
+          );
     } catch (e) {
       throw ServerException(
-          'Errore nello streaming dei giocatori: ${e.toString()}');
+          'Errore nello streaming dei giocatori: ${_extractErrorMessage(e)}');
     }
   }
 
+  // ------------------ UPDATE GAME PLAYER ------------------ //
+  @override
+  Future<GamePlayerModel> updateGamePlayer({
+    required String playerId,
+    required String sessionId,
+    required String userId,
+    int? score,
+    bool? isGhost,
+    bool? hasUsedSpecialAbility,
+    bool? hasUsedGhostProtocol,
+    int? changeCategoryUsesLeft,
+  }) async {
+    return _tryDatabaseOperation(() async {
+      final Map<String, dynamic> updates = {};
+      if (score != null) updates['score'] = score;
+      if (isGhost != null) updates['is_ghost'] = isGhost;
+      if (hasUsedSpecialAbility != null) {
+        updates['has_used_special_ability'] = hasUsedSpecialAbility;
+      }
+      if (hasUsedGhostProtocol != null) {
+        updates['has_used_ghost_protocol'] = hasUsedGhostProtocol;
+      }
+      if (changeCategoryUsesLeft != null) {
+        updates['change_category_uses_left'] = changeCategoryUsesLeft;
+      }
+
+      if (updates.isEmpty) {
+        final currentPlayer = await supabaseClient
+            .from('game_players')
+            .select('*, profiles(name)')
+            .eq('id', playerId)
+            .single();
+
+        return GamePlayerModel.fromJson(currentPlayer);
+      }
+
+      final response = await supabaseClient
+          .from('game_players')
+          .update(updates)
+          .eq('id', playerId)
+          .select('*, profiles(name)')
+          .single();
+
+      return GamePlayerModel.fromJson(response);
+    });
+  }
+
+  // =====================================================================
+  // GAME STATE MANAGEMENT
+  // =====================================================================
+
+  // ------------------ UPDATE GAME PLAYER NAME IN LOBBY ------------------ //
+  @override
+  Future<void> updateGamePlayerNameInLobbyDb({
+    required String playerId,
+    required String newName,
+  }) async {
+    return _tryDatabaseOperation(() async {
+      // Assuming 'game_players' table has a 'name' column for the display name in lobby
+      await supabaseClient
+          .from('game_players')
+          .update({'name': newName}).eq('id', playerId);
+    });
+  }
+
+  // ------------------ REMOVE GAME PLAYER FROM LOBBY ------------------ //
+  @override
+  Future<void> removeGamePlayerFromLobbyDb({
+    required String playerId,
+    required String sessionId,
+  }) async {
+    return _tryDatabaseOperation(() async {
+      await supabaseClient
+          .from('game_players')
+          .delete()
+          .match({'id': playerId, 'session_id': sessionId});
+    });
+  }
+
+  // ------------------ UPDATE GAME STATE ------------------ //
   @override
   Future<GameSessionModel> updateGameState({
     required String sessionId,
-    required Map<String, dynamic> newGameState,
+    Map<String, dynamic>? newGameState,
     String? currentTurnUserId,
     String? status,
   }) async {
-    try {
-      final Map<String, dynamic> updates = {'game_state': newGameState};
+    return _tryDatabaseOperation(() async {
+      final Map<String, dynamic> updates = {};
+
+      if (newGameState != null) {
+        updates['game_state'] = newGameState;
+      }
       if (currentTurnUserId != null) {
         updates['current_turn_user_id'] = currentTurnUserId;
       }
@@ -237,54 +317,8 @@ class GameRemoteDataSourceImpl implements GameRemoteDataSource {
           .eq('id', sessionId)
           .select()
           .single();
+
       return GameSessionModel.fromJson(response);
-    } on PostgrestException catch (e) {
-      throw ServerException(e.message);
-    } catch (e) {
-      throw ServerException(e.toString());
-    }
-  }
-
-  @override
-  Future<GamePlayerModel> updateGamePlayer({
-    required String playerId, // This is the primary key of game_players table
-    required String
-        sessionId, // Used for matching, though playerId should be unique
-    required String userId, // Used for matching
-    int? score,
-    bool? isGhost,
-    bool? hasUsedSpecialAbility,
-  }) async {
-    try {
-      final Map<String, dynamic> updates = {};
-      if (score != null) updates['score'] = score;
-      if (isGhost != null) updates['is_ghost'] = isGhost;
-      if (hasUsedSpecialAbility != null) {
-        updates['has_used_special_ability'] = hasUsedSpecialAbility;
-      }
-
-      if (updates.isEmpty) {
-        // If nothing to update, fetch and return current state
-        final currentPlayer = await supabaseClient
-            .from('game_players')
-            .select('*, profiles(name, avatar_url)')
-            .eq('id', playerId) // Use the direct ID of the game_players record
-            .single();
-        return GamePlayerModel.fromJson(currentPlayer);
-      }
-
-      final response = await supabaseClient
-          .from('game_players')
-          .update(updates)
-          .eq('id', playerId) // Use the direct ID of the game_players record
-          .select(
-              '*, profiles(name, avatar_url)') // Fetch with profile data after update
-          .single();
-      return GamePlayerModel.fromJson(response);
-    } on PostgrestException catch (e) {
-      throw ServerException(e.message);
-    } catch (e) {
-      throw ServerException(e.toString());
-    }
+    });
   }
 }

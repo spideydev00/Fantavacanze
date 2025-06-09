@@ -17,6 +17,7 @@ class CreateGameSession
     return await gameRepository.createGameSession(
       adminId: params.adminId,
       gameType: params.gameType,
+      userName: params.userName,
     );
   }
 }
@@ -24,6 +25,11 @@ class CreateGameSession
 class CreateGameSessionParams {
   final String adminId;
   final GameType gameType;
+  final String userName;
 
-  CreateGameSessionParams({required this.adminId, required this.gameType});
+  CreateGameSessionParams({
+    required this.adminId,
+    required this.gameType,
+    required this.userName,
+  });
 }

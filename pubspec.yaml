@@ -72,6 +72,7 @@ dependencies:
   google_mobile_ads: ^6.0.0
   in_app_purchase: ^3.2.3
   share_plus: ^11.0.0
+  flutter_card_swiper: ^7.0.2
   
 dev_dependencies:
   flutter_test:
@@ -167,6 +168,13 @@ flutter:
   - assets/images/icons/other/notification-icon.svg
   - assets/images/icons/homepage_icons/drink-game-preview.svg
   - assets/images/icons/homepage_icons/drink-games-page-icon.svg
+  - assets/images/icons/games_icons/yellow-tropical-drink-left.svg
+  - assets/images/icons/games_icons/yellow-tropical-drink-right.svg
+  - assets/images/icons/games_icons/blue-tropical-drink-left.svg
+  - assets/images/icons/games_icons/blue-tropical-drink-right.svg
+  - assets/images/icons/games_icons/bomb-icon.svg
+  - assets/images/icons/homepage_icons/event-icon.svg
+  - assets/images/icons/homepage_icons/event-icon-dark.svg
   
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-assets/images

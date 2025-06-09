@@ -1,0 +1,2 @@
+id,invite_code,admin_id,game_type,status,current_turn_user_id,game_state,created_at
+d2d305a1-38a1-4dad-b444-67ab492706cc,86C01,1c653926-d26f-4fdd-a53d-c4ba64386920,truth_or_dare,in_progress,9cb9f8e1-26ab-4f1b-902c-169942c08b21,"{""current_question_id"": ""2604"", ""current_question_type"": ""truth""}",2025-06-08 19:35:17.254028+00
