@@ -69,7 +69,8 @@ dependencies:
   hive_flutter: ^1.1.0
   rename_app: ^1.6.3
   firebase_analytics: ^11.4.6
-  google_mobile_ads: ^6.0.0
+  google_mobile_ads: ^5.1.0
+  gdpr_admob: ^1.0.3
   in_app_purchase: ^3.2.3
   share_plus: ^11.0.0
   flutter_card_swiper: ^7.0.2
@@ -175,6 +176,7 @@ flutter:
   - assets/images/icons/games_icons/bomb-icon.svg
   - assets/images/icons/homepage_icons/event-icon.svg
   - assets/images/icons/homepage_icons/event-icon-dark.svg
+  - assets/images/icons/homepage_icons/basic-avatar.png
   
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-assets/images

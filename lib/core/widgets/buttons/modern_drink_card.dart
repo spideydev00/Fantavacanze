@@ -41,6 +41,12 @@ class ModernDrinkCard extends StatelessWidget {
   /// Funzione chiamata quando si richiede l'accesso premium.
   final VoidCallback? onPremiumRequested;
 
+  /// Se mostrare un'icona informativa.
+  final bool showInfoIcon;
+
+  /// Callback per quando l'icona informativa viene premuta.
+  final VoidCallback? onInfoIconTapped;
+
   const ModernDrinkCard({
     super.key,
     required this.isSelected,
@@ -54,6 +60,8 @@ class ModernDrinkCard extends StatelessWidget {
     this.isTrialAvailable = false,
     this.onTrialRequested,
     this.onPremiumRequested,
+    this.showInfoIcon = false,
+    this.onInfoIconTapped,
   });
 
   @override
@@ -239,6 +247,32 @@ class ModernDrinkCard extends StatelessWidget {
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
                   fontSize: 12,
+                ),
+              ),
+            ),
+          ),
+
+        // Info Icon
+        if (showInfoIcon)
+          Positioned(
+            top: 8,
+            left: 8,
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                borderRadius: BorderRadius.circular(20),
+                onTap: onInfoIconTapped,
+                child: Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withOpacity(0.25),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.info_outline_rounded,
+                    color: Colors.white.withOpacity(0.8),
+                    size: 20,
+                  ),
                 ),
               ),
             ),

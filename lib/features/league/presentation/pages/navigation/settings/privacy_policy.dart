@@ -71,7 +71,7 @@ class PrivacyPolicyPage extends StatelessWidget {
             const SizedBox(height: ThemeSizes.md),
             Text(
               'Raccogliamo i seguenti tipi di informazioni:\n\n'
-              '• Informazioni di registrazione: nome, e-mail e password (se utilizzi la registrazione via e-mail).\n'
+              '• Informazioni di registrazione: nome, età, e-mail e password (se utilizzi la registrazione via e-mail).\n'
               '• Informazioni di profilo: nome utente e foto profilo (opzionale).\n'
               '• Contenuti generati dagli utenti: foto, commenti e post che condividi all\'interno delle leghe.\n'
               '• Dati di utilizzo: informazioni su come utilizzi l\'app, quali funzionalità utilizzi e quando.\n'

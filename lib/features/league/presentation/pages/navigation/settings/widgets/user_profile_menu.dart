@@ -6,6 +6,7 @@ import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:fantavacanze_official/core/utils/show_snackbar.dart';
 import 'package:fantavacanze_official/core/widgets/buttons/danger_action_button.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/settings/widgets/consent_settings_dialog.dart';
+import 'package:fantavacanze_official/core/widgets/dialogs/gdpr_consent_dialog.dart'; // Import the new dialog
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/settings/widgets/delete_account_dialog.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/settings/widgets/edit_profile_dialog.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/settings/widgets/password_change_dialog.dart';
@@ -83,10 +84,18 @@ class UserProfileMenu extends StatelessWidget {
               _buildSectionHeader(context, 'Privacy e Consensi'),
               _buildMenuItem(
                 context,
-                icon: Icons.gpp_good,
-                title: 'Gestisci Consensi',
+                icon: Icons.fact_check_rounded,
+                title: 'Consensi App',
                 subtitle: 'Modifica consensi età e termini di servizio',
                 onTap: () => ConsentSettingsDialog.show(context),
+              ),
+              _buildMenuItem(
+                // New menu item for GDPR
+                context,
+                icon: Icons.ads_click_rounded,
+                title: 'Consenso Annunci (GDPR)',
+                subtitle: 'Gestisci preferenze per annunci personalizzati',
+                onTap: () => GdprConsentDialog.show(context),
               ),
               const SizedBox(height: ThemeSizes.lg),
 

@@ -235,10 +235,13 @@ Widget _buildUserInfo(BuildContext context, String name, String email) {
     crossAxisAlignment: CrossAxisAlignment.center,
     children: [
       // TODO: Aggiungi l'immagine dell'avatar + logica per modificarlo
-      Image.asset(
-        "assets/images/avatar.png",
-        width: ThemeSizes.avatarSize,
-        height: ThemeSizes.avatarSize,
+      Padding(
+        padding: const EdgeInsets.all(ThemeSizes.md),
+        child: Image.asset(
+          "assets/images/icons/homepage_icons/basic-avatar.png",
+          width: ThemeSizes.avatarSize,
+          height: ThemeSizes.avatarSize,
+        ),
       ),
       Expanded(
         // Usa Expanded per evitare overflow se il testo è lungo

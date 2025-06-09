@@ -5,10 +5,11 @@ import 'package:fantavacanze_official/core/extensions/context_extension.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:fantavacanze_official/core/utils/show_page_specific_snackbar.dart';
-import 'package:fantavacanze_official/core/widgets/buttons/modern_drink_button.dart';
+import 'package:fantavacanze_official/core/widgets/buttons/modern_drink_card.dart';
 import 'package:fantavacanze_official/core/widgets/dialogs/premium_access_dialog.dart';
 import 'package:fantavacanze_official/core/widgets/divider.dart';
 import 'package:fantavacanze_official/core/widgets/loader.dart';
+import 'package:fantavacanze_official/core/widgets/app_information_dialog.dart'; // Import AppInformationDialog
 import 'package:fantavacanze_official/features/games/domain/entities/game_type_enum.dart';
 import 'package:fantavacanze_official/features/games/presentation/bloc/lobby/lobby_bloc.dart';
 import 'package:fantavacanze_official/features/games/presentation/bloc/word_bomb/word_bomb_bloc.dart';
@@ -156,6 +157,68 @@ class _GameSelectionPageState extends State<GameSelectionPage> {
                           label: "Word Bomb",
                           isPremium: !isPremiumUser,
                           isTrialAvailable: hasWordBombTrial,
+                          showInfoIcon: true, // Show info icon for Word Bomb
+                          onInfoIconTapped: () {
+                            showDialog(
+                              context: context,
+                              builder: (context) => AppInformationDialog(
+                                title: 'Word Bomb',
+                                titleIcon: Icons.whatshot_rounded,
+                                titleIconColor: ColorPalette.error,
+                                sections: [
+                                  InformationSection(
+                                    icon: Icons.flag_circle_outlined,
+                                    iconColor: ColorPalette.success,
+                                    title: 'Obiettivo del Gioco',
+                                    content:
+                                        "L'obiettivo è evitare di essere l'ultimo giocatore a cui 'scoppia la bomba'. Per farlo, devi scrivere velocemente una parola che inizi con la lettera mostrata e appartenga alla categoria estratta. Il timer dura 60 secondi e l'ultimo utente a digitare perde!",
+                                  ),
+                                  InformationSection(
+                                    icon: Icons.star_outline_rounded,
+                                    iconColor: Colors.amber.shade700,
+                                    title: 'Poteri Speciali',
+                                    widgets: [
+                                      FeatureItem(
+                                        icon: Icons.add_alarm_rounded,
+                                        iconColor: Colors.blue.shade600,
+                                        title: "Guadagna Tempo (+10s)",
+                                        description:
+                                            "Aggiunge 10 secondi al tuo timer. Max 2 utilizzi per partita. COSTO: 1 shot.",
+                                      ),
+                                      FeatureItem(
+                                        icon: Icons.shuffle_rounded,
+                                        iconColor: Colors.orange.shade600,
+                                        title: "Cambia Categoria",
+                                        description:
+                                            "Cambia la categoria e la lettera iniziale. Max 2 utilizzi per partita. COSTO: 1 shot.",
+                                      ),
+                                      FeatureItem(
+                                        icon: Icons.visibility_off_outlined,
+                                        iconColor: Colors.deepPurple.shade600,
+                                        title: "Protocollo Fantasma",
+                                        description:
+                                            "Rende il timer invisibile a tutti i giocatori per 30 secondi. Attivabile una sola volta per partita da un giocatore casuale designato come 'Fantasma' all'inizio del round.",
+                                      ),
+                                    ],
+                                  ),
+                                  InformationSection(
+                                    icon: Icons.pause_circle_outline_rounded,
+                                    iconColor: ColorPalette.info,
+                                    title: 'Pausa per Bere',
+                                    content:
+                                        "Quando usi un potere che costa uno shot, il gioco andrà in pausa. Apparirà un dialogo per darti il tempo di bere. Premi 'Prosegui' solo dopo aver bevuto per far ripartire il timer.",
+                                  ),
+                                  InformationSection(
+                                    icon: Icons.rule_folder_outlined,
+                                    iconColor: context.textSecondaryColor,
+                                    title: 'Altre Info Utili',
+                                    content:
+                                        "Il timer è unico per tutti. La lettera iniziale e la categoria cambiano ad ogni round o con il potere 'Cambia Categoria'. Il 'Fantasma' viene designato casualmente all'inizio di ogni round.",
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
                           onTrialRequested: () {
                             context
                                 .read<WordBombBloc>()
