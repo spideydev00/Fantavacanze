@@ -19,5 +19,5 @@ class GetTruthOrDareCards
 
 class GetTruthOrDareCardsParams {
   final int limit;
-  GetTruthOrDareCardsParams({this.limit = 50});
+  GetTruthOrDareCardsParams({this.limit = 100});
 }

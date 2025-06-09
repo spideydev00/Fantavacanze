@@ -15,17 +15,19 @@ class WordBombRepositoryImpl implements WordBombRepository {
   });
 
   @override
-  Future<Either<Failure, List<String>>> getWordBombCategories() async {
+  Future<Either<Failure, bool>> setWordBombTrialStatus(
+      {required bool isActive, required String userId}) async {
     if (!await connectionChecker.isConnected) {
       return Left(Failure('Nessuna connessione internet.'));
     }
     try {
-      final categories = await remoteDataSource.getWordBombCategories();
-      return Right(categories);
+      final result = await remoteDataSource.setWordBombTrialStatus(
+        isActive: isActive,
+        userId: userId,
+      );
+      return Right(result);
     } on ServerException catch (e) {
       return Left(Failure(e.message));
-    } catch (e) {
-      return Left(Failure(e.toString()));
     }
   }
 }

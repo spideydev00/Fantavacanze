@@ -24,13 +24,13 @@ class UpdateGameState implements Usecase<GameSession, UpdateGameStateParams> {
 
 class UpdateGameStateParams {
   final String sessionId;
-  final Map<String, dynamic> newGameState;
+  final Map<String, dynamic>? newGameState;
   final String? currentTurnUserId;
   final GameStatus? status;
 
   UpdateGameStateParams({
     required this.sessionId,
-    required this.newGameState,
+    this.newGameState,
     this.currentTurnUserId,
     this.status,
   });

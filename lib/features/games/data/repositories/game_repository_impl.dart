@@ -27,8 +27,6 @@ class GameRepositoryImpl implements GameRepository {
       return Right(result);
     } on ServerException catch (e) {
       return Left(Failure(e.message));
-    } catch (e) {
-      return Left(Failure(e.toString()));
     }
   }
 
@@ -50,13 +48,14 @@ class GameRepositoryImpl implements GameRepository {
   }
 
   @override
-  Future<Either<Failure, GameSession>> createGameSession({
-    required String adminId,
-    required GameType gameType,
-  }) async {
+  Future<Either<Failure, GameSession>> createGameSession(
+      {required String adminId,
+      required GameType gameType,
+      required String userName}) async {
     return _handleRequest(() => remoteDataSource.createGameSession(
           adminId: adminId,
           gameType: gameType,
+          userName: userName,
         ));
   }
 
@@ -65,20 +64,18 @@ class GameRepositoryImpl implements GameRepository {
     required String inviteCode,
     required String userId,
     required String userName,
-    String? userAvatarUrl,
   }) async {
     return _handleRequest(() => remoteDataSource.joinGameSession(
           inviteCode: inviteCode,
           userId: userId,
           userName: userName,
-          userAvatarUrl: userAvatarUrl,
         ));
   }
 
   @override
-  Future<Either<Failure, void>> leaveGameSession(
+  Future<Either<Failure, bool>> leaveGameSession(
       {required String sessionId, required String userId}) async {
-    return _handleRequest(() => remoteDataSource.leaveGameSession(
+    return _handleRequest<bool>(() => remoteDataSource.leaveGameSession(
         sessionId: sessionId, userId: userId));
   }
 
@@ -99,16 +96,24 @@ class GameRepositoryImpl implements GameRepository {
   @override
   Future<Either<Failure, GameSession>> updateGameState({
     required String sessionId,
-    required Map<String, dynamic> newGameState,
+    Map<String, dynamic>? newGameState,
     String? currentTurnUserId,
     String? status,
   }) async {
-    return _handleRequest(() => remoteDataSource.updateGameState(
-          sessionId: sessionId,
-          newGameState: newGameState,
-          currentTurnUserId: currentTurnUserId,
-          status: status,
-        ));
+    if (!await (connectionChecker.isConnected)) {
+      return Left(Failure('Nessuna connessione internet.'));
+    }
+    try {
+      final gameSessionModel = await remoteDataSource.updateGameState(
+        sessionId: sessionId,
+        newGameState: newGameState,
+        currentTurnUserId: currentTurnUserId,
+        status: status,
+      );
+      return Right(gameSessionModel);
+    } on ServerException catch (e) {
+      return Left(Failure(e.message));
+    }
   }
 
   @override
@@ -119,14 +124,54 @@ class GameRepositoryImpl implements GameRepository {
     int? score,
     bool? isGhost,
     bool? hasUsedSpecialAbility,
+    bool? hasUsedGhostProtocol,
+    int? changeCategoryUsesLeft,
   }) async {
-    return _handleRequest(() => remoteDataSource.updateGamePlayer(
-          playerId: playerId,
+    return _handleRequest(
+      () => remoteDataSource.updateGamePlayer(
+        playerId: playerId,
+        sessionId: sessionId,
+        userId: userId,
+        score: score,
+        isGhost: isGhost,
+        hasUsedSpecialAbility: hasUsedSpecialAbility,
+        hasUsedGhostProtocol: hasUsedGhostProtocol,
+        changeCategoryUsesLeft: changeCategoryUsesLeft,
+      ),
+    );
+  }
+
+  @override
+  Future<Either<Failure, void>> updateGamePlayerNameInLobby({
+    required String playerId,
+    required String newName,
+    required String sessionId,
+  }) async {
+    return _handleRequest(
+      () => remoteDataSource.updateGamePlayerNameInLobbyDb(
+        playerId: playerId,
+        newName: newName,
+      ),
+    );
+  }
+
+  @override
+  Future<Either<Failure, void>> removeGamePlayerFromLobby({
+    required String playerId,
+    required String sessionId,
+  }) async {
+    return _handleRequest(
+      () => remoteDataSource.removeGamePlayerFromLobbyDb(
+        playerId: playerId,
+        sessionId: sessionId,
+      ),
+    );
+  }
+
+  @override
+  Future<Either<Failure, void>> killSession({required String sessionId}) async {
+    return _handleRequest(() => remoteDataSource.killSession(
           sessionId: sessionId,
-          userId: userId,
-          score: score,
-          isGhost: isGhost,
-          hasUsedSpecialAbility: hasUsedSpecialAbility,
         ));
   }
 }

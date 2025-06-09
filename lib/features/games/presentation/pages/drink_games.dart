@@ -1,5 +1,6 @@
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/widgets/loader.dart';
+import 'package:fantavacanze_official/features/games/presentation/pages/game_selection_page.dart';
 import 'package:fantavacanze_official/init_dependencies/init_dependencies.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -10,7 +11,6 @@ import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:fantavacanze_official/core/utils/ad_helper.dart';
 import 'package:fantavacanze_official/core/utils/show_snackbar.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
-import 'package:fantavacanze_official/features/games/presentation/pages/drink_games_selection.dart';
 import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit.dart';
 
 class DrinkGames extends StatelessWidget {
@@ -97,7 +97,10 @@ class DrinkGames extends StatelessWidget {
         userState is AppUserIsLoggedIn && userState.user.isPremium;
 
     if (isPremium) {
-      Navigator.push(context, DrinkGamesSelection.route);
+      Navigator.of(context).pushAndRemoveUntil(
+        GameSelectionPage.route,
+        (route) => false,
+      );
     } else {
       // Catturo il context “di pagina” prima di aprire il dialog
       final pageContext = context;
@@ -138,7 +141,10 @@ class DrinkGames extends StatelessWidget {
         );
         await Future.delayed(const Duration(milliseconds: 300));
 
-        navigator.push(DrinkGamesSelection.route);
+        navigator.pushAndRemoveUntil(
+          GameSelectionPage.route,
+          (route) => false,
+        );
       } else {
         showSnackBar(
           "Non è stato possibile completare la visione degli annunci. Riprova tra qualche minuto.",

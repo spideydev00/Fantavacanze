@@ -6,30 +6,27 @@ class GamePlayerModel extends GamePlayer {
     required super.sessionId,
     required super.userId,
     required super.userName,
-    super.userAvatarUrl,
     required super.score,
     required super.isGhost,
     required super.hasUsedSpecialAbility,
+    required super.hasUsedGhostProtocol,
+    required super.changeCategoryUsesLeft,
     required super.joinedAt,
   });
 
   factory GamePlayerModel.fromJson(Map<String, dynamic> map) {
-    // Assuming 'profiles' table is joined or user details are fetched separately
-    // and added to the map before calling this factory.
-    // For simplicity, we expect userName and userAvatarUrl to be in the map.
-    // In a real scenario, you might have a nested 'profiles' object or fetch it.
     return GamePlayerModel(
       id: map['id'] as String,
       sessionId: map['session_id'] as String,
       userId: map['user_id'] as String,
-      userName: map['profiles']?['name'] ??
-          map['user_name'] ??
-          'Giocatore', // Example: fetching from a joined 'profiles' table
-      userAvatarUrl:
-          map['profiles']?['avatar_url'] ?? map['user_avatar_url'] as String?,
+      userName: map['name'] as String? ??
+          map['profiles']['name'] as String? ??
+          'Giocatore',
       score: map['score'] as int? ?? 0,
       isGhost: map['is_ghost'] as bool? ?? false,
       hasUsedSpecialAbility: map['has_used_special_ability'] as bool? ?? false,
+      hasUsedGhostProtocol: map['has_used_ghost_protocol'] as bool? ?? false,
+      changeCategoryUsesLeft: map['change_category_uses_left'] as int? ?? 2,
       joinedAt: DateTime.parse(map['joined_at'] as String),
     );
   }
@@ -39,11 +36,11 @@ class GamePlayerModel extends GamePlayer {
       'id': id,
       'session_id': sessionId,
       'user_id': userId,
-      // userName and userAvatarUrl are not typically part of game_players table schema for writing,
-      // they are for reading (denormalized or joined).
       'score': score,
       'is_ghost': isGhost,
       'has_used_special_ability': hasUsedSpecialAbility,
+      'has_used_ghost_protocol': hasUsedGhostProtocol,
+      'change_category_uses_left': changeCategoryUsesLeft,
       'joined_at': joinedAt.toIso8601String(),
     };
   }
@@ -58,6 +55,8 @@ class GamePlayerModel extends GamePlayer {
     int? score,
     bool? isGhost,
     bool? hasUsedSpecialAbility,
+    bool? hasUsedGhostProtocol,
+    int? changeCategoryUsesLeft,
     DateTime? joinedAt,
   }) {
     return GamePlayerModel(
@@ -65,11 +64,13 @@ class GamePlayerModel extends GamePlayer {
       sessionId: sessionId ?? this.sessionId,
       userId: userId ?? this.userId,
       userName: userName ?? this.userName,
-      userAvatarUrl: userAvatarUrl ?? this.userAvatarUrl,
       score: score ?? this.score,
       isGhost: isGhost ?? this.isGhost,
       hasUsedSpecialAbility:
           hasUsedSpecialAbility ?? this.hasUsedSpecialAbility,
+      hasUsedGhostProtocol: hasUsedGhostProtocol ?? this.hasUsedGhostProtocol,
+      changeCategoryUsesLeft:
+          changeCategoryUsesLeft ?? this.changeCategoryUsesLeft,
       joinedAt: joinedAt ?? this.joinedAt,
     );
   }

@@ -19,17 +19,21 @@ class UpdateGamePlayer implements Usecase<GamePlayer, UpdateGamePlayerParams> {
       score: params.score,
       isGhost: params.isGhost,
       hasUsedSpecialAbility: params.hasUsedSpecialAbility,
+      hasUsedGhostProtocol: params.hasUsedGhostProtocol,
+      changeCategoryUsesLeft: params.changeCategoryUsesLeft,
     );
   }
 }
 
 class UpdateGamePlayerParams {
-  final String playerId; // game_players table PK
+  final String playerId;
   final String sessionId;
   final String userId;
   final int? score;
   final bool? isGhost;
   final bool? hasUsedSpecialAbility;
+  final bool? hasUsedGhostProtocol;
+  final int? changeCategoryUsesLeft;
 
   UpdateGamePlayerParams({
     required this.playerId,
@@ -38,5 +42,7 @@ class UpdateGamePlayerParams {
     this.score,
     this.isGhost,
     this.hasUsedSpecialAbility,
+    this.hasUsedGhostProtocol,
+    this.changeCategoryUsesLeft,
   });
 }

@@ -1,0 +1,4 @@
+enum WordBombStrategicActionType {
+  buyTime,
+  changeCategory,
+}

@@ -9,8 +9,7 @@ class GameSession extends Equatable {
   final GameType gameType;
   final GameStatus status;
   final String? currentTurnUserId;
-  final Map<String, dynamic>?
-      gameState; // Flexible JSONB for game-specific data
+  final Map<String, dynamic>? gameState;
   final DateTime createdAt;
 
   const GameSession({

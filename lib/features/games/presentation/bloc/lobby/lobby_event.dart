@@ -9,6 +9,7 @@ sealed class LobbyEvent extends Equatable {
 class CreateSessionRequested extends LobbyEvent {
   final GameType gameType;
   const CreateSessionRequested(this.gameType);
+
   @override
   List<Object?> get props => [gameType];
 }
@@ -16,6 +17,7 @@ class CreateSessionRequested extends LobbyEvent {
 class JoinSessionRequested extends LobbyEvent {
   final String inviteCode;
   const JoinSessionRequested(this.inviteCode);
+
   @override
   List<Object?> get props => [inviteCode];
 }
@@ -32,6 +34,34 @@ class StartGameRequested extends LobbyEvent {
   const StartGameRequested(this.sessionId);
   @override
   List<Object?> get props => [sessionId];
+}
+
+class KillSessionRequested extends LobbyEvent {
+  final String sessionId;
+  const KillSessionRequested(this.sessionId);
+  @override
+  List<Object?> get props => [sessionId];
+}
+
+class EditPlayerNameRequested extends LobbyEvent {
+  final String playerId;
+  final String newName;
+  final String sessionId;
+
+  const EditPlayerNameRequested(this.playerId, this.newName, this.sessionId);
+
+  @override
+  List<Object?> get props => [playerId, newName, sessionId];
+}
+
+class RemovePlayerFromLobbyRequested extends LobbyEvent {
+  final String playerId;
+  final String sessionId;
+
+  const RemovePlayerFromLobbyRequested(this.playerId, this.sessionId);
+
+  @override
+  List<Object?> get props => [playerId, sessionId];
 }
 
 // Internal events for stream updates

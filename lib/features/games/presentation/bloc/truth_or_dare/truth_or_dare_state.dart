@@ -2,6 +2,7 @@ part of 'truth_or_dare_bloc.dart';
 
 sealed class TruthOrDareState extends Equatable {
   const TruthOrDareState();
+
   @override
   List<Object?> get props => [];
 }
@@ -12,39 +13,50 @@ final class TruthOrDareLoading extends TruthOrDareState {}
 
 final class TruthOrDareGameReady extends TruthOrDareState {
   final GameSession session;
-  final List<TruthOrDareQuestion> allQuestions; // All loaded questions
+  final List<GamePlayer> players;
+  final List<TruthOrDareQuestion> allQuestions;
   final TruthOrDareQuestion? currentQuestion;
-  final List<GamePlayer> players; // For displaying whose turn it is, etc.
   final bool isAdmin;
+  final bool canChangeCurrentQuestion;
 
   const TruthOrDareGameReady({
     required this.session,
+    required this.players,
     required this.allQuestions,
     this.currentQuestion,
-    required this.players,
     required this.isAdmin,
+    this.canChangeCurrentQuestion = true,
   });
 
   @override
-  List<Object?> get props =>
-      [session, allQuestions, currentQuestion, players, isAdmin];
+  List<Object?> get props => [
+        session,
+        players,
+        allQuestions,
+        currentQuestion,
+        isAdmin,
+        canChangeCurrentQuestion,
+      ];
 
   TruthOrDareGameReady copyWith({
     GameSession? session,
+    List<GamePlayer>? players,
     List<TruthOrDareQuestion>? allQuestions,
     TruthOrDareQuestion? currentQuestion,
-    List<GamePlayer>? players,
     bool? isAdmin,
-    bool clearCurrentQuestion = false, // Helper to nullify currentQuestion
+    bool? canChangeCurrentQuestion,
+    bool clearCurrentQuestion = false,
   }) {
     return TruthOrDareGameReady(
       session: session ?? this.session,
+      players: players ?? this.players,
       allQuestions: allQuestions ?? this.allQuestions,
       currentQuestion: clearCurrentQuestion
           ? null
           : (currentQuestion ?? this.currentQuestion),
-      players: players ?? this.players,
       isAdmin: isAdmin ?? this.isAdmin,
+      canChangeCurrentQuestion:
+          canChangeCurrentQuestion ?? this.canChangeCurrentQuestion,
     );
   }
 }
@@ -52,6 +64,7 @@ final class TruthOrDareGameReady extends TruthOrDareState {
 final class TruthOrDareError extends TruthOrDareState {
   final String message;
   const TruthOrDareError(this.message);
+
   @override
   List<Object?> get props => [message];
 }

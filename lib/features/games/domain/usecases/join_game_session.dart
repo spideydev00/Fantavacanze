@@ -16,7 +16,6 @@ class JoinGameSession implements Usecase<GameSession, JoinGameSessionParams> {
       inviteCode: params.inviteCode,
       userId: params.userId,
       userName: params.userName,
-      userAvatarUrl: params.userAvatarUrl,
     );
   }
 }
@@ -25,12 +24,10 @@ class JoinGameSessionParams {
   final String inviteCode;
   final String userId;
   final String userName;
-  final String? userAvatarUrl;
 
   JoinGameSessionParams({
     required this.inviteCode,
     required this.userId,
     required this.userName,
-    this.userAvatarUrl,
   });
 }

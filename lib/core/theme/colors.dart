@@ -74,6 +74,7 @@ class ColorPalette {
   static const Color success = Color(0xFF388E3C);
   static const Color warning = Color(0xFFF57C00);
   static const Color info = Color.fromARGB(255, 135, 126, 209);
+  static const Color infoDarker = Color.fromARGB(255, 113, 105, 174);
 
   // Neutral Shades
   static const Color black = Color(0xFF232323);
@@ -205,6 +206,12 @@ class ColorPalette {
     Color(0xFF2FAD6E), // Medium Green
     Color(0xFF00CCBB), // Teal
   ];
+
+  // In your ColorPalette class
+  static const Color truthPrimary = Color(0xFF00AEEF); // Example: Bright Blue
+  static const Color truthSecondary = Color(0xFF80D4F8);
+  static const Color darePrimary = Color(0xFFED1C24); // Example: Bright Red
+  static const Color dareSecondary = Color(0xFFF47A7E);
 
   // Premium feature gradient backgrounds
   static LinearGradient getPremiumGradient() => const LinearGradient(

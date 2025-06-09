@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
-import 'package:fantavacanze_official/main.dart'; // Import main.dart to access messengerKey
+import 'package:fantavacanze_official/main.dart';
 
 void showSnackBar(
   String message, {
