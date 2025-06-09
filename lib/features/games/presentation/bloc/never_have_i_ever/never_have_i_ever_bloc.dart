@@ -32,6 +32,7 @@ class NeverHaveIEverBloc
   StreamSubscription<dynamic>? _playersSubscription;
   List<NeverHaveIEverQuestion> _allQuestionsList = [];
   List<GamePlayer> _currentPlayersList = [];
+  bool _isSinglePlayerLocalMode = false; // New field
 
   // =====================================================================
   // GETTERS
@@ -94,6 +95,8 @@ class NeverHaveIEverBloc
       },
       (initialPlayers) async {
         _currentPlayersList = initialPlayers;
+        _isSinglePlayerLocalMode =
+            _currentPlayersList.length == 1; // Set the flag
 
         final questionsResult = await _getNeverHaveIEverCards(
           GetNeverHaveIEverCardsParams(sessionId: event.initialSession.id),
@@ -128,21 +131,35 @@ class NeverHaveIEverBloc
                 'current_question_id': firstQuestion.id,
               };
 
-              final updateResult = await _updateGameState(UpdateGameStateParams(
-                sessionId: event.initialSession.id,
-                newGameState: newGameState,
-              ));
+              if (_isSinglePlayerLocalMode) {
+                // Single Player Logic
+                final updatedSession =
+                    event.initialSession.copyWith(gameState: newGameState);
+                emit(_buildGameReadyState(updatedSession, _currentPlayersList));
+              } else {
+                // Multiplayer Logic (existing)
+                final updateResult =
+                    await _updateGameState(UpdateGameStateParams(
+                  sessionId: event.initialSession.id,
+                  newGameState: newGameState,
+                ));
 
-              updateResult.fold(
-                (failure) => emit(NeverHaveIEverError(
-                    "Impossibile trovare le domande iniziali: ${failure.message}")),
-                (_) {
-                  final updatedSession =
-                      event.initialSession.copyWith(gameState: newGameState);
-                  emit(_buildGameReadyState(
-                      updatedSession, _currentPlayersList));
-                },
-              );
+                updateResult.fold(
+                  (failure) => emit(NeverHaveIEverError(
+                      "Impossibile trovare le domande iniziali: ${failure.message}")),
+                  (_) {
+                    // Stream will propagate. If emit is needed here, ensure it's consistent.
+                    // For now, relying on stream for multiplayer.
+                    // Consider if an optimistic update was intended for multiplayer too.
+                    // The original code emitted based on event.initialSession.copyWith,
+                    // which might be before stream propagation.
+                    // For consistency with single-player, an optimistic update could be:
+                    // final updatedSession = event.initialSession.copyWith(gameState: newGameState);
+                    // emit(_buildGameReadyState(updatedSession, _currentPlayersList));
+                    // However, current pattern is to let stream update.
+                  },
+                );
+              }
             } else {
               emit(_buildGameReadyState(
                   event.initialSession, _currentPlayersList));
@@ -175,20 +192,28 @@ class NeverHaveIEverBloc
       'current_question_id': randomQuestion.id,
     };
 
-    final result = await _updateGameState(UpdateGameStateParams(
-      sessionId: currentReadyState.session.id,
-      newGameState: newGameState,
-    ));
+    if (_isSinglePlayerLocalMode) {
+      // Single Player Logic
+      final updatedSession =
+          currentReadyState.session.copyWith(gameState: newGameState);
+      emit(_buildGameReadyState(updatedSession, _currentPlayersList));
+    } else {
+      // Multiplayer Logic (existing)
+      final result = await _updateGameState(UpdateGameStateParams(
+        sessionId: currentReadyState.session.id,
+        newGameState: newGameState,
+      ));
 
-    result.fold(
-      (failure) {
-        emit(NeverHaveIEverError(
-            "Errore nel cambiare domanda: ${failure.message}"));
-      },
-      (_) {
-        // Success, stream will propagate the change.
-      },
-    );
+      result.fold(
+        (failure) {
+          emit(NeverHaveIEverError(
+              "Errore nel cambiare domanda: ${failure.message}"));
+        },
+        (_) {
+          // Success, stream will propagate the change.
+        },
+      );
+    }
   }
 
   // =====================================================================
@@ -206,11 +231,23 @@ class NeverHaveIEverBloc
       return;
     }
 
-    if (_allQuestionsList.isEmpty && state is! NeverHaveIEverLoading) {
-      // Questions might not have loaded during init.
+    if (_isSinglePlayerLocalMode && state is NeverHaveIEverGameReady) {
+      final currentReadyState = state as NeverHaveIEverGameReady;
+      // In single player, local session's gameState is authoritative.
+      // Only update non-gameState parts from the streamed session, e.g., status.
+      final updatedLocalSession = currentReadyState.session.copyWith(
+        status: event.session.status,
+        // adminId, inviteCode etc. are unlikely to change mid-game and affect single player
+      );
+      emit(_buildGameReadyState(updatedLocalSession, _currentPlayersList));
+    } else {
+      // Multiplayer logic or initial load before GameReady state
+      if (_allQuestionsList.isEmpty && state is! NeverHaveIEverLoading) {
+        // This condition might need review if it interferes with initial loading
+        // when questions are fetched after streams start.
+      }
+      emit(_buildGameReadyState(event.session, _currentPlayersList));
     }
-
-    emit(_buildGameReadyState(event.session, _currentPlayersList));
   }
 
   // ------------------ ON PLAYERS UPDATED ------------------ //

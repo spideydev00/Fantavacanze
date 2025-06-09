@@ -403,7 +403,7 @@ class LeagueRepositoryImpl implements LeagueRepository {
     try {
       if (!await connectionChecker.isConnected) {
         return Left(
-          Failure("No internet connection and no cached rules available."),
+          Failure("Assenza di connessione ad internet e regole nella cache."),
         );
       }
 

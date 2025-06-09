@@ -17,8 +17,8 @@ import 'package:fantavacanze_official/core/extensions/context_extension.dart';
 import 'package:fantavacanze_official/core/navigation/navigation_item.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:fantavacanze_official/core/widgets/divider.dart';
-import 'package:fantavacanze_official/core/widgets/plan_label.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/dashboard/widgets/side_menu/side_menu_navigation_asset.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class SideMenu extends StatelessWidget {
   final VoidCallback? closeMenuCallback;
@@ -233,16 +233,67 @@ class SideMenu extends StatelessWidget {
 Widget _buildUserInfo(BuildContext context, String name, String email) {
   return Row(
     crossAxisAlignment: CrossAxisAlignment.center,
+    mainAxisAlignment: MainAxisAlignment.start,
     children: [
-      // TODO: Aggiungi l'immagine dell'avatar + logica per modificarlo
+      // Check if user is admin and show PRO label
       Padding(
-        padding: const EdgeInsets.all(ThemeSizes.md),
-        child: Image.asset(
-          "assets/images/icons/homepage_icons/basic-avatar.png",
-          width: ThemeSizes.avatarSize,
-          height: ThemeSizes.avatarSize,
+        padding: const EdgeInsets.symmetric(horizontal: ThemeSizes.md),
+        child: Stack(
+          alignment: Alignment.topCenter,
+          children: [
+            // The avatar
+            CircleAvatar(
+              radius: ThemeSizes.avatarSize,
+              backgroundColor: context.primaryColor.withValues(alpha: 0.1),
+              child: Icon(
+                Icons.person,
+                size: ThemeSizes.avatarSize,
+                color: context.primaryColor,
+              ),
+            ),
+
+            // PRO label (only for admins)
+            BlocBuilder<AppUserCubit, AppUserState>(
+              builder: (context, state) {
+                if (state is AppUserIsLoggedIn &&
+                    state.user.isPremium == true) {
+                  return Positioned(
+                    bottom: 1,
+                    right: 1,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 6,
+                        vertical: 2,
+                      ),
+                      decoration: BoxDecoration(
+                        color: context.primaryColor,
+                        borderRadius: BorderRadius.circular(10),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.2),
+                            blurRadius: 2,
+                            offset: const Offset(0, 1),
+                          ),
+                        ],
+                      ),
+                      child: Text(
+                        'PRO',
+                        style: GoogleFonts.passeroOne(
+                          color: Colors.white,
+                          fontSize: 11,
+                        ),
+                      ),
+                    ),
+                  );
+                }
+                return const SizedBox.shrink();
+              },
+            ),
+          ],
         ),
       ),
+
+      // User info (name and email)
       Expanded(
         // Usa Expanded per evitare overflow se il testo è lungo
         child: Column(
@@ -263,8 +314,6 @@ Widget _buildUserInfo(BuildContext context, String name, String email) {
                 overflow: TextOverflow.ellipsis,
               ),
             ),
-            const SizedBox(height: ThemeSizes.sm + 2),
-            const PlanLabel(),
           ],
         ),
       ),

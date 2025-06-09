@@ -18,7 +18,7 @@ class SupportContactDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const String supportEmail = 'info@fantavacanze.it';
+    const String supportEmail = 'supporto@fantavacanze.it';
 
     return Dialog(
       backgroundColor: context.bgColor,

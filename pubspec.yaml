@@ -177,6 +177,8 @@ flutter:
   - assets/images/icons/homepage_icons/event-icon.svg
   - assets/images/icons/homepage_icons/event-icon-dark.svg
   - assets/images/icons/homepage_icons/basic-avatar.png
+  - assets/images/tutorial.jpg
+  - assets/images/about-us.jpg
   
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-assets/images

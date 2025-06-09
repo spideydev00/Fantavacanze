@@ -17,8 +17,6 @@ class GdprService {
     if (_isInitializing) return;
     _isInitializing = true;
     _errorMessage = null;
-    // Notify listeners if you use a state management solution for this service
-    // For simplicity, we're not adding a full ChangeNotifier or Bloc here.
 
     // IMPORTANT: Replace with your actual test device identifiers
     final defaultTestIdentifiers =
@@ -44,7 +42,6 @@ class GdprService {
     }
 
     _isInitializing = false;
-    // Notify listeners
   }
 
   Future<void> _fetchConsentStatus() async {

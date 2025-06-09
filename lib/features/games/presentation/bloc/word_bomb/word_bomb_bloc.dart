@@ -24,7 +24,7 @@ part 'word_bomb_state.dart';
 // =====================================================================
 // CONSTANTS
 // =====================================================================
-const int _wordBombRoundDurationMs = 600000;
+const int _wordBombRoundDurationMs = 60000;
 const int _timerIntervalMs = 100;
 const int _buyTimeBonusMs = 10000;
 
@@ -1114,27 +1114,9 @@ class WordBombBloc extends Bloc<WordBombEvent, WordBombState> {
               hasUsedGhostProtocol: false, // Reset ghost protocol use
               changeCategoryUsesLeft: GamePlayer
                   .defaultChangeCategoryUses, // Reset category changes
-            )).then((result) {
-              result.fold(
-                (f) => print(
-                    "WordBombBloc: Failed to reset powers for player ${player.userName} (ID: ${player.id}): ${f.message}"),
-                (_) => print(
-                    "WordBombBloc: Successfully reset powers for player ${player.userName} (ID: ${player.id})"),
-              );
-            }),
+            )),
           );
         }
-        try {
-          await Future.wait(playerResetFutures);
-          print(
-              "WordBombBloc: All player power reset operations attempted for session ${session.id}.");
-        } catch (e) {
-          print("WordBombBloc: Error during Future.wait for player resets: $e");
-          // Optionally emit an error or log more formally
-        }
-        // The main game state stream (_sessionSubscription) will pick up the
-        // gameStateUpdateResult. Player updates will be picked up by _playersSubscription.
-        // No need to emit here as streams will handle it.
       },
     );
   }

@@ -27,7 +27,7 @@ class ThemeSizes {
   // Image sizes
   static const double imageThumbSize = 80.0;
   static const double imageThumbSizeLg = 120.0;
-  static const double avatarSize = 60.0;
+  static const double avatarSize = 38.0;
 
   // Default spacing between sections
   static const double defaultSpace = 24.0;

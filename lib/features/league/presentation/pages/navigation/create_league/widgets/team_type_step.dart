@@ -88,9 +88,9 @@ class TeamTypeStep extends StatelessWidget {
                 groupValue: isTeamBased,
                 onChanged: onTeamTypeChanged,
               ),
-              
+
               CustomDivider(text: 'Oppure'),
-              
+
               // Team league option
               _TeamTypeOption(
                 title: 'Lega a Squadre',
@@ -151,14 +151,14 @@ class _TeamTypeOption extends StatelessWidget {
                 children: [
                   Text(
                     title,
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    style: context.textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                   const SizedBox(height: ThemeSizes.xs),
                   Text(
                     description,
-                    style: Theme.of(context).textTheme.bodyMedium,
+                    style: context.textTheme.bodyMedium,
                   ),
                 ],
               ),
