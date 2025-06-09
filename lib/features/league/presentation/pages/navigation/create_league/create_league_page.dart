@@ -435,9 +435,9 @@ class _CreateLeaguePageState extends State<CreateLeaguePage> {
                 child: Theme(
                   data: Theme.of(context).copyWith(
                     canvasColor: context.secondaryBgColor,
-                    colorScheme: Theme.of(context).colorScheme.copyWith(
-                          surface: context.secondaryBgColor,
-                        ),
+                    colorScheme: context.colorScheme.copyWith(
+                      surface: context.secondaryBgColor,
+                    ),
                   ),
                   child: Stepper(
                     margin: EdgeInsets.zero,
@@ -636,13 +636,10 @@ class _CreateLeaguePageState extends State<CreateLeaguePage> {
                                 vertical: ThemeSizes.md,
                                 horizontal: ThemeSizes.sm,
                               ),
-                              textStyle: Theme.of(context)
-                                  .textTheme
-                                  .labelLarge
-                                  ?.copyWith(
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.w600,
-                                  ),
+                              textStyle: context.textTheme.labelLarge?.copyWith(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
                             child: Text(
                               _isCreating
@@ -689,8 +686,7 @@ class _AddRuleDialogState extends State<_AddRuleDialog> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Tipo di Regola',
-              style: Theme.of(context).textTheme.titleMedium),
+          Text('Tipo di Regola', style: context.textTheme.titleMedium),
           const SizedBox(height: ThemeSizes.sm),
           TypeSelector(
             selectedType: ruleType,

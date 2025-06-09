@@ -568,9 +568,7 @@ class _WordBombPageState extends State<WordBombPage> {
                   alignment: Alignment.center,
                   child: Text(
                     'Non è il tuo turno',
-                    style: Theme.of(context)
-                        .textTheme
-                        .titleMedium
+                    style: context.textTheme.titleMedium
                         ?.copyWith(color: context.textSecondaryColor),
                   ),
                 ),
@@ -1064,7 +1062,7 @@ class _WordBombPageState extends State<WordBombPage> {
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: ThemeSizes.lg),
-              iAmTheLoser
+              state.isAdmin
                   ? ElevatedButton(
                       onPressed: () {
                         context
@@ -1142,7 +1140,7 @@ class _WordBombPageState extends State<WordBombPage> {
       barrierDismissible: false,
       barrierLabel:
           MaterialLocalizations.of(pageContext).modalBarrierDismissLabel,
-      barrierColor: Colors.black.withOpacity(0.5),
+      barrierColor: Colors.black.withValues(alpha: 0.5),
       transitionDuration:
           const Duration(milliseconds: 300), // Animation duration
       pageBuilder: (BuildContext buildContext, Animation<double> animation,

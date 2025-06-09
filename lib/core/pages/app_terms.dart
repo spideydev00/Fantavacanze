@@ -174,7 +174,7 @@ class AppTermsPage extends StatelessWidget {
             ),
             const SizedBox(height: ThemeSizes.md),
             Text(
-              'Per domande o dubbi sui nostri Termini e Condizioni, contattaci all\'indirizzo email: info@fantavacanze.it',
+              'Per domande o dubbi sui nostri Termini e Condizioni, contattaci all\'indirizzo email: supporto@fantavacanze.it',
               style: context.textTheme.bodyMedium,
             ),
             const SizedBox(height: ThemeSizes.xxl),

@@ -154,7 +154,7 @@ class PrivacyPolicyPage extends StatelessWidget {
               '• Cancellare i tuoi dati personali.\n'
               '• Opporti al trattamento dei tuoi dati.\n'
               '• Richiedere la portabilità dei dati.\n\n'
-              'Per esercitare questi diritti, contattaci all\'indirizzo email: info@fantavacanze.it',
+              'Per esercitare questi diritti, contattaci all\'indirizzo email: supporto@fantavacanze.it',
               style: context.textTheme.bodyMedium,
             ),
             const SizedBox(height: ThemeSizes.lg),
@@ -180,7 +180,7 @@ class PrivacyPolicyPage extends StatelessWidget {
             ),
             const SizedBox(height: ThemeSizes.md),
             Text(
-              'Per domande o dubbi sulla nostra Privacy Policy, contattaci all\'indirizzo email: info@fantavacanze.it',
+              'Per domande o dubbi sulla nostra Privacy Policy, contattaci all\'indirizzo email: supporto@fantavacanze.it',
               style: context.textTheme.bodyMedium,
             ),
             const SizedBox(height: ThemeSizes.xxl),

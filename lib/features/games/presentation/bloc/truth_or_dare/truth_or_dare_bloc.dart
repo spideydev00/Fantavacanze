@@ -30,6 +30,7 @@ class TruthOrDareBloc extends Bloc<TruthOrDareEvent, TruthOrDareState> {
   StreamSubscription<dynamic>? _sessionSubscription;
   StreamSubscription<dynamic>? _playersSubscription;
   List<TruthOrDareQuestion> _allQuestionsList = [];
+  bool _isSinglePlayerLocalMode = false; // New field
 
   // =====================================================================
   // GETTERS
@@ -96,6 +97,8 @@ class TruthOrDareBloc extends Bloc<TruthOrDareEvent, TruthOrDareState> {
         await playersEither.fold((fail) async {
           emit(TruthOrDareError("Failed to load players: ${fail.message}"));
         }, (initialPlayers) async {
+          _isSinglePlayerLocalMode = initialPlayers.length == 1; // Set the flag
+
           TruthOrDareQuestion? initialQuestion;
           if (event.initialSession.gameState != null &&
               event.initialSession.gameState!['current_question_id'] != null) {
@@ -135,29 +138,48 @@ class TruthOrDareBloc extends Bloc<TruthOrDareEvent, TruthOrDareState> {
         final randomQuestion =
             availableQuestions[Random().nextInt(availableQuestions.length)];
 
-        final immediateState = currentReadyState.copyWith(
-          currentQuestion: randomQuestion,
-          canChangeCurrentQuestion: true,
-          allQuestions: _allQuestionsList,
-        );
-        emit(immediateState);
-
-        final newGameState = {
-          'current_question_id': randomQuestion.id,
-          'current_question_type': randomQuestion.type.name,
-        };
-        final result = await _updateGameState(UpdateGameStateParams(
-          sessionId: currentReadyState.session.id,
-          newGameState: newGameState,
-        ));
-
-        result.fold((failure) {
+        if (_isSinglePlayerLocalMode) {
+          // Single Player Logic
+          final newGameState = {
+            'current_question_id': randomQuestion.id,
+            'current_question_type': randomQuestion.type.name,
+          };
+          final updatedSession =
+              currentReadyState.session.copyWith(gameState: newGameState);
           emit(currentReadyState.copyWith(
-              currentQuestion: null, allQuestions: _allQuestionsList));
-          emit(TruthOrDareError("Errore selezione carta: ${failure.message}"));
-        }, (_) {
-          // State already updated optimistically, stream will confirm or correct
-        });
+            session: updatedSession,
+            currentQuestion: randomQuestion,
+            canChangeCurrentQuestion:
+                true, // Assuming it can be changed once selected
+          ));
+        } else {
+          // Multiplayer Logic (existing)
+          final immediateState = currentReadyState.copyWith(
+            currentQuestion: randomQuestion,
+            canChangeCurrentQuestion: true,
+            allQuestions: _allQuestionsList,
+          );
+          emit(immediateState); // Optimistic update
+
+          final newGameState = {
+            'current_question_id': randomQuestion.id,
+            'current_question_type': randomQuestion.type.name,
+          };
+          final result = await _updateGameState(UpdateGameStateParams(
+            sessionId: currentReadyState.session.id,
+            newGameState: newGameState,
+          ));
+
+          result.fold((failure) {
+            // Revert optimistic update on failure
+            emit(currentReadyState.copyWith(
+                currentQuestion: null, allQuestions: _allQuestionsList));
+            emit(
+                TruthOrDareError("Errore selezione carta: ${failure.message}"));
+          }, (_) {
+            // State already updated optimistically, stream will confirm or correct
+          });
+        }
       } else {
         emit(TruthOrDareError(
             "Nessuna domanda disponibile per ${event.cardType}."));
@@ -193,18 +215,32 @@ class TruthOrDareBloc extends Bloc<TruthOrDareEvent, TruthOrDareState> {
       'current_question_type': null,
     };
 
-    final result = await _updateGameState(UpdateGameStateParams(
-      sessionId: currentReadyState.session.id,
-      newGameState: newGameState,
-      currentTurnUserId: nextPlayerUserId,
-      status: GameStatus.inProgress,
-    ));
+    if (_isSinglePlayerLocalMode) {
+      // Single Player Logic
+      final updatedSession = currentReadyState.session.copyWith(
+        gameState: newGameState,
+        currentTurnUserId: nextPlayerUserId,
+      );
+      emit(currentReadyState.copyWith(
+        session: updatedSession,
+        clearCurrentQuestion: true,
+        canChangeCurrentQuestion: true,
+      ));
+    } else {
+      // Multiplayer Logic (existing)
+      final result = await _updateGameState(UpdateGameStateParams(
+        sessionId: currentReadyState.session.id,
+        newGameState: newGameState,
+        currentTurnUserId: nextPlayerUserId,
+        status: GameStatus.inProgress,
+      ));
 
-    result.fold((failure) {
-      emit(TruthOrDareError("Errore avanzamento turno: ${failure.message}"));
-    }, (_) {
-      // Stream will update the state
-    });
+      result.fold((failure) {
+        emit(TruthOrDareError("Errore avanzamento turno: ${failure.message}"));
+      }, (_) {
+        // Stream will update the state
+      });
+    }
   }
 
   // ------------------ ON CHANGE QUESTION REQUESTED ------------------ //
@@ -228,30 +264,47 @@ class TruthOrDareBloc extends Bloc<TruthOrDareEvent, TruthOrDareState> {
       if (availableQuestions.isNotEmpty) {
         final randomQuestion =
             availableQuestions[Random().nextInt(availableQuestions.length)];
-        emit(currentReadyState.copyWith(
-          currentQuestion: randomQuestion,
-          canChangeCurrentQuestion: false,
-          allQuestions: _allQuestionsList,
-        ));
 
-        final newGameState = {
-          'current_question_id': randomQuestion.id,
-          'current_question_type': randomQuestion.type.name,
-        };
-        final result = await _updateGameState(UpdateGameStateParams(
-          sessionId: currentReadyState.session.id,
-          newGameState: newGameState,
-        ));
-
-        result.fold((failure) {
+        if (_isSinglePlayerLocalMode) {
+          // Single Player Logic
+          final newGameState = {
+            'current_question_id': randomQuestion.id,
+            'current_question_type': randomQuestion.type.name,
+          };
+          final updatedSession =
+              currentReadyState.session.copyWith(gameState: newGameState);
           emit(currentReadyState.copyWith(
-              currentQuestion: currentReadyState.currentQuestion,
-              canChangeCurrentQuestion: true,
-              allQuestions: _allQuestionsList));
-          emit(TruthOrDareError("Errore cambio domanda: ${failure.message}"));
-        }, (_) {
-          // State already updated optimistically, stream will confirm or correct
-        });
+            session: updatedSession,
+            currentQuestion: randomQuestion,
+            canChangeCurrentQuestion: false,
+          ));
+        } else {
+          // Multiplayer Logic (existing)
+          emit(currentReadyState.copyWith(
+            currentQuestion: randomQuestion,
+            canChangeCurrentQuestion: false,
+            allQuestions: _allQuestionsList,
+          )); // Optimistic update
+
+          final newGameState = {
+            'current_question_id': randomQuestion.id,
+            'current_question_type': randomQuestion.type.name,
+          };
+          final result = await _updateGameState(UpdateGameStateParams(
+            sessionId: currentReadyState.session.id,
+            newGameState: newGameState,
+          ));
+
+          result.fold((failure) {
+            emit(currentReadyState.copyWith(
+                currentQuestion: currentReadyState.currentQuestion,
+                canChangeCurrentQuestion: true,
+                allQuestions: _allQuestionsList));
+            emit(TruthOrDareError("Errore cambio domanda: ${failure.message}"));
+          }, (_) {
+            // State already updated optimistically, stream will confirm or correct
+          });
+        }
       } else {
         emit(currentReadyState.copyWith(
           canChangeCurrentQuestion: false,
@@ -270,7 +323,6 @@ class TruthOrDareBloc extends Bloc<TruthOrDareEvent, TruthOrDareState> {
       _TruthOrDareSessionUpdated event, Emitter<TruthOrDareState> emit) {
     if (state is TruthOrDareGameReady) {
       final currentReadyState = state as TruthOrDareGameReady;
-      final previousTurnUserId = currentReadyState.session.currentTurnUserId;
 
       if (event.session.status != GameStatus.inProgress) {
         _cancelSubscriptions();
@@ -278,37 +330,85 @@ class TruthOrDareBloc extends Bloc<TruthOrDareEvent, TruthOrDareState> {
         return;
       }
 
-      bool turnChanged = previousTurnUserId != event.session.currentTurnUserId;
-      TruthOrDareQuestion? updatedQuestion;
+      if (_isSinglePlayerLocalMode) {
+        // Single Player Logic
+        // In single player, local session's gameState is authoritative.
+        // Merge status and other non-gameState fields from the streamed session.
+        final localSession = currentReadyState.session;
+        final mergedSession = localSession.copyWith(
+          status: event.session.status,
+          currentTurnUserId:
+              event.session.currentTurnUserId, // Keep this sync for consistency
+          // adminId, inviteCode etc. are unlikely to change mid-game
+        );
 
-      if (event.session.gameState != null &&
-          event.session.gameState!['current_question_id'] != null) {
-        final questionId =
-            event.session.gameState!['current_question_id'] as String;
-        try {
-          updatedQuestion =
-              _allQuestionsList.firstWhere((q) => q.id == questionId);
-        } catch (e) {
+        TruthOrDareQuestion? updatedQuestion;
+        if (mergedSession.gameState != null &&
+            mergedSession.gameState!['current_question_id'] != null) {
+          final questionId =
+              mergedSession.gameState!['current_question_id'] as String;
+          try {
+            updatedQuestion =
+                _allQuestionsList.firstWhere((q) => q.id == questionId);
+          } catch (e) {/* Question not found, remains null */}
+        }
+
+        // Determine canChangeCurrentQuestion based on local logic, not just turn change
+        // For single player, it's true if no question, or after a question is completed.
+        // It's false if a question is active and hasn't been changed yet.
+        // This logic is mostly handled by the action handlers.
+        // Here, we primarily ensure the session state is consistent.
+        bool canChange = updatedQuestion == null ||
+            currentReadyState.canChangeCurrentQuestion;
+        if (localSession.currentTurnUserId != mergedSession.currentTurnUserId) {
+          // If turn "changed" (even to self), allow new choice/change.
+          canChange = true;
+        }
+
+        emit(currentReadyState.copyWith(
+          session: mergedSession,
+          currentQuestion: updatedQuestion,
+          isAdmin: _isAdmin(mergedSession),
+          canChangeCurrentQuestion: canChange,
+          clearCurrentQuestion: updatedQuestion == null,
+        ));
+      } else {
+        // Multiplayer Logic (existing)
+        final previousTurnUserId = currentReadyState.session.currentTurnUserId;
+        bool turnChanged =
+            previousTurnUserId != event.session.currentTurnUserId;
+        TruthOrDareQuestion? updatedQuestion;
+
+        if (event.session.gameState != null &&
+            event.session.gameState!['current_question_id'] != null) {
+          final questionId =
+              event.session.gameState!['current_question_id'] as String;
+          try {
+            updatedQuestion =
+                _allQuestionsList.firstWhere((q) => q.id == questionId);
+          } catch (e) {
+            updatedQuestion = null;
+          }
+        } else {
           updatedQuestion = null;
         }
-      } else {
-        updatedQuestion = null;
-      }
 
-      final newState = currentReadyState.copyWith(
-        session: event.session,
-        players: currentReadyState.players,
-        allQuestions: _allQuestionsList,
-        isAdmin: _isAdmin(event.session),
-        currentQuestion: updatedQuestion,
-        clearCurrentQuestion: updatedQuestion == null,
-        canChangeCurrentQuestion: turnChanged
-            ? true
-            : (updatedQuestion == null
-                ? true
-                : currentReadyState.canChangeCurrentQuestion),
-      );
-      emit(newState);
+        final newState = currentReadyState.copyWith(
+          session: event.session,
+          players: currentReadyState
+              .players, // Players are updated by _onPlayersUpdated
+          allQuestions: _allQuestionsList,
+          isAdmin: _isAdmin(event.session),
+          currentQuestion: updatedQuestion,
+          clearCurrentQuestion: updatedQuestion == null,
+          canChangeCurrentQuestion: turnChanged
+              ? true
+              : (updatedQuestion == null
+                  ? true
+                  : currentReadyState.canChangeCurrentQuestion),
+        );
+        emit(newState);
+      }
     } else if (state is TruthOrDareLoading && _sessionSubscription != null) {
       // Still loading, session update might be the first one.
       // The _onInitializeTruthOrDareGame should handle emitting GameReady.

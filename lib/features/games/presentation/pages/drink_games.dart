@@ -1,4 +1,5 @@
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
+import 'package:fantavacanze_official/core/extensions/context_extension.dart';
 import 'package:fantavacanze_official/core/widgets/loader.dart';
 import 'package:fantavacanze_official/features/games/presentation/pages/game_selection_page.dart';
 import 'package:fantavacanze_official/init_dependencies/init_dependencies.dart';
@@ -52,7 +53,7 @@ class DrinkGames extends StatelessWidget {
                   InfoBanner(
                     message:
                         'In questa sezione puoi accedere ai giochi alcolici proposti dal team Fantavacanze.',
-                    color: Theme.of(context).colorScheme.primary,
+                    color: context.colorScheme.primary,
                     icon: Icons.celebration,
                   ),
 
@@ -61,9 +62,9 @@ class DrinkGames extends StatelessWidget {
                   Text(
                     'Se vuoi dare un tocco in più alle tue serate, interagire con nuove persone o semplicemente divertirti con i tuoi amici e le tue amiche, questa sezione fa per te!',
                     textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
+                    style: context.textTheme.bodySmall?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
 
                   const Spacer(),

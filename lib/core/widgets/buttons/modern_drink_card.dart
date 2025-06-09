@@ -265,12 +265,12 @@ class ModernDrinkCard extends StatelessWidget {
                 child: Container(
                   padding: const EdgeInsets.all(6),
                   decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.25),
+                    color: Colors.black.withValues(alpha: 0.25),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
                     Icons.info_outline_rounded,
-                    color: Colors.white.withOpacity(0.8),
+                    color: Colors.white.withValues(alpha: 0.8),
                     size: 20,
                   ),
                 ),

@@ -359,9 +359,9 @@ class _AddEventPageState extends State<AddEventPage> {
             child: Theme(
               data: Theme.of(context).copyWith(
                 canvasColor: context.secondaryBgColor,
-                colorScheme: Theme.of(context).colorScheme.copyWith(
-                      surface: context.secondaryBgColor,
-                    ),
+                colorScheme: context.colorScheme.copyWith(
+                  surface: context.secondaryBgColor,
+                ),
               ),
               child: Stepper(
                 margin: EdgeInsets.zero,

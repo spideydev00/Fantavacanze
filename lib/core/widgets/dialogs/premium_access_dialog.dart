@@ -1,4 +1,5 @@
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
+import 'package:fantavacanze_official/core/extensions/context_extension.dart';
 import 'package:flutter/material.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
@@ -101,9 +102,9 @@ class _PremiumAccessDialogState extends State<PremiumAccessDialog>
                 child: Text(
                   widget.title ?? 'Ooops..',
                   textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
+                  style: context.textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
                   maxLines: 2,
                 ),
               ),
@@ -115,7 +116,7 @@ class _PremiumAccessDialogState extends State<PremiumAccessDialog>
           Text(
             widget.description ?? 'Sblocca ora:',
             textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.bodyMedium,
+            style: context.textTheme.bodyMedium,
           ),
           const SizedBox(height: ThemeSizes.xl),
 

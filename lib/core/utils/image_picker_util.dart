@@ -1,5 +1,7 @@
 import 'dart:io';
+import 'package:fantavacanze_official/core/cubits/app_theme/app_theme_cubit.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
@@ -60,8 +62,8 @@ class ImagePickerUtil {
     bool isCircular = false,
     double? aspectRatio,
   }) async {
-    final theme = Theme.of(context);
-    final isDarkMode = theme.brightness == Brightness.dark;
+    final theme = context.read<AppThemeCubit>().state.themeMode;
+    final isDarkMode = theme == ThemeMode.dark;
 
     CroppedFile? croppedFile = await ImageCropper().cropImage(
       sourcePath: imageFile.path,
