@@ -1,0 +1,1 @@
+/Users/alex/coding/flutter_projects/fantavacanze_official/build/app/intermediates/cxx/RelWithDebInfo/2h5s186a/obj/armeabi-v7a

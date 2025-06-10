@@ -1,0 +1,2 @@
+/Users/alex/coding/flutter_projects/fantavacanze_official/android/app/.cxx/RelWithDebInfo/2h5s186a/x86/CMakeFiles/edit_cache.dir
+/Users/alex/coding/flutter_projects/fantavacanze_official/android/app/.cxx/RelWithDebInfo/2h5s186a/x86/CMakeFiles/rebuild_cache.dir
