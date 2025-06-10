@@ -50,7 +50,7 @@ class GamePlayer extends Equatable {
     bool? isGhost,
     bool? hasUsedSpecialAbility,
     bool? hasUsedGhostProtocol,
-    int? changeCategoryUsesLeft, // Add to copyWith
+    int? changeCategoryUsesLeft,
     DateTime? joinedAt,
   }) {
     return GamePlayer(

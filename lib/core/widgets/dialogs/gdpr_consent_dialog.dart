@@ -9,7 +9,6 @@ import 'package:fantavacanze_official/core/widgets/buttons/danger_action_button.
 import 'package:fantavacanze_official/core/widgets/dialogs/confirmation_dialog.dart';
 import 'package:fantavacanze_official/core/widgets/loader.dart';
 import 'package:fantavacanze_official/features/auth/presentation/pages/social_login.dart';
-import 'package:fantavacanze_official/init_dependencies/init_dependencies.dart';
 import 'package:fantavacanze_official/main.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -37,7 +36,7 @@ class GdprConsentDialog extends StatefulWidget {
 class _GdprConsentDialogState extends State<GdprConsentDialog> {
   String? _adConsentStatus;
   bool _isGdprLoading = false;
-  final GdprService _gdprService = serviceLocator<GdprService>();
+  final GdprService _gdprService = GdprService();
 
   @override
   void initState() {

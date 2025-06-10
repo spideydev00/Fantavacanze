@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'dart:math';
 import 'package:equatable/equatable.dart';
 import 'package:fantavacanze_official/core/constants/game_constants.dart';
@@ -447,7 +448,7 @@ class WordBombBloc extends Bloc<WordBombEvent, WordBombState> {
           return;
         }
       } else {
-        return; // Not a game active state
+        return;
       }
     }
     // Ensure state is WordBombGameActive before proceeding
@@ -489,7 +490,7 @@ class WordBombBloc extends Bloc<WordBombEvent, WordBombState> {
       }
     }
 
-    _roundTimer?.cancel(); // Stop local BLoC timer ticks
+    _roundTimer?.cancel();
 
     final pendingActionGameState = gameState.copyWith(
       isPaused: true,
@@ -501,7 +502,7 @@ class WordBombBloc extends Bloc<WordBombEvent, WordBombState> {
       newGameState:
           WordBombGameStateModelExtension.fromEntity(pendingActionGameState)
               .toJson(),
-      status: GameStatus.paused, // Set global status to paused
+      status: GameStatus.paused,
     ));
 
     result.fold(
@@ -514,9 +515,9 @@ class WordBombBloc extends Bloc<WordBombEvent, WordBombState> {
           session: updatedSession,
           players: _currentPlayersList,
           gameState: WordBombGameStateModel.fromJson(updatedSession.gameState!),
-          isAdmin: activeState.isAdmin, // isAdmin from the original activeState
-          currentPlayerName: _getPlayerName(updatedSession.currentTurnUserId,
-              _currentPlayersList), // Recalculate based on updatedSession
+          isAdmin: activeState.isAdmin,
+          currentPlayerName: _getPlayerName(
+              updatedSession.currentTurnUserId, _currentPlayersList),
           actionBeingConfirmed: event.actionType,
         ));
       },
@@ -539,10 +540,9 @@ class WordBombBloc extends Bloc<WordBombEvent, WordBombState> {
     try {
       final awaitingState = state as WordBombAwaitingConfirmation;
       final actionToPerform = awaitingState.actionBeingConfirmed;
-      final pausedGameState =
-          awaitingState.gameState; // This state has isPaused=true
+      final pausedGameState = awaitingState.gameState;
       final session = awaitingState.session;
-      final currentUser = _currentUser!; // Should be non-null if we got here
+      final currentUser = _currentUser!;
 
       if (pausedGameState.pauseTimeEpochMs == null) {
         // This should not happen if we are in WordBombAwaitingConfirmation
@@ -552,7 +552,7 @@ class WordBombBloc extends Bloc<WordBombEvent, WordBombState> {
             session: session,
             players: _currentPlayersList,
             gameState: pausedGameState.copyWith(
-                isPaused: false, clearPauseTimeEpochMs: true), // Try to unpause
+                isPaused: false, clearPauseTimeEpochMs: true),
             isAdmin: awaitingState.isAdmin,
             currentPlayerName: awaitingState.currentPlayerName,
             currentUserId: currentUser.id,
@@ -577,7 +577,7 @@ class WordBombBloc extends Bloc<WordBombEvent, WordBombState> {
 
       WordBombGameState resumedStateCore = pausedGameState.copyWith(
         isPaused: false,
-        clearPauseTimeEpochMs: true, // Clears pauseTimeEpochMs
+        clearPauseTimeEpochMs: true,
         timeAccumulatedWhilePausedMs: newAccumulatedPausedTime,
       );
 
@@ -612,8 +612,7 @@ class WordBombBloc extends Bloc<WordBombEvent, WordBombState> {
             players: _currentPlayersList,
             gameState: resumedStateCore.copyWith(
                 isPaused: true,
-                pauseTimeEpochMs:
-                    DateTime.now().millisecondsSinceEpoch), // Re-pause on error
+                pauseTimeEpochMs: DateTime.now().millisecondsSinceEpoch),
             isAdmin: awaitingState.isAdmin,
             currentPlayerName: awaitingState.currentPlayerName,
             currentUserId: currentUser.id,
@@ -631,7 +630,7 @@ class WordBombBloc extends Bloc<WordBombEvent, WordBombState> {
                         pauseTimeEpochMs:
                             DateTime.now().millisecondsSinceEpoch))
                 .toJson(),
-            status: GameStatus.paused, // Keep it paused
+            status: GameStatus.paused,
           ));
         }, (updatedPlayer) {
           _currentPlayersList = _currentPlayersList
@@ -736,7 +735,7 @@ class WordBombBloc extends Bloc<WordBombEvent, WordBombState> {
 
       final finalGameState = pausedGameState.copyWith(
         isPaused: false,
-        clearPauseTimeEpochMs: true, // Clears pauseTimeEpochMs
+        clearPauseTimeEpochMs: true,
         timeAccumulatedWhilePausedMs: newAccumulatedPausedTime,
       );
 
@@ -744,7 +743,7 @@ class WordBombBloc extends Bloc<WordBombEvent, WordBombState> {
         sessionId: session.id,
         newGameState:
             WordBombGameStateModelExtension.fromEntity(finalGameState).toJson(),
-        status: GameStatus.inProgress, // Resume game
+        status: GameStatus.inProgress,
       ));
 
       result.fold((failure) {
@@ -918,8 +917,7 @@ class WordBombBloc extends Bloc<WordBombEvent, WordBombState> {
 
     final newGameState = gameState.copyWith(
       isGhostProtocolActive: true,
-      ghostProtocolActivationTimeEpochMs:
-          DateTime.now().millisecondsSinceEpoch, // Record activation time
+      ghostProtocolActivationTimeEpochMs: DateTime.now().millisecondsSinceEpoch,
     );
     final result = await _updateGameState(UpdateGameStateParams(
       sessionId: session.id,
@@ -1008,7 +1006,7 @@ class WordBombBloc extends Bloc<WordBombEvent, WordBombState> {
   void _onTimerTick(_TimerTick event, Emitter<WordBombState> emit) {
     if (state is WordBombGameActive) {
       final activeState = state as WordBombGameActive;
-      final gameState = activeState.gameState; // Get gameState directly
+      final gameState = activeState.gameState;
 
       if (gameState.isPaused) {
         _roundTimer?.cancel();
@@ -1109,11 +1107,10 @@ class WordBombBloc extends Bloc<WordBombEvent, WordBombState> {
           playerResetFutures.add(
             _updateGamePlayer(UpdateGamePlayerParams(
               playerId: player.id,
-              sessionId: session.id, // Use original session ID for safety
+              sessionId: session.id,
               userId: player.userId,
-              hasUsedGhostProtocol: false, // Reset ghost protocol use
-              changeCategoryUsesLeft: GamePlayer
-                  .defaultChangeCategoryUses, // Reset category changes
+              hasUsedGhostProtocol: false,
+              changeCategoryUsesLeft: GamePlayer.defaultChangeCategoryUses,
             )),
           );
         }
@@ -1134,19 +1131,15 @@ class WordBombBloc extends Bloc<WordBombEvent, WordBombState> {
       currentCategory: randomCategory,
       currentLetterSyllable: randomLetter,
       usedWords: const [],
-      currentTurnTotalDurationMs: _wordBombRoundDurationMs // Updated field
-      ,
-      roundStartTimeEpochMs:
-          DateTime.now().millisecondsSinceEpoch // Updated field
-      ,
+      currentTurnTotalDurationMs: _wordBombRoundDurationMs,
+      roundStartTimeEpochMs: DateTime.now().millisecondsSinceEpoch,
       isPaused: false,
       ghostPlayerId: ghostPlayerId,
       isGhostProtocolActive: false,
-      buyTimeUsesLeftForRound: 2, // Reset for new round
+      buyTimeUsesLeftForRound: 3,
       pauseTimeEpochMs: null,
       timeAccumulatedWhilePausedMs: 0,
-      ghostProtocolActivationTimeEpochMs:
-          null, // Ensure this is cleared for new round
+      ghostProtocolActivationTimeEpochMs: null,
     );
   }
 
@@ -1202,7 +1195,7 @@ class WordBombBloc extends Bloc<WordBombEvent, WordBombState> {
     if (session.gameState == null) {
       if (session.status == GameStatus.waiting) {
         if (isClosed) return;
-        emit(WordBombLoading()); // Or a specific WordBombWaiting state
+        emit(WordBombLoading());
         return;
       }
 
@@ -1275,19 +1268,15 @@ class WordBombBloc extends Bloc<WordBombEvent, WordBombState> {
           // Re-emit the optimistic state, but update session and players from the stream.
           // The gameState (especially isPaused=false) from optimisticActiveState is preserved.
           emit(WordBombGameActive(
-              session: session, // latest session data from stream
-              players: players, // latest player data from stream
-              gameState: optimisticActiveState
-                  .gameState, // IMPORTANT: keep optimistic gameState (isPaused=false)
-              isAdmin: _isAdmin(session), // re-calculate with latest session
-              currentPlayerName: _getPlayerName(
-                  session.currentTurnUserId, players), // re-calculate
-              currentUserId:
-                  optimisticActiveState.currentUserId, // from optimistic state
-              errorMessage:
-                  optimisticActiveState.errorMessage // from optimistic state
-              ));
-          return; // Prevent falling through to emit WordBombPaused or WordBombAwaitingConfirmation
+              session: session,
+              players: players,
+              gameState: optimisticActiveState.gameState,
+              isAdmin: _isAdmin(session),
+              currentPlayerName:
+                  _getPlayerName(session.currentTurnUserId, players),
+              currentUserId: optimisticActiveState.currentUserId,
+              errorMessage: optimisticActiveState.errorMessage));
+          return;
         }
 
         // If the BLoC is in WordBombAwaitingConfirmation state, and this stream event's pause
@@ -1300,11 +1289,10 @@ class WordBombBloc extends Bloc<WordBombEvent, WordBombState> {
             emit(awaitingState.copyWith(
                 session: session,
                 players: players,
-                gameState: wordBombGameState, // Use the gameState from stream
-                isAdmin: _isAdmin(session), // Re-calculate
-                currentPlayerName: _getPlayerName(
-                    session.currentTurnUserId, players) // Re-calculate
-                ));
+                gameState: wordBombGameState,
+                isAdmin: _isAdmin(session),
+                currentPlayerName:
+                    _getPlayerName(session.currentTurnUserId, players)));
             return;
           }
         }
@@ -1378,12 +1366,31 @@ class WordBombBloc extends Bloc<WordBombEvent, WordBombState> {
   }
 
   // ------------------ START ROUND TIMER ------------------ //
+
   void _startRoundTimer(Emitter<WordBombState> emit) {
+    // 1. Cancella sempre qualsiasi timer precedente per evitare duplicati.
     _roundTimer?.cancel();
-    _roundTimer =
-        Timer.periodic(const Duration(milliseconds: _timerIntervalMs), (_) {
-      add(const _TimerTick());
-    });
+
+    // 2. Controlla se la piattaforma è iOS.
+    if (Platform.isIOS) {
+      _roundTimer = Timer(const Duration(milliseconds: 1500), () {
+        // a. Il ritardo di 1.5 secondi è terminato. Esegui il primo "tick".
+        add(const _TimerTick());
+
+        _roundTimer =
+            Timer.periodic(const Duration(milliseconds: _timerIntervalMs), (_) {
+          add(
+            const _TimerTick(),
+          );
+        });
+      });
+    } else {
+      // Avvia il timer periodico immediatamente, come nel codice originale.
+      _roundTimer =
+          Timer.periodic(const Duration(milliseconds: _timerIntervalMs), (_) {
+        add(const _TimerTick());
+      });
+    }
   }
 
   // ------------------ CANCEL SUBSCRIPTIONS ------------------ //

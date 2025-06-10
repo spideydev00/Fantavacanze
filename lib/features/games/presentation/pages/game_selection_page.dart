@@ -183,14 +183,14 @@ class _GameSelectionPageState extends State<GameSelectionPage> {
                                         iconColor: Colors.blue.shade600,
                                         title: "Guadagna Tempo (+10s)",
                                         description:
-                                            "Aggiunge 10 secondi al tuo timer. Max 2 utilizzi per partita. COSTO: 1 shot.",
+                                            "Aggiunge 10 secondi al tuo timer. Max. 3 utilizzi per partita. COSTO: 1 shot.",
                                       ),
                                       FeatureItem(
                                         icon: Icons.shuffle_rounded,
                                         iconColor: Colors.orange.shade600,
                                         title: "Cambia Categoria",
                                         description:
-                                            "Cambia la categoria e la lettera iniziale. Max 2 utilizzi per partita. COSTO: 1 shot.",
+                                            "Cambia la categoria e la lettera iniziale. Max. 2 utilizzi per giocatore. COSTO: 1 shot.",
                                       ),
                                       FeatureItem(
                                         icon: Icons.visibility_off_outlined,

@@ -25,7 +25,7 @@ class WordBombGameState extends Equatable {
     this.isPaused = false,
     this.ghostPlayerId,
     this.playerWhoExplodedId,
-    this.buyTimeUsesLeftForRound = 2,
+    this.buyTimeUsesLeftForRound = 3,
     this.isGhostProtocolActive = false,
     this.pauseTimeEpochMs,
     this.timeAccumulatedWhilePausedMs = 0,
@@ -41,14 +41,13 @@ class WordBombGameState extends Equatable {
               .toList() ??
           const [],
       currentTurnTotalDurationMs:
-          json['current_turn_total_duration_ms'] as int? ?? 30000,
+          json['current_turn_total_duration_ms'] as int? ?? 60000,
       roundStartTimeEpochMs: json['round_start_time_epoch_ms'] as int? ??
           DateTime.now().millisecondsSinceEpoch,
       isPaused: json['is_paused'] as bool? ?? false,
       ghostPlayerId: json['ghost_player_id'] as String?,
       playerWhoExplodedId: json['player_who_exploded_id'] as String?,
-      buyTimeUsesLeftForRound:
-          json['buy_time_uses_left_for_round'] as int? ?? 2,
+      buyTimeUsesLeftForRound: json['buy_time_uses_left_for_round'] as int,
       isGhostProtocolActive: json['is_ghost_protocol_active'] as bool? ?? false,
       pauseTimeEpochMs: json['pause_time_epoch_ms'] as int?,
       timeAccumulatedWhilePausedMs:
