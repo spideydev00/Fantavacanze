@@ -631,18 +631,19 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
     GetNotesEvent event,
     Emitter<LeagueState> emit,
   ) async {
-    emit(LeagueLoading());
+    emit(const LeagueLoading());
 
     final result = await getNotes(event.leagueId);
 
-    result.fold(
-      (failure) => emit(LeagueError(message: failure.message)),
-      (notes) => emit(NoteSuccess(
+    result.fold((failure) {
+      emit(LeagueError(message: failure.message));
+    }, (notes) {
+      emit(NoteSuccess(
         operation: 'get',
         leagueId: event.leagueId,
         notes: notes,
-      )),
-    );
+      ));
+    });
   }
 
   // S A V E   N O T E
@@ -650,7 +651,7 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
     SaveNoteEvent event,
     Emitter<LeagueState> emit,
   ) async {
-    emit(LeagueLoading());
+    emit(const LeagueLoading());
 
     // Make sure the note's leagueId matches the event leagueId
     final noteWithLeagueId = event.note;
@@ -660,12 +661,25 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
       note: noteWithLeagueId,
     ));
 
-    result.fold(
-      (failure) => emit(LeagueError(message: failure.message)),
-      (_) => emit(NoteSuccess(
-        operation: 'save',
-        leagueId: event.leagueId,
-      )),
+    await result.fold(
+      (failure) async {
+        emit(LeagueError(message: failure.message));
+      },
+      (_) async {
+        // After successful save, fetch all notes for that league
+        final getNotesResult = await getNotes(event.leagueId);
+        getNotesResult.fold((failure) {
+          final errorMessage =
+              "Failed to reload notes after saving: ${failure.message}";
+          emit(LeagueError(message: errorMessage));
+        }, (updatedNotes) {
+          emit(NoteSuccess(
+            operation: 'save',
+            leagueId: event.leagueId,
+            notes: updatedNotes,
+          ));
+        });
+      },
     );
   }
 
@@ -674,19 +688,32 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
     DeleteNoteEvent event,
     Emitter<LeagueState> emit,
   ) async {
-    emit(LeagueLoading());
+    emit(const LeagueLoading());
 
     final result = await deleteNote(DeleteNoteParams(
       leagueId: event.leagueId,
       noteId: event.noteId,
     ));
 
-    result.fold(
-      (failure) => emit(LeagueError(message: failure.message)),
-      (_) => emit(NoteSuccess(
-        operation: 'delete',
-        leagueId: event.leagueId,
-      )),
+    await result.fold(
+      (failure) async {
+        emit(LeagueError(message: failure.message));
+      },
+      (_) async {
+        // After successful delete, fetch all notes for that league
+        final getNotesResult = await getNotes(event.leagueId);
+        getNotesResult.fold((failure) {
+          final errorMessage =
+              "Failed to reload notes after deleting: ${failure.message}";
+          emit(LeagueError(message: errorMessage));
+        }, (updatedNotes) {
+          emit(NoteSuccess(
+            operation: 'delete', // Keep operation as 'delete'
+            leagueId: event.leagueId,
+            notes: updatedNotes, // Include the updated notes
+          ));
+        });
+      },
     );
   }
 
