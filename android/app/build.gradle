@@ -1,3 +1,6 @@
+import java.util.Properties
+import java.io.FileInputStream
+
 plugins {
     id "com.android.application"
     // START: FlutterFire Configuration
@@ -6,6 +9,13 @@ plugins {
     id "kotlin-android"
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id "dev.flutter.flutter-gradle-plugin"
+}
+
+// Definisce le variabili per caricare il file delle chiavi
+def keystoreProperties = new java.util.Properties()
+def keystorePropertiesFile = rootProject.file("key.properties")
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(new java.io.FileInputStream(keystorePropertiesFile))
 }
 
 android {
@@ -22,7 +32,6 @@ android {
         jvmTarget = JavaVersion.VERSION_1_8
     }
 
-    // Add lint options to handle warnings
     lintOptions {
         abortOnError false
         checkReleaseBuilds false
@@ -36,26 +45,36 @@ android {
         versionName = flutter.versionName
     }
 
+    // Configurazione per la firma dell'app in release
+    signingConfigs {
+        create("release") {
+            keyAlias = keystoreProperties['keyAlias'] as String
+            keyPassword = keystoreProperties['keyPassword'] as String
+            storePassword = keystoreProperties['storePassword'] as String
+            // Conversione da Kotlin .let a Groovy if
+            def storeFilePath = keystoreProperties['storeFile']
+            if (storeFilePath != null) {
+                storeFile = project.file(storeFilePath)
+            }
+        }
+    }
+
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.debug
+            // Usa la configurazione di firma "release" per la build di release
+            signingConfig = signingConfigs.getByName("release")
         }
     }
 }
 
 dependencies {
   // utilizza il BOM: gestisce tutte le versioni Firebase in blocco
-  implementation(platform("com.google.firebase:firebase-bom:31.2.0"))
-  implementation("com.google.firebase:firebase-analytics-ktx")
+  implementation platform('com.google.firebase:firebase-bom:31.2.0')
+  implementation 'com.google.firebase:firebase-analytics-ktx'
 }
 
-// Optional: Add this task to get more details about deprecation warnings
 tasks.withType(JavaCompile) {
     options.compilerArgs << "-Xlint:deprecation" << "-Xlint:unchecked"
-    // Alternatively, to suppress these warnings:
-    // options.compilerArgs << "-Xlint:none"
 }
 
 flutter {
