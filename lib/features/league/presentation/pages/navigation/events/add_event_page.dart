@@ -10,6 +10,7 @@ import 'package:fantavacanze_official/core/widgets/divider.dart';
 import 'package:fantavacanze_official/core/widgets/info_container.dart';
 import 'package:fantavacanze_official/core/widgets/loader.dart';
 import 'package:fantavacanze_official/core/widgets/participants/participant_card.dart';
+import 'package:fantavacanze_official/features/league/domain/entities/individual_participant.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/league.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/rule/rule.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/team_participant.dart';
@@ -1071,7 +1072,7 @@ class _AddEventPageState extends State<AddEventPage> {
           const SizedBox(height: ThemeSizes.sm),
       itemBuilder: (context, index) {
         final participant = filteredParticipants[index];
-        final participantId = participant.name;
+        final participantId = (participant as IndividualParticipant).userId;
         final isSelected = _selectedParticipantId == participantId;
 
         return ParticipantCard(

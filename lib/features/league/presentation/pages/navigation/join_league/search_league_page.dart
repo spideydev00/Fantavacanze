@@ -76,7 +76,7 @@ class _SearchLeaguePageState extends State<SearchLeaguePage> {
     });
 
     context.read<LeagueBloc>().add(
-          SearchLeagueEvent(inviteCode: _inviteCodeController.text),
+          SearchLeagueEvent(inviteCode: _inviteCodeController.text.trim()),
         );
   }
 

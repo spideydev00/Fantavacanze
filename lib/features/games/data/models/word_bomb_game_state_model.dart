@@ -26,15 +26,14 @@ class WordBombGameStateModel extends WordBombGameState {
               .toList() ??
           const [],
       currentTurnTotalDurationMs:
-          json['current_turn_total_duration_ms'] as int? ?? 30000,
+          json['current_turn_total_duration_ms'] as int? ?? 60000,
       roundStartTimeEpochMs: json['round_start_time_epoch_ms'] as int? ??
           DateTime.now().millisecondsSinceEpoch,
       isPaused: json['is_paused'] as bool? ?? false,
       playerWhoExplodedId: json['player_who_exploded_id'] as String?,
       ghostPlayerId: json['ghost_player_id'] as String?,
       isGhostProtocolActive: json['is_ghost_protocol_active'] as bool? ?? false,
-      buyTimeUsesLeftForRound:
-          json['buy_time_uses_left_for_round'] as int? ?? 2,
+      buyTimeUsesLeftForRound: json['buy_time_uses_left_for_round'] as int,
       pauseTimeEpochMs: json['pause_time_epoch_ms'] as int?,
       timeAccumulatedWhilePausedMs:
           json['time_accumulated_while_paused_ms'] as int? ?? 0,

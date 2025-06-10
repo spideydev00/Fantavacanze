@@ -421,6 +421,7 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
 
       // Check if user is already a participant in any found leagues
       final currentUserId = _getCurrentUserId();
+
       if (currentUserId != null) {
         _checkUserParticipationInLeagues(leagues, currentUserId);
       }
@@ -1559,7 +1560,9 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
 
   /// Checks if user is already a participant in any of the leagues
   void _checkUserParticipationInLeagues(
-      List<LeagueModel> leagues, String userId) {
+    List<LeagueModel> leagues,
+    String userId,
+  ) {
     for (final league in leagues) {
       for (final participant in league.participants) {
         if (participant is IndividualParticipantModel) {

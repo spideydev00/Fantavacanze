@@ -16,6 +16,7 @@ Future<void> initDependencies() async {
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
     );
+
     await FirebaseAnalytics.instance.setAnalyticsCollectionEnabled(true);
     serviceLocator.registerLazySingleton<FirebaseMessaging>(
       () => FirebaseMessaging.instance,
@@ -26,9 +27,6 @@ Future<void> initDependencies() async {
 
     serviceLocator.registerLazySingleton(() => AdHelper());
     await serviceLocator<AdHelper>().initialize();
-
-    serviceLocator.registerLazySingleton(() => GdprService());
-    await serviceLocator<GdprService>().initializeAndShowForm();
 
     // HIVE
     await _initializeHive();
@@ -43,7 +41,7 @@ Future<void> initDependencies() async {
 
     _initAuth();
     _initLeague();
-    _initGames(); // Add this line
+    _initGames();
 
     // Register UUID generator
     serviceLocator.registerLazySingleton(() => const Uuid());
@@ -82,7 +80,7 @@ Future<void> initDependencies() async {
           clearLocalCache: serviceLocator<ClearLocalCache>(),
         ),
       )
-      //7. notification count cubit
+      //5. notification count cubit
       ..registerLazySingleton(
         () => NotificationCountCubit(),
       )

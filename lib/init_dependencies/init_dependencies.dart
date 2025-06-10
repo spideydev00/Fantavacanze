@@ -5,7 +5,6 @@ import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/notification_count/notification_count_cubit.dart';
 import 'package:fantavacanze_official/core/network/connection_checker.dart';
 import 'package:fantavacanze_official/core/secrets/app_secrets.dart';
-import 'package:fantavacanze_official/core/services/gdpr_service.dart';
 import 'package:fantavacanze_official/core/utils/ad_helper.dart';
 import 'package:fantavacanze_official/features/auth/data/datasources/auth_remote_data_source.dart';
 import 'package:fantavacanze_official/features/auth/data/repository/auth_repository_impl.dart';

@@ -72,16 +72,20 @@ class LeagueModel extends League {
   });
 
   factory LeagueModel.fromJson(Map<String, dynamic> json) {
-    // Get inviteCode from either inviteCode or invite_code field in JSON
+    // Gestisci entrambi i formati: camelCase e snake_case
     final String inviteCode =
         (json['inviteCode'] ?? json['invite_code']) as String;
+    final String createdAtStr =
+        (json['createdAt'] ?? json['created_at']) as String;
+    final bool isTeamBased =
+        (json['isTeamBased'] ?? json['is_team_based']) as bool;
 
     return LeagueModel(
       id: json['id'] as String,
       admins: List<String>.from(json['admins']),
       name: json['name'] as String,
-      description: json['description'] as String,
-      createdAt: DateTime.parse(json['createdAt'] as String),
+      description: json['description'] as String?,
+      createdAt: DateTime.parse(createdAtStr),
       rules: (json['rules'] as List<dynamic>)
           .map((e) => RuleModel.fromJson(e as Map<String, dynamic>))
           .toList(),
@@ -94,7 +98,7 @@ class LeagueModel extends League {
       memories: (json['memories'] as List<dynamic>)
           .map((e) => MemoryModel.fromJson(e as Map<String, dynamic>))
           .toList(),
-      isTeamBased: json['isTeamBased'] as bool,
+      isTeamBased: isTeamBased,
       inviteCode: inviteCode,
     );
   }
@@ -105,7 +109,7 @@ class LeagueModel extends League {
       'admins': admins,
       'name': name,
       'description': description,
-      'createdAt': createdAt.toIso8601String(),
+      'created_at': createdAt.toIso8601String(),
       'rules': rules.map((rule) => (rule as RuleModel).toJson()).toList(),
       'participants': participants
           .map((participant) => (participant as ParticipantModel).toJson())
@@ -113,7 +117,7 @@ class LeagueModel extends League {
       'events': events.map((event) => (event as EventModel).toJson()).toList(),
       'memories':
           memories.map((memory) => (memory as MemoryModel).toJson()).toList(),
-      'isTeamBased': isTeamBased,
+      'is_team_based': isTeamBased,
       'invite_code': inviteCode,
     };
   }

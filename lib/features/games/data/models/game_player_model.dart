@@ -26,7 +26,7 @@ class GamePlayerModel extends GamePlayer {
       isGhost: map['is_ghost'] as bool? ?? false,
       hasUsedSpecialAbility: map['has_used_special_ability'] as bool? ?? false,
       hasUsedGhostProtocol: map['has_used_ghost_protocol'] as bool? ?? false,
-      changeCategoryUsesLeft: map['change_category_uses_left'] as int? ?? 2,
+      changeCategoryUsesLeft: map['change_category_uses_left'] as int,
       joinedAt: DateTime.parse(map['joined_at'] as String),
     );
   }

@@ -31,7 +31,7 @@ class _WordBombPageState extends State<WordBombPage> {
   final _wordController = TextEditingController();
   Timer? _uiRefreshTimer;
   int _displayRemainingTimeMs = 0;
-  bool _isConfirmationDialogVisible = false; // Added flag
+  bool _isConfirmationDialogVisible = false;
 
   @override
   void initState() {
@@ -102,7 +102,6 @@ class _WordBombPageState extends State<WordBombPage> {
           ),
         ),
         centerTitle: true,
-        // elevation: 2.0, // Optional
       ),
       body: SafeArea(
         // SafeArea can remain
@@ -179,7 +178,7 @@ class _WordBombPageState extends State<WordBombPage> {
       BuildContext context, WordBombState state, String? myId) {
     if (state is WordBombLoading || state is WordBombInitial) {
       return Loader(
-        key: const ValueKey('loader'), // Added key for AnimatedSwitcher
+        key: const ValueKey('loader'),
         color: ColorPalette.error,
       );
     }
@@ -220,8 +219,7 @@ class _WordBombPageState extends State<WordBombPage> {
     BuildContext context,
     WordBombSessionState state,
     String? myId,
-    /*GameSession*/ dynamic
-        gameSession, // Using dynamic due to type in original
+    /*GameSession*/ dynamic gameSession,
     WordBombGameState gameState,
     List<GamePlayer> players,
     bool isAdmin,
@@ -665,8 +663,7 @@ class _WordBombPageState extends State<WordBombPage> {
       child: AnimatedOpacity(
         // Added AnimatedOpacity for consistency
         duration: const Duration(milliseconds: 200),
-        opacity:
-            0.7, // Slightly more visible than fully disabled, but still distinct
+        opacity: 0.7,
         child: Container(
           height: 78,
           width: 78,
@@ -728,7 +725,7 @@ class _WordBombPageState extends State<WordBombPage> {
     final bool ghostProtocolAvailable = isGhost &&
         !ghostProtocolUsed &&
         !gameState.isPaused &&
-        blocState is! WordBombAwaitingConfirmation; // Removed isMyTurn check
+        blocState is! WordBombAwaitingConfirmation;
 
     List<Widget> actionChips = [];
 
@@ -747,9 +744,11 @@ class _WordBombPageState extends State<WordBombPage> {
                     ? "Gioco in pausa o azione in attesa"
                     : (isMyTurn ? "Usi esauriti" : "Non è il tuo turno")),
             onPressed: changeCategoryAvailable
-                ? () => context.read<WordBombBloc>().add(
-                    const RequestStrategicAction(
-                        WordBombStrategicActionType.changeCategory)) // Updated
+                ? () => context
+                    .read<WordBombBloc>()
+                    .add(const RequestStrategicAction(
+                      WordBombStrategicActionType.changeCategory,
+                    ))
                 : null,
             primaryColor: Colors.orange.shade600,
             secondaryColor: Colors.deepOrange.shade400,
@@ -785,7 +784,7 @@ class _WordBombPageState extends State<WordBombPage> {
           onPressed: buyTimeAvailable
               ? () => context.read<WordBombBloc>().add(
                   const RequestStrategicAction(
-                      WordBombStrategicActionType.buyTime)) // Updated
+                      WordBombStrategicActionType.buyTime))
               : null,
           primaryColor: Colors.blue.shade600,
           secondaryColor: Colors.lightBlue.shade400,
