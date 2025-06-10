@@ -283,6 +283,9 @@ class _AddEventPageState extends State<AddEventPage> {
         return;
       }
 
+      // Dismiss keyboard when changing steps
+      FocusScope.of(context).unfocus();
+
       setState(() {
         _currentStep = step;
       });
@@ -463,7 +466,14 @@ class _AddEventPageState extends State<AddEventPage> {
           Expanded(
             flex: 4,
             child: ElevatedButton.icon(
-              onPressed: _isSubmitting ? null : details.onStepContinue,
+              onPressed: _isSubmitting
+                  ? null
+                  : () {
+                      // Dismiss keyboard before continuing
+                      FocusScope.of(context).unfocus();
+
+                      details.onStepContinue?.call();
+                    },
               style: ElevatedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(
                   vertical: ThemeSizes.md,

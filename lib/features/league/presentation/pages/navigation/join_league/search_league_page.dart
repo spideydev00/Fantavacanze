@@ -86,6 +86,7 @@ class _SearchLeaguePageState extends State<SearchLeaguePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       appBar: AppBar(
         title: Text(
           'Cerca Lega',
@@ -126,7 +127,20 @@ class _SearchLeaguePageState extends State<SearchLeaguePage> {
               }
             },
             builder: (context, state) {
-              return _buildSearchView();
+              // Wrap the content in SingleChildScrollView to prevent overflow
+              return SingleChildScrollView(
+                // Make sure it fills available space for proper positioning
+                child: Container(
+                  // This ensures the container takes at least the full screen height
+                  // minus the app bar height, preventing awkward scrolling for small content
+                  constraints: BoxConstraints(
+                    minHeight: MediaQuery.of(context).size.height -
+                        AppBar().preferredSize.height -
+                        MediaQuery.of(context).padding.top,
+                  ),
+                  child: _buildSearchView(),
+                ),
+              );
             },
           ),
           if (_isJoiningLeague)

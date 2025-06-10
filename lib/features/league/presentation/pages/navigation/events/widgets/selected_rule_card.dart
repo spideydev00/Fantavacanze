@@ -97,12 +97,12 @@ class SelectedRuleCard extends StatelessWidget {
             ),
             const SizedBox(width: ThemeSizes.md),
 
-            // Rule details
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
                       Container(
                         padding: const EdgeInsets.symmetric(
@@ -125,11 +125,15 @@ class SelectedRuleCard extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(width: 4),
-                      Text(
-                        'Regola selezionata',
-                        style: TextStyle(
-                          fontSize: 10,
-                          color: context.textSecondaryColor,
+                      // Fix: Make the text use only available space
+                      Flexible(
+                        child: Text(
+                          'Regola selezionata',
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 10,
+                            color: context.textSecondaryColor,
+                          ),
                         ),
                       ),
                     ],
@@ -137,6 +141,7 @@ class SelectedRuleCard extends StatelessWidget {
                   const SizedBox(height: 4),
                   Text(
                     rule.name,
+                    overflow: TextOverflow.ellipsis,
                     style: context.textTheme.titleMedium!.copyWith(
                       fontWeight: FontWeight.bold,
                     ),

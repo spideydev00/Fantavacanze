@@ -304,16 +304,11 @@ class _DailyGoalsState extends State<DailyGoals> {
     );
   }
 
-  // Handle ads button tap for daily challenges - modified to use challengeId
-  Future<void> _handleAdsButton(
-      LockType lockType, String challengeId, String leagueId) async {
-    if (lockType != LockType.ads) return;
-
-    // Create an overlay entry for the loading indicator
-    final overlayState = Overlay.of(context);
-    final loadingOverlay = OverlayEntry(
-      builder: (context) => Container(
-        color: Colors.black.withValues(alpha: 0.5),
+// Helper per mostrare un overlay di caricamento pulito
+  OverlayEntry _showLoadingOverlay(BuildContext context) {
+    final overlay = OverlayEntry(
+      builder: (_) => Container(
+        color: Colors.black.withOpacity(0.5),
         child: const Center(
           child: Loader(
             color: ColorPalette.success,
@@ -321,84 +316,74 @@ class _DailyGoalsState extends State<DailyGoals> {
         ),
       ),
     );
+    Overlay.of(context).insert(overlay);
+    return overlay;
+  }
 
-    // Show loading overlay
-    overlayState.insert(loadingOverlay);
+// Funzione principale per gestire il pulsante degli annunci
+  Future<void> _handleAdsButton(
+      LockType lockType, String challengeId, String leagueId) async {
+    if (lockType != LockType.ads) return;
+
+    final pageContext = context;
+    final loadingOverlay = _showLoadingOverlay(pageContext);
 
     try {
       final adHelper = serviceLocator<AdHelper>();
+      final bool adsWatched = await adHelper.showSequentialRewardedAds();
 
-      // Show first rewarded ad
-      final bool firstAdWatched = await adHelper.showRewardedAd();
-
-      if (!firstAdWatched) {
-        // Remove loading overlay
+      if (loadingOverlay.mounted) {
         loadingOverlay.remove();
-
-        // Show error message
-        showSnackBar(
-          "Non è stato possibile mostrare la pubblicità. Riprova più tardi.",
-          color: ColorPalette.error,
-        );
-        return;
       }
+      if (!pageContext.mounted) return;
 
-      // Small delay between ads
-      await Future.delayed(const Duration(milliseconds: 500));
+      if (adsWatched) {
+        setState(() {
+          if (_allChallenges != null) {
+            final index =
+                _allChallenges!.indexWhere((c) => c.id == challengeId);
+            if (index != -1) {
+              // Aggiorna l'oggetto challenge nella lista
+              _allChallenges![index] = _allChallenges![index].copyWith(
+                isUnlocked: true,
+              );
+              // Forza la ricostruzione della lista per notificare i widget che la usano
+              _allChallenges = List.from(_allChallenges!);
+            }
+          }
+        });
 
-      // Show second rewarded ad
-      final bool secondAdWatched = await adHelper.showRewardedAd();
+        // 2. MOSTRA SUBITO IL SUCCESSO ALL'UTENTE
+        showSnackBar(
+          "Sfida sbloccata con successo!",
+          color: ColorPalette.success,
+        );
 
-      // Remove loading overlay
-      loadingOverlay.remove();
-
-      if (secondAdWatched && mounted) {
-        // Successfully watched both ads
-        context.read<LeagueBloc>().add(
+        // 3. INVIA L'EVENTO AL BLOC IN BACKGROUND
+        pageContext.read<LeagueBloc>().add(
               UnlockDailyChallengeEvent(
                 challengeId: challengeId,
                 leagueId: leagueId,
                 isUnlocked: true,
               ),
             );
-        // For now, just update the UI state
-        setState(() {
-          if (_allChallenges != null) {
-            // Find and update the challenge in our local state
-            final index =
-                _allChallenges!.indexWhere((c) => c.id == challengeId);
-            if (index != -1) {
-              _allChallenges![index] = _allChallenges![index].copyWith(
-                isUnlocked: true,
-              );
-
-              // Force a UI refresh
-              _allChallenges = List.from(_allChallenges!);
-            }
-          }
-        });
-
-        // Show success message
-        showSnackBar(
-          "Sfida sbloccata con successo!",
-          color: ColorPalette.success,
-        );
       } else {
-        // Failed to earn reward
         showSnackBar(
-          "Non è stato possibile completare la visione degli annunci.",
+          "Non è stato possibile completare la visione degli annunci. Riprova tra qualche minuto.",
           color: ColorPalette.error,
         );
       }
     } catch (e) {
-      // Remove loading overlay
-      loadingOverlay.remove();
-
-      // Show error message
-      showSnackBar(
-        "Si è verificato un errore. Riprova più tardi.",
-        color: ColorPalette.error,
-      );
+      debugPrint('Errore in _handleAdsButton per la sfida: $e');
+      if (loadingOverlay.mounted) {
+        loadingOverlay.remove();
+      }
+      if (pageContext.mounted) {
+        showSnackBar(
+          "Si è verificato un errore. Riprova più tardi.",
+          color: ColorPalette.error,
+        );
+      }
     }
   }
 
