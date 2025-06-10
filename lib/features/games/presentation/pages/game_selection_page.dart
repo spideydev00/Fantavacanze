@@ -157,7 +157,7 @@ class _GameSelectionPageState extends State<GameSelectionPage> {
                           label: "Word Bomb",
                           isPremium: !isPremiumUser,
                           isTrialAvailable: hasWordBombTrial,
-                          showInfoIcon: true, // Show info icon for Word Bomb
+                          showInfoIcon: true,
                           onInfoIconTapped: () {
                             showDialog(
                               context: context,

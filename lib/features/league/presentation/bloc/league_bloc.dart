@@ -1004,8 +1004,8 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
       (failure) {
         emit(LeagueError(message: failure.message));
       },
-      (notificationStream) async {
-        await emit.forEach<Notification>(
+      (notificationStream) {
+        emit.forEach<Notification>(
           notificationStream,
           onData: (notification) {
             // Increment notification count

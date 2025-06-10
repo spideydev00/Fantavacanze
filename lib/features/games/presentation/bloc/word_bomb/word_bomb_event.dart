@@ -107,9 +107,9 @@ class _TimerTick extends WordBombEvent {
 
 class _WordBombErrorOccurred extends WordBombEvent {
   final String message;
-  const _WordBombErrorOccurred(this.message); // Added constructor
+  const _WordBombErrorOccurred(this.message);
   @override
-  List<Object?> get props => [message]; // Added to props
+  List<Object?> get props => [message];
 }
 
 class ActivateTrialRequested extends WordBombEvent {}
