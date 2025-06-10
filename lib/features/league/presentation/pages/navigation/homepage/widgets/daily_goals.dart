@@ -1,5 +1,5 @@
 import 'package:fantavacanze_official/core/constants/lock_type.dart';
-import 'package:fantavacanze_official/core/utils/ad_helper.dart';
+import 'package:fantavacanze_official/core/services/ad_helper.dart';
 import 'package:fantavacanze_official/core/utils/show_snackbar.dart';
 import 'package:fantavacanze_official/core/widgets/dialogs/premium_access_dialog.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/daily_challenge.dart';

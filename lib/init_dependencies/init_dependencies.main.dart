@@ -90,6 +90,11 @@ Future<void> initDependencies() async {
           serviceLocator(),
         ),
       );
+
+    // Connetti AdHelper a AppUserCubit per monitorare lo stato premium
+    serviceLocator<AdHelper>()
+        .connectToUserCubit(serviceLocator<AppUserCubit>());
+
     debugPrint("⬆ Dipendenze inizializzate correttamente con get_it");
   } catch (e) {
     debugPrint("Errore di inizializzazione delle dipendenze: $e");

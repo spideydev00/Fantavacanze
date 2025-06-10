@@ -6,7 +6,7 @@ import 'package:fantavacanze_official/core/cubits/app_theme/app_theme_cubit.dart
 import 'package:fantavacanze_official/core/cubits/notification_count/notification_count_cubit.dart';
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/services/gdpr_service.dart';
-import 'package:fantavacanze_official/core/utils/ad_helper.dart';
+import 'package:fantavacanze_official/core/services/ad_helper.dart';
 import 'package:fantavacanze_official/core/widgets/dialogs/notification_dialog.dart';
 import 'package:fantavacanze_official/core/widgets/notification_badge.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc.dart';

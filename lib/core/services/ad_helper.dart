@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:async';
 
+import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:fantavacanze_official/core/secrets/app_secrets.dart';
@@ -21,6 +22,11 @@ class AdHelper {
   Timer? _adTimer;
   DateTime? _lastAdShown;
   final Duration _minAdInterval = const Duration(minutes: 2);
+
+  // Premium status handling
+  bool _isPremiumUser = false;
+  AppUserCubit? _userCubit;
+  StreamSubscription? _userStatusSubscription;
 
   // Test Ad Unit IDs - Use these during development
   static String get testInterstitialAdUnitId {
@@ -64,8 +70,56 @@ class AdHelper {
     }
   }
 
+  // Imposta lo stato premium dell'utente
+  void setPremiumStatus(bool isPremium) {
+    _isPremiumUser = isPremium;
+    // Se l'utente è premium, ferma il timer degli annunci
+    if (isPremium) {
+      stopAdTimer();
+    }
+  }
+
+  // Collega l'AdHelper al cubit dell'utente per monitorare i cambiamenti di stato premium
+  void connectToUserCubit(AppUserCubit userCubit) {
+    // Disattiva eventuali sottoscrizioni precedenti
+    _userStatusSubscription?.cancel();
+
+    _userCubit = userCubit;
+
+    // Controlla immediatamente lo stato premium
+    _updatePremiumStatus();
+
+    // Ascolta i cambiamenti futuri
+    _userStatusSubscription = userCubit.stream.listen((_) {
+      _updatePremiumStatus();
+    });
+  }
+
+  // Aggiorna lo stato premium in base al cubit dell'utente
+  void _updatePremiumStatus() {
+    if (_userCubit == null) return;
+
+    final state = _userCubit!.state;
+    if (state is AppUserIsLoggedIn) {
+      setPremiumStatus(state.user.isPremium);
+    } else {
+      // Se l'utente non è loggato, consideriamo non premium
+      setPremiumStatus(false);
+    }
+  }
+
+  // Disattiva il collegamento al cubit quando non necessario
+  void disconnectFromUserCubit() {
+    _userStatusSubscription?.cancel();
+    _userStatusSubscription = null;
+    _userCubit = null;
+  }
+
   // Load an interstitial ad
   Future<void> loadInterstitialAd() async {
+    // Skip for premium users
+    if (_isPremiumUser) return;
+
     if (_isInterstitialLoading || _interstitialAd != null) return;
 
     _isInterstitialLoading = true;
@@ -143,6 +197,9 @@ class AdHelper {
 
   // Show interstitial ad if available and enough time has passed
   Future<bool> showInterstitialAd({bool ignoreTimeLimit = true}) async {
+    // Skip for premium users
+    if (_isPremiumUser) return false;
+
     // Skip if another ad is currently showing
     if (_isAnyAdShowing) {
       return false;
@@ -197,6 +254,8 @@ class AdHelper {
 
   // Show rewarded ad and return true if user earned reward
   Future<bool> showRewardedAd() async {
+    // Non skippiamo per gli utenti premium qui
+
     // Skip if another ad is currently showing
     if (_isAnyAdShowing) {
       return false;
@@ -250,10 +309,19 @@ class AdHelper {
 
   // Start timer for periodic interstitial ads
   void startAdTimer(BuildContext context) {
+    // Skip for premium users
+    if (_isPremiumUser) return;
+
     _adTimer?.cancel();
 
     // Check every minute, but only show ad every 2 minutes
     _adTimer = Timer.periodic(const Duration(minutes: 1), (timer) {
+      // Skip if user became premium
+      if (_isPremiumUser) {
+        stopAdTimer();
+        return;
+      }
+
       // Skip if keyboard is open or current route is excluded
       if (MediaQuery.of(context).viewInsets.bottom > 0) {
         return;
@@ -280,6 +348,9 @@ class AdHelper {
 
   // Initialize ads
   Future<void> initialize() async {
+    // Skip loading for premium users
+    if (_isPremiumUser) return;
+
     // Load both types of ads immediately
     await loadInterstitialAd();
     await loadRewardedAd();
@@ -342,5 +413,13 @@ class AdHelper {
     }
 
     return result;
+  }
+
+  // Clean up resources
+  void dispose() {
+    stopAdTimer();
+    disconnectFromUserCubit();
+    _interstitialAd?.dispose();
+    _rewardedAd?.dispose();
   }
 }
