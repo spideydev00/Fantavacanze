@@ -84,7 +84,9 @@ class _NotesPageState extends State<NotesPage> {
     }
 
     final league = _getCurrentLeague();
-    if (league == null) return;
+    if (league == null) {
+      return;
+    }
 
     final newNote = Note(
       id: _uuid.v4(),
@@ -146,35 +148,57 @@ class _NotesPageState extends State<NotesPage> {
     return null;
   }
 
-  Future<void> _deleteNote(String noteId) async {
+  /// Quando l’utente fa swipe, chiamo questa callback
+  void _onNoteSwiped(String noteId) {
+    // 1) Rimuovo subito la nota dalla lista locale
+    setState(() {
+      _notes.removeWhere((n) => n.id == noteId);
+    });
+
+    // 2) Invio il comando al bloc per cancellarla dal data source
     final league = _getCurrentLeague();
-    if (league == null) return;
-    context.read<LeagueBloc>().add(DeleteNoteEvent(
-          leagueId: league.id,
-          noteId: noteId,
-        ));
+    if (league != null) {
+      context.read<LeagueBloc>().add(DeleteNoteEvent(
+            leagueId: league.id,
+            noteId: noteId,
+          ));
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<LeagueBloc, LeagueState>(
       listener: (context, state) {
+        if (state is LeagueLoading) {}
         if (state is NoteSuccess) {
+          // If notes are provided in the state, update the local list
+          if (state.notes != null) {
+            setState(() {
+              _notes = state.notes!;
+            });
+          }
+
           switch (state.operation) {
             case 'get':
-              setState(() {
-                _notes = state.notes ?? [];
-              });
+              // Notes are already updated by the check above if present.
+              // If state.notes was null for a 'get' (should not happen with current bloc logic),
+              // _notes would become empty.
               break;
             case 'save':
-              _loadNotes(); // Reload notes after save
+              // _loadNotes(); // No longer needed, notes are included in the 'save' success state.
               showSnackBar(
                 'Nota salvata con successo!',
                 color: ColorPalette.success,
               );
               break;
             case 'delete':
-              _loadNotes(); // Reload notes after delete
+              showSnackBar(
+                'Nota eliminata con successo!',
+                color: ColorPalette.success,
+              );
+              // _loadNotes(); // No longer needed, notes are included in the 'delete' success state.
+              // Optionally, show a snackbar for delete success
+              // showSnackBar('Nota eliminata con successo!');
               break;
           }
         } else if (state is LeagueError) {
@@ -256,7 +280,7 @@ class _NotesPageState extends State<NotesPage> {
                           ),
                           NotesList(
                             notes: _notes,
-                            onDeleteNote: _deleteNote,
+                            onDeleteNote: _onNoteSwiped,
                             isLoading: state is LeagueLoading && _notes.isEmpty,
                             emptyStateWidget: const EmptyState(
                               icon: Icons.edit_note_sharp,
@@ -283,7 +307,6 @@ class _NotesPageState extends State<NotesPage> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-
     final appLeagueState = context.watch<AppLeagueCubit>().state;
     if (appLeagueState is AppLeagueExists) {
       final newLeagueId = appLeagueState.selectedLeague.id;

@@ -41,7 +41,10 @@ class NoteCard extends StatelessWidget {
             color: Colors.white,
           ),
         ),
-        onDismissed: (direction) => onDelete?.call(),
+        confirmDismiss: (_) async {
+          onDelete!();
+          return true;
+        },
         child: _buildNoteContent(context, gradient),
       );
     }

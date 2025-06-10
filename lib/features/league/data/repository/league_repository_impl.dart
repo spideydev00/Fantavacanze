@@ -6,7 +6,6 @@ import 'package:fantavacanze_official/features/league/data/models/notification_m
 import 'package:fantavacanze_official/features/league/data/models/rule_model/rule_model.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/daily_challenge.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/note.dart';
-import 'package:flutter/material.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:fantavacanze_official/core/errors/failure.dart';
 import 'package:fantavacanze_official/core/network/connection_checker.dart';
@@ -573,20 +572,43 @@ class LeagueRepositoryImpl implements LeagueRepository {
       final notes = await localDataSource.getNotes(leagueId);
       return Right(notes);
     } on CacheException catch (e) {
-      return Left(Failure('Errore nel recuperare le note: ${e.message}'));
+      final errorMessage = 'Errore nel recuperare le note: ${e.message}';
+      return Left(Failure(errorMessage));
+    } catch (e) {
+      final errorMessage =
+          'Errore imprevisto nel recuperare le note: ${e.toString()}';
+      return Left(Failure(errorMessage));
     }
   }
 
   @override
   Future<Either<Failure, void>> saveNote(
-    String leagueId,
-    Note note,
+    String leagueId, // This leagueId parameter is from the event
+    Note note, // This is the Note entity from the event
   ) async {
     try {
-      await localDataSource.saveNote(note as NoteModel, leagueId);
+      // Explicitly convert the Note entity to NoteModel
+      final noteModel = NoteModel(
+        id: note.id,
+        participantId: note.participantId,
+        participantName: note.participantName,
+        content: note.content,
+        createdAt: note.createdAt,
+        leagueId: note.leagueId, // Use leagueId from the note entity itself
+      );
+
+      // Pass the created noteModel and its leagueId to the local data source.
+      // The localDataSource.saveNote uses the second parameter for its key generation.
+      await localDataSource.saveNote(noteModel, noteModel.leagueId);
       return const Right(null);
     } on CacheException catch (e) {
-      return Left(Failure('Errore nel salvare la nota: ${e.message}'));
+      final errorMessage = 'Errore nel salvare la nota: ${e.message}';
+      return Left(Failure(errorMessage));
+    } catch (e) {
+      // Catch any other potential errors during conversion or saving
+      final errorMessage =
+          'Errore imprevisto nel salvare la nota: ${e.toString()}';
+      return Left(Failure(errorMessage));
     }
   }
 
@@ -594,7 +616,10 @@ class LeagueRepositoryImpl implements LeagueRepository {
   Future<Either<Failure, void>> deleteNote(
       String leagueId, String noteId) async {
     try {
-      await localDataSource.deleteNote(leagueId, noteId);
+      await localDataSource.deleteNote(
+        noteId,
+        leagueId,
+      );
       return const Right(null);
     } on CacheException catch (e) {
       return Left(Failure('Errore nel cancellare la nota: ${e.message}'));
@@ -807,13 +832,9 @@ class LeagueRepositoryImpl implements LeagueRepository {
             now.isAfter(today7AM) && challenge.createdAt.isBefore(today7AM);
 
         if (!needsRefresh) {
-          debugPrint(
-              "✅ Usando le challenge presenti nella cache per $leagueId");
           return Right(cachedChallenges);
         } else if (!await connectionChecker.isConnected) {
           // If we need refresh but have no connection, use cache anyway
-          debugPrint(
-              "⚠️ Usando le challenge dalla cache perché non c'è connessione");
           return Right(cachedChallenges);
         }
       } else if (!await connectionChecker.isConnected) {

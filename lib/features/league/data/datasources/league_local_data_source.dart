@@ -1,5 +1,4 @@
 import 'package:fantavacanze_official/features/league/data/models/notification_model/daily_challenge_notification/daily_challenge_notification_model.dart';
-import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 
 import 'package:fantavacanze_official/core/errors/exceptions.dart';
@@ -134,8 +133,6 @@ class LeagueLocalDataSourceImpl implements LeagueLocalDataSource {
   Future<void> removeLeagueFromCache(String leagueId) async {
     try {
       await leaguesBox.delete(leagueId);
-
-      debugPrint("🗑️ Rimossa lega [$leagueId] dalla cache");
     } catch (e) {
       throw CacheException('Errore nel rimuovere la lega: $e');
     }
@@ -183,24 +180,31 @@ class LeagueLocalDataSourceImpl implements LeagueLocalDataSource {
       final notes =
           notesBox.values.where((note) => note.leagueId == leagueId).toList();
 
-      debugPrint("📤 Caricate ${notes.length} note per la lega $leagueId");
-
       return notes;
     } catch (e) {
-      throw CacheException('Errore nel recuperare le note: $e');
+      final errorMessage = 'Errore nel recuperare le note: $e';
+      throw CacheException(errorMessage);
     }
   }
 
   @override
   Future<void> saveNote(NoteModel note, String leagueId) async {
+    // The leagueId parameter here is used to construct the key,
+    // but the note object itself also contains a leagueId.
+    // Ensure consistency or clarify which one is authoritative for key generation.
+    // For now, using the passed leagueId for the key, as per original logic.
     try {
-      final key = "${leagueId}_${note.id}";
+      final key = "${leagueId}_${note.id}"; // Key uses the leagueId parameter
 
       await notesBox.put(key, note);
 
-      debugPrint("📦 Nota salvata [${note.id}] nella lega $leagueId");
+      // Verification step
+      final verifyNote = notesBox.get(key);
+      if (verifyNote != null) {
+      } else {}
     } catch (e) {
-      throw CacheException('Errore nel salvare la nota: $e');
+      final errorMessage = 'Errore nel salvare la nota: $e';
+      throw CacheException(errorMessage);
     }
   }
 
@@ -210,10 +214,9 @@ class LeagueLocalDataSourceImpl implements LeagueLocalDataSource {
       final key = "${leagueId}_$noteId";
 
       await notesBox.delete(key);
-
-      debugPrint("🗑️ Eliminata la nota [$noteId]");
     } catch (e) {
-      throw CacheException('Errore nel cancellare la nota: $e');
+      final errorMessage = 'Errore nel cancellare la nota: $e';
+      throw CacheException(errorMessage);
     }
   }
 
@@ -232,9 +235,6 @@ class LeagueLocalDataSourceImpl implements LeagueLocalDataSource {
 
         await challengesBox.put(key, challenge);
       }
-
-      debugPrint(
-          "📦 Cachate ${challenges.length} daily challenges nella lega $leagueId");
     } catch (e) {
       throw CacheException('Errore nel salvare le sfide: $e');
     }
@@ -276,9 +276,6 @@ class LeagueLocalDataSourceImpl implements LeagueLocalDataSource {
       }).toList();
 
       await cacheDailyChallenges(updatedChallenges, leagueId);
-
-      debugPrint(
-          "📦 Aggiornata la challenge $challengeId nella cache per la lega $leagueId");
     } catch (e) {
       throw CacheException('Errore nell\'aggiornare la sfida: $e');
     }
@@ -298,10 +295,8 @@ class LeagueLocalDataSourceImpl implements LeagueLocalDataSource {
         }
       }
 
-      debugPrint("⚠️ Challenge non trovata in nessuna delle leghe cachate.");
       return '';
     } catch (e) {
-      debugPrint("⚠️ Errore nel trovare challenge nella lega: $e");
       return '';
     }
   }
@@ -314,8 +309,6 @@ class LeagueLocalDataSourceImpl implements LeagueLocalDataSource {
   Future<void> cacheNotification(NotificationModel notification) async {
     try {
       await notificationsBox.put(notification.id, notification);
-
-      debugPrint("📦 Notifica cachata [${notification.id}]");
     } catch (e) {
       throw CacheException('Errore nel salvare la notifica: $e');
     }
@@ -333,8 +326,6 @@ class LeagueLocalDataSourceImpl implements LeagueLocalDataSource {
           await notificationsBox.put(notification.id, notification);
         }
       }
-
-      debugPrint("📦 Cachate ${notifications.length} notifiche");
     } catch (e) {
       throw CacheException('Errore nel cachare le notifiche: $e');
     }
@@ -354,8 +345,6 @@ class LeagueLocalDataSourceImpl implements LeagueLocalDataSource {
       final result = notifications.length > maxNotifications
           ? notifications.sublist(0, maxNotifications)
           : notifications;
-
-      debugPrint("📤 Caricate ${result.length} notifiche dalla cache");
 
       return result;
     } catch (e) {
@@ -398,8 +387,6 @@ class LeagueLocalDataSourceImpl implements LeagueLocalDataSource {
       if (notification != null) {
         if (notification.type == 'daily_challenge') {
           await notificationsBox.delete(notificationId);
-          debugPrint(
-              "🗑️ Notifica sfida [$notificationId] eliminata dalla cache");
         } else {
           // Per altre notifiche, lasciamo nella cache ma aggiorniamo isRead
           final updatedNotification = NotificationModel(
@@ -412,8 +399,6 @@ class LeagueLocalDataSourceImpl implements LeagueLocalDataSource {
             leagueId: notification.leagueId,
           );
           await notificationsBox.put(notificationId, updatedNotification);
-          debugPrint(
-              "📝 Notifica generica [$notificationId] segnata come letta nella cache");
         }
       }
     } catch (e) {
@@ -440,20 +425,13 @@ class LeagueLocalDataSourceImpl implements LeagueLocalDataSource {
       for (final notification in toDelete) {
         await notificationsBox.delete(notification.id);
       }
-
-      debugPrint(
-          "🧹 Eliminate ${toDelete.length} notifiche vecchie dalla cache");
-    } catch (e) {
-      debugPrint("⚠️ Errore nella pulizia delle vecchie notifiche: $e");
-    }
+    } catch (e) {}
   }
 
   @override
   Future<void> updateNotification(NotificationModel notification) async {
     try {
       await notificationsBox.put(notification.id, notification);
-
-      debugPrint("🔄 Notifica [${notification.id}] aggiornata nella cache");
     } catch (e) {
       throw CacheException('Errore nell\'aggiornare la notifica: $e');
     }
@@ -471,8 +449,6 @@ class LeagueLocalDataSourceImpl implements LeagueLocalDataSource {
       await notesBox.clear();
       await challengesBox.clear();
       await notificationsBox.clear();
-
-      debugPrint("🧹Tutte le cache Hive sono state svuotate");
     } catch (e) {
       throw CacheException('Errore nel pulire la cache: $e');
     }
