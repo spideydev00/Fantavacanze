@@ -168,18 +168,18 @@ class ColorPalette {
 
   // Gradient collections for daily challenge cards
   static List<List<Color>> challengeGradients = [
-    [const Color(0xFF6C72CB), const Color(0xFFCB69C1)], // Purple gradient
     [
-      const Color.fromARGB(255, 69, 167, 253),
-      const Color.fromARGB(255, 91, 197, 202)
-    ], // Blue gradient
+      const Color(0xFF134E5E),
+      const Color(0xFF71B280),
+    ],
     [
       const Color(0xFFFF8008),
-      const Color.fromARGB(255, 228, 190, 92)
-    ], // Orange gradient
-    [const Color(0xFF8E2DE2), const Color(0xFF4A00E0)], // Deep purple gradient
-    [const Color(0xFF00B4DB), const Color(0xFF0083B0)], // Cyan gradient
-    [const Color(0xFFf85032), const Color(0xFFe73827)], // Red gradient
+      const Color.fromARGB(255, 231, 180, 51),
+    ],
+    [
+      const Color(0xFF614385),
+      const Color(0xFFD76D77),
+    ],
   ];
 
   // Method to get a gradient pair for challenge by index

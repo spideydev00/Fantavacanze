@@ -148,8 +148,8 @@ class NeverHaveIEverGamePage extends StatelessWidget {
       child: Text(
         questionContent,
         textAlign: TextAlign.center,
-        style: GoogleFonts.playfairDisplay(
-          fontSize: 28, // Larger font for the question
+        style: GoogleFonts.grenze(
+          fontSize: 30,
           fontWeight: FontWeight.w700,
           color: context.textPrimaryColor,
           height: 1.4,

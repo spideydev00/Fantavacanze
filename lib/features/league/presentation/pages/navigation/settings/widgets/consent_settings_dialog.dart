@@ -3,7 +3,6 @@ import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/extensions/context_extension.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:fantavacanze_official/core/widgets/dialogs/confirmation_dialog.dart';
-import 'package:fantavacanze_official/core/widgets/dialogs/gdpr_consent_dialog.dart';
 import 'package:fantavacanze_official/features/auth/presentation/pages/social_login.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -84,14 +83,6 @@ class _ConsentSettingsDialogState extends State<ConsentSettingsDialog> {
     }
   }
 
-  void _showGdprConsentDialog() {
-    // Chiudi questo dialog
-    Navigator.of(context).pop();
-
-    // Mostra il dialog GDPR
-    GdprConsentDialog.show(context);
-  }
-
   @override
   Widget build(BuildContext context) {
     return ConfirmationDialog(
@@ -154,46 +145,6 @@ class _ConsentSettingsDialogState extends State<ConsentSettingsDialog> {
               dense: true,
             ),
           ),
-
-          // GDPR Consent Settings button
-          Container(
-            width: double.infinity,
-            margin: const EdgeInsets.only(bottom: ThemeSizes.md),
-            child: ElevatedButton.icon(
-              icon: const Icon(Icons.ads_click_rounded),
-              label: const Text('Gestisci Consenso Annunci (GDPR)'),
-              onPressed: _showGdprConsentDialog,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color.fromARGB(255, 30, 137, 231),
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: ThemeSizes.sm),
-              ),
-            ),
-          ),
-
-          // Warning about consequences for app consents
-          if (_hasChanges && (!_isAdult || !_isTermsAccepted))
-            Container(
-              padding: const EdgeInsets.all(ThemeSizes.sm),
-              decoration: BoxDecoration(
-                color: Colors.amber.withValues(alpha: 0.2),
-                borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusMd),
-              ),
-              child: Row(
-                children: [
-                  const Icon(Icons.warning, color: Colors.amber),
-                  const SizedBox(width: ThemeSizes.sm),
-                  Expanded(
-                    child: Text(
-                      'Revocare questi consensi comporterà la disconnessione dal tuo account.',
-                      style: context.textTheme.bodySmall?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
         ],
       ),
     );

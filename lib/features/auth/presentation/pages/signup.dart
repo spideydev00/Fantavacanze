@@ -39,7 +39,6 @@ class _SignUpPageState extends State<SignUpPage> {
   bool _isTermsAccepted = false;
   String? _selectedGender;
 
-  // Raw validators per-dato (senza toccare formKey.validate qui)
   bool get _nameValid => _nameCtrl.text.trim().isNotEmpty;
   bool get _emailValid {
     final e = _emailCtrl.text.trim();
@@ -58,7 +57,6 @@ class _SignUpPageState extends State<SignUpPage> {
       _isTermsAccepted &&
       _genderValid;
 
-  // Opzioni di genere abbreviate
   final List<String> genders = ["Uomo", "Donna"];
 
   @override
@@ -71,20 +69,18 @@ class _SignUpPageState extends State<SignUpPage> {
 
   void _rebuild() => setState(() {});
 
-  // Funzione aggiornata per le nuove opzioni
+  /// Traduce il valore del dropdown nel formato richiesto dal backend.
   String _getGenderText(String gender) {
-    switch (gender) {
-      case "M":
-        return 'male';
-      case "F":
-        return 'female';
-      default:
-        // Default a un valore per sicurezza, anche se non dovrebbe accadere
-        return 'male';
+    if (gender == "Uomo") {
+      return 'male';
+    } else if (gender == "Donna") {
+      return 'female';
     }
+    // Fallback di sicurezza, anche se non dovrebbe mai accadere
+    // con la logica attuale del dropdown.
+    return 'male';
   }
 
-  // Funzione aggiornata per le nuove opzioni
   IconData _getGenderIcon(String gender) {
     switch (gender) {
       case "Uomo":
@@ -94,6 +90,42 @@ class _SignUpPageState extends State<SignUpPage> {
       default:
         return Icons.person;
     }
+  }
+
+  /// Metodo helper per costruire la UI per un elemento del dropdown
+  Widget _buildGenderItem(String gender) {
+    final Color iconColor;
+    final IconData icon = _getGenderIcon(gender);
+
+    if (gender == "Uomo") {
+      iconColor = Colors.blue.shade400;
+    } else if (gender == "Donna") {
+      iconColor = Colors.pink.shade300;
+    } else {
+      iconColor = ColorPalette.darkGrey;
+    }
+
+    return Row(
+      children: [
+        Icon(
+          icon,
+          size: 22,
+          color: iconColor,
+        ),
+        const SizedBox(width: ThemeSizes.sm),
+        Flexible(
+          child: Text(
+            gender,
+            style: TextStyle(
+              color: ColorPalette.darkerGrey,
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
+            ),
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+      ],
+    );
   }
 
   @override
@@ -106,7 +138,6 @@ class _SignUpPageState extends State<SignUpPage> {
       widgets: [
         Form(
           key: _formKey,
-          // disabilitiamo l'autovalidazione globale
           autovalidateMode: AutovalidateMode.disabled,
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: ThemeSizes.lg),
@@ -118,7 +149,7 @@ class _SignUpPageState extends State<SignUpPage> {
                   children: [
                     // Nome field
                     Expanded(
-                      flex: 7, // Ripristinato flex
+                      flex: 7,
                       child: AuthField(
                         controller: _nameCtrl,
                         hintText: "Nome",
@@ -145,7 +176,7 @@ class _SignUpPageState extends State<SignUpPage> {
                     const SizedBox(width: 8),
                     // Gender selector
                     Expanded(
-                      flex: 5, // Ripristinato Expanded con flex
+                      flex: 6,
                       child: DropdownButton2<String>(
                         isExpanded: true,
                         value: _selectedGender,
@@ -157,30 +188,15 @@ class _SignUpPageState extends State<SignUpPage> {
                             fontWeight: FontWeight.w500,
                           ),
                         ),
+                        selectedItemBuilder: (context) {
+                          return genders.map((gender) {
+                            return _buildGenderItem(gender);
+                          }).toList();
+                        },
                         items: genders.map((String gender) {
                           return DropdownMenuItem<String>(
                             value: gender,
-                            child: Row(
-                              children: [
-                                Icon(
-                                  _getGenderIcon(gender),
-                                  size: 22,
-                                  color: ColorPalette.darkGrey,
-                                ),
-                                const SizedBox(width: ThemeSizes.sm),
-                                Expanded(
-                                  child: Text(
-                                    gender,
-                                    style: TextStyle(
-                                      color: ColorPalette.darkerGrey,
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                              ],
-                            ),
+                            child: _buildGenderItem(gender),
                           );
                         }).toList(),
                         onChanged: (String? newValue) {
@@ -189,8 +205,6 @@ class _SignUpPageState extends State<SignUpPage> {
                           });
                         },
                         underline: const SizedBox(),
-
-                        // Stile del bottone
                         buttonStyleData: ButtonStyleData(
                           height: 64,
                           padding: const EdgeInsets.symmetric(horizontal: 12.0),
@@ -204,17 +218,13 @@ class _SignUpPageState extends State<SignUpPage> {
                             ),
                           ),
                         ),
-
-                        // Stile dell'icona
-                        iconStyleData: IconStyleData(
-                          icon: const Icon(
+                        iconStyleData: const IconStyleData(
+                          icon: Icon(
                             Icons.arrow_drop_down,
                             color: ColorPalette.darkGrey,
                           ),
                           iconSize: 24,
                         ),
-
-                        // Stile del menu a tendina
                         dropdownStyleData: DropdownStyleData(
                           decoration: BoxDecoration(
                             color: ColorPalette.white,
@@ -358,7 +368,6 @@ class _SignUpPageState extends State<SignUpPage> {
 
                     return ElevatedButton.icon(
                       onPressed: () {
-                        // Check for gender selection first
                         if (!_genderValid) {
                           showDialog(
                             context: context,
@@ -372,7 +381,6 @@ class _SignUpPageState extends State<SignUpPage> {
                           return;
                         }
 
-                        // Then proceed with regular validation
                         if (_formReady) {
                           if (_formKey.currentState!.validate()) {
                             context.read<AuthBloc>().add(
