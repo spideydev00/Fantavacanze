@@ -173,7 +173,7 @@ class _PremiumAccessDialogState extends State<PremiumAccessDialog>
                   child: GradientOptionButton(
                     isSelected: true,
                     label: 'Ads',
-                    description: 'Guarda 2 ads per ottenere l\'accesso',
+                    description: 'Guarda 1 ad per ottenere l\'accesso',
                     icon: Icons.ondemand_video,
                     primaryColor: ColorPalette.adsGradient[0],
                     secondaryColor: ColorPalette.adsGradient[2],

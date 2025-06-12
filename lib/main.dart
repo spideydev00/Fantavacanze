@@ -8,6 +8,9 @@ import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/notification_count/notification_count_cubit.dart';
 import 'package:fantavacanze_official/core/theme/theme.dart';
 import 'package:fantavacanze_official/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:fantavacanze_official/features/games/presentation/bloc/never_have_i_ever/never_have_i_ever_bloc.dart';
+import 'package:fantavacanze_official/features/games/presentation/bloc/truth_or_dare/truth_or_dare_bloc.dart';
+import 'package:fantavacanze_official/features/games/presentation/bloc/word_bomb/word_bomb_bloc.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc.dart';
 import 'package:fantavacanze_official/features/games/presentation/bloc/lobby/lobby_bloc.dart';
 import 'package:fantavacanze_official/init_dependencies/init_dependencies.dart';
@@ -49,6 +52,9 @@ void main() async {
           BlocProvider(create: (_) => serviceLocator<NotificationCountCubit>()),
           BlocProvider.value(value: themeCubit),
           BlocProvider(create: (_) => serviceLocator<LobbyBloc>()),
+          BlocProvider(create: (_) => serviceLocator<WordBombBloc>()),
+          BlocProvider(create: (_) => serviceLocator<TruthOrDareBloc>()),
+          BlocProvider(create: (_) => serviceLocator<NeverHaveIEverBloc>()),
         ],
         child: const MyApp(),
       ),

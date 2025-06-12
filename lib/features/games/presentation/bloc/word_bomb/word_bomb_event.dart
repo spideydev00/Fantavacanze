@@ -112,4 +112,4 @@ class _WordBombErrorOccurred extends WordBombEvent {
   List<Object?> get props => [message];
 }
 
-class ActivateTrialRequested extends WordBombEvent {}
+class DeactivateTrialRequested extends WordBombEvent {}

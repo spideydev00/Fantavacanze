@@ -35,9 +35,6 @@ class ModernDrinkCard extends StatelessWidget {
   /// Indica se una versione di prova è disponibile.
   final bool isTrialAvailable;
 
-  /// Funzione chiamata quando l'utente richiede la prova gratuita.
-  final VoidCallback? onTrialRequested;
-
   /// Funzione chiamata quando si richiede l'accesso premium.
   final VoidCallback? onPremiumRequested;
 
@@ -58,7 +55,6 @@ class ModernDrinkCard extends StatelessWidget {
     this.unselectedColor,
     this.isPremium = false,
     this.isTrialAvailable = false,
-    this.onTrialRequested,
     this.onPremiumRequested,
     this.showInfoIcon = false,
     this.onInfoIconTapped,
@@ -284,36 +280,33 @@ class ModernDrinkCard extends StatelessWidget {
             bottom: 15,
             left: 0,
             right: 0,
-            child: GestureDetector(
-              onTap: onTrialRequested,
-              child: Opacity(
-                opacity: isSelected ? 1.0 : 0.8,
-                child: Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 10),
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [Colors.green.shade600, Colors.green.shade400],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    borderRadius: BorderRadius.circular(20),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.2),
-                        blurRadius: 4,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
+            child: Opacity(
+              opacity: isSelected ? 1.0 : 0.8,
+              child: Container(
+                margin: const EdgeInsets.symmetric(horizontal: 10),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [Colors.green.shade600, Colors.green.shade400],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
                   ),
-                  child: Text(
-                    "Prova Gratis",
-                    textAlign: TextAlign.center,
-                    style: context.textTheme.labelMedium!.copyWith(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.2),
+                      blurRadius: 4,
+                      offset: const Offset(0, 2),
                     ),
+                  ],
+                ),
+                child: Text(
+                  "Prova Gratis",
+                  textAlign: TextAlign.center,
+                  style: context.textTheme.labelMedium!.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
               ),

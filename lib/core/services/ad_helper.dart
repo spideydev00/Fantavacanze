@@ -40,10 +40,10 @@ class AdHelper {
   // Production Ad Unit IDs - Use these for release
   static String get interstitialAdUnitId {
     // During development, always use test IDs
-    if (true) {
-      // Change to a proper environment check later
-      return testInterstitialAdUnitId;
-    }
+    // if (true) {
+    //   // Change to a proper environment check later
+    //   return testInterstitialAdUnitId;
+    // }
 
     if (Platform.isAndroid) {
       return AppSecrets.androidInterstitialAdUnitId;
@@ -56,10 +56,10 @@ class AdHelper {
 
   static String get rewardedAdUnitId {
     // During development, always use test IDs
-    if (true) {
-      // Change to a proper environment check later
-      return testRewardedAdUnitId;
-    }
+    // if (true) {
+    //   // Change to a proper environment check later
+    //   return testRewardedAdUnitId;
+    // }
 
     if (Platform.isAndroid) {
       return AppSecrets.androidRewardedAdUnitId;
@@ -356,64 +356,64 @@ class AdHelper {
     await loadRewardedAd();
   }
 
-  // Show both ads in sequence for premium content
-  Future<bool> showSequentialAds() async {
-    // First show interstitial
-    bool interstitialShown = await showInterstitialAd();
+  // // Show both ads in sequence for premium content
+  // Future<bool> showSequentialAds() async {
+  //   // First show interstitial
+  //   bool interstitialShown = await showInterstitialAd();
 
-    // Small delay between ads
-    await Future.delayed(const Duration(milliseconds: 500));
+  //   // Small delay between ads
+  //   await Future.delayed(const Duration(milliseconds: 500));
 
-    // Then show rewarded
-    bool rewardEarned = await showRewardedAd();
+  //   // Then show rewarded
+  //   bool rewardEarned = await showRewardedAd();
 
-    // Both must complete successfully
-    return interstitialShown && rewardEarned;
-  }
+  //   // Both must complete successfully
+  //   return interstitialShown && rewardEarned;
+  // }
 
-  // Show two rewarded ads in sequence for premium content
-  Future<bool> showSequentialRewardedAds() async {
-    debugPrint('🔄 Inizio sequenza rewarded ads');
+  // // Show two rewarded ads in sequence for premium content
+  // Future<bool> showSequentialRewardedAds() async {
+  //   debugPrint('🔄 Inizio sequenza rewarded ads');
 
-    // Show first rewarded ad
-    bool firstAdWatched = await showRewardedAd();
+  //   // Show first rewarded ad
+  //   bool firstAdWatched = await showRewardedAd();
 
-    if (!firstAdWatched) {
-      return false;
-    }
+  //   if (!firstAdWatched) {
+  //     return false;
+  //   }
 
-    // Wait for the second ad to load with timeout
-    bool secondAdLoaded = false;
-    int retryCount = 0;
-    const maxRetries = 10;
+  //   // Wait for the second ad to load with timeout
+  //   bool secondAdLoaded = false;
+  //   int retryCount = 0;
+  //   const maxRetries = 10;
 
-    while (!secondAdLoaded && retryCount < maxRetries) {
-      // Check if we have a rewarded ad ready
-      if (_rewardedAd != null) {
-        secondAdLoaded = true;
-        break;
-      }
+  //   while (!secondAdLoaded && retryCount < maxRetries) {
+  //     // Check if we have a rewarded ad ready
+  //     if (_rewardedAd != null) {
+  //       secondAdLoaded = true;
+  //       break;
+  //     }
 
-      // Wait a bit before checking again
-      await Future.delayed(const Duration(milliseconds: 500));
-      retryCount++;
-    }
+  //     // Wait a bit before checking again
+  //     await Future.delayed(const Duration(milliseconds: 500));
+  //     retryCount++;
+  //   }
 
-    if (!secondAdLoaded) {
-      return false;
-    }
+  //   if (!secondAdLoaded) {
+  //     return false;
+  //   }
 
-    // Now show the second rewarded ad
-    bool secondAdWatched = await showRewardedAd();
+  //   // Now show the second rewarded ad
+  //   bool secondAdWatched = await showRewardedAd();
 
-    // Both must complete successfully
-    final result = firstAdWatched && secondAdWatched;
-    if (result) {
-      debugPrint('✅ Sequenza completata');
-    }
+  //   // Both must complete successfully
+  //   final result = firstAdWatched && secondAdWatched;
+  //   if (result) {
+  //     debugPrint('✅ Sequenza completata');
+  //   }
 
-    return result;
-  }
+  //   return result;
+  // }
 
   // Clean up resources
   void dispose() {

@@ -53,36 +53,38 @@ class _EmptyBrandedPageState extends State<EmptyBrandedPage> {
           widget.bgImagePath != null ? Colors.transparent : context.bgColor,
       body: Stack(
         children: [
-          Column(
-            mainAxisAlignment: widget.mainColumnAlignment,
-            children: [
-              Expanded(
-                child: SingleChildScrollView(
-                  child: Column(
-                    children: [
-                      SizedBox(height: widget.logoTopMargin),
-                      Padding(
-                        padding: EdgeInsets.symmetric(vertical: 40),
-                        child: Image.asset(
-                          widget.logoImagePath,
-                          width: Constants.getWidth(context) * 0.20,
+          Center(
+            child: Column(
+              mainAxisAlignment: widget.mainColumnAlignment,
+              children: [
+                Expanded(
+                  child: SingleChildScrollView(
+                    child: Column(
+                      children: [
+                        SizedBox(height: widget.logoTopMargin),
+                        Padding(
+                          padding: EdgeInsets.symmetric(vertical: 40),
+                          child: Image.asset(
+                            widget.logoImagePath,
+                            width: Constants.getWidth(context) * 0.20,
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 10),
-                      ...widget.widgets,
-                    ],
+                        const SizedBox(height: 10),
+                        ...widget.widgets,
+                      ],
+                    ),
                   ),
                 ),
-              ),
-              if ((widget.mainColumnAlignment ==
-                          MainAxisAlignment.spaceBetween ||
-                      widget.mainColumnAlignment ==
-                          MainAxisAlignment.spaceEvenly ||
-                      widget.mainColumnAlignment ==
-                          MainAxisAlignment.spaceAround) &&
-                  widget.newColumnWidgets != null)
-                Column(children: [...widget.newColumnWidgets!]),
-            ],
+                if ((widget.mainColumnAlignment ==
+                            MainAxisAlignment.spaceBetween ||
+                        widget.mainColumnAlignment ==
+                            MainAxisAlignment.spaceEvenly ||
+                        widget.mainColumnAlignment ==
+                            MainAxisAlignment.spaceAround) &&
+                    widget.newColumnWidgets != null)
+                  Column(children: [...widget.newColumnWidgets!]),
+              ],
+            ),
           ),
         ],
       ),

@@ -89,7 +89,7 @@ class WordBombBloc extends Bloc<WordBombEvent, WordBombState> {
     on<_WordBombGameStateUpdated>(_onWordBombGameStateUpdated);
     on<_TimerTick>(_onTimerTick);
     on<_WordBombErrorOccurred>(_onErrorOccurred);
-    on<ActivateTrialRequested>(_onActivateTrialRequested);
+    on<DeactivateTrialRequested>(_onDeactivateTrialRequested);
     on<RequestStrategicAction>(_onRequestStrategicAction);
     on<ConfirmStrategicAction>(_onConfirmStrategicAction);
     on<CancelStrategicAction>(_onCancelStrategicAction);
@@ -396,9 +396,12 @@ class WordBombBloc extends Bloc<WordBombEvent, WordBombState> {
   }
 
   // ------------------ ON ACTIVATE TRIAL REQUESTED ------------------ //
-  Future<void> _onActivateTrialRequested(
-      ActivateTrialRequested event, Emitter<WordBombState> emit) async {
+  Future<void> _onDeactivateTrialRequested(
+    DeactivateTrialRequested event,
+    Emitter<WordBombState> emit,
+  ) async {
     final user = _currentUser;
+
     if (user == null) {
       if (state is WordBombGameActive) {
         emit((state as WordBombGameActive).copyWith(
@@ -408,14 +411,21 @@ class WordBombBloc extends Bloc<WordBombEvent, WordBombState> {
       }
       return;
     }
+
     final result = await _setWordBombTrialStatus(
-        SetWordBombTrialStatusParams(userId: user.id, isActive: true));
+        SetWordBombTrialStatusParams(userId: user.id, isActive: false));
+
+    _appUserCubit.updateUser(user.copyWith(
+      isWordBombTrialAvailable: false,
+    ));
+
     result.fold(
       (failure) {
         if (state is WordBombGameActive) {
           emit((state as WordBombGameActive).copyWith(
-              errorMessage: "Errore attivazione trial: ${failure.message}",
-              clearErrorMessage: false));
+            errorMessage: "Errore attivazione trial: ${failure.message}",
+            clearErrorMessage: false,
+          ));
         } else {
           emit(WordBombError("Errore attivazione trial: ${failure.message}"));
         }
@@ -423,7 +433,9 @@ class WordBombBloc extends Bloc<WordBombEvent, WordBombState> {
       (success) {
         if (state is WordBombGameActive) {
           emit((state as WordBombGameActive).copyWith(
-              errorMessage: "Trial attivato!", clearErrorMessage: false));
+            errorMessage: "Trial attivato!",
+            clearErrorMessage: false,
+          ));
         }
       },
     );

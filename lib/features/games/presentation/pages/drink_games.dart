@@ -127,7 +127,7 @@ class DrinkGames extends StatelessWidget {
       final adHelper = serviceLocator<AdHelper>();
 
       // Esegue gli ads in sequenza
-      final bool adsWatched = await adHelper.showSequentialRewardedAds();
+      final bool adsWatched = await adHelper.showRewardedAd();
 
       // Rimuovo overlay
       if (loadingOverlay.mounted) loadingOverlay.remove();
