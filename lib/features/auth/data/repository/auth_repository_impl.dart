@@ -60,7 +60,6 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<Either<Failure, void>> removeConsents({
     required bool isAdult,
-    required bool isTermsAccepted,
   }) async {
     try {
       if (!await connectionChecker.isConnected) {
@@ -70,7 +69,6 @@ class AuthRepositoryImpl implements AuthRepository {
 
       await authRemoteDataSource.removeConsents(
         isAdult: isAdult,
-        isTermsAccepted: isTermsAccepted,
       );
       return right(null);
     } on ServerException catch (e) {
@@ -81,7 +79,6 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<Either<Failure, User>> updateConsents({
     required bool isAdult,
-    required bool isTermsAccepted,
   }) async {
     try {
       if (!await connectionChecker.isConnected) {
@@ -91,7 +88,6 @@ class AuthRepositoryImpl implements AuthRepository {
 
       final user = await authRemoteDataSource.updateConsents(
         isAdult: isAdult,
-        isTermsAccepted: isTermsAccepted,
       );
       return right(user);
     } on ServerException catch (e) {
@@ -110,7 +106,6 @@ class AuthRepositoryImpl implements AuthRepository {
     required String password,
     required String hCaptcha,
     bool? isAdult,
-    bool? isTermsAccepted,
   }) async {
     try {
       if (!await connectionChecker.isConnected) {
@@ -137,7 +132,6 @@ class AuthRepositoryImpl implements AuthRepository {
     required String gender,
     required String hCaptcha,
     required bool isAdult,
-    required bool isTermsAccepted,
   }) async {
     try {
       if (!await connectionChecker.isConnected) {
@@ -146,7 +140,7 @@ class AuthRepositoryImpl implements AuthRepository {
       }
 
       // Verify age/terms
-      if (!isAdult || !isTermsAccepted) {
+      if (!isAdult) {
         return left(Failure(
             "Devi avere almeno 18 anni e accettare i termini e condizioni."));
       }
@@ -158,7 +152,6 @@ class AuthRepositoryImpl implements AuthRepository {
         gender: gender,
         hCaptcha: hCaptcha,
         isAdult: isAdult,
-        isTermsAccepted: isTermsAccepted,
       );
 
       return right(null);

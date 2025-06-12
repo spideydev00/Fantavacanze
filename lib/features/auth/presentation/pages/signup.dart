@@ -36,7 +36,6 @@ class _SignUpPageState extends State<SignUpPage> {
 
   String _turnstile = "";
   bool _isAdult = false;
-  bool _isTermsAccepted = false;
   String? _selectedGender;
 
   bool get _nameValid => _nameCtrl.text.trim().isNotEmpty;
@@ -54,7 +53,6 @@ class _SignUpPageState extends State<SignUpPage> {
       _passValid &&
       _turnstile.isNotEmpty &&
       _isAdult &&
-      _isTermsAccepted &&
       _genderValid;
 
   final List<String> genders = ["Uomo", "Donna"];
@@ -307,11 +305,9 @@ class _SignUpPageState extends State<SignUpPage> {
                 // Age & Terms
                 AgeVerificationForm(
                   initialIsAdult: _isAdult,
-                  initialIsTermsAccepted: _isTermsAccepted,
-                  onValueChanged: (adult, terms) {
+                  onValueChanged: (adult) {
                     setState(() {
                       _isAdult = adult;
-                      _isTermsAccepted = terms;
                     });
                   },
                 ),
@@ -320,7 +316,8 @@ class _SignUpPageState extends State<SignUpPage> {
                 // Submit button
                 BlocConsumer<AuthBloc, AuthState>(
                   listener: (context, state) {
-                    if (state is AuthFailure) {
+                    if (state is AuthFailure &&
+                        state.operation == "email_sign_up") {
                       showDialog(
                         context: context,
                         builder: (_) => AuthDialogBox(
@@ -387,10 +384,9 @@ class _SignUpPageState extends State<SignUpPage> {
                                   AuthEmailSignUp(
                                     name: _nameCtrl.text.trim(),
                                     email: _emailCtrl.text.trim(),
-                                    password: _passCtrl.text,
+                                    password: _passCtrl.text.trim(),
                                     hCaptcha: _turnstile,
                                     isAdult: _isAdult,
-                                    isTermsAccepted: _isTermsAccepted,
                                     gender: _getGenderText(_selectedGender!),
                                   ),
                                 );

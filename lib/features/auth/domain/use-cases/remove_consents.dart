@@ -5,11 +5,9 @@ import 'package:fpdart/fpdart.dart';
 
 class RemoveConsentsParams {
   final bool isAdult;
-  final bool isTermsAccepted;
 
   RemoveConsentsParams({
     required this.isAdult,
-    required this.isTermsAccepted,
   });
 }
 
@@ -22,7 +20,6 @@ class RemoveConsents implements Usecase<void, RemoveConsentsParams> {
   Future<Either<Failure, void>> call(RemoveConsentsParams params) async {
     return await authRepository.removeConsents(
       isAdult: params.isAdult,
-      isTermsAccepted: params.isTermsAccepted,
     );
   }
 }

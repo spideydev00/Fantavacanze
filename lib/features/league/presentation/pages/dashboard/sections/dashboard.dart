@@ -67,6 +67,7 @@ class _DashboardScreenState extends State<DashboardScreen>
         curve: Curves.fastOutSlowIn,
       ),
     );
+
     _initializeGdprService();
     // Carica le notifiche
     context.read<LeagueBloc>().add(GetNotificationsEvent());

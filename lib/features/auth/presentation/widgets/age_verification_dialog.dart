@@ -1,19 +1,18 @@
 import 'package:fantavacanze_official/core/constants/constants.dart';
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/extensions/context_extension.dart';
-import 'package:fantavacanze_official/core/pages/app_terms.dart';
+// import 'package:fantavacanze_official/core/pages/app_terms.dart'
 import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
-import 'package:flutter/gestures.dart';
+// import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
 /// Dialog that shows age verification and terms acceptance UI
 /// This is used in the authentication flow when consents are required
 class AgeVerificationDialog extends StatefulWidget {
-  final Function(bool, bool) onConfirm;
+  final Function(bool) onConfirm;
   final VoidCallback onCancel;
   final bool initialIsAdult;
-  final bool initialIsTermsAccepted;
   final String provider;
 
   const AgeVerificationDialog({
@@ -21,17 +20,15 @@ class AgeVerificationDialog extends StatefulWidget {
     required this.onConfirm,
     required this.onCancel,
     this.initialIsAdult = false,
-    this.initialIsTermsAccepted = false,
     required this.provider,
   });
 
   static Future<bool?> show({
     required BuildContext context,
-    required Function(bool, bool) onConfirm,
+    required Function(bool) onConfirm,
     required VoidCallback onCancel,
     required String provider,
     bool initialIsAdult = false,
-    bool initialIsTermsAccepted = false,
   }) {
     return showDialog<bool>(
       context: context,
@@ -41,7 +38,6 @@ class AgeVerificationDialog extends StatefulWidget {
           onConfirm: onConfirm,
           onCancel: onCancel,
           initialIsAdult: initialIsAdult,
-          initialIsTermsAccepted: initialIsTermsAccepted,
           provider: provider,
         );
       },
@@ -55,7 +51,6 @@ class AgeVerificationDialog extends StatefulWidget {
 class _AgeVerificationDialogState extends State<AgeVerificationDialog>
     with SingleTickerProviderStateMixin {
   late bool _isAdult;
-  late bool _isTermsAccepted;
   late AnimationController _animationController;
   late Animation<double> _animation;
 
@@ -63,7 +58,6 @@ class _AgeVerificationDialogState extends State<AgeVerificationDialog>
   void initState() {
     super.initState();
     _isAdult = widget.initialIsAdult;
-    _isTermsAccepted = widget.initialIsTermsAccepted;
 
     _animationController = AnimationController(
       duration: const Duration(milliseconds: 300),
@@ -84,7 +78,7 @@ class _AgeVerificationDialogState extends State<AgeVerificationDialog>
     super.dispose();
   }
 
-  bool get isFormValid => _isAdult && _isTermsAccepted;
+  bool get isFormValid => _isAdult;
 
   @override
   Widget build(BuildContext context) {
@@ -169,42 +163,42 @@ class _AgeVerificationDialogState extends State<AgeVerificationDialog>
                       ),
                     ),
 
-                    const SizedBox(height: ThemeSizes.md),
+                    // const SizedBox(height: ThemeSizes.md),
 
-                    // Terms acceptance checkbox
-                    _buildVerificationItem(
-                      title: "Termini e condizioni",
-                      isChecked: _isTermsAccepted,
-                      onChanged: (value) {
-                        setState(() {
-                          _isTermsAccepted = value ?? false;
-                        });
-                      },
-                      content: RichText(
-                        text: TextSpan(
-                          style: context.textTheme.bodyMedium,
-                          children: [
-                            TextSpan(
-                              text: "Accetto ",
-                            ),
-                            TextSpan(
-                              text: "Termini e Condizioni",
-                              style: TextStyle(
-                                color: context.secondaryColor,
-                                fontWeight: FontWeight.bold,
-                              ),
-                              recognizer: TapGestureRecognizer()
-                                ..onTap = () {
-                                  Navigator.push(
-                                    context,
-                                    AppTermsPage.route,
-                                  );
-                                },
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
+                    // // Terms acceptance checkbox
+                    // _buildVerificationItem(
+                    //   title: "Termini e condizioni",
+                    //   isChecked: _isTermsAccepted,
+                    //   onChanged: (value) {
+                    //     setState(() {
+                    //       _isTermsAccepted = value ?? false;
+                    //     });
+                    //   },
+                    //   content: RichText(
+                    //     text: TextSpan(
+                    //       style: context.textTheme.bodyMedium,
+                    //       children: [
+                    //         TextSpan(
+                    //           text: "Accetto ",
+                    //         ),
+                    //         TextSpan(
+                    //           text: "Termini e Condizioni",
+                    //           style: TextStyle(
+                    //             color: context.secondaryColor,
+                    //             fontWeight: FontWeight.bold,
+                    //           ),
+                    //           recognizer: TapGestureRecognizer()
+                    //             ..onTap = () {
+                    //               Navigator.push(
+                    //                 context,
+                    //                 AppTermsPage.route,
+                    //               );
+                    //             },
+                    //         ),
+                    //       ],
+                    //     ),
+                    //   ),
+                    // ),
                   ],
                 ),
               ),
@@ -239,7 +233,7 @@ class _AgeVerificationDialogState extends State<AgeVerificationDialog>
                         onPressed: isFormValid
                             ? () {
                                 Navigator.pop(context);
-                                widget.onConfirm(_isAdult, _isTermsAccepted);
+                                widget.onConfirm(_isAdult);
                               }
                             : null,
                         style: ElevatedButton.styleFrom(

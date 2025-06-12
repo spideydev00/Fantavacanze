@@ -16,7 +16,6 @@ abstract interface class AuthRepository {
     required String gender,
     required String hCaptcha,
     required bool isAdult,
-    required bool isTermsAccepted,
   });
 
   Future<Either<Failure, User>> loginWithEmailPassword({
@@ -46,12 +45,10 @@ abstract interface class AuthRepository {
 
   Future<Either<Failure, void>> removeConsents({
     required bool isAdult,
-    required bool isTermsAccepted,
   });
 
   Future<Either<Failure, User>> updateConsents({
     required bool isAdult,
-    required bool isTermsAccepted,
   });
 
   Future<Either<Failure, User>> updateGender({required String gender});

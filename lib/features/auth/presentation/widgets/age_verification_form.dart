@@ -1,20 +1,15 @@
 import 'package:fantavacanze_official/core/constants/constants.dart';
-import 'package:fantavacanze_official/core/pages/app_terms.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
-import 'package:fantavacanze_official/features/league/presentation/pages/navigation/settings/privacy_policy.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
 class AgeVerificationForm extends StatefulWidget {
   final bool initialIsAdult;
-  final bool initialIsTermsAccepted;
-  final Function(bool, bool) onValueChanged;
+  final Function(bool) onValueChanged;
 
   const AgeVerificationForm({
     super.key,
     this.initialIsAdult = false,
-    this.initialIsTermsAccepted = false,
     required this.onValueChanged,
   });
 
@@ -24,13 +19,11 @@ class AgeVerificationForm extends StatefulWidget {
 
 class _AgeVerificationFormState extends State<AgeVerificationForm> {
   late bool _isAdult;
-  late bool _isTermsAccepted;
 
   @override
   void initState() {
     super.initState();
     _isAdult = widget.initialIsAdult;
-    _isTermsAccepted = widget.initialIsTermsAccepted;
   }
 
   @override
@@ -44,7 +37,7 @@ class _AgeVerificationFormState extends State<AgeVerificationForm> {
             setState(() {
               _isAdult = value;
             });
-            widget.onValueChanged(_isAdult, _isTermsAccepted);
+            widget.onValueChanged(_isAdult);
           },
           label: Text(
             "Ho almeno 18 anni",
@@ -54,71 +47,6 @@ class _AgeVerificationFormState extends State<AgeVerificationForm> {
               ),
               fontSize: 12,
               fontWeight: FontWeight.bold,
-            ),
-          ),
-        ),
-
-        const SizedBox(height: ThemeSizes.xs), // Reduced vertical spacing
-
-        // Terms acceptance checkbox
-        _buildCheckbox(
-          value: _isTermsAccepted,
-          onChanged: (value) {
-            setState(() {
-              _isTermsAccepted = value;
-            });
-            widget.onValueChanged(_isAdult, _isTermsAccepted);
-          },
-          label: RichText(
-            text: TextSpan(
-              children: [
-                TextSpan(
-                  text: "Accetto ",
-                  style: TextStyle(
-                    color: ColorPalette.textPrimary(ThemeMode.dark),
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                TextSpan(
-                  text: "Termini ",
-                  style: TextStyle(
-                    color: ColorPalette.secondary(ThemeMode.dark),
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  recognizer: TapGestureRecognizer()
-                    ..onTap = () {
-                      Navigator.push(
-                        context,
-                        AppTermsPage.route,
-                      );
-                    },
-                ),
-                TextSpan(
-                  text: "e ",
-                  style: TextStyle(
-                    color: ColorPalette.textPrimary(ThemeMode.dark),
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                TextSpan(
-                  text: "Privacy  Policy",
-                  style: TextStyle(
-                    color: ColorPalette.secondary(ThemeMode.dark),
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  recognizer: TapGestureRecognizer()
-                    ..onTap = () {
-                      Navigator.push(
-                        context,
-                        PrivacyPolicyPage.route,
-                      );
-                    },
-                ),
-              ],
             ),
           ),
         ),

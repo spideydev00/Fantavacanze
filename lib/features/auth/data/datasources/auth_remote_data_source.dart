@@ -23,7 +23,6 @@ abstract interface class AuthRemoteDataSource {
     required String hCaptcha,
     required String gender,
     required bool isAdult,
-    required bool isTermsAccepted,
   });
   Future<UserModel> loginWithEmailPassword({
     required String email,
@@ -44,11 +43,10 @@ abstract interface class AuthRemoteDataSource {
   // CONSENTS MANAGEMENT
   Future<void> removeConsents({
     required bool isAdult,
-    required bool isTermsAccepted,
   });
   Future<UserModel> updateConsents({
     required bool isAdult,
-    required bool isTermsAccepted,
+    // required bool isTermsAccepted,
   });
   Future<UserModel> updateGender({required String gender});
 
@@ -114,7 +112,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
 
       String token = '';
 
-      if (!userModel.isAdult || !userModel.isTermsAccepted) {
+      if (!userModel.isAdult) {
         throw ServerException('consent_required');
       } else {
         _tokenSubscription = await initTokenSubscription(userId: userModel.id);
@@ -162,7 +160,6 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
             data: {
               'full_name': credential.givenName,
               'is_adult': false,
-              'is_terms_accepted': false,
             },
           ),
         );
@@ -245,7 +242,6 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     required String hCaptcha,
     required String gender,
     required bool isAdult,
-    required bool isTermsAccepted,
   }) async {
     try {
       final response = await supabaseClient.auth.signUp(
@@ -255,7 +251,6 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         data: {
           'name': name,
           'is_adult': isAdult,
-          'is_terms_accepted': isTermsAccepted,
           'gender': gender,
         },
         emailRedirectTo: "https://fantavacanze.it/",
@@ -361,7 +356,6 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   @override
   Future<void> removeConsents({
     required bool isAdult,
-    required bool isTermsAccepted,
   }) async {
     try {
       if (currentSession?.user.id == null) {
@@ -370,7 +364,6 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       await supabaseClient.auth.updateUser(
         UserAttributes(data: {
           'is_adult': isAdult,
-          'is_terms_accepted': isTermsAccepted,
         }),
       );
     } catch (e) {
@@ -382,7 +375,6 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   @override
   Future<UserModel> updateConsents({
     required bool isAdult,
-    required bool isTermsAccepted,
   }) async {
     try {
       final userId = currentSession?.user.id;
@@ -392,7 +384,6 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       await supabaseClient.auth.updateUser(
         UserAttributes(data: {
           'is_adult': isAdult,
-          'is_terms_accepted': isTermsAccepted,
         }),
       );
 
@@ -400,7 +391,6 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
           .from('profiles')
           .update({
             'is_adult': isAdult,
-            'is_terms_accepted': isTermsAccepted,
           })
           .eq('id', userId)
           .select()

@@ -27,7 +27,6 @@ class ConsentSettingsDialog extends StatefulWidget {
 
 class _ConsentSettingsDialogState extends State<ConsentSettingsDialog> {
   late bool _isAdult;
-  late bool _isTermsAccepted;
   bool _hasChanges = false;
 
   @override
@@ -36,11 +35,9 @@ class _ConsentSettingsDialogState extends State<ConsentSettingsDialog> {
     final userState = context.read<AppUserCubit>().state;
     if (userState is AppUserIsLoggedIn) {
       _isAdult = userState.user.isAdult;
-      _isTermsAccepted = userState.user.isTermsAccepted;
     } else {
       // Should not happen if dialog is shown for logged-in user
       _isAdult = true;
-      _isTermsAccepted = true;
     }
   }
 
@@ -51,22 +48,14 @@ class _ConsentSettingsDialogState extends State<ConsentSettingsDialog> {
     });
   }
 
-  void _updateIsTermsAccepted(bool value) {
-    setState(() {
-      _isTermsAccepted = value;
-      _hasChanges = true;
-    });
-  }
-
   Future<void> _saveChanges() async {
     final cubit = context.read<AppUserCubit>();
 
     // This part handles app-specific consent (age, terms) and potential logout
-    if (!_isAdult || !_isTermsAccepted) {
+    if (!_isAdult) {
       // First remove consents, which will then trigger logout
       await cubit.removeConsents(
         isAdult: _isAdult,
-        isTermsAccepted: _isTermsAccepted,
       );
 
       // chiudo il dialog
@@ -116,28 +105,6 @@ class _ConsentSettingsDialogState extends State<ConsentSettingsDialog> {
               ),
               value: _isAdult,
               onChanged: _updateIsAdult,
-              activeColor: context.primaryColor,
-              contentPadding:
-                  const EdgeInsets.symmetric(horizontal: ThemeSizes.md),
-              controlAffinity: ListTileControlAffinity.trailing,
-              dense: true,
-            ),
-          ),
-
-          // Terms Consent
-          Container(
-            decoration: BoxDecoration(
-              color: context.bgColor,
-              borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusMd),
-            ),
-            margin: const EdgeInsets.only(bottom: ThemeSizes.md),
-            child: SwitchListTile(
-              title: Text(
-                'Accetto i termini e le condizioni',
-                style: context.textTheme.bodyMedium,
-              ),
-              value: _isTermsAccepted,
-              onChanged: _updateIsTermsAccepted,
               activeColor: context.primaryColor,
               contentPadding:
                   const EdgeInsets.symmetric(horizontal: ThemeSizes.md),

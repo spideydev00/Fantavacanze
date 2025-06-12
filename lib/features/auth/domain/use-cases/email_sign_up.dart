@@ -10,7 +10,6 @@ class SignUpParams {
   final String gender;
   final String hCaptcha;
   final bool isAdult;
-  final bool isTermsAccepted;
 
   SignUpParams({
     required this.name,
@@ -19,7 +18,6 @@ class SignUpParams {
     required this.password,
     required this.hCaptcha,
     required this.isAdult,
-    required this.isTermsAccepted,
   });
 }
 
@@ -37,7 +35,6 @@ class EmailSignUp implements Usecase<void, SignUpParams> {
       gender: params.gender,
       hCaptcha: params.hCaptcha,
       isAdult: params.isAdult,
-      isTermsAccepted: params.isTermsAccepted,
     );
   }
 }

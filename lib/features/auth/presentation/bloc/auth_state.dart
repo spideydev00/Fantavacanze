@@ -15,8 +15,9 @@ final class AuthAppleLoading extends AuthState {}
 
 final class AuthFailure extends AuthState {
   final String message;
+  final String operation;
 
-  AuthFailure(this.message);
+  AuthFailure(this.message, this.operation);
 }
 
 final class AuthSuccess extends AuthState {

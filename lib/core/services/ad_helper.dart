@@ -40,10 +40,10 @@ class AdHelper {
   // Production Ad Unit IDs - Use these for release
   static String get interstitialAdUnitId {
     // During development, always use test IDs
-    // if (true) {
-    //   // Change to a proper environment check later
-    //   return testInterstitialAdUnitId;
-    // }
+    if (true) {
+      // Change to a proper environment check later
+      return testInterstitialAdUnitId;
+    }
 
     if (Platform.isAndroid) {
       return AppSecrets.androidInterstitialAdUnitId;
@@ -55,11 +55,11 @@ class AdHelper {
   }
 
   static String get rewardedAdUnitId {
-    // // During development, always use test IDs
-    // if (true) {
-    //   // Change to a proper environment check later
-    //   return testRewardedAdUnitId;
-    // }
+    // During development, always use test IDs
+    if (true) {
+      // Change to a proper environment check later
+      return testRewardedAdUnitId;
+    }
 
     if (Platform.isAndroid) {
       return AppSecrets.androidRewardedAdUnitId;

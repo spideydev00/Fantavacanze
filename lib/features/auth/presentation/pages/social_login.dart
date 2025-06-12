@@ -40,13 +40,11 @@ class _SocialLoginPageState extends State<SocialLoginPage> {
       context: context,
       provider: provider,
       initialIsAdult: false,
-      initialIsTermsAccepted: false,
-      onConfirm: (isAdult, isTermsAccepted) {
+      onConfirm: (isAdult) {
         setState(() => isVerificationDialogShown = false);
         context.read<AuthBloc>().add(
               AuthUpdateConsents(
                 isAdult: isAdult,
-                isTermsAccepted: isTermsAccepted,
               ),
             );
       },
@@ -63,7 +61,9 @@ class _SocialLoginPageState extends State<SocialLoginPage> {
         if (state is AuthNeedsConsent &&
             ModalRoute.of(context)?.isCurrent == true) {
           _showAgeVerificationDialog(state.provider);
-        } else if (state is AuthFailure) {
+        } else if (state is AuthFailure &&
+            (state.operation == "google_sign_in" ||
+                state.operation == "apple_sign_in")) {
           showDialog(
             context: context,
             builder: (_) => AuthDialogBox(
