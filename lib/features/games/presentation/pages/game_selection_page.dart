@@ -219,24 +219,6 @@ class _GameSelectionPageState extends State<GameSelectionPage> {
                               ),
                             );
                           },
-                          onTrialRequested: () {
-                            context
-                                .read<WordBombBloc>()
-                                .add(ActivateTrialRequested());
-
-                            // Select this game type
-                            setState(() {
-                              _selectedGameType = GameType.wordBomb;
-                            });
-                          },
-                          onPremiumRequested: () {
-                            // TODO: Premium subscription purchase
-                            showSpecificSnackBar(
-                              context,
-                              "Funzionalità premium presto disponibili!",
-                              color: ColorPalette.premiumUser,
-                            );
-                          },
                           description: isPremiumUser
                               ? "Occhio a non far scoppiare la bomba!"
                               : null,
@@ -245,9 +227,20 @@ class _GameSelectionPageState extends State<GameSelectionPage> {
                         // Prosegui button right next to the third card
                         GestureDetector(
                           onTap: () {
-                            context.read<LobbyBloc>().add(
-                                  CreateSessionRequested(_selectedGameType),
-                                );
+                            if (_selectedGameType == GameType.wordBomb &&
+                                (!isPremiumUser && hasWordBombTrial)) {
+                              context
+                                  .read<WordBombBloc>()
+                                  .add(DeactivateTrialRequested());
+
+                              context.read<LobbyBloc>().add(
+                                    CreateSessionRequested(_selectedGameType),
+                                  );
+                            } else {
+                              context.read<LobbyBloc>().add(
+                                    CreateSessionRequested(_selectedGameType),
+                                  );
+                            }
                           },
                           child: Container(
                             width: 70,

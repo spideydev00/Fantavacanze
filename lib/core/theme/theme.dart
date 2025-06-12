@@ -158,7 +158,7 @@ class AppTheme {
           ),
         ),
       ),
-      dialogTheme: DialogTheme(
+      dialogTheme: DialogThemeData(
         backgroundColor: context.secondaryBgColor,
       ),
       /* ---------------------------------------------------------------- */

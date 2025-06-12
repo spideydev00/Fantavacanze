@@ -284,11 +284,14 @@ class _DashboardScreenState extends State<DashboardScreen>
   }
 
   Widget _buildLogo(BuildContext context) {
+    final isTablet = MediaQuery.of(context).size.shortestSide >= 600;
+    final widthFactor = isTablet ? 0.13 : 0.18;
+
     return Image.asset(
       context.read<AppThemeCubit>().isDarkMode(context)
           ? 'assets/images/logo.png'
           : 'assets/images/logo-dark.png',
-      width: Constants.getWidth(context) * 0.18,
+      width: Constants.getWidth(context) * widthFactor,
     );
   }
 }

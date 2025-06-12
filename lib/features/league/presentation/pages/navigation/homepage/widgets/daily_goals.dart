@@ -330,7 +330,7 @@ class _DailyGoalsState extends State<DailyGoals> {
 
     try {
       final adHelper = serviceLocator<AdHelper>();
-      final bool adsWatched = await adHelper.showSequentialRewardedAds();
+      final bool adsWatched = await adHelper.showRewardedAd();
 
       if (loadingOverlay.mounted) {
         loadingOverlay.remove();
