@@ -157,14 +157,12 @@ class AppUserCubit extends Cubit<AppUserState> {
   // Removes user consents and then signs out
   Future<void> removeConsents({
     required bool isAdult,
-    required bool isTermsAccepted,
   }) async {
     if (state is AppUserIsLoggedIn) {
       final currentState = state as AppUserIsLoggedIn;
 
       final res = await _removeConsents(RemoveConsentsParams(
         isAdult: isAdult,
-        isTermsAccepted: isTermsAccepted,
       ));
 
       res.fold(

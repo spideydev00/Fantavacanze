@@ -26,7 +26,6 @@ class AuthEmailSignUp extends AuthEvent {
   final String gender;
   final String hCaptcha;
   final bool isAdult;
-  final bool isTermsAccepted;
 
   AuthEmailSignUp({
     required this.name,
@@ -35,7 +34,6 @@ class AuthEmailSignUp extends AuthEvent {
     required this.gender,
     required this.hCaptcha,
     required this.isAdult,
-    required this.isTermsAccepted,
   });
 }
 
@@ -49,11 +47,9 @@ class AuthChangeIsOnboardedValue extends AuthEvent {
 
 class AuthUpdateConsents extends AuthEvent {
   final bool isAdult;
-  final bool isTermsAccepted;
 
   AuthUpdateConsents({
     required this.isAdult,
-    required this.isTermsAccepted,
   });
 }
 

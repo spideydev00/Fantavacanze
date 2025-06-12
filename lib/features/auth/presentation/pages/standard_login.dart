@@ -56,15 +56,13 @@ class _StandardLoginPageState extends State<StandardLoginPage> {
       context: context,
       provider: 'Email',
       initialIsAdult: false,
-      initialIsTermsAccepted: false,
-      onConfirm: (isAdult, isTermsAccepted) {
+      onConfirm: (isAdult) {
         setState(() => isVerificationDialogShown = false);
 
         // Update consents but don't auto-retry login
         context.read<AuthBloc>().add(
               AuthUpdateConsents(
                 isAdult: isAdult,
-                isTermsAccepted: isTermsAccepted,
               ),
             );
 
@@ -151,7 +149,8 @@ class _StandardLoginPageState extends State<StandardLoginPage> {
                         "Consensi aggiornati! Ora riprova a fare il login.",
                         color: ColorPalette.success,
                       );
-                    } else if (state is AuthFailure) {
+                    } else if (state is AuthFailure &&
+                        state.operation == "email_sign_in") {
                       showDialog(
                         context: context,
                         builder: (_) => AuthDialogBox(
@@ -194,8 +193,8 @@ class _StandardLoginPageState extends State<StandardLoginPage> {
                         if (formKey.currentState!.validate()) {
                           context.read<AuthBloc>().add(
                                 AuthEmailSignIn(
-                                  email: emailController.text,
-                                  password: passwordController.text,
+                                  email: emailController.text.trim(),
+                                  password: passwordController.text.trim(),
                                   hCaptcha: turnstileToken,
                                 ),
                               );

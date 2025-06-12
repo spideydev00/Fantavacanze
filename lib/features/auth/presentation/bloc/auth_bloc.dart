@@ -84,7 +84,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           emit(AuthNeedsConsent(provider: 'Google'));
         } else {
           _pendingAuthEvent = null;
-          emit(AuthFailure(failure.message));
+          emit(AuthFailure(failure.message, "google_sign_in"));
         }
       },
       (user) {
@@ -106,7 +106,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           emit(AuthNeedsConsent(provider: 'Apple'));
         } else {
           _pendingAuthEvent = null;
-          emit(AuthFailure(failure.message));
+          emit(AuthFailure(failure.message, "apple_sign_in"));
         }
       },
       (user) {
@@ -136,7 +136,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           emit(AuthNeedsConsent(provider: 'Email'));
         } else {
           _pendingAuthEvent = null;
-          emit(AuthFailure(failure.message));
+          emit(AuthFailure(failure.message, "email_sign_in"));
         }
       },
       (user) {
@@ -158,12 +158,11 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         gender: event.gender,
         hCaptcha: event.hCaptcha,
         isAdult: event.isAdult,
-        isTermsAccepted: event.isTermsAccepted,
       ),
     );
 
     res.fold(
-      (l) => emit(AuthFailure(l.message)),
+      (l) => emit(AuthFailure(l.message, "email_sign_up")),
       (_) => emit(AuthSignUpSuccess(event.email)),
     );
   }
@@ -178,7 +177,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     final res = await _changeIsOnboardedValue
         .call(ChangeIsOnboardedValueParams(newValue: event.isOnboarded));
 
-    res.fold((l) => emit(AuthFailure(l.message)), (user) {
+    res.fold((l) => emit(AuthFailure(l.message, "change_is_onboarded_value")),
+        (user) {
       _emitAuthSuccess(user, emit);
     });
   }
@@ -187,7 +187,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     emit(AuthLoading());
     final res = await _signOut.call(NoParams());
 
-    res.fold((l) => emit(AuthFailure(l.message)), (_) {
+    res.fold((l) => emit(AuthFailure(l.message, "sign_ou")), (_) {
       _emitLogoutSuccess(emit);
     });
   }
@@ -201,10 +201,11 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     emit(AuthLoading());
     final result = await _updateConsents.call(UpdateConsentsParams(
       isAdult: event.isAdult,
-      isTermsAccepted: event.isTermsAccepted,
     ));
 
-    result.fold((failure) => emit(AuthFailure(failure.message)), (user) {
+    result
+        .fold((failure) => emit(AuthFailure(failure.message, "update_consent")),
+            (user) {
       // Get the pending event before clearing it
       final pending = _pendingAuthEvent;
       _pendingAuthEvent = null;
@@ -224,7 +225,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     final result = await _updateGender.call(event.gender);
 
     result.fold(
-      (failure) => emit(AuthFailure(failure.message)),
+      (failure) => emit(AuthFailure(failure.message, "update_gender")),
       (user) {
         _emitAuthSuccess(user, emit);
       },

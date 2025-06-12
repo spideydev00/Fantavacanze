@@ -6,7 +6,6 @@ class User {
   final bool isPremium;
   final bool isOnboarded;
   final bool isAdult;
-  final bool isTermsAccepted;
   final String authProvider;
   final String? fcmToken;
   final bool isWordBombTrialAvailable;
@@ -19,7 +18,6 @@ class User {
     this.isPremium = false,
     required this.isOnboarded,
     required this.isAdult,
-    required this.isTermsAccepted,
     this.authProvider = '',
     this.fcmToken,
     required this.isWordBombTrialAvailable,
@@ -33,7 +31,6 @@ class User {
     bool? isPremium,
     bool? isOnboarded,
     bool? isAdult,
-    bool? isTermsAccepted,
     String? authProvider,
     String? fcmToken,
     bool? isWordBombTrialAvailable,
@@ -46,7 +43,6 @@ class User {
       isPremium: isPremium ?? this.isPremium,
       isOnboarded: isOnboarded ?? this.isOnboarded,
       isAdult: isAdult ?? this.isAdult,
-      isTermsAccepted: isTermsAccepted ?? this.isTermsAccepted,
       authProvider: authProvider ?? this.authProvider,
       fcmToken: fcmToken ?? this.fcmToken,
       isWordBombTrialAvailable:

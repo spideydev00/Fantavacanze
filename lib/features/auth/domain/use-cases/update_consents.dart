@@ -6,11 +6,9 @@ import 'package:fpdart/fpdart.dart';
 
 class UpdateConsentsParams {
   final bool isAdult;
-  final bool isTermsAccepted;
 
   UpdateConsentsParams({
     required this.isAdult,
-    required this.isTermsAccepted,
   });
 }
 
@@ -23,7 +21,6 @@ class UpdateConsents implements Usecase<User, UpdateConsentsParams> {
   Future<Either<Failure, User>> call(UpdateConsentsParams params) async {
     return await authRepository.updateConsents(
       isAdult: params.isAdult,
-      isTermsAccepted: params.isTermsAccepted,
     );
   }
 }

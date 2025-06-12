@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:app_tracking_transparency/app_tracking_transparency.dart';
 import 'package:fantavacanze_official/core/cubits/app_league/app_league_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/app_navigation/app_navigation_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/app_theme/app_theme_cubit.dart';
@@ -72,6 +73,14 @@ class _MyAppState extends State<MyApp> {
     try {
       if (mounted) {
         await context.read<AppUserCubit>().getCurrentUser();
+      }
+
+      try {
+        final idfa = await AppTrackingTransparency.getAdvertisingIdentifier();
+        debugPrint(
+            "!!!!!!!!!! IDFA DEL MIO DISPOSITIVO (ottenuto dalla UI): $idfa !!!!!!!!!!");
+      } catch (e) {
+        debugPrint("Errore nell'ottenere l'IDFA: $e");
       }
 
       // If user is logged in, then load their specific data
