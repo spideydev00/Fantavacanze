@@ -69,8 +69,7 @@ dependencies:
   hive_flutter: ^1.1.0
   rename_app: ^1.6.3
   firebase_analytics: ^11.4.6
-  google_mobile_ads: ^5.1.0
-  gdpr_admob: ^1.0.3
+  google_mobile_ads: ^6.0.0
   in_app_purchase: ^3.2.3
   share_plus: ^11.0.0
   flutter_card_swiper: ^7.0.2

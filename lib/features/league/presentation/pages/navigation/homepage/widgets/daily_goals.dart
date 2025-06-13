@@ -4,7 +4,6 @@ import 'package:fantavacanze_official/core/utils/show_snackbar.dart';
 import 'package:fantavacanze_official/core/widgets/dialogs/premium_access_dialog.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/daily_challenge.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/league.dart';
-import 'package:fantavacanze_official/init_dependencies/init_dependencies.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -329,7 +328,7 @@ class _DailyGoalsState extends State<DailyGoals> {
     final loadingOverlay = _showLoadingOverlay(pageContext);
 
     try {
-      final adHelper = serviceLocator<AdHelper>();
+      final adHelper = AdHelper();
       final bool adsWatched = await adHelper.showRewardedAd(context);
 
       if (loadingOverlay.mounted) {

@@ -9,6 +9,13 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 class AdHelper {
+  static final AdHelper _instance = AdHelper._internal();
+
+  factory AdHelper() {
+    return _instance;
+  }
+
+  AdHelper._internal();
   // Ad instances
   InterstitialAd? _interstitialAd;
   RewardedAd? _rewardedAd;
@@ -196,7 +203,7 @@ class AdHelper {
           msg: "Nessun video disponibile, riprova più tardi",
           toastLength: Toast.LENGTH_SHORT,
           gravity: ToastGravity.CENTER,
-          backgroundColor: ColorPalette.info,
+          backgroundColor: ColorPalette.warning,
           textColor: Colors.white,
           fontSize: 16.0,
         );

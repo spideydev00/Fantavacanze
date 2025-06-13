@@ -2,7 +2,6 @@ import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/extensions/context_extension.dart';
 import 'package:fantavacanze_official/core/widgets/loader.dart';
 import 'package:fantavacanze_official/features/games/presentation/pages/game_selection_page.dart';
-import 'package:fantavacanze_official/init_dependencies/init_dependencies.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -119,39 +118,30 @@ class DrinkGames extends StatelessWidget {
 
   Future<void> _handleAdsButton(BuildContext pageContext) async {
     final navigator = Navigator.of(pageContext);
-
-    // Mostra overlay di caricamento
     final loadingOverlay = _showLoadingOverlay(pageContext);
 
     try {
-      final adHelper = serviceLocator<AdHelper>();
-
-      // Esegue gli ads in sequenza
+      final adHelper = AdHelper();
       final bool adsWatched = await adHelper.showRewardedAd(pageContext);
 
-      // Rimuovo overlay
+      // Rimuovi l'overlay in ogni caso, dopo aver ricevuto una risposta.
       if (loadingOverlay.mounted) loadingOverlay.remove();
-
-      // Se la pagina è ancora montata, procedo
       if (!pageContext.mounted) return;
 
+      // Procedi solo se l'annuncio è stato visto con successo.
       if (adsWatched) {
         showSnackBar(
           "Accesso sbloccato con successo!",
           color: ColorPalette.success,
         );
         await Future.delayed(const Duration(milliseconds: 300));
-
         navigator.pushAndRemoveUntil(
           GameSelectionPage.route,
           (route) => false,
         );
-      } else {
-        showSnackBar(
-          "Non è stato possibile completare la visione degli annunci. Riprova tra qualche minuto.",
-          color: ColorPalette.error,
-        );
       }
+      // Se adsWatched è false, il toast di AdHelper ha già avvisato l'utente.
+      // Non dobbiamo fare altro. Il loader è stato rimosso.
     } catch (e) {
       debugPrint('Error in _handleAdsButton: $e');
       if (loadingOverlay.mounted) loadingOverlay.remove();

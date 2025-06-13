@@ -20,13 +20,6 @@ Future<void> initDependencies() async {
       () => FirebaseMessaging.instance,
     );
 
-    await AppTrackingTransparency.requestTrackingAuthorization();
-
-    // GOOGLE ADS
-    await MobileAds.instance.initialize();
-    serviceLocator.registerLazySingleton(() => AdHelper());
-    await serviceLocator<AdHelper>().initialize();
-
     // HIVE
     await _initializeHive();
 
@@ -89,10 +82,6 @@ Future<void> initDependencies() async {
           serviceLocator(),
         ),
       );
-
-    // Connetti AdHelper a AppUserCubit per monitorare lo stato premium
-    serviceLocator<AdHelper>()
-        .connectToUserCubit(serviceLocator<AppUserCubit>());
 
     debugPrint("⬆ Dipendenze inizializzate correttamente con get_it");
   } catch (e) {

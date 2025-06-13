@@ -3,9 +3,9 @@ import 'dart:math';
 import 'package:fantavacanze_official/core/constants/navigation_items.dart';
 import 'package:fantavacanze_official/core/cubits/app_league/app_league_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/app_theme/app_theme_cubit.dart';
+import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/notification_count/notification_count_cubit.dart';
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
-import 'package:fantavacanze_official/core/services/gdpr_service.dart';
 import 'package:fantavacanze_official/core/services/ad_helper.dart';
 import 'package:fantavacanze_official/core/widgets/dialogs/notification_dialog.dart';
 import 'package:fantavacanze_official/core/widgets/notification_badge.dart';
@@ -68,24 +68,11 @@ class _DashboardScreenState extends State<DashboardScreen>
       ),
     );
 
-    _initializeGdprService();
-    // Carica le notifiche
+    _loadAds();
+
     context.read<LeagueBloc>().add(GetNotificationsEvent());
     // Ascolto notifiche
     context.read<LeagueBloc>().add(ListenToNotificationEvent());
-    // Inizializza Ads
-    _initializeAds();
-  }
-
-  _initializeGdprService() async {
-    await GdprService().initializeAndShowForm();
-  }
-
-  Future<void> _initializeAds() async {
-    _adHelper = serviceLocator<AdHelper>();
-    Future.delayed(const Duration(seconds: 5), () {
-      if (mounted) _adHelper?.startAdTimer(context);
-    });
   }
 
   @override
@@ -107,6 +94,14 @@ class _DashboardScreenState extends State<DashboardScreen>
       _animationController.forward();
     }
     setState(() => isSideMenuOpen = !isSideMenuOpen);
+  }
+
+  void _loadAds() async {
+    // Pre-carica gli annunci usando il tuo AdHelper.
+    final adHelper = AdHelper();
+    await adHelper.initialize();
+
+    adHelper.connectToUserCubit(serviceLocator<AppUserCubit>());
   }
 
   @override
