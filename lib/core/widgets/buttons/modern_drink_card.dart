@@ -15,7 +15,10 @@ class ModernDrinkCard extends StatelessWidget {
   final String label;
 
   /// Il percorso dell'asset per l'icona SVG.
-  final String svgIconPath;
+  final String? svgIconPath;
+
+  /// Il percorso dell'asset per l'icona PNG.
+  final String? pngIconPath;
 
   /// La funzione di callback chiamata al tocco.
   final VoidCallback onTap;
@@ -48,7 +51,8 @@ class ModernDrinkCard extends StatelessWidget {
     super.key,
     required this.isSelected,
     required this.label,
-    required this.svgIconPath,
+    this.svgIconPath,
+    this.pngIconPath,
     required this.onTap,
     this.description,
     this.selectedGradient,
@@ -169,11 +173,17 @@ class ModernDrinkCard extends StatelessWidget {
                   ),
                   child: Opacity(
                     opacity: (isSelected) ? 1.0 : 0.7,
-                    child: SvgPicture.asset(
-                      svgIconPath,
-                      width: 46,
-                      height: 46,
-                    ),
+                    child: svgIconPath != null
+                        ? SvgPicture.asset(
+                            svgIconPath!,
+                            width: 46,
+                            height: 46,
+                          )
+                        : Image.asset(
+                            pngIconPath!,
+                            width: 46,
+                            height: 46,
+                          ),
                   ),
                 ),
                 const SizedBox(height: 16),

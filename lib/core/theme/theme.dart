@@ -45,10 +45,12 @@ class AppTheme {
       ),
 
       // Additional theming to ensure consistent colors across components
-      indicatorColor: context.primaryColor,
       primaryColor: context.primaryColor,
       canvasColor: context.secondaryBgColor, // This affects Stepper background
       /* ---------------------------------------------------------------- */
+      tabBarTheme: TabBarThemeData(
+        indicatorColor: context.primaryColor,
+      ),
       // BOTTOM SHEET THEME
       bottomSheetTheme: BottomSheetThemeData(
         backgroundColor: context.secondaryBgColor,

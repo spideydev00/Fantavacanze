@@ -37,8 +37,8 @@ List<NavigationItem> nonParticipantNavbarItems = [
   // ),
   NavigationItem(
     title: "Giochi",
-    darkSvgIcon: 'assets/images/icons/homepage_icons/drink-games-icon-red.svg',
-    lightSvgIcon: 'assets/images/icons/homepage_icons/drink-games-icon-red.svg',
+    darkSvgIcon: 'assets/images/icons/homepage_icons/dice-icon.svg',
+    lightSvgIcon: 'assets/images/icons/homepage_icons/dice-icon.svg',
     screen: const DrinkGames(),
     subsection: "Naviga",
   ),
@@ -70,8 +70,8 @@ List<NavigationItem> participantNavbarItems = [
   ),
   NavigationItem(
     title: "Giochi",
-    darkSvgIcon: 'assets/images/icons/homepage_icons/drink-games-icon-red.svg',
-    lightSvgIcon: 'assets/images/icons/homepage_icons/drink-games-icon-red.svg',
+    darkSvgIcon: 'assets/images/icons/homepage_icons/dice-icon.svg',
+    lightSvgIcon: 'assets/images/icons/homepage_icons/dice-icon.svg',
     screen: const DrinkGames(),
     subsection: "Games",
   ),

@@ -20,21 +20,12 @@ Future<void> initDependencies() async {
       () => FirebaseMessaging.instance,
     );
 
+    await AppTrackingTransparency.requestTrackingAuthorization();
+
     // GOOGLE ADS
     await MobileAds.instance.initialize();
     serviceLocator.registerLazySingleton(() => AdHelper());
     await serviceLocator<AdHelper>().initialize();
-
-    if (Platform.isIOS) {
-      // Request App Tracking Transparency permission on iOS/macOS
-      final status =
-          await AppTrackingTransparency.requestTrackingAuthorization();
-      if (status == TrackingStatus.authorized) {
-        await FirebaseAnalytics.instance.setAnalyticsCollectionEnabled(true);
-      }
-    } else {
-      await FirebaseAnalytics.instance.setAnalyticsCollectionEnabled(true);
-    }
 
     // HIVE
     await _initializeHive();

@@ -40,8 +40,8 @@ class DrinkGames extends StatelessWidget {
                 child: Opacity(
                   opacity: 0.15,
                   child: SvgPicture.asset(
-                    'assets/images/icons/homepage_icons/drink-games-page-icon.svg',
-                    height: MediaQuery.of(context).size.height * 0.40,
+                    'assets/images/icons/games_icons/dices-icon.svg',
+                    height: MediaQuery.of(context).size.height * 0.45,
                   ),
                 ),
               ),
@@ -52,7 +52,7 @@ class DrinkGames extends StatelessWidget {
                   // Info banner at the top
                   InfoBanner(
                     message:
-                        'In questa sezione puoi accedere ai giochi alcolici proposti dal team Fantavacanze.',
+                        'In questa sezione puoi accedere ai giochi proposti dal team Fantavacanze.',
                     color: context.colorScheme.primary,
                     icon: Icons.celebration,
                   ),
@@ -78,7 +78,7 @@ class DrinkGames extends StatelessWidget {
                         width: 24,
                         height: 24,
                       ),
-                      label: const Text('Giochi Alcolici'),
+                      label: const Text('Giochi'),
                     ),
                   ),
 
@@ -127,7 +127,7 @@ class DrinkGames extends StatelessWidget {
       final adHelper = serviceLocator<AdHelper>();
 
       // Esegue gli ads in sequenza
-      final bool adsWatched = await adHelper.showRewardedAd();
+      final bool adsWatched = await adHelper.showRewardedAd(pageContext);
 
       // Rimuovo overlay
       if (loadingOverlay.mounted) loadingOverlay.remove();
