@@ -63,7 +63,7 @@ class HomePage extends StatelessWidget {
 
     return Column(
       children: [
-        const DailyGoals(),
+        DailyGoals(),
 
         // Admin section for creating events
         if (isAdmin) ...[

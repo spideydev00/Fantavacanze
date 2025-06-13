@@ -22,6 +22,9 @@ import 'dart:math' show min;
 import 'daily_goal_card.dart';
 
 class DailyGoals extends StatefulWidget {
+  // FOE TESTING PURPOSES
+  // final AdHelper adHelper;
+
   const DailyGoals({super.key});
 
   @override
@@ -326,63 +329,84 @@ class _DailyGoalsState extends State<DailyGoals> {
 
     final pageContext = context;
     final loadingOverlay = _showLoadingOverlay(pageContext);
+    bool overlayRemoved = false;
+
+    // Funzione di supporto per rimuovere l'overlay in sicurezza
+    void safeRemoveOverlay() {
+      if (!overlayRemoved && loadingOverlay.mounted) {
+        loadingOverlay.remove();
+        overlayRemoved = true;
+      }
+    }
 
     try {
       final adHelper = AdHelper();
       final bool adsWatched = await adHelper.showRewardedAd(context);
 
-      if (loadingOverlay.mounted) {
-        loadingOverlay.remove();
-      }
+      // Rimuovi l'overlay in modo sicuro
+      safeRemoveOverlay();
       if (!pageContext.mounted) return;
 
       if (adsWatched) {
-        setState(() {
-          if (_allChallenges != null) {
-            final index =
-                _allChallenges!.indexWhere((c) => c.id == challengeId);
-            if (index != -1) {
-              // Aggiorna l'oggetto challenge nella lista
-              _allChallenges![index] = _allChallenges![index].copyWith(
-                isUnlocked: true,
-              );
-              // Forza la ricostruzione della lista per notificare i widget che la usano
-              _allChallenges = List.from(_allChallenges!);
-            }
-          }
-        });
+        // Sblocca la sfida per annuncio visto con successo
+        _unlockChallenge(challengeId, leagueId);
 
-        // 2. MOSTRA SUBITO IL SUCCESSO ALL'UTENTE
         showSnackBar(
           "Sfida sbloccata con successo!",
           color: ColorPalette.success,
         );
-
-        // 3. INVIA L'EVENTO AL BLOC IN BACKGROUND
-        pageContext.read<LeagueBloc>().add(
-              UnlockDailyChallengeEvent(
-                challengeId: challengeId,
-                leagueId: leagueId,
-                isUnlocked: true,
-              ),
-            );
       } else {
         showSnackBar(
-          "Non è stato possibile completare la visione degli annunci. Riprova tra qualche minuto.",
+          "Devi vedere il video completo!",
           color: ColorPalette.error,
         );
       }
     } catch (e) {
       debugPrint('Errore in _handleAdsButton per la sfida: $e');
-      if (loadingOverlay.mounted) {
-        loadingOverlay.remove();
-      }
+
+      // Rimuovi l'overlay in modo sicuro
+      safeRemoveOverlay();
+
       if (pageContext.mounted) {
+        // ANCHE IN CASO DI ERRORE, SBLOCCHIAMO LA SFIDA!
+        _unlockChallenge(challengeId, leagueId);
+
         showSnackBar(
-          "Si è verificato un errore. Riprova più tardi.",
-          color: ColorPalette.error,
+          "Sfida sbloccata comunque!",
+          color: ColorPalette.success,
         );
       }
+    } finally {
+      // Assicurati che l'overlay venga rimosso in ogni caso
+      safeRemoveOverlay();
+    }
+  }
+
+// Metodo helper per evitare la duplicazione del codice di sblocco
+  void _unlockChallenge(String challengeId, String leagueId) {
+    setState(() {
+      if (_allChallenges != null) {
+        final index = _allChallenges!.indexWhere((c) => c.id == challengeId);
+        if (index != -1) {
+          // Aggiorna l'oggetto challenge nella lista
+          _allChallenges![index] = _allChallenges![index].copyWith(
+            isUnlocked: true,
+          );
+          // Forza la ricostruzione della lista
+          _allChallenges = List.from(_allChallenges!);
+        }
+      }
+    });
+
+    // Invia l'evento al backend in background
+    if (context.mounted) {
+      context.read<LeagueBloc>().add(
+            UnlockDailyChallengeEvent(
+              challengeId: challengeId,
+              leagueId: leagueId,
+              isUnlocked: true,
+            ),
+          );
     }
   }
 
