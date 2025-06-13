@@ -307,7 +307,7 @@ class _DailyGoalsState extends State<DailyGoals> {
   OverlayEntry _showLoadingOverlay(BuildContext context) {
     final overlay = OverlayEntry(
       builder: (_) => Container(
-        color: Colors.black.withOpacity(0.5),
+        color: Colors.black.withValues(alpha: 0.5),
         child: const Center(
           child: Loader(
             color: ColorPalette.success,

@@ -113,6 +113,7 @@ class LeagueRepositoryImpl implements LeagueRepository {
 
       // Get from remote and cache
       final leagues = await remoteDataSource.getUserLeagues();
+
       await localDataSource.cacheLeagues(leagues);
 
       return Right(leagues);

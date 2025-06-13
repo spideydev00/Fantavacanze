@@ -145,12 +145,17 @@ class AppLeagueCubit extends Cubit<AppLeagueState> {
   Future<void> clearCache() async {
     final res = await _clearLocalCache(NoParams());
 
-    res.fold((failure) {
+    res.fold((failure) async {
       debugPrint(
           "❌ AppLeagueCubit - Errore nella pulizia della cache: ${failure.message}");
-    }, (_) {
-      // Also clear the selected league from preferences
-      _prefs.remove(_selectedLeagueKey);
+
+      await _prefs.remove(_selectedLeagueKey);
+
+      emit(AppLeagueInitial());
+      debugPrint(
+          "🧊 AppLeagueCubit - Lega selezionata (SharedPreferences) resettata nonostante errore cache Hive.");
+    }, (_) async {
+      await _prefs.remove(_selectedLeagueKey);
 
       // Reset to initial state
       emit(AppLeagueInitial());

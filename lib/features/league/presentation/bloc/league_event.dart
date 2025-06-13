@@ -467,3 +467,7 @@ class RejectDailyChallengeEvent extends LeagueEvent {
   @override
   List<Object?> get props => [notificationId, challengeId];
 }
+
+class LeagueResetStateEvent extends LeagueEvent {
+  const LeagueResetStateEvent();
+}

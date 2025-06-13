@@ -200,10 +200,6 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
   final Uuid uuid;
   final AppUserCubit appUserCubit;
 
-  // Cache for current user data to avoid repeated AppUserCubit access
-  String? _cachedUserId;
-  String? _cachedUserName;
-
   final _notificationModelController =
       StreamController<NotificationModel>.broadcast();
 
@@ -247,26 +243,19 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
 
   /// Gets the current user ID from cache or cubit
   String? _getCurrentUserId() {
-    if (_cachedUserId != null) return _cachedUserId;
-
     final state = appUserCubit.state;
     if (state is AppUserIsLoggedIn) {
-      _cachedUserId = state.user.id;
-      return _cachedUserId;
+      return state.user.id;
     }
     return null;
   }
 
   /// Gets the current user name from cache or cubit, never returns null
   String _getCurrentUserName() {
-    // Return cached username if available
-    if (_cachedUserName != null) return _cachedUserName!;
-
     // Try to get username from AppUserCubit
     final state = appUserCubit.state;
     if (state is AppUserIsLoggedIn) {
-      _cachedUserName = state.user.name;
-      return _cachedUserName ?? "Utente";
+      return state.user.name;
     }
 
     return "Utente";

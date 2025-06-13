@@ -268,10 +268,6 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     try {
       await supabaseClient.auth.signOut();
 
-      await supabaseClient.from('profiles').update({
-        'fcm_token': null,
-      }).eq('id', currentSession!.user.id);
-
       _tokenSubscription?.cancel();
     } catch (e) {
       throw ServerException(_extractErrorMessage(e));
