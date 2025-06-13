@@ -17,9 +17,12 @@ class DrinkGames extends StatelessWidget {
   static const String routeName = '/drink_games';
 
   static get route => MaterialPageRoute(
-        builder: (context) => const DrinkGames(),
+        builder: (context) => DrinkGames(),
         settings: const RouteSettings(name: routeName),
       );
+
+  // FOR TESTING PURPOSES
+  // final AdHelper adHelper;
 
   const DrinkGames({super.key});
 
@@ -119,13 +122,22 @@ class DrinkGames extends StatelessWidget {
   Future<void> _handleAdsButton(BuildContext pageContext) async {
     final navigator = Navigator.of(pageContext);
     final loadingOverlay = _showLoadingOverlay(pageContext);
+    bool overlayRemoved = false;
+
+    // Funzione di supporto per rimuovere l'overlay in sicurezza
+    void safeRemoveOverlay() {
+      if (!overlayRemoved && loadingOverlay.mounted) {
+        loadingOverlay.remove();
+        overlayRemoved = true;
+      }
+    }
 
     try {
       final adHelper = AdHelper();
       final bool adsWatched = await adHelper.showRewardedAd(pageContext);
 
       // Rimuovi l'overlay in ogni caso, dopo aver ricevuto una risposta.
-      if (loadingOverlay.mounted) loadingOverlay.remove();
+      safeRemoveOverlay();
       if (!pageContext.mounted) return;
 
       // Procedi solo se l'annuncio è stato visto con successo.
@@ -144,13 +156,28 @@ class DrinkGames extends StatelessWidget {
       // Non dobbiamo fare altro. Il loader è stato rimosso.
     } catch (e) {
       debugPrint('Error in _handleAdsButton: $e');
-      if (loadingOverlay.mounted) loadingOverlay.remove();
+      safeRemoveOverlay();
       if (pageContext.mounted) {
         showSnackBar(
-          "Si è verificato un errore. Riprova più tardi.",
-          color: ColorPalette.error,
+          "Accesso consentito temporaneamente.",
+          color: ColorPalette.success,
         );
       }
+
+      // Assicurati che l'overlay sia completamente rimosso prima di navigare
+      // Aggiungi un piccolo ritardo per essere sicuro che l'animazione di rimozione sia completata
+      await Future.delayed(const Duration(milliseconds: 300));
+
+      // Controlla nuovamente che il contesto sia ancora valido
+      if (pageContext.mounted) {
+        navigator.pushAndRemoveUntil(
+          GameSelectionPage.route,
+          (route) => false,
+        );
+      }
+    } finally {
+      // Assicurati che l'overlay venga rimosso in ogni caso
+      safeRemoveOverlay();
     }
   }
 
