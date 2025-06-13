@@ -115,8 +115,8 @@ class _GameSelectionPageState extends State<GameSelectionPage> {
                             },
                             isSelected:
                                 _selectedGameType == GameType.truthOrDare,
-                            svgIconPath:
-                                'assets/images/icons/games_icons/yellow-tropical-drink-left.svg',
+                            pngIconPath:
+                                'assets/images/icons/games_icons/balance.png',
                             label: "Truth or Dare",
                             description: "Un classico obbligo o verità",
                           ),
@@ -131,8 +131,8 @@ class _GameSelectionPageState extends State<GameSelectionPage> {
                             },
                             isSelected:
                                 _selectedGameType == GameType.neverHaveIEver,
-                            svgIconPath:
-                                'assets/images/icons/games_icons/blue-tropical-drink-right.svg',
+                            pngIconPath:
+                                'assets/images/icons/games_icons/team-icon.png',
                             label: "Non Ho Mai",
                             description: "E tu cosa non hai mai fatto?",
                           ),
@@ -204,9 +204,9 @@ class _GameSelectionPageState extends State<GameSelectionPage> {
                                   InformationSection(
                                     icon: Icons.pause_circle_outline_rounded,
                                     iconColor: ColorPalette.info,
-                                    title: 'Pausa per Bere',
+                                    title: 'Pausa',
                                     content:
-                                        "Quando usi un potere che costa uno shot, il gioco andrà in pausa. Apparirà un dialogo per darti il tempo di bere. Premi 'Prosegui' solo dopo aver bevuto per far ripartire il timer.",
+                                        "Quando usi un potere, il gioco andrà in pausa. Premi 'Prosegui' solo dopo aver completato l'azione per far ripartire il timer.",
                                   ),
                                   InformationSection(
                                     icon: Icons.rule_folder_outlined,
