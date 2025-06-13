@@ -90,6 +90,7 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
 
   // Stream subscription for notifications
   StreamSubscription<Notification>? _notificationSubscription;
+  StreamSubscription? _appUserSubscription;
 
   LeagueBloc({
     required this.createLeague,
@@ -133,6 +134,12 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
     required this.markNotificationAsRead,
     required this.deleteNotification,
   }) : super(LeagueInitial()) {
+    _appUserSubscription = appUserCubit.stream.listen((userState) {
+      if (userState is AppUserInitial) {
+        add(const LeagueResetStateEvent());
+      }
+    });
+
     // =====================================================================
     // EVENT REGISTRATION
     // =====================================================================
@@ -170,6 +177,9 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
     on<ApproveDailyChallengeEvent>(_onApproveDailyChallenge);
     on<RejectDailyChallengeEvent>(_onRejectDailyChallenge);
     on<UnlockDailyChallengeEvent>(_onUnlockDailyChallenge);
+    on<LeagueResetStateEvent>((event, emit) {
+      emit(LeagueInitial());
+    });
   }
 
   // =====================================================================
@@ -1024,6 +1034,8 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
   @override
   Future<void> close() {
     _notificationSubscription?.cancel();
+    _appUserSubscription?.cancel();
+
     return super.close();
   }
 

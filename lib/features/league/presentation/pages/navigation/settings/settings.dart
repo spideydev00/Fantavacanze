@@ -118,22 +118,20 @@ class SettingsPage extends StatelessWidget {
       useRootNavigator: true,
       builder: (_) => ConfirmationDialog.logOut(
         onExit: () async {
-          // 1) chiudo il dialog
+          // Chiudo il dialog
           navigatorKey.currentState!.pop();
 
-          // 2) pulisco la cache delle leghe
-          await context.read<AppLeagueCubit>().clearCache();
+          await context.read<AppUserCubit>().signOut();
 
-          // 3) azzero tutto lo stack e mostro solo SocialLoginPage
+          if (context.mounted) {
+            await context.read<AppLeagueCubit>().clearCache();
+          }
+
+          // Azzero tutto lo stack e mostro solo SocialLoginPage
           navigatorKey.currentState!.pushAndRemoveUntil(
             SocialLoginPage.route,
             (route) => false,
           );
-
-          // 4) eseguo il signOut sul cubit
-          if (context.mounted) {
-            await context.read<AppUserCubit>().signOut();
-          }
         },
       ),
     );

@@ -49,7 +49,6 @@ Future<void> initDependencies() async {
           updatePassword: serviceLocator(),
           deleteAccount: serviceLocator(),
           removeConsents: serviceLocator(),
-          // appLeagueCubit: serviceLocator(),
         ),
       )
       //2. navigation cubit
