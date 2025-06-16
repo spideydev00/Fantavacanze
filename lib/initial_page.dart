@@ -1,7 +1,7 @@
-import 'package:app_tracking_transparency/app_tracking_transparency.dart';
+import 'dart:async';
+
 import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit.dart';
 import 'package:fantavacanze_official/core/services/gdpr_service.dart';
-import 'package:fantavacanze_official/core/widgets/dialogs/idfa_explainer_dialog.dart';
 import 'package:fantavacanze_official/features/auth/presentation/pages/gender_selection_page.dart';
 import 'package:fantavacanze_official/features/auth/presentation/pages/onboarding.dart';
 import 'package:fantavacanze_official/features/auth/presentation/pages/social_login.dart';
@@ -21,34 +21,20 @@ class _InitialPageState extends State<InitialPage> {
   @override
   void initState() {
     super.initState();
-    // Avviamo la sequenza completa di inizializzazione.
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _initializeAttAndGdpr();
+      // La nuova, semplicissima funzione di inizializzazione
+      _initializeConsentFlow();
     });
   }
 
-  Future<void> _initializeAttAndGdpr() async {
-    // 1. Subito dopo, gestisci il consenso ATT (IDFA).
-    if (await AppTrackingTransparency.trackingAuthorizationStatus ==
-            TrackingStatus.notDetermined &&
-        mounted) {
-      await IdfaExplainerDialog.show(
-        context,
-        onContinue: () async {
-          await AppTrackingTransparency.requestTrackingAuthorization();
-        },
-      );
-    }
+  Future<void> _initializeConsentFlow() async {
+    // 1. Chiama il tuo GdprService che usa l'SDK UMP.
+    await GdprService().initializeAndShowForm();
 
-    // 2. Gestisci il consenso GDPR.
-    Future.delayed(
-      const Duration(seconds: 1, milliseconds: 4),
-      () async {
-        await GdprService().initializeAndShowForm();
-      },
-    );
+    // final idfa = await AppTrackingTransparency.getAdvertisingIdentifier();
+    // debugPrint('IDFA dispositivo: $idfa');
 
-    // 3. ORA e solo ora, inizializza l'SDK di AdMob.
+    // 2. Inizializza l'SDK di AdMob solo dopo che il flusso di consenso è terminato.
     await MobileAds.instance.initialize();
   }
 

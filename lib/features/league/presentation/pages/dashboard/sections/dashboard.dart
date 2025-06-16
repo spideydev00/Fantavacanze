@@ -99,9 +99,13 @@ class _DashboardScreenState extends State<DashboardScreen>
   void _loadAds() async {
     // Pre-carica gli annunci usando il tuo AdHelper.
     final adHelper = AdHelper();
+
     await adHelper.initialize();
 
     adHelper.connectToUserCubit(serviceLocator<AppUserCubit>());
+    if (mounted) {
+      adHelper.startAdTimer(context);
+    }
   }
 
   @override

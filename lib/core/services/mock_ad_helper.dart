@@ -2,75 +2,52 @@ import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit.dart';
 import 'package:fantavacanze_official/core/services/ad_helper.dart';
 import 'package:flutter/material.dart';
 
-// Change from extends to implements
 class MockAdHelper implements AdHelper {
   final bool shouldThrowError;
+  DateTime? _expiry;
 
   MockAdHelper({this.shouldThrowError = false});
 
   @override
   Future<bool> showRewardedAd(BuildContext context) async {
-    // Simulate network delay
     await Future.delayed(const Duration(seconds: 1));
-
-    if (shouldThrowError) {
-      throw Exception('Mock ad failure');
-    }
-
+    if (shouldThrowError) throw Exception('Mock ad failure');
     return true;
   }
 
   @override
-  void connectToUserCubit(AppUserCubit userCubit) {
-    // TODO: implement connectToUserCubit
+  bool isDrinkGamesSessionActive() {
+    // per test, di default non è attiva
+    return _expiry != null && DateTime.now().isBefore(_expiry!);
   }
 
   @override
-  void disconnectFromUserCubit() {
-    // TODO: implement disconnectFromUserCubit
+  void grantDrinkGamesAccess() {
+    // simuliamo i 15 minuti
+    _expiry = DateTime.now().add(const Duration(minutes: 15));
   }
 
   @override
-  void dispose() {
-    // TODO: implement dispose
-  }
+  void connectToUserCubit(AppUserCubit cubit) {}
 
   @override
-  Future<void> initialize() {
-    // TODO: implement initialize
-    throw UnimplementedError();
-  }
+  void disconnectFromUserCubit() {}
 
   @override
-  Future<void> loadInterstitialAd() {
-    // TODO: implement loadInterstitialAd
-    throw UnimplementedError();
-  }
+  Future<void> initialize() async => Future.value();
 
   @override
-  Future<void> loadRewardedAd() {
-    // TODO: implement loadRewardedAd
-    throw UnimplementedError();
-  }
+  Future<bool> loadRewardedAd() async => true;
 
   @override
-  void setPremiumStatus(bool isPremium) {
-    // TODO: implement setPremiumStatus
-  }
+  Future<void> showInterstitialAd({bool ignoreInterval = false}) async {}
 
   @override
-  Future<void> showInterstitialAd({bool ignoreTimeLimit = false}) {
-    // TODO: implement showInterstitialAd
-    throw UnimplementedError();
-  }
+  void startAdTimer(BuildContext ctx) {}
 
   @override
-  void startAdTimer(BuildContext context) {
-    // TODO: implement startAdTimer
-  }
+  void stopAdTimer() {}
 
   @override
-  void stopAdTimer() {
-    // TODO: implement stopAdTimer
-  }
+  void dispose() {}
 }

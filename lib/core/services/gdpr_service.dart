@@ -39,13 +39,14 @@ class GdprService {
     _errorMessage = null;
 
     // Impostazioni di debug per testare il flusso in area SEE.
-    final debugSettings = ConsentDebugSettings(
-      debugGeography: DebugGeography.debugGeographyEea,
-      testIdentifiers: testIdentifiers,
-    );
+    // final debugSettings = ConsentDebugSettings(
+    //   debugGeography: DebugGeography.debugGeographyEea,
+    //   testIdentifiers: testIdentifiers,
+    // );
 
     final consentRequestParams = ConsentRequestParameters(
-      consentDebugSettings: kDebugMode ? debugSettings : null,
+      consentDebugSettings: null,
+      tagForUnderAgeOfConsent: false,
     );
 
     // Usiamo un Completer per attendere il risultato e mantenere la logica async.

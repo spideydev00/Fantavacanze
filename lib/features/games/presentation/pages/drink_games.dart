@@ -1,6 +1,5 @@
-import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/extensions/context_extension.dart';
-import 'package:fantavacanze_official/core/widgets/loader.dart';
+import 'package:fantavacanze_official/core/utils/show_snackbar.dart';
 import 'package:fantavacanze_official/features/games/presentation/pages/game_selection_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -9,20 +8,15 @@ import 'package:fantavacanze_official/core/widgets/info_banner.dart';
 import 'package:fantavacanze_official/core/widgets/dialogs/premium_access_dialog.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:fantavacanze_official/core/services/ad_helper.dart';
-import 'package:fantavacanze_official/core/utils/show_snackbar.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit.dart';
 
 class DrinkGames extends StatelessWidget {
   static const String routeName = '/drink_games';
-
-  static get route => MaterialPageRoute(
-        builder: (context) => DrinkGames(),
+  static Route get route => MaterialPageRoute(
+        builder: (_) => const DrinkGames(),
         settings: const RouteSettings(name: routeName),
       );
-
-  // FOR TESTING PURPOSES
-  // final AdHelper adHelper;
 
   const DrinkGames({super.key});
 
@@ -34,7 +28,7 @@ class DrinkGames extends StatelessWidget {
           padding: const EdgeInsets.all(ThemeSizes.lg),
           child: Stack(
             children: [
-              // Background SVG icon
+              // Sfondo semi-trasparente con l'icona dei dadi
               Positioned(
                 bottom: 0,
                 left: 0,
@@ -51,7 +45,7 @@ class DrinkGames extends StatelessWidget {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  // Info banner at the top
+                  // Banner informativo in alto
                   InfoBanner(
                     message:
                         'In questa sezione puoi accedere ai giochi proposti dal team Fantavacanze.',
@@ -59,7 +53,7 @@ class DrinkGames extends StatelessWidget {
                     icon: Icons.celebration,
                   ),
 
-                  SizedBox(height: ThemeSizes.sm),
+                  const SizedBox(height: ThemeSizes.sm),
 
                   Text(
                     'Se vuoi dare un tocco in più alle tue serate, interagire con nuove persone o semplicemente divertirti con i tuoi amici e le tue amiche, questa sezione fa per te!',
@@ -71,10 +65,10 @@ class DrinkGames extends StatelessWidget {
 
                   const Spacer(),
 
-                  // Central button
+                  // Pulsante centrale “Giochi”
                   Center(
                     child: ElevatedButton.icon(
-                      onPressed: () => _checkPremiumAndNavigate(context),
+                      onPressed: () => _onPlayTapped(context),
                       icon: SvgPicture.asset(
                         'assets/images/icons/other/arrow-right-circle.svg',
                         width: 24,
@@ -94,120 +88,76 @@ class DrinkGames extends StatelessWidget {
     );
   }
 
-  void _checkPremiumAndNavigate(BuildContext context) {
+  Future<void> _onPlayTapped(BuildContext context) async {
+    final adHelper = AdHelper();
+
+    // Se siamo ancora in sessione drink games, vai subito
+    if (adHelper.isDrinkGamesSessionActive()) {
+      _navigateToGames(context);
+      return;
+    }
+
+    // Controllo se l'utente è premium
     final userState = context.read<AppUserCubit>().state;
     final isPremium =
         userState is AppUserIsLoggedIn && userState.user.isPremium;
 
     if (isPremium) {
-      Navigator.of(context).pushAndRemoveUntil(
-        GameSelectionPage.route,
-        (route) => false,
-      );
-    } else {
-      // Catturo il context “di pagina” prima di aprire il dialog
-      final pageContext = context;
-
-      showDialog(
-        context: pageContext,
-        builder: (_) => PremiumAccessDialog(
-          description: "Scegli come sbloccare:",
-          onAdsBtnTapped: () => _handleAdsButton(pageContext),
-          onPremiumBtnTapped: () => _handlePremiumButton(pageContext),
-        ),
-      );
-    }
-  }
-
-  Future<void> _handleAdsButton(BuildContext pageContext) async {
-    final navigator = Navigator.of(pageContext);
-    final loadingOverlay = _showLoadingOverlay(pageContext);
-    bool overlayRemoved = false;
-
-    // Funzione di supporto per rimuovere l'overlay in sicurezza
-    void safeRemoveOverlay() {
-      if (!overlayRemoved && loadingOverlay.mounted) {
-        loadingOverlay.remove();
-        overlayRemoved = true;
-      }
+      _navigateToGames(context);
+      return;
     }
 
-    try {
-      final adHelper = AdHelper();
-      final bool adsWatched = await adHelper.showRewardedAd(pageContext);
+    // Mostro il dialog e attendo il risultato:
+    // - true  = accesso garantito (ads guardate con successo)
+    // - false = premium o chiusura manuale
+    final accessGranted = await showDialog<bool>(
+          context: context,
+          barrierDismissible: true,
+          builder: (_) => PremiumAccessDialog(
+            description: "Scegli come sbloccare:",
+            // Ads: ritorna Future<bool>
+            onAdsBtnTapped: () async {
+              late bool granted;
+              try {
+                granted = await adHelper.showRewardedAd(context);
+              } catch (e) {
+                granted = true;
+              }
 
-      // Rimuovi l'overlay in ogni caso, dopo aver ricevuto una risposta.
-      safeRemoveOverlay();
-      if (!pageContext.mounted) return;
+              // Mostro lo snack solo se ha guadagnato il reward
+              if (granted) {
+                showSnackBar(
+                  "Sezione giochi sbloccata!",
+                  color: ColorPalette.success,
+                );
+              }
 
-      // Procedi solo se l'annuncio è stato visto con successo.
-      if (adsWatched) {
-        showSnackBar(
-          "Accesso sbloccato con successo!",
-          color: ColorPalette.success,
-        );
-        await Future.delayed(const Duration(milliseconds: 300));
-        navigator.pushAndRemoveUntil(
-          GameSelectionPage.route,
-          (route) => false,
-        );
-      }
-      // Se adsWatched è false, il toast di AdHelper ha già avvisato l'utente.
-      // Non dobbiamo fare altro. Il loader è stato rimosso.
-    } catch (e) {
-      debugPrint('Error in _handleAdsButton: $e');
-      safeRemoveOverlay();
-      if (pageContext.mounted) {
-        showSnackBar(
-          "Accesso consentito temporaneamente.",
-          color: ColorPalette.success,
-        );
-      }
-
-      // Assicurati che l'overlay sia completamente rimosso prima di navigare
-      // Aggiungi un piccolo ritardo per essere sicuro che l'animazione di rimozione sia completata
-      await Future.delayed(const Duration(milliseconds: 300));
-
-      // Controlla nuovamente che il contesto sia ancora valido
-      if (pageContext.mounted) {
-        navigator.pushAndRemoveUntil(
-          GameSelectionPage.route,
-          (route) => false,
-        );
-      }
-    } finally {
-      // Assicurati che l'overlay venga rimosso in ogni caso
-      safeRemoveOverlay();
-    }
-  }
-
-  void _handlePremiumButton(BuildContext context) {
-    // TODO: Implement premium subscription flow
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          "Funzionalità premium in arrivo",
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
+              return granted;
+            },
+            // Premium: chiudo con false e mostro snack
+            onPremiumBtnTapped: () {
+              showSnackBar(
+                "Funzionalità Premium presto in arrivo!",
+                color: ColorPalette.premiumUser,
+              );
+            },
           ),
-        ),
-        backgroundColor: ColorPalette.premiumGradient[1],
-        duration: Duration(seconds: 2),
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
+        ) ??
+        false;
+
+    if (accessGranted) {
+      if (context.mounted) {
+        adHelper.grantDrinkGamesAccess();
+
+        _navigateToGames(context);
+      }
+    }
   }
 
-  OverlayEntry _showLoadingOverlay(BuildContext context) {
-    final overlay = OverlayEntry(
-      builder: (context) => Container(
-        color: Colors.black.withValues(alpha: 0.5),
-        child: Loader(color: context.primaryColor),
-      ),
+  void _navigateToGames(BuildContext context) {
+    Navigator.of(context).pushAndRemoveUntil(
+      GameSelectionPage.route,
+      (route) => false,
     );
-
-    Overlay.of(context).insert(overlay);
-    return overlay;
   }
 }

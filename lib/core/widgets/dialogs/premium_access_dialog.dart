@@ -1,25 +1,16 @@
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/extensions/context_extension.dart';
-import 'package:flutter/material.dart';
-import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
+import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:fantavacanze_official/core/widgets/buttons/gradient_option_button.dart';
-import 'package:flutter/services.dart';
 
 class PremiumAccessDialog extends StatefulWidget {
-  /// Set to true to show only premium option without ads option
   final bool premiumOnly;
-
-  /// Optional custom title for the dialog
   final String? title;
-
-  /// Optional custom description text
   final String? description;
-
-  /// Callback when the ads button is tapped
-  final VoidCallback? onAdsBtnTapped;
-
-  /// Callback when the premium button is tapped
+  final Future<bool> Function()? onAdsBtnTapped;
   final VoidCallback? onPremiumBtnTapped;
 
   const PremiumAccessDialog({
@@ -37,8 +28,9 @@ class PremiumAccessDialog extends StatefulWidget {
 
 class _PremiumAccessDialogState extends State<PremiumAccessDialog>
     with SingleTickerProviderStateMixin {
-  late AnimationController _animationController;
-  late Animation<double> _scaleAnimation;
+  late final AnimationController _animationController;
+  late final Animation<double> _scaleAnimation;
+  bool _isLoading = false;
 
   @override
   void initState() {
@@ -46,20 +38,40 @@ class _PremiumAccessDialogState extends State<PremiumAccessDialog>
     _animationController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 200),
-    );
+    )..forward();
     _scaleAnimation = Tween<double>(begin: 0.95, end: 1.0).animate(
-      CurvedAnimation(
-        parent: _animationController,
-        curve: Curves.easeOutBack,
-      ),
+      CurvedAnimation(parent: _animationController, curve: Curves.easeOutBack),
     );
-    _animationController.forward();
   }
 
   @override
   void dispose() {
     _animationController.dispose();
     super.dispose();
+  }
+
+  Future<void> _handleAdsTap() async {
+    if (_isLoading) return;
+    HapticFeedback.mediumImpact();
+
+    // Se non c'è callback, chiudo e concedo comunque
+    if (widget.onAdsBtnTapped == null) {
+      Navigator.of(context).pop(true);
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    bool granted;
+
+    try {
+      granted = await widget.onAdsBtnTapped!();
+    } catch (e) {
+      debugPrint('Error showing ad: $e');
+      granted = true;
+    }
+
+    if (mounted) Navigator.of(context).pop(granted);
   }
 
   @override
@@ -91,107 +103,112 @@ class _PremiumAccessDialogState extends State<PremiumAccessDialog>
           ),
         ],
       ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
+      child: Stack(
+        alignment: Alignment.center,
         children: [
-          // Dialog title with sparkle emoji
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Expanded(
-                child: Text(
-                  widget.title ?? 'Ooops..',
-                  textAlign: TextAlign.center,
-                  style: context.textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
+          // Contenuto disabilitato in loading, con opacità ridotta
+          IgnorePointer(
+            ignoring: _isLoading,
+            child: Opacity(
+              opacity: _isLoading ? 0.5 : 1.0,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Titolo
+                  Text(
+                    widget.title ?? 'Ooops...',
+                    textAlign: TextAlign.center,
+                    style: context.textTheme.titleLarge
+                        ?.copyWith(fontWeight: FontWeight.bold),
+                    maxLines: 2,
+                    semanticsLabel: widget.title ?? 'Sblocca ora',
                   ),
-                  maxLines: 2,
-                ),
+                  const SizedBox(height: ThemeSizes.md),
+                  // Descrizione
+                  Text(
+                    widget.description ?? 'Sblocca ora:',
+                    textAlign: TextAlign.center,
+                    style: context.textTheme.bodyMedium,
+                    semanticsLabel: widget.description ?? 'Scegli opzione',
+                  ),
+                  const SizedBox(height: ThemeSizes.xl),
+                  // Pulsanti
+                  if (widget.premiumOnly)
+                    _buildPremiumOnlyButton(context)
+                  else
+                    _buildDualOptionButtons(context),
+                  const SizedBox(height: ThemeSizes.lg),
+                ],
               ),
-            ],
-          ),
-          const SizedBox(height: ThemeSizes.md),
-
-          // Dialog content
-          Text(
-            widget.description ?? 'Sblocca ora:',
-            textAlign: TextAlign.center,
-            style: context.textTheme.bodyMedium,
-          ),
-          const SizedBox(height: ThemeSizes.xl),
-
-          // Option buttons - either single premium or dual options
-          if (widget.premiumOnly)
-            // Premium-only mode: Center the premium button with larger width
-            Center(
-              child: SizedBox(
-                width: MediaQuery.of(context).size.width * 0.6,
-                child: GradientOptionButton(
-                  isSelected: true,
-                  label: 'Premium',
-                  description: 'Sblocca tutto e rimuovi le pubblicità',
-                  icon: Icons.star,
-                  primaryColor: ColorPalette.premiumGradient[0],
-                  secondaryColor: ColorPalette.premiumGradient[2],
-                  onTap: () {
-                    HapticFeedback.mediumImpact();
-                    Navigator.pop(context);
-                    if (widget.onPremiumBtnTapped != null) {
-                      widget.onPremiumBtnTapped!();
-                    }
-                  },
-                ),
-              ),
-            )
-          else
-            // Dual option mode: Show both premium and ads options
-            Row(
-              children: [
-                // Option 1: Premium subscription with gradient
-                Expanded(
-                  child: GradientOptionButton(
-                    isSelected: true,
-                    label: 'Premium',
-                    description: 'Sblocca tutto e rimuovi le pubblicità',
-                    icon: Icons.star,
-                    primaryColor: ColorPalette.premiumGradient[0],
-                    secondaryColor: ColorPalette.premiumGradient[2],
-                    onTap: () {
-                      HapticFeedback.mediumImpact();
-                      Navigator.pop(context);
-                      if (widget.onPremiumBtnTapped != null) {
-                        widget.onPremiumBtnTapped!();
-                      }
-                    },
-                  ),
-                ),
-
-                const SizedBox(width: ThemeSizes.md),
-
-                // Option 2: Watch ads with gradient
-                Expanded(
-                  child: GradientOptionButton(
-                    isSelected: true,
-                    label: 'Ads',
-                    description: 'Guarda 1 ad per ottenere l\'accesso',
-                    icon: Icons.ondemand_video,
-                    primaryColor: ColorPalette.adsGradient[0],
-                    secondaryColor: ColorPalette.adsGradient[2],
-                    onTap: () {
-                      HapticFeedback.mediumImpact();
-                      Navigator.pop(context);
-                      if (widget.onAdsBtnTapped != null) {
-                        widget.onAdsBtnTapped!();
-                      }
-                    },
-                  ),
-                ),
-              ],
             ),
-
-          const SizedBox(height: ThemeSizes.lg),
+          ),
+          // Loader centrale
+          if (_isLoading)
+            const CircularProgressIndicator(
+              valueColor: AlwaysStoppedAnimation<Color>(ColorPalette.success),
+            ),
         ],
       ),
+    );
+  }
+
+  Widget _buildPremiumOnlyButton(BuildContext context) {
+    return Center(
+      child: SizedBox(
+        width: MediaQuery.of(context).size.width * 0.6,
+        child: GradientOptionButton(
+          isSelected: true,
+          label: 'Premium',
+          description: 'Sblocca tutto e rimuovi le pubblicità',
+          icon: Icons.star,
+          primaryColor: ColorPalette.premiumGradient[0],
+          secondaryColor: ColorPalette.premiumGradient[2],
+          onTap: () {
+            if (_isLoading) return;
+            HapticFeedback.mediumImpact();
+            // chiudo dialog restituendo false (no ads)
+            Navigator.of(context).pop(false);
+            widget.onPremiumBtnTapped?.call();
+          },
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDualOptionButtons(BuildContext context) {
+    return Row(
+      children: [
+        // Premium
+        Expanded(
+          child: GradientOptionButton(
+            isSelected: true,
+            label: 'Premium',
+            description: 'Sblocca tutto e rimuovi le pubblicità',
+            icon: Icons.star,
+            primaryColor: ColorPalette.premiumGradient[0],
+            secondaryColor: ColorPalette.premiumGradient[2],
+            onTap: () {
+              if (_isLoading) return;
+              HapticFeedback.mediumImpact();
+              Navigator.of(context).pop(false);
+              widget.onPremiumBtnTapped?.call();
+            },
+          ),
+        ),
+        const SizedBox(width: ThemeSizes.md),
+        // Ads
+        Expanded(
+          child: GradientOptionButton(
+            isSelected: true,
+            label: 'Ads',
+            description: 'Guarda 1 ad per ottenere l\'accesso',
+            icon: Icons.ondemand_video,
+            primaryColor: ColorPalette.adsGradient[0],
+            secondaryColor: ColorPalette.adsGradient[2],
+            onTap: _handleAdsTap,
+          ),
+        ),
+      ],
     );
   }
 }
