@@ -127,7 +127,7 @@ class DrinkGames extends StatelessWidget {
               // Mostro lo snack solo se ha guadagnato il reward
               if (granted) {
                 showSnackBar(
-                  "Sezione giochi sbloccata!",
+                  "Giochi sbloccati per 15 minuti!",
                   color: ColorPalette.success,
                 );
               }
