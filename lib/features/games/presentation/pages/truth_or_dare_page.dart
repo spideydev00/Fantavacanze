@@ -216,9 +216,8 @@ class _TruthOrDarePageState extends State<TruthOrDarePage> {
             Expanded(
               child: _buildCardSwiper(
                 context,
-                state, // Pass the whole state
+                state,
                 state.currentQuestion!,
-                // userId, // Not needed directly, isMyTurn is derived from state and userId already
               ),
             ),
           ],

@@ -30,9 +30,13 @@ class NeverHaveIEverBloc
 
   StreamSubscription<dynamic>? _sessionSubscription;
   StreamSubscription<dynamic>? _playersSubscription;
+
   List<NeverHaveIEverQuestion> _allQuestionsList = [];
   List<GamePlayer> _currentPlayersList = [];
-  bool _isSinglePlayerLocalMode = false; // New field
+  bool _isSinglePlayerLocalMode = false;
+
+  /// Tiene traccia degli ID delle domande già usate (max 200)
+  List<String> _askedQuestionIds = [];
 
   // =====================================================================
   // GETTERS
@@ -45,9 +49,6 @@ class NeverHaveIEverBloc
     return null;
   }
 
-  // =====================================================================
-  // HELPER METHODS (INSTANCE)
-  // =====================================================================
   bool _isAdmin(GameSession? session) =>
       session != null && _currentUser?.id == session.adminId;
 
@@ -77,17 +78,22 @@ class NeverHaveIEverBloc
   // EVENT HANDLERS
   // =====================================================================
 
-  // ------------------ ON INITIALIZE NEVER HAVE I EVER GAME ------------------ //
   Future<void> _onInitializeNeverHaveIEverGame(
     InitializeNeverHaveIEverGame event,
     Emitter<NeverHaveIEverState> emit,
   ) async {
     emit(NeverHaveIEverLoading());
+
+    // carico eventuale lista di asked IDs
+    final gs = event.initialSession.gameState;
+    if (gs != null && gs['asked_question_ids'] is List) {
+      _askedQuestionIds = List<String>.from(gs['asked_question_ids'] as List);
+    }
+
     _startStreams(event.initialSession.id);
 
     final playersEither =
         await _streamLobbyPlayers(event.initialSession.id).first;
-
     await playersEither.fold(
       (fail) async {
         emit(NeverHaveIEverError(
@@ -95,74 +101,57 @@ class NeverHaveIEverBloc
       },
       (initialPlayers) async {
         _currentPlayersList = initialPlayers;
-        _isSinglePlayerLocalMode =
-            _currentPlayersList.length == 1; // Set the flag
+        _isSinglePlayerLocalMode = initialPlayers.length == 1;
 
         final questionsResult = await _getNeverHaveIEverCards(
           GetNeverHaveIEverCardsParams(sessionId: event.initialSession.id),
         );
-
         await questionsResult.fold(
           (failure) async {
-            emit(
-              NeverHaveIEverError(
-                  "Errore nel caricamento delle domande: ${failure.message}"),
-            );
+            emit(NeverHaveIEverError(
+                "Errore nel caricamento delle domande: ${failure.message}"));
           },
           (questions) async {
             _allQuestionsList = questions;
 
             if (_allQuestionsList.isEmpty && _isAdmin(event.initialSession)) {
               emit(NeverHaveIEverError(
-                "Nessuna domanda trovata per iniziare la partita.",
-              ));
+                  "Nessuna domanda trovata per iniziare la partita."));
               return;
             }
 
+            // se admin e non c'è domanda corrente, scelgo la prima unica
             if (_isAdmin(event.initialSession) &&
-                (event.initialSession.gameState == null ||
-                    event.initialSession.gameState!['current_question_id'] ==
-                        null) &&
+                (gs == null || gs['current_question_id'] == null) &&
                 _allQuestionsList.isNotEmpty) {
-              final firstQuestion =
-                  _allQuestionsList[Random().nextInt(_allQuestionsList.length)];
+              // filtro quelle non ancora usate
+              final available = _allQuestionsList
+                  .where((q) => !_askedQuestionIds.contains(q.id))
+                  .toList();
+              final firstQ = available[Random().nextInt(available.length)];
+              _askedQuestionIds.add(firstQ.id);
 
               final newGameState = {
-                'current_question_id': firstQuestion.id,
+                'current_question_id': firstQ.id,
+                'asked_question_ids': _askedQuestionIds,
               };
 
               if (_isSinglePlayerLocalMode) {
-                // Single Player Logic
-                final updatedSession =
-                    event.initialSession.copyWith(gameState: newGameState);
-                emit(_buildGameReadyState(updatedSession, _currentPlayersList));
+                final updated = event.initialSession.copyWith(
+                  gameState: newGameState,
+                );
+                emit(_buildGameReadyState(updated, _currentPlayersList));
               } else {
-                // Multiplayer Logic (existing)
-                final updateResult =
-                    await _updateGameState(UpdateGameStateParams(
+                await _updateGameState(UpdateGameStateParams(
                   sessionId: event.initialSession.id,
                   newGameState: newGameState,
                 ));
-
-                updateResult.fold(
-                  (failure) => emit(NeverHaveIEverError(
-                      "Impossibile trovare le domande iniziali: ${failure.message}")),
-                  (_) {
-                    // Stream will propagate. If emit is needed here, ensure it's consistent.
-                    // For now, relying on stream for multiplayer.
-                    // Consider if an optimistic update was intended for multiplayer too.
-                    // The original code emitted based on event.initialSession.copyWith,
-                    // which might be before stream propagation.
-                    // For consistency with single-player, an optimistic update could be:
-                    // final updatedSession = event.initialSession.copyWith(gameState: newGameState);
-                    // emit(_buildGameReadyState(updatedSession, _currentPlayersList));
-                    // However, current pattern is to let stream update.
-                  },
-                );
+                // aspetto lo stream
               }
             } else {
-              emit(_buildGameReadyState(
-                  event.initialSession, _currentPlayersList));
+              emit(
+                _buildGameReadyState(event.initialSession, _currentPlayersList),
+              );
             }
           },
         );
@@ -170,100 +159,88 @@ class NeverHaveIEverBloc
     );
   }
 
-  // ------------------ ON NEXT QUESTION REQUESTED ------------------ //
   Future<void> _onNextQuestionRequested(
       NextQuestionRequested event, Emitter<NeverHaveIEverState> emit) async {
     if (state is! NeverHaveIEverGameReady) return;
+    final s = state as NeverHaveIEverGameReady;
+    if (!_isAdmin(s.session)) return;
 
-    final currentReadyState = state as NeverHaveIEverGameReady;
-    if (!_isAdmin(currentReadyState.session)) return;
-
-    if (_allQuestionsList.isEmpty) {
+    // limite 200
+    if (_askedQuestionIds.length >= 200) {
       emit(const NeverHaveIEverError(
-          "Lista domande non disponibile. Attendi o riprova."));
+          "Hai già raggiunto il limite di 200 domande uniche."));
       return;
     }
 
-    final randomQuestion =
-        _allQuestionsList[Random().nextInt(_allQuestionsList.length)];
+    final available = _allQuestionsList
+        .where((q) => !_askedQuestionIds.contains(q.id))
+        .toList();
+    if (available.isEmpty) {
+      emit(const NeverHaveIEverError(
+          "Non ci sono più domande nuove da proporre."));
+      return;
+    }
+
+    final randomQ = available[Random().nextInt(available.length)];
+    _askedQuestionIds.add(randomQ.id);
 
     final newGameState = {
-      ...currentReadyState.session.gameState ?? {},
-      'current_question_id': randomQuestion.id,
+      ...?s.session.gameState,
+      'current_question_id': randomQ.id,
+      'asked_question_ids': _askedQuestionIds,
     };
 
     if (_isSinglePlayerLocalMode) {
-      // Single Player Logic
-      final updatedSession =
-          currentReadyState.session.copyWith(gameState: newGameState);
-      emit(_buildGameReadyState(updatedSession, _currentPlayersList));
+      final updated = s.session.copyWith(gameState: newGameState);
+      emit(_buildGameReadyState(updated, _currentPlayersList));
     } else {
-      // Multiplayer Logic (existing)
       final result = await _updateGameState(UpdateGameStateParams(
-        sessionId: currentReadyState.session.id,
+        sessionId: s.session.id,
         newGameState: newGameState,
       ));
-
       result.fold(
-        (failure) {
-          emit(NeverHaveIEverError(
-              "Errore nel cambiare domanda: ${failure.message}"));
-        },
-        (_) {
-          // Success, stream will propagate the change.
-        },
+        (failure) => emit(NeverHaveIEverError("Errore: ${failure.message}")),
+        (_) => null,
       );
     }
   }
 
-  // =====================================================================
-  // INTERNAL EVENT HANDLERS / STREAM UPDATERS
-  // =====================================================================
+  // =========================== STREAM HANDLERS ===========================
 
-  // ------------------ ON SESSION UPDATED ------------------ //
   void _onSessionUpdated(
-    _NeverHaveIEverSessionUpdated event,
-    Emitter<NeverHaveIEverState> emit,
-  ) {
+      _NeverHaveIEverSessionUpdated event, Emitter<NeverHaveIEverState> emit) {
     if (event.session.status != GameStatus.inProgress) {
       _cancelSubscriptions();
       emit(NeverHaveIEverInitial());
       return;
     }
 
+    // sync asked IDs
+    final gs = event.session.gameState;
+    if (gs?['asked_question_ids'] is List) {
+      _askedQuestionIds = List<String>.from(gs!['asked_question_ids']);
+    }
+
     if (_isSinglePlayerLocalMode && state is NeverHaveIEverGameReady) {
-      final currentReadyState = state as NeverHaveIEverGameReady;
-      // In single player, local session's gameState is authoritative.
-      // Only update non-gameState parts from the streamed session, e.g., status.
-      final updatedLocalSession = currentReadyState.session.copyWith(
+      final s = state as NeverHaveIEverGameReady;
+      final merged = s.session.copyWith(
         status: event.session.status,
-        // adminId, inviteCode etc. are unlikely to change mid-game and affect single player
       );
-      emit(_buildGameReadyState(updatedLocalSession, _currentPlayersList));
+      emit(_buildGameReadyState(merged, _currentPlayersList));
     } else {
-      // Multiplayer logic or initial load before GameReady state
-      if (_allQuestionsList.isEmpty && state is! NeverHaveIEverLoading) {
-        // This condition might need review if it interferes with initial loading
-        // when questions are fetched after streams start.
-      }
       emit(_buildGameReadyState(event.session, _currentPlayersList));
     }
   }
 
-  // ------------------ ON PLAYERS UPDATED ------------------ //
   void _onPlayersUpdated(
       _NeverHaveIEverPlayersUpdated event, Emitter<NeverHaveIEverState> emit) {
     _currentPlayersList = event.players;
     if (state is NeverHaveIEverGameReady) {
-      final currentReadyState = state as NeverHaveIEverGameReady;
-      emit(
-          _buildGameReadyState(currentReadyState.session, _currentPlayersList));
-    } else if (state is NeverHaveIEverLoading) {
-      // Players updated while BLoC is loading.
+      final s = state as NeverHaveIEverGameReady;
+      emit(_buildGameReadyState(s.session, _currentPlayersList));
     }
   }
 
-  // ------------------ ON STREAM ERROR OCCURRED ------------------ //
   void _onStreamErrorOccurred(_NeverHaveIEverStreamErrorOccurred event,
       Emitter<NeverHaveIEverState> emit) {
     emit(NeverHaveIEverError(event.message));
@@ -274,22 +251,18 @@ class NeverHaveIEverBloc
   // UTILITY METHODS
   // =====================================================================
 
-  // ------------------ BUILD GAME READY STATE ------------------ //
   NeverHaveIEverGameReady _buildGameReadyState(
     GameSession session,
     List<GamePlayer> players,
   ) {
     NeverHaveIEverQuestion? currentQuestion;
-    if (session.gameState != null &&
-        session.gameState!['current_question_id'] != null) {
-      final questionId = session.gameState!['current_question_id'] as String;
-
-      if (_allQuestionsList.isNotEmpty) {
-        currentQuestion =
-            _allQuestionsList.firstWhere((q) => q.id == questionId);
-      }
+    final gs = session.gameState;
+    if (gs != null && gs['current_question_id'] != null) {
+      final qid = gs['current_question_id'] as String;
+      try {
+        currentQuestion = _allQuestionsList.firstWhere((q) => q.id == qid);
+      } catch (_) {}
     }
-
     return NeverHaveIEverGameReady(
       session: session,
       players: players,
@@ -300,54 +273,40 @@ class NeverHaveIEverBloc
     );
   }
 
-  // ------------------ START STREAMS ------------------ //
   void _startStreams(String sessionId) {
     _cancelSubscriptions();
-
     _sessionSubscription = _streamGameSession(sessionId).listen(
-      (eitherSession) => eitherSession.fold(
-        (failure) => add(_NeverHaveIEverStreamErrorOccurred(
-            'Errore sessione: ${failure.message}')),
-        (session) => add(_NeverHaveIEverSessionUpdated(session)),
+      (either) => either.fold(
+        (f) => add(_NeverHaveIEverStreamErrorOccurred(f.message)),
+        (s) => add(_NeverHaveIEverSessionUpdated(s)),
       ),
-      onError: (error) => add(
-          _NeverHaveIEverStreamErrorOccurred('Errore stream sessione: $error')),
+      onError: (e) => add(_NeverHaveIEverStreamErrorOccurred(e.toString())),
     );
-
     _playersSubscription = _streamLobbyPlayers(sessionId).listen(
-      (eitherPlayers) => eitherPlayers.fold(
-        (failure) => add(_NeverHaveIEverStreamErrorOccurred(
-            'Errore giocatori: ${failure.message}')),
-        (players) => add(_NeverHaveIEverPlayersUpdated(players)),
+      (either) => either.fold(
+        (f) => add(_NeverHaveIEverStreamErrorOccurred(f.message)),
+        (p) => add(_NeverHaveIEverPlayersUpdated(p)),
       ),
-      onError: (error) => add(_NeverHaveIEverStreamErrorOccurred(
-          'Errore stream giocatori: $error')),
+      onError: (e) => add(_NeverHaveIEverStreamErrorOccurred(e.toString())),
     );
   }
 
-  // ------------------ GET PLAYER NAME ------------------ //
   String? _getPlayerName(String? userId, List<GamePlayer> players) {
     if (userId == null) return null;
     try {
       return players.firstWhere((p) => p.userId == userId).userName;
-    } catch (e) {
+    } catch (_) {
       return null;
     }
   }
 
-  // ------------------ CANCEL SUBSCRIPTIONS ------------------ //
   void _cancelSubscriptions() {
     _sessionSubscription?.cancel();
-    _sessionSubscription = null;
     _playersSubscription?.cancel();
+    _sessionSubscription = null;
     _playersSubscription = null;
   }
 
-  // =====================================================================
-  // LIFECYCLE METHODS
-  // =====================================================================
-
-  // ------------------ CLOSE ------------------ //
   @override
   Future<void> close() {
     _cancelSubscriptions();
