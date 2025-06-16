@@ -5,6 +5,7 @@ import 'package:fantavacanze_official/core/extensions/context_extension.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:fantavacanze_official/core/utils/show_page_specific_snackbar.dart';
+import 'package:fantavacanze_official/core/utils/show_snackbar.dart';
 import 'package:fantavacanze_official/core/widgets/buttons/modern_drink_card.dart';
 import 'package:fantavacanze_official/core/widgets/dialogs/premium_access_dialog.dart';
 import 'package:fantavacanze_official/core/widgets/divider.dart';
@@ -158,6 +159,10 @@ class _GameSelectionPageState extends State<GameSelectionPage> {
                           isPremium: !isPremiumUser,
                           isTrialAvailable: hasWordBombTrial,
                           showInfoIcon: true,
+                          onPremiumRequested: () => showSnackBar(
+                            "Funzionalità Premium presto in arrivo!",
+                            color: ColorPalette.premiumUser,
+                          ),
                           onInfoIconTapped: () {
                             showDialog(
                               context: context,
