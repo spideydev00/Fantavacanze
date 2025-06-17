@@ -2,7 +2,6 @@ import 'dart:math' show min;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:shimmer/shimmer.dart';
 
 import 'package:fantavacanze_official/core/constants/lock_type.dart';
 import 'package:fantavacanze_official/core/cubits/app_league/app_league_cubit.dart';
@@ -18,6 +17,7 @@ import 'package:fantavacanze_official/features/league/domain/entities/daily_chal
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_event.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_state.dart';
+import 'package:shimmer/shimmer.dart';
 import 'daily_goal_card.dart';
 
 class DailyGoals extends StatefulWidget {
@@ -40,10 +40,12 @@ class _DailyGoalsState extends State<DailyGoals> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    // Ricarica se cambia la league
     context.read<AppLeagueCubit>().stream.listen((state) {
       if (state is AppLeagueExists) {
-        setState(() => _allChallenges = null);
+        setState(() {
+          _allChallenges = null;
+          _isLoading = false;
+        });
         _loadDailyChallenges();
       }
     });
@@ -105,32 +107,57 @@ class _DailyGoalsState extends State<DailyGoals> {
       setState(() => _isLoading = false);
       showSnackBar(state.message);
     } else if (state is ChallengeMarkedAsCompleted) {
-      _updateSingleChallenge(state.challenge.id, isCompleted: true);
+      _updateSingleChallenge(
+        state.challenge.id,
+        isCompleted: true,
+      );
       setState(() => _isLoading = false);
-      showSnackBar("Obiettivo segnato come completato!",
-          color: ColorPalette.success);
+      showSnackBar(
+        "Obiettivo segnato come completato!",
+        color: ColorPalette.success,
+      );
     } else if (state is ChallengeRefreshed) {
-      _updateSingleChallenge(state.challengeId, isRefreshed: true);
+      _updateSingleChallenge(
+        state.challengeId,
+        isRefreshed: true,
+      );
       setState(() => _isLoading = false);
-      showSnackBar("Obiettivo aggiornato con successo!",
-          color: ColorPalette.success);
+      showSnackBar(
+        "Obiettivo aggiornato con successo!",
+        color: ColorPalette.success,
+      );
     }
   }
 
-  void _updateSingleChallenge(String id,
-      {bool isCompleted = false, bool isRefreshed = false}) {
+  void _updateSingleChallenge(
+    String id, {
+    bool isCompleted = false,
+    bool isRefreshed = false,
+    bool isUnlocked = false,
+  }) {
     if (_allChallenges == null) return;
-    final idx = _allChallenges!.indexWhere((c) => c.id == id);
+    final list = List<DailyChallenge>.from(_allChallenges!);
+    final idx = list.indexWhere((c) => c.id == id);
     if (idx == -1) return;
-    final updated = _allChallenges![idx].copyWith(
-      isCompleted: isCompleted ? true : _allChallenges![idx].isCompleted,
-      isRefreshed: isRefreshed ? true : _allChallenges![idx].isRefreshed,
-      completedAt:
-          isCompleted ? DateTime.now() : _allChallenges![idx].completedAt,
-      refreshedAt:
-          isRefreshed ? DateTime.now() : _allChallenges![idx].refreshedAt,
+
+    final primary = list[idx];
+    list[idx] = primary.copyWith(
+      isCompleted: isCompleted ? true : primary.isCompleted,
+      isRefreshed: isRefreshed ? true : primary.isRefreshed,
+      isUnlocked: isUnlocked ? true : primary.isUnlocked,
+      completedAt: isCompleted ? DateTime.now() : primary.completedAt,
+      refreshedAt: isRefreshed ? DateTime.now() : primary.refreshedAt,
     );
-    setState(() => _allChallenges![idx] = updated);
+
+    if (isRefreshed && idx + 3 < list.length) {
+      final sub = list[idx + 3];
+      list[idx + 3] = sub.copyWith(isRefreshed: true);
+    }
+    if (isUnlocked && idx + 3 < list.length) {
+      final sub = list[idx + 3];
+      list[idx + 3] = sub.copyWith(isUnlocked: true);
+    }
+    setState(() => _allChallenges = list);
   }
 
   Widget _buildChallengeList(BuildContext context) {
@@ -143,7 +170,8 @@ class _DailyGoalsState extends State<DailyGoals> {
     final display = <DailyChallenge>[];
     for (var i = 0; i < primary.length; i++) {
       display.add(
-          primary[i].isRefreshed && i < subs.length ? subs[i] : primary[i]);
+        primary[i].isRefreshed && i < subs.length ? subs[i] : primary[i],
+      );
     }
     return Column(
       children: List.generate(min(display.length, 3), (i) {
@@ -157,17 +185,21 @@ class _DailyGoalsState extends State<DailyGoals> {
 
   Widget _buildGoalCard(DailyChallenge c, int index) {
     final colors = ColorPalette.getChallengeGradient(index % 3);
-    bool locked = !c.isUnlocked;
-    LockType lockType = locked
+    final locked = !c.isUnlocked;
+    final lockType = locked
         ? (index == 1
             ? LockType.ads
             : index == 2
                 ? LockType.premium
                 : LockType.none)
         : LockType.none;
-    bool isSub = c.isRefreshed;
-    bool canRefresh = !isSub && !c.isCompleted && !locked;
-    bool canComplete = !locked && !c.isCompleted;
+    // Nascondi refresh per posizioni 4, 5 e 6
+    final isPosition4or5 =
+        c.position == 4 || c.position == 5 || c.position == 6;
+    final isSub = c.isRefreshed || isPosition4or5;
+    final canRefresh = !isSub && !c.isCompleted && !locked;
+    final canComplete = !locked && !c.isCompleted;
+
     return DailyGoalCard(
       challengeId: c.id,
       name: c.name,
@@ -176,7 +208,7 @@ class _DailyGoalsState extends State<DailyGoals> {
       lockType: lockType,
       startColor: colors[0],
       endColor: colors[1],
-      isRefreshed: isSub,
+      isRefreshed: c.isRefreshed,
       isCompleted: c.isCompleted,
       onRefresh: canRefresh ? () => _refreshChallenge(c) : null,
       onComplete: canComplete ? () => _completeChallenge(c) : null,
@@ -212,12 +244,7 @@ class _DailyGoalsState extends State<DailyGoals> {
 
   void _unlockAndNotify(DailyChallenge c) {
     final leagueState = context.read<AppLeagueCubit>().state as AppLeagueExists;
-    setState(() {
-      _allChallenges = _allChallenges!
-          .map((item) =>
-              item.id == c.id ? item.copyWith(isUnlocked: true) : item)
-          .toList();
-    });
+
     context.read<LeagueBloc>().add(
           UnlockDailyChallengeEvent(
             challengeId: c.id,
@@ -225,19 +252,23 @@ class _DailyGoalsState extends State<DailyGoals> {
             isUnlocked: true,
           ),
         );
-    showSnackBar("Sfida sbloccata con successo!", color: ColorPalette.success);
+
+    _updateSingleChallenge(
+      c.id,
+      isUnlocked: true,
+    );
+
+    showSnackBar(
+      "Sfida sbloccata con successo!",
+      color: ColorPalette.success,
+    );
   }
 
   void _refreshChallenge(DailyChallenge c) {
     final leagueState = context.read<AppLeagueCubit>().state as AppLeagueExists;
     final userState = context.read<AppUserCubit>().state as AppUserIsLoggedIn;
-    setState(() {
-      _allChallenges = _allChallenges!
-          .map((item) => item.id == c.id
-              ? item.copyWith(isRefreshed: true, refreshedAt: DateTime.now())
-              : item)
-          .toList();
-    });
+    setState(() => _isLoading = true);
+
     context.read<LeagueBloc>().add(
           RefreshDailyChallengeEvent(
             challengeId: c.id,
@@ -251,6 +282,7 @@ class _DailyGoalsState extends State<DailyGoals> {
     setState(() => _isLoading = true);
     final leagueState = context.read<AppLeagueCubit>().state as AppLeagueExists;
     final userState = context.read<AppUserCubit>().state as AppUserIsLoggedIn;
+
     context.read<LeagueBloc>().add(
           MarkChallengeAsCompletedEvent(
             challenge: c,
