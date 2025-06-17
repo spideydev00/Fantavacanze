@@ -70,7 +70,7 @@ class NeverHaveIEverGamePage extends StatelessWidget {
     return InfoContainer(
       title: "E tu? l'hai mai fatto?",
       message:
-          "Se la risposta è 'No', non fai nulla. Altrimenti, fai un sorso!",
+          "Se la risposta è 'No', non fai nulla. Altrimenti, fai una penalità!",
       icon: Icons.record_voice_over_rounded,
       color: ColorPalette.success,
     );

@@ -337,7 +337,7 @@ final _premiumFeatures = [
   "Accesso a tutte le funzionalità premium",
   "Nessuna pubblicità",
   "3 obiettivi giornalieri",
-  "Accesso diretto ai giochi alcolici",
+  "Accesso diretto ai giochi",
   "Whitelist per future posizioni lavorative",
   "Supporto prioritario",
   "Molte altre funzionalità in arrivo",

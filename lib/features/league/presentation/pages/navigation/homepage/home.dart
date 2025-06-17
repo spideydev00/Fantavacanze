@@ -193,10 +193,9 @@ C'è una sezione speciale chiamata "Memories" dove puoi postare foto ricordo del
 6. Note Personali: Non Dimenticare Nulla!\n
 Hai bisogno di appuntarti qualcosa al volo? Usa la sezione "Note"! Sono promemoria temporanei, salvati solo sul tuo dispositivo, utili per non scordarti aneddoti divertenti o idee per nuove sfide.
 
-7. Divertimento Extra: Giochi Alcolici!\n
-E per chi vuole aggiungere un pizzico di allegria in più, FantaVacanze include una sezione dedicata ai "Giochi Alcolici"!
+7. Divertimento Extra: Giochi!\n
+E per chi vuole aggiungere un pizzico di allegria in più, FantaVacanze include una sezione dedicata a giochi da fare in compagnia!
 - Come Usarli: Troverai idee e regole per giochi da fare in gruppo, perfetti per le serate in compagnia.
-- Dentro e Fuori le Leghe: Questi giochi possono essere usati per creare eventi divertenti all'interno delle vostre leghe (magari con punti bonus!) oppure semplicemente per passare il tempo e divertirsi, anche al di fuori delle competizioni ufficiali.
 
 Inizia la Tua FantaVacanza!\n
 Crea la tua lega, invita i tuoi amici, completa obiettivi, supera le Daily Challenges e, soprattutto, divertiti! Che la FantaVacanza migliore vinca!
