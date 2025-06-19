@@ -83,8 +83,6 @@ abstract class LeagueRepository {
     required String memoryId,
   });
 
-  Future<Either<Failure, List<Rule>>> getRules(String mode);
-
   Future<Either<Failure, League>> addRule({
     required League league,
     required Rule rule,

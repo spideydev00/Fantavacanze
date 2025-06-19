@@ -31,9 +31,10 @@ class _GenderSelectionPageState extends State<GenderSelectionPage> {
   bool _isLoading = false;
 
   // Opzioni per il genere
-  final Map<String, String> _genderOptions = {
+  final Map<String?, String> _genderOptions = {
     'male': 'Uomo',
     'female': 'Donna',
+    'undefined': 'Preferisco non dirlo',
   };
 
   void _selectGender(String gender) {
@@ -124,7 +125,7 @@ class _GenderSelectionPageState extends State<GenderSelectionPage> {
 
                     const SizedBox(height: ThemeSizes.xxl),
 
-                    // Opzioni di genere
+                    // Opzioni di genere (maschile e femminile)
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
@@ -136,6 +137,15 @@ class _GenderSelectionPageState extends State<GenderSelectionPage> {
                         _buildGenderOption(
                             'female', Icons.female, context.secondaryColor),
                       ],
+                    ),
+
+                    const SizedBox(height: ThemeSizes.lg),
+
+                    // Opzione "Preferisco non dirlo"
+                    _buildGenderOption(
+                      'undefined',
+                      Icons.do_not_disturb_rounded,
+                      ColorPalette.darkGrey,
                     ),
 
                     const Spacer(),
@@ -205,6 +215,7 @@ class _GenderSelectionPageState extends State<GenderSelectionPage> {
             const SizedBox(height: ThemeSizes.md),
             Text(
               _genderOptions[gender]!,
+              textAlign: TextAlign.center,
               style: context.textTheme.titleMedium!.copyWith(
                 fontWeight: FontWeight.bold,
                 color: isSelected ? color : context.textPrimaryColor,

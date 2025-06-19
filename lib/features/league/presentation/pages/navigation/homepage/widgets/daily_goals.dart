@@ -136,11 +136,14 @@ class _DailyGoalsState extends State<DailyGoals> {
     bool isUnlocked = false,
   }) {
     if (_allChallenges == null) return;
+
     final list = List<DailyChallenge>.from(_allChallenges!);
     final idx = list.indexWhere((c) => c.id == id);
+
     if (idx == -1) return;
 
     final primary = list[idx];
+
     list[idx] = primary.copyWith(
       isCompleted: isCompleted ? true : primary.isCompleted,
       isRefreshed: isRefreshed ? true : primary.isRefreshed,
@@ -153,26 +156,31 @@ class _DailyGoalsState extends State<DailyGoals> {
       final sub = list[idx + 3];
       list[idx + 3] = sub.copyWith(isRefreshed: true);
     }
+
     if (isUnlocked && idx + 3 < list.length) {
       final sub = list[idx + 3];
       list[idx + 3] = sub.copyWith(isUnlocked: true);
     }
+
     setState(() => _allChallenges = list);
   }
 
   Widget _buildChallengeList(BuildContext context) {
     final challenges = List<DailyChallenge>.from(_allChallenges!)
       ..sort((a, b) => a.position.compareTo(b.position));
+
     final primary = challenges.take(3).toList();
-    final subs = challenges.length > 3
-        ? challenges.sublist(3, min(challenges.length, 6))
-        : <DailyChallenge>[];
+
+    final subs = challenges.sublist(3, challenges.length);
+
     final display = <DailyChallenge>[];
+
     for (var i = 0; i < primary.length; i++) {
       display.add(
         primary[i].isRefreshed && i < subs.length ? subs[i] : primary[i],
       );
     }
+
     return Column(
       children: List.generate(min(display.length, 3), (i) {
         return Padding(
@@ -186,6 +194,7 @@ class _DailyGoalsState extends State<DailyGoals> {
   Widget _buildGoalCard(DailyChallenge c, int index) {
     final colors = ColorPalette.getChallengeGradient(index % 3);
     final locked = !c.isUnlocked;
+
     final lockType = locked
         ? (index == 1
             ? LockType.ads
@@ -193,10 +202,12 @@ class _DailyGoalsState extends State<DailyGoals> {
                 ? LockType.premium
                 : LockType.none)
         : LockType.none;
+
     // Nascondi refresh per posizioni 4, 5 e 6
-    final isPosition4or5 =
+    final isSubstitutePosition =
         c.position == 4 || c.position == 5 || c.position == 6;
-    final isSub = c.isRefreshed || isPosition4or5;
+
+    final isSub = c.isRefreshed || isSubstitutePosition;
     final canRefresh = !isSub && !c.isCompleted && !locked;
     final canComplete = !locked && !c.isCompleted;
 
@@ -335,10 +346,17 @@ class _DailyGoalsState extends State<DailyGoals> {
                       child: Row(
                         children: [
                           Expanded(
-                              child:
-                                  Container(height: 14, color: Colors.white)),
+                            child: Container(
+                              height: 14,
+                              color: Colors.white,
+                            ),
+                          ),
                           const SizedBox(width: ThemeSizes.md),
-                          Container(width: 50, height: 24, color: Colors.white),
+                          Container(
+                            width: 50,
+                            height: 24,
+                            color: Colors.white,
+                          ),
                         ],
                       ),
                     ),

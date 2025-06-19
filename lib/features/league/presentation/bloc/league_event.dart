@@ -159,15 +159,6 @@ class RemoveMemoryEvent extends LeagueEvent {
   List<Object?> get props => [league, memoryId];
 }
 
-class GetRulesEvent extends LeagueEvent {
-  final String mode;
-
-  const GetRulesEvent({required this.mode});
-
-  @override
-  List<Object?> get props => [mode];
-}
-
 class UpdateRuleEvent extends LeagueEvent {
   final League league;
   final Rule rule;

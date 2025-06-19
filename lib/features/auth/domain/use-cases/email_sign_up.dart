@@ -7,14 +7,14 @@ class SignUpParams {
   final String name;
   final String email;
   final String password;
-  final String gender;
+  final String? gender;
   final String hCaptcha;
   final bool isAdult;
 
   SignUpParams({
     required this.name,
     required this.email,
-    required this.gender,
+    this.gender,
     required this.password,
     required this.hCaptcha,
     required this.isAdult,

@@ -129,7 +129,7 @@ class AuthRepositoryImpl implements AuthRepository {
     required String name,
     required String email,
     required String password,
-    required String gender,
+    String? gender,
     required String hCaptcha,
     required bool isAdult,
   }) async {
@@ -263,7 +263,7 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<Either<Failure, User>> updateGender({required String gender}) async {
+  Future<Either<Failure, User>> updateGender({required String? gender}) async {
     try {
       if (!await connectionChecker.isConnected) {
         return left(
