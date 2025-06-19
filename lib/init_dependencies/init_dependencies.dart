@@ -85,7 +85,6 @@ import 'package:fantavacanze_official/features/league/domain/use_cases/remote/le
 import 'package:fantavacanze_official/features/league/domain/use_cases/remote/daily_challenges/get_daily_challenges.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/remote/league/get_league.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/remote/notes/get_notes.dart';
-import 'package:fantavacanze_official/features/league/domain/use_cases/remote/rules/get_rules.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/remote/league/get_user_leagues.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/remote/league/join_league.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/remote/daily_challenges/mark_challenge_as_completed.dart';

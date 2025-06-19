@@ -21,7 +21,6 @@ import 'package:fantavacanze_official/features/league/domain/use_cases/remote/le
 import 'package:fantavacanze_official/features/league/domain/use_cases/remote/daily_challenges/get_daily_challenges.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/remote/league/get_league.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/remote/notes/get_notes.dart';
-import 'package:fantavacanze_official/features/league/domain/use_cases/remote/rules/get_rules.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/remote/league/join_league.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/remote/notifications/listen_to_notification.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/remote/daily_challenges/mark_challenge_as_completed.dart';
@@ -53,7 +52,6 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
   final AddMemory addMemory;
   final RemoveMemory removeMemory;
   final RemoveTeamParticipants removeTeamParticipants;
-  final GetRules getRules;
   final UpdateRule updateRule;
   final DeleteRule deleteRule;
   final AddRule addRule;
@@ -106,7 +104,6 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
     required this.addEvent,
     required this.addMemory,
     required this.removeMemory,
-    required this.getRules,
     required this.updateRule,
     required this.deleteRule,
     required this.addRule,
@@ -152,7 +149,6 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
     on<AddEventEvent>(_onAddEventEvent);
     on<AddMemoryEvent>(_onAddMemory);
     on<RemoveMemoryEvent>(_onRemoveMemory);
-    on<GetRulesEvent>(_onGetRules);
     on<UpdateRuleEvent>(_onUpdateRule);
     on<DeleteRuleEvent>(_onDeleteRule);
     on<AddRuleEvent>(_onAddRule);
@@ -377,25 +373,6 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
   // =====================================================================
   // RULES MANAGEMENT
   // =====================================================================
-
-  // G E T   R U L E S
-  Future<void> _onGetRules(
-    GetRulesEvent event,
-    Emitter<LeagueState> emit,
-  ) async {
-    try {
-      emit(LeagueLoading());
-
-      final result = await getRules(event.mode);
-
-      result.fold(
-        (failure) => emit(LeagueError(message: failure.message)),
-        (rules) => emit(RulesLoaded(rules: rules, mode: event.mode)),
-      );
-    } catch (e) {
-      emit(LeagueError(message: e.toString()));
-    }
-  }
 
   // U P D A T E   R U L E
   Future<void> _onUpdateRule(

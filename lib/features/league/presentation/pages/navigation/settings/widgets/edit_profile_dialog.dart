@@ -28,15 +28,26 @@ class _EditProfileDialogState extends State<EditProfileDialog> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   String? _currentUserName;
+  String? _currentUserGender;
+  String? _selectedGender;
   bool _isLoading = false;
+
+  final Map<String, String> _genderOptions = {
+    'male': 'Uomo',
+    'female': 'Donna',
+    'undefined': 'Preferisco non dirlo',
+  };
 
   @override
   void initState() {
     super.initState();
     final userState = context.read<AppUserCubit>().state;
+
     if (userState is AppUserIsLoggedIn) {
       _currentUserName = userState.user.name;
+      _currentUserGender = userState.user.gender;
       _nameController.text = _currentUserName ?? '';
+      _selectedGender = _currentUserGender;
     }
   }
 
@@ -50,12 +61,20 @@ class _EditProfileDialogState extends State<EditProfileDialog> {
     if (_formKey.currentState?.validate() != true) return;
 
     final newName = _nameController.text.trim();
-    if (newName == _currentUserName) return;
+    final nameChanged = newName != _currentUserName;
+    final genderChanged = _selectedGender != _currentUserGender;
+
+    if (!nameChanged && !genderChanged) return;
 
     setState(() => _isLoading = true);
 
     try {
-      await context.read<AppUserCubit>().updateDisplayName(newName);
+      if (nameChanged) {
+        await context.read<AppUserCubit>().updateDisplayName(newName);
+      }
+      if (genderChanged && _selectedGender != null && mounted) {
+        await context.read<AppUserCubit>().updateGender(_selectedGender!);
+      }
     } finally {
       if (mounted) {
         setState(() => _isLoading = false);
@@ -76,6 +95,7 @@ class _EditProfileDialogState extends State<EditProfileDialog> {
       additionalContent: Form(
         key: _formKey,
         child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
             TextFormField(
               controller: _nameController,
@@ -94,8 +114,32 @@ class _EditProfileDialogState extends State<EditProfileDialog> {
                 return null;
               },
             ),
+            const SizedBox(height: ThemeSizes.md),
+            Theme(
+              data: Theme.of(context).copyWith(
+                canvasColor: context.bgColor,
+              ),
+              child: DropdownButtonFormField<String>(
+                value: _selectedGender,
+                decoration: InputDecoration(
+                  labelText: 'Genere',
+                  fillColor: context.bgColor,
+                ),
+                items: _genderOptions.entries.map((entry) {
+                  return DropdownMenuItem<String>(
+                    value: entry.key,
+                    child: Text(entry.value),
+                  );
+                }).toList(),
+                onChanged: (value) {
+                  setState(() {
+                    _selectedGender = value;
+                  });
+                },
+              ),
+            ),
             if (_isLoading)
-              Padding(
+              const Padding(
                   padding: EdgeInsets.only(top: ThemeSizes.md),
                   child: Loader(color: ColorPalette.success)),
           ],

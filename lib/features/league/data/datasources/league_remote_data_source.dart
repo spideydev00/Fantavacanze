@@ -110,7 +110,6 @@ abstract class LeagueRemoteDataSource {
   // =====================================================================
   // RULE OPERATIONS
   // =====================================================================
-  Future<List<RuleModel>> getRules({required String mode});
   Future<LeagueModel> updateRule({
     required LeagueModel league,
     required RuleModel rule,
@@ -753,40 +752,6 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
   // =====================================================================
   // RULE OPERATIONS IMPLEMENTATION
   // =====================================================================
-
-  @override
-  Future<List<RuleModel>> getRules({required String mode}) async {
-    return _tryDatabaseOperation(
-      () async {
-        // Query the appropriate table based on the new mode names
-        final String tableName;
-
-        switch (mode) {
-          case "male":
-            tableName = "male_rules";
-            break;
-          case "female":
-            tableName = "female_rules";
-            break;
-          case "mixed":
-            tableName = "mixed_rules";
-            break;
-          default:
-            // For custom or any other mode
-            tableName = "mixed_rules";
-        }
-
-        // Execute the query
-        final response = await supabaseClient.from(tableName).select();
-
-        // Parse the response directly into models
-        return (response as List)
-            .map((ruleJson) => RuleModel.fromJson(ruleJson))
-            .toList();
-      },
-    );
-  }
-
   @override
   Future<LeagueModel> updateRule({
     required LeagueModel league,

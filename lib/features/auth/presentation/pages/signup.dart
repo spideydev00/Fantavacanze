@@ -55,7 +55,11 @@ class _SignUpPageState extends State<SignUpPage> {
       _isAdult &&
       _genderValid;
 
-  final List<String> genders = ["Uomo", "Donna"];
+  final List<String> genders = [
+    "Uomo",
+    "Donna",
+    "Nessuno",
+  ];
 
   @override
   void dispose() {
@@ -74,9 +78,7 @@ class _SignUpPageState extends State<SignUpPage> {
     } else if (gender == "Donna") {
       return 'female';
     }
-    // Fallback di sicurezza, anche se non dovrebbe mai accadere
-    // con la logica attuale del dropdown.
-    return 'male';
+    return 'undefined';
   }
 
   IconData _getGenderIcon(String gender) {
@@ -86,7 +88,7 @@ class _SignUpPageState extends State<SignUpPage> {
       case "Donna":
         return Icons.female;
       default:
-        return Icons.person;
+        return Icons.do_disturb_sharp;
     }
   }
 

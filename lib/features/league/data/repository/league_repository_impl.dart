@@ -399,24 +399,6 @@ class LeagueRepositoryImpl implements LeagueRepository {
   }
 
   @override
-  Future<Either<Failure, List<Rule>>> getRules(String mode) async {
-    try {
-      if (!await connectionChecker.isConnected) {
-        return Left(
-          Failure("Assenza di connessione ad internet e regole nella cache."),
-        );
-      }
-
-      // Get from remote and cache
-      final rules = await remoteDataSource.getRules(mode: mode);
-
-      return Right(rules);
-    } on ServerException catch (e) {
-      return Left(Failure(e.toString()));
-    }
-  }
-
-  @override
   Future<Either<Failure, League>> updateRule({
     required League league,
     required Rule rule,

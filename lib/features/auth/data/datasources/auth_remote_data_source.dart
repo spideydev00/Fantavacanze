@@ -21,7 +21,7 @@ abstract interface class AuthRemoteDataSource {
     required String email,
     required String password,
     required String hCaptcha,
-    required String gender,
+    String? gender,
     required bool isAdult,
   });
   Future<UserModel> loginWithEmailPassword({
@@ -48,7 +48,7 @@ abstract interface class AuthRemoteDataSource {
     required bool isAdult,
     // required bool isTermsAccepted,
   });
-  Future<UserModel> updateGender({required String gender});
+  Future<UserModel> updateGender({required String? gender});
 
   // USER DATA ACCESS
   Future<UserModel?> getCurrentUserData();
@@ -240,7 +240,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     required String email,
     required String password,
     required String hCaptcha,
-    required String gender,
+    String? gender,
     required bool isAdult,
   }) async {
     try {
@@ -406,7 +406,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
 
   // ------------------ UPDATE GENDER ------------------ //
   @override
-  Future<UserModel> updateGender({required String gender}) async {
+  Future<UserModel> updateGender({required String? gender}) async {
     try {
       final userId = currentSession?.user.id;
 

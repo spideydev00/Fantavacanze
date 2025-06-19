@@ -16,6 +16,9 @@ import 'package:fantavacanze_official/features/league/presentation/pages/navigat
 import 'package:fantavacanze_official/core/widgets/dialogs/form_dialog.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/create_league/league_created_page.dart';
 import 'package:fantavacanze_official/core/widgets/rules/type_selector.dart';
+import 'package:fantavacanze_official/core/constants/male_rules.dart';
+import 'package:fantavacanze_official/core/constants/female_rules.dart';
+import 'package:fantavacanze_official/core/constants/mixed_rules.dart';
 
 class CreateLeaguePage extends StatefulWidget {
   static const String routeName = '/create_league';
@@ -58,7 +61,7 @@ class _CreateLeaguePageState extends State<CreateLeaguePage> {
   @override
   void initState() {
     super.initState();
-    // Load mixed mode rules by default (previously was "hard")
+    // Load mixed mode rules by default
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadPredefinedRules(_selectedRuleMode.apiMode);
     });
@@ -109,13 +112,42 @@ class _CreateLeaguePageState extends State<CreateLeaguePage> {
       return;
     }
 
-    // If no cached rules, fetch from server
+    // Set loading state
     setState(() {
       _isLoadingRules = true;
       _rulesLoaded = false;
     });
 
-    context.read<LeagueBloc>().add(GetRulesEvent(mode: mode));
+    // Get rules from local constants instead of database
+    List<Rule> localRules = [];
+
+    switch (mode) {
+      case 'male':
+        localRules = maleRules.map((rule) => rule.toRule()).toList();
+        break;
+      case 'female':
+        localRules = femaleRules.map((rule) => rule.toRule()).toList();
+        break;
+      case 'mixed':
+        localRules = mixedRules.map((rule) => rule.toRule()).toList();
+        break;
+      case 'custom':
+        // Custom rules are empty by default
+        localRules = [];
+        break;
+      default:
+        // Default to mixed rules
+        localRules = mixedRules.map((rule) => rule.toRule()).toList();
+        break;
+    }
+
+    // Update state with local rules
+    setState(() {
+      _isLoadingRules = false;
+      _rulesLoaded = true;
+      _rules = localRules;
+      _cachedRules[mode] = List<Rule>.from(localRules);
+    });
   }
 
   void _addRule() {
@@ -349,7 +381,7 @@ class _CreateLeaguePageState extends State<CreateLeaguePage> {
         });
       }
     } else {
-      // For predefined modes, load from the appropriate table
+      // For predefined modes, load from local constants
       _loadPredefinedRules(mode.apiMode);
     }
   }
@@ -382,8 +414,9 @@ class _CreateLeaguePageState extends State<CreateLeaguePage> {
       listener: (context, state) {
         if (state is LeagueSuccess) {
           // Clear cached rules after successful league creation
-          _cachedRules['hard'] = [];
-          _cachedRules['soft'] = [];
+          _cachedRules['male'] = [];
+          _cachedRules['female'] = [];
+          _cachedRules['mixed'] = [];
           _cachedRules['custom'] = [];
 
           //Go to the league created page
@@ -401,19 +434,8 @@ class _CreateLeaguePageState extends State<CreateLeaguePage> {
             _isLoadingRules = false;
           });
           showSnackBar(state.message);
-        } else if (state is RulesLoaded) {
-          // Determine which cache to update based on the mode
-          String cacheKey = state.mode;
-
-          setState(() {
-            _isLoadingRules = false;
-            _rulesLoaded = true;
-            _rules = state.rules;
-
-            // Store the fetched rules in cache
-            _cachedRules[cacheKey] = List<Rule>.from(state.rules);
-          });
         }
+        // No longer need to handle RulesLoaded state since we're using local rules
       },
       builder: (context, state) {
         return Scaffold(

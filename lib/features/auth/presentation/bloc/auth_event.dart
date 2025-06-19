@@ -54,7 +54,7 @@ class AuthUpdateConsents extends AuthEvent {
 }
 
 class AuthUpdateGender extends AuthEvent {
-  final String gender;
+  final String? gender;
 
   AuthUpdateGender({
     required this.gender,

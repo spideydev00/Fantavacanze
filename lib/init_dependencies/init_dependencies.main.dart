@@ -48,6 +48,7 @@ Future<void> initDependencies() async {
           updateDisplayName: serviceLocator(),
           updatePassword: serviceLocator(),
           deleteAccount: serviceLocator(),
+          updateGender: serviceLocator(),
           removeConsents: serviceLocator(),
         ),
       )
@@ -292,9 +293,6 @@ void _initLeague() {
       () => RemoveMemory(leagueRepository: serviceLocator()),
     )
     ..registerFactory(
-      () => GetRules(leagueRepository: serviceLocator()),
-    )
-    ..registerFactory(
       () => UpdateRule(leagueRepository: serviceLocator()),
     )
     ..registerFactory(
@@ -386,7 +384,6 @@ void _initLeague() {
         addEvent: serviceLocator(),
         addMemory: serviceLocator(),
         removeMemory: serviceLocator(),
-        getRules: serviceLocator(),
         updateRule: serviceLocator(),
         addRule: serviceLocator(),
         deleteRule: serviceLocator(),

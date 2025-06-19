@@ -5,6 +5,7 @@ import 'package:fantavacanze_official/features/auth/domain/entities/user.dart';
 import 'package:fantavacanze_official/features/auth/domain/use-cases/get_current_user.dart';
 import 'package:fantavacanze_official/features/auth/domain/use-cases/sign_out.dart';
 import 'package:fantavacanze_official/features/auth/domain/use-cases/update_display_name.dart';
+import 'package:fantavacanze_official/features/auth/domain/use-cases/update_gender.dart';
 import 'package:fantavacanze_official/features/auth/domain/use-cases/update_password.dart';
 import 'package:fantavacanze_official/features/auth/domain/use-cases/delete_account.dart';
 import 'package:fantavacanze_official/features/auth/domain/use-cases/remove_consents.dart';
@@ -20,6 +21,7 @@ class AppUserCubit extends Cubit<AppUserState> {
   final UpdatePassword _updatePassword;
   final DeleteAccount _deleteAccount;
   final RemoveConsents _removeConsents;
+  final UpdateGender _updateGender;
 
   AppUserCubit({
     required GetCurrentUser getCurrentUser,
@@ -28,12 +30,14 @@ class AppUserCubit extends Cubit<AppUserState> {
     required UpdatePassword updatePassword,
     required DeleteAccount deleteAccount,
     required RemoveConsents removeConsents,
+    required UpdateGender updateGender,
   })  : _getCurrentUser = getCurrentUser,
         _signOut = signOut,
         _updateDisplayName = updateDisplayName,
         _updatePassword = updatePassword,
         _deleteAccount = deleteAccount,
         _removeConsents = removeConsents,
+        _updateGender = updateGender,
         super(AppUserInitial());
 
   // Gets current user when app starts
@@ -64,6 +68,25 @@ class AppUserCubit extends Cubit<AppUserState> {
       emit(AppUserNeedsGender(user: user));
     } else {
       emit(AppUserIsLoggedIn(user: user));
+    }
+  }
+
+  // Updates user gender
+  Future<void> updateGender(String newGender) async {
+    if (state is AppUserIsLoggedIn) {
+      final currentState = state as AppUserIsLoggedIn;
+
+      final res = await _updateGender.call(newGender);
+
+      res.fold(
+        (failure) => emit(AppUserIsLoggedIn(
+          user: currentState.user,
+          errorMessage: failure.message,
+        )),
+        (user) => emit(
+          AppUserIsLoggedIn(user: user),
+        ),
+      );
     }
   }
 

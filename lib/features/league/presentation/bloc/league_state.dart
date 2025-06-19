@@ -3,7 +3,6 @@ import 'package:fantavacanze_official/features/league/domain/entities/daily_chal
 import 'package:fantavacanze_official/features/league/domain/entities/league.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/note.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/notification.dart';
-import 'package:fantavacanze_official/features/league/domain/entities/rule/rule.dart';
 
 abstract class LeagueState extends Equatable {
   const LeagueState();
@@ -71,19 +70,6 @@ class MultiplePossibleLeagues extends LeagueState {
 
   @override
   List<Object?> get props => [possibleLeagues, inviteCode];
-}
-
-class RulesLoaded extends LeagueState {
-  final List<Rule> rules;
-  final String mode;
-
-  const RulesLoaded({
-    required this.rules,
-    required this.mode,
-  });
-
-  @override
-  List<Object?> get props => [rules, mode];
 }
 
 class TeammatesRemovedState extends LeagueState {

@@ -10,7 +10,7 @@ class UpdateGender implements Usecase<User, String> {
   UpdateGender({required this.authRepository});
 
   @override
-  Future<Either<Failure, User>> call(String gender) async {
+  Future<Either<Failure, User>> call(String? gender) async {
     return await authRepository.updateGender(gender: gender);
   }
 }
