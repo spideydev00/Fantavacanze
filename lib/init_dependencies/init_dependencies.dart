@@ -10,6 +10,7 @@ import 'package:fantavacanze_official/features/auth/data/datasources/auth_remote
 import 'package:fantavacanze_official/features/auth/data/repository/auth_repository_impl.dart';
 import 'package:fantavacanze_official/features/auth/domain/repository/auth_repository.dart';
 import 'package:fantavacanze_official/features/auth/domain/use-cases/apple_sign_in.dart';
+import 'package:fantavacanze_official/features/auth/domain/use-cases/become_premium.dart';
 import 'package:fantavacanze_official/features/auth/domain/use-cases/change_is_onboarded_value.dart';
 import 'package:fantavacanze_official/features/auth/domain/use-cases/delete_account.dart';
 import 'package:fantavacanze_official/features/auth/domain/use-cases/email_sign_in.dart';

@@ -52,6 +52,9 @@ abstract interface class AuthRemoteDataSource {
 
   // USER DATA ACCESS
   Future<UserModel?> getCurrentUserData();
+  
+  Future<UserModel> becomePremium();
+  
   Session? get currentSession;
 }
 
@@ -495,4 +498,23 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       throw ServerException(_extractErrorMessage(e));
     }
   }
+  
+ @override
+Future<UserModel> becomePremium() async {
+  try {
+    final userId = currentSession?.user.id;
+
+    if (userId == null) throw ServerException('Utente non autenticato');
+
+    // Chiama la funzione RPC 'become_premium' passando l'ID utente
+    final authUserResponse = await supabaseClient
+        .rpc('become_premium', params: {'p_user_id': userId});
+    
+    return UserModel.fromJson(authUserResponse).copyWith(
+      email: currentSession!.user.email,
+    );
+  } catch (e) {
+    throw ServerException(_extractErrorMessage(e));
+  }
+}
 }

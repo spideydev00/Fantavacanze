@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:fantavacanze_official/core/use-case/usecase.dart';
 import 'package:fantavacanze_official/features/auth/domain/entities/user.dart';
+import 'package:fantavacanze_official/features/auth/domain/use-cases/become_premium.dart';
 import 'package:fantavacanze_official/features/auth/domain/use-cases/get_current_user.dart';
 import 'package:fantavacanze_official/features/auth/domain/use-cases/sign_out.dart';
 import 'package:fantavacanze_official/features/auth/domain/use-cases/update_display_name.dart';
@@ -22,6 +23,7 @@ class AppUserCubit extends Cubit<AppUserState> {
   final DeleteAccount _deleteAccount;
   final RemoveConsents _removeConsents;
   final UpdateGender _updateGender;
+  final BecomePremium _becomePremium;
 
   AppUserCubit({
     required GetCurrentUser getCurrentUser,
@@ -31,6 +33,7 @@ class AppUserCubit extends Cubit<AppUserState> {
     required DeleteAccount deleteAccount,
     required RemoveConsents removeConsents,
     required UpdateGender updateGender,
+    required BecomePremium becomePremium,
   })  : _getCurrentUser = getCurrentUser,
         _signOut = signOut,
         _updateDisplayName = updateDisplayName,
@@ -38,6 +41,7 @@ class AppUserCubit extends Cubit<AppUserState> {
         _deleteAccount = deleteAccount,
         _removeConsents = removeConsents,
         _updateGender = updateGender,
+        _becomePremium = becomePremium,
         super(AppUserInitial());
 
   // Gets current user when app starts
@@ -196,6 +200,25 @@ class AppUserCubit extends Cubit<AppUserState> {
         (_) async {
           // After removing consents, sign out
           await signOut();
+        },
+      );
+    }
+  }
+
+  // Upgrades user to premium
+  Future<void> becomePremium() async {
+    if (state is AppUserIsLoggedIn) {
+      final currentState = state as AppUserIsLoggedIn;
+
+      final res = await _becomePremium.call(NoParams());
+
+      res.fold(
+        (failure) => emit(AppUserIsLoggedIn(
+          user: currentState.user,
+          errorMessage: failure.message,
+        )),
+        (user) {
+          emit(AppUserIsLoggedIn(user: user));
         },
       );
     }

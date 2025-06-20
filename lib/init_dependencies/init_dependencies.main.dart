@@ -44,8 +44,13 @@ Future<void> initDependencies() async {
     );
 
     // Register SubscriptionCubit
-    serviceLocator.registerLazySingleton<SubscriptionCubit>(
-      () => SubscriptionCubit(serviceLocator<InAppPurchase>()),
+        serviceLocator.registerLazySingleton<SubscriptionCubit>(
+      () => SubscriptionCubit(
+        serviceLocator<InAppPurchase>(),
+        serviceLocator<AppUserCubit>(),
+        serviceLocator<LeagueBloc>(),
+        serviceLocator<AppLeagueCubit>(),
+      ),
     );
 
     // core cubits
@@ -60,6 +65,7 @@ Future<void> initDependencies() async {
           deleteAccount: serviceLocator(),
           updateGender: serviceLocator(),
           removeConsents: serviceLocator(),
+          becomePremium: serviceLocator(),
         ),
       )
       //2. navigation cubit
@@ -227,6 +233,9 @@ void _initAuth() {
     )
     ..registerFactory(
       () => UpdateGender(authRepository: serviceLocator()),
+    )
+    ..registerFactory(
+      () => BecomePremium(authRepository: serviceLocator()),
     )
     //bloc
     ..registerLazySingleton(
