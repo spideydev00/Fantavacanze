@@ -106,7 +106,7 @@ class SubscriptionBottomSheet extends StatelessWidget {
                   },
                   child: Text(
                     "Termini e Condizioni",
-                    style: TextStyle(color: context.primaryColor),
+                    style: TextStyle(color: ColorPalette.info),
                   ),
                 ),
                 const SizedBox(height: 15),
