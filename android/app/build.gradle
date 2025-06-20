@@ -43,6 +43,7 @@ android {
         targetSdkVersion = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+        resConfigs "it", "en"
     }
 
     // Configurazione per la firma dell'app in release

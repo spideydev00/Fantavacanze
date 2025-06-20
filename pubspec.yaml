@@ -73,6 +73,8 @@ dependencies:
   share_plus: ^11.0.0
   flutter_card_swiper: ^7.0.2
   app_tracking_transparency: ^2.0.6+1
+  flutter_localizations:
+    sdk: flutter
 
 dev_dependencies:
   flutter_test:
@@ -182,6 +184,7 @@ flutter:
     - assets/images/icons/homepage_icons/dice-icon.svg
     - assets/images/icons/games_icons/balance.png
     - assets/images/icons/games_icons/team-icon.png
+    - assets/images/icons/homepage_icons/friends-hug-icon.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-assets/images

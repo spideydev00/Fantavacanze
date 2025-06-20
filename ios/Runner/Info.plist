@@ -18,6 +18,13 @@
     <key>CFBundleExecutable</key>
     <string>$(EXECUTABLE_NAME)</string>
 
+    <!-- Lingue supportate dall'app -->
+    <key>CFBundleLocalizations</key>
+    <array>
+      <string>it</string>
+      <string>en</string>
+    </array>
+
     <!-- Identificatore univoco del bundle (es. com.miodominio.app) -->
     <key>CFBundleIdentifier</key>
     <string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>

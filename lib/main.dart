@@ -1,10 +1,12 @@
 import 'dart:async';
-
+import 'package:flutter/material.dart';
+import 'package:fantavacanze_official/core/localization/app_localizations.dart';
 import 'package:fantavacanze_official/core/cubits/app_league/app_league_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/app_navigation/app_navigation_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/app_theme/app_theme_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/notification_count/notification_count_cubit.dart';
+import 'package:fantavacanze_official/core/cubits/subscription/subscription_cubit.dart';
 import 'package:fantavacanze_official/core/theme/theme.dart';
 import 'package:fantavacanze_official/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:fantavacanze_official/features/games/presentation/bloc/never_have_i_ever/never_have_i_ever_bloc.dart';
@@ -14,7 +16,6 @@ import 'package:fantavacanze_official/features/league/presentation/bloc/league_b
 import 'package:fantavacanze_official/features/games/presentation/bloc/lobby/lobby_bloc.dart';
 import 'package:fantavacanze_official/init_dependencies/init_dependencies.dart';
 import 'package:fantavacanze_official/initial_page.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
@@ -49,6 +50,7 @@ void main() async {
           BlocProvider(create: (_) => serviceLocator<AppLeagueCubit>()),
           BlocProvider(create: (_) => serviceLocator<AppNavigationCubit>()),
           BlocProvider(create: (_) => serviceLocator<NotificationCountCubit>()),
+          BlocProvider(create: (_) => serviceLocator<SubscriptionCubit>()),
           BlocProvider.value(value: themeCubit),
           BlocProvider(create: (_) => serviceLocator<LobbyBloc>()),
           BlocProvider(create: (_) => serviceLocator<WordBombBloc>()),
@@ -104,6 +106,11 @@ class _MyAppState extends State<MyApp> {
           theme: AppTheme.getLightTheme(context),
           darkTheme: AppTheme.getDarkTheme(context),
           debugShowCheckedModeBanner: false,
+          
+          // Configurazione della localizzazione
+          locale: const Locale('it'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
         );
       },
     );

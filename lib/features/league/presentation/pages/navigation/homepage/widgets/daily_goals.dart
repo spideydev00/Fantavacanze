@@ -6,6 +6,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fantavacanze_official/core/constants/lock_type.dart';
 import 'package:fantavacanze_official/core/cubits/app_league/app_league_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit.dart';
+import 'package:fantavacanze_official/core/cubits/subscription/subscription_cubit.dart';
 import 'package:fantavacanze_official/core/services/ad_helper.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
@@ -13,6 +14,7 @@ import 'package:fantavacanze_official/core/utils/show_snackbar.dart';
 import 'package:fantavacanze_official/core/widgets/divider.dart';
 import 'package:fantavacanze_official/core/widgets/loader.dart';
 import 'package:fantavacanze_official/core/widgets/dialogs/premium_access_dialog.dart';
+import 'package:fantavacanze_official/core/widgets/in_app_purchase/subscription_dialog.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/daily_challenge.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_event.dart';
@@ -240,9 +242,14 @@ class _DailyGoalsState extends State<DailyGoals> {
             ? () => AdHelper().showRewardedAd(context)
             : null,
         onPremiumBtnTapped: () {
-          showSnackBar(
-            "Funzionalità premium in arrivo!",
-            color: ColorPalette.premiumUser,
+          showSubscriptionDialog(
+            context,
+            title: "Sblocca Tutte le Sfide",
+            onProductSelected: (product) {
+              if (product != null) {
+                context.read<SubscriptionCubit>().purchaseProduct(product);
+              }
+            },
           );
         },
       ),

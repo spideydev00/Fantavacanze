@@ -38,6 +38,16 @@ Future<void> initDependencies() async {
     // Register UUID generator
     serviceLocator.registerLazySingleton(() => const Uuid());
 
+    // Register InAppPurchase
+    serviceLocator.registerLazySingleton<InAppPurchase>(
+      () => InAppPurchase.instance,
+    );
+
+    // Register SubscriptionCubit
+    serviceLocator.registerLazySingleton<SubscriptionCubit>(
+      () => SubscriptionCubit(serviceLocator<InAppPurchase>()),
+    );
+
     // core cubits
     serviceLocator
       //1. user cubit
