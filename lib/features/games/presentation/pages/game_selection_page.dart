@@ -1,16 +1,16 @@
 import 'package:fantavacanze_official/core/cubits/app_navigation/app_navigation_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit.dart';
+import 'package:fantavacanze_official/core/cubits/subscription/subscription_cubit.dart';
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/extensions/context_extension.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:fantavacanze_official/core/utils/show_page_specific_snackbar.dart';
-import 'package:fantavacanze_official/core/utils/show_snackbar.dart';
 import 'package:fantavacanze_official/core/widgets/buttons/modern_drink_card.dart';
 import 'package:fantavacanze_official/core/widgets/dialogs/premium_access_dialog.dart';
 import 'package:fantavacanze_official/core/widgets/divider.dart';
 import 'package:fantavacanze_official/core/widgets/loader.dart';
-import 'package:fantavacanze_official/core/widgets/app_information_dialog.dart'; // Import AppInformationDialog
+import 'package:fantavacanze_official/core/widgets/app_information_dialog.dart';
 import 'package:fantavacanze_official/features/games/domain/entities/game_type_enum.dart';
 import 'package:fantavacanze_official/features/games/presentation/bloc/lobby/lobby_bloc.dart';
 import 'package:fantavacanze_official/features/games/presentation/bloc/word_bomb/word_bomb_bloc.dart';
@@ -18,6 +18,7 @@ import 'package:fantavacanze_official/features/games/presentation/pages/game_hos
 import 'package:fantavacanze_official/features/league/presentation/pages/dashboard/sections/dashboard.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:fantavacanze_official/core/widgets/in_app_purchase/subscription_dialog.dart';
 
 class GameSelectionPage extends StatefulWidget {
   static const String routeName = '/game_selection';
@@ -159,10 +160,17 @@ class _GameSelectionPageState extends State<GameSelectionPage> {
                           isPremium: !isPremiumUser,
                           isTrialAvailable: hasWordBombTrial,
                           showInfoIcon: true,
-                          onPremiumRequested: () => showSnackBar(
-                            "Funzionalità Premium presto in arrivo!",
-                            color: ColorPalette.premiumUser,
-                          ),
+                          onPremiumRequested: () {
+                            showSubscriptionDialog(
+                              context,
+                              title: "Sblocca Word Bomb",
+                              onProductSelected: (product) {
+                                if (product != null) {
+                                  context.read<SubscriptionCubit>().purchaseProduct(product);
+                                }
+                              },
+                            );
+                          },
                           onInfoIconTapped: () {
                             showDialog(
                               context: context,
@@ -304,6 +312,7 @@ class _GameSelectionPageState extends State<GameSelectionPage> {
                                 _inviteCodeController.text
                                     .toUpperCase()
                                     .endsWith('B');
+                            
                             if (_inviteCodeController.text.isNotEmpty) {
                               if (isWordBombInviteCode &&
                                   !hasWordBombTrial &&
@@ -327,11 +336,10 @@ class _GameSelectionPageState extends State<GameSelectionPage> {
                                 );
                                 return;
                               }
+                              
                               context.read<LobbyBloc>().add(
                                     JoinSessionRequested(
-                                      _inviteCodeController.text
-                                          .trim()
-                                          .toUpperCase(),
+                                      _inviteCodeController.text.trim(),
                                     ),
                                   );
                             }

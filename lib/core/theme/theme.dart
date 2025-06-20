@@ -1,4 +1,3 @@
-// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:fantavacanze_official/core/constants/constants.dart';
 import 'package:fantavacanze_official/core/cubits/app_theme/app_theme_cubit.dart';
 import 'package:fantavacanze_official/core/extensions/context_extension.dart';
@@ -62,8 +61,28 @@ class AppTheme {
           ),
         ),
         showDragHandle: true,
-        dragHandleColor: context.primaryColor,
+        dragHandleColor: context.textPrimaryColor,
       ),
+
+      // Progress indicator theme for premium elements
+      progressIndicatorTheme: ProgressIndicatorThemeData(
+        color: ColorPalette.premiumUser,
+        circularTrackColor: ColorPalette.premiumUser.withValues(alpha: 0.2),
+      ),
+
+      // Divider theme for premium elements
+      dividerTheme: DividerThemeData(
+        color: ColorPalette.premiumUser.withValues(alpha: 0.3),
+        thickness: 1,
+      ),
+
+      // Custom text theme for bottom sheets with premium styling
+      textSelectionTheme: TextSelectionThemeData(
+        cursorColor: ColorPalette.premiumUser,
+        selectionColor: ColorPalette.premiumUser.withValues(alpha: 0.3),
+        selectionHandleColor: ColorPalette.premiumUser,
+      ),
+
       /* ---------------------------------------------------------------- */
       // SWITCH THEME
       switchTheme: SwitchThemeData(
@@ -198,5 +217,60 @@ class AppTheme {
   //getDarkTheme
   static ThemeData getDarkTheme(BuildContext context) {
     return getTheme(context);
+  }
+
+  // Add this method below getTheme method
+  static TextTheme getPremiumTextTheme(BuildContext context) {
+    return GoogleFonts.numansTextTheme(
+      context.textTheme.copyWith(
+        displayLarge: context.textTheme.displayLarge?.copyWith(color: ColorPalette.premiumUser),
+        displayMedium: context.textTheme.displayMedium?.copyWith(color: ColorPalette.premiumUser),
+        displaySmall: context.textTheme.displaySmall?.copyWith(color: ColorPalette.premiumUser),
+        headlineLarge: context.textTheme.headlineLarge?.copyWith(color: ColorPalette.premiumUser),
+        headlineMedium: context.textTheme.headlineMedium?.copyWith(color: ColorPalette.premiumUser),
+        headlineSmall: context.textTheme.headlineSmall?.copyWith(color: ColorPalette.premiumUser),
+        titleLarge: context.textTheme.titleLarge?.copyWith(color: ColorPalette.premiumUser),
+        titleMedium: context.textTheme.titleMedium?.copyWith(color: ColorPalette.premiumUser),
+        titleSmall: context.textTheme.titleSmall?.copyWith(color: ColorPalette.premiumUser),
+        bodyLarge: context.textTheme.bodyLarge?.copyWith(color: ColorPalette.premiumUser),
+        bodyMedium: context.textTheme.bodyMedium?.copyWith(color: ColorPalette.premiumUser),
+        bodySmall: context.textTheme.bodySmall?.copyWith(color: ColorPalette.premiumUser),
+        labelLarge: context.textTheme.labelLarge?.copyWith(color: ColorPalette.premiumUser),
+        labelMedium: context.textTheme.labelMedium?.copyWith(color: ColorPalette.premiumUser),
+        labelSmall: context.textTheme.labelSmall?.copyWith(color: ColorPalette.premiumUser),
+      ),
+    );
+  }
+
+  // Extension method for easy access to premium theme elements
+  static ThemeData applyPremiumBottomSheetTheme(BuildContext context) {
+    return Theme.of(context).copyWith(
+      textTheme: getPremiumTextTheme(context),
+      iconTheme: IconThemeData(color: ColorPalette.premiumUser),
+      buttonTheme: ButtonThemeData(
+        buttonColor: ColorPalette.premiumUser,
+        textTheme: ButtonTextTheme.primary,
+      ),
+      checkboxTheme: CheckboxThemeData(
+        fillColor: WidgetStateProperty.all(ColorPalette.premiumUser),
+        checkColor: WidgetStateProperty.all(Colors.white),
+      ),
+      radioTheme: RadioThemeData(
+        fillColor: WidgetStateProperty.all(ColorPalette.premiumUser),
+      ),
+      // Ensure all bottom sheet dialogs get the premium styling
+      bottomSheetTheme: BottomSheetThemeData(
+        backgroundColor: context.secondaryBgColor,
+        modalBackgroundColor: context.secondaryBgColor,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(20),
+            topRight: Radius.circular(20),
+          ),
+        ),
+        showDragHandle: true,
+        dragHandleColor: context.textPrimaryColor,
+      ),
+    );
   }
 }

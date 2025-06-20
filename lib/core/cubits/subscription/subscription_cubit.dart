@@ -7,7 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'subscription_state.dart';
 
 class SubscriptionCubit extends Cubit<SubscriptionState> {
-  final InAppPurchase _inAppPurchase = InAppPurchase.instance;
+  final InAppPurchase _inAppPurchase;
   StreamSubscription<List<PurchaseDetails>>? _purchaseSubscription;
 
   // Keys for local storage
@@ -17,11 +17,11 @@ class SubscriptionCubit extends Cubit<SubscriptionState> {
 
   // Replace with your actual subscription IDs when ready
   final Set<String> productIds = {
-    'monthly_subscription', // Replace with your product ID
-    'annual_subscription', // Replace with your product ID
+    'auto_renew_monthly_plan', 
+    'auto_renew_annual_plan',
   };
 
-  SubscriptionCubit() : super(const SubscriptionState()) {
+  SubscriptionCubit(this._inAppPurchase) : super(const SubscriptionState()) {
     _listenToPurchaseUpdates();
     initialize();
     checkSubscriptionStatus();
@@ -57,7 +57,7 @@ class SubscriptionCubit extends Cubit<SubscriptionState> {
       }
     } catch (e) {
       emit(state.copyWith(
-          status: SubscriptionStatus.error, errorMessage: e.toString()));
+          status: SubscriptionStatus.error, errorMessage: e.toString(),),);
     }
   }
 

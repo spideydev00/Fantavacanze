@@ -10,6 +10,8 @@ import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:fantavacanze_official/core/services/ad_helper.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit.dart';
+import 'package:fantavacanze_official/core/cubits/subscription/subscription_cubit.dart';
+import 'package:fantavacanze_official/core/widgets/in_app_purchase/subscription_dialog.dart';
 
 class DrinkGames extends StatelessWidget {
   static const String routeName = '/drink_games';
@@ -35,8 +37,8 @@ class DrinkGames extends StatelessWidget {
                 right: 0,
                 child: Opacity(
                   opacity: 0.15,
-                  child: SvgPicture.asset(
-                    'assets/images/icons/games_icons/dices-icon.svg',
+                  child: Image.asset(
+                    'assets/images/icons/homepage_icons/friends-hug-icon.png',
                     height: MediaQuery.of(context).size.height * 0.45,
                   ),
                 ),
@@ -136,9 +138,13 @@ class DrinkGames extends StatelessWidget {
             },
             // Premium: chiudo con false e mostro snack
             onPremiumBtnTapped: () {
-              showSnackBar(
-                "Funzionalità Premium presto in arrivo!",
-                color: ColorPalette.premiumUser,
+              showSubscriptionDialog(
+                context, 
+                onProductSelected: (product) {
+                  if (product != null) {
+                    context.read<SubscriptionCubit>().purchaseProduct(product);
+                  }
+                },
               );
             },
           ),

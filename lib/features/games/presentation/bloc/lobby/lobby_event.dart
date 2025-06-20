@@ -16,6 +16,7 @@ class CreateSessionRequested extends LobbyEvent {
 
 class JoinSessionRequested extends LobbyEvent {
   final String inviteCode;
+  
   const JoinSessionRequested(this.inviteCode);
 
   @override

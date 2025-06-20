@@ -92,10 +92,25 @@ class TruthOrDareBloc extends Bloc<TruthOrDareEvent, TruthOrDareState> {
           (failure) async => emit(TruthOrDareError(failure.message)),
           (players) async {
             _isSinglePlayerLocalMode = players.length == 1;
-            if (!_isSinglePlayerLocalMode) {
-              // Solo in multiplayer servono gli stream
-              _startStreams(event.initialSession.id);
+            if (_isSinglePlayerLocalMode) {
+              // Imposta subito il currentTurnUserId per evitare blocchi
+              final localSession = event.initialSession.copyWith(
+                currentTurnUserId: _me?.id,
+              );
+              
+              emit(TruthOrDareGameReady(
+                session: localSession,
+                players: players,
+                allQuestions: _allQuestionsList,
+                isAdmin: _isAdmin(localSession),
+                currentQuestion: null,
+                canChangeCurrentQuestion: true,
+              ));
+              
+              return;
             }
+
+            _startStreams(event.initialSession.id);
 
             // Stato iniziale: nessuna domanda scelta
             emit(TruthOrDareGameReady(
@@ -249,8 +264,8 @@ class TruthOrDareBloc extends Bloc<TruthOrDareEvent, TruthOrDareState> {
       );
       emit(s.copyWith(
         session: localSession,
-        currentQuestion: null,
         canChangeCurrentQuestion: true,
+        clearCurrentQuestion: true,
       ));
     } else {
       await _updateState(UpdateGameStateParams(

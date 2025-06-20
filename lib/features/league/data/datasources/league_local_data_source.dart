@@ -408,7 +408,7 @@ class LeagueLocalDataSourceImpl implements LeagueLocalDataSource {
 
   @override
   Future<void> cleanupOldNotifications() async {
-    try {
+    
       final notifications = notificationsBox.values.toList();
 
       const int maxCacheNotifications = 100;
@@ -425,7 +425,7 @@ class LeagueLocalDataSourceImpl implements LeagueLocalDataSource {
       for (final notification in toDelete) {
         await notificationsBox.delete(notification.id);
       }
-    } catch (e) {}
+   
   }
 
   @override
