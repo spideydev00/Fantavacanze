@@ -43,7 +43,7 @@
 
     <!-- Versione di marketing (es. 1.2.3), fornita da Flutter build -->
     <key>CFBundleShortVersionString</key>
-    <string>$(FLUTTER_BUILD_NAME)</string>
+    <string>$(MARKETING_VERSION)</string>
 
     <!-- Signature legacy a 4 caratteri (spesso non usata, placeholder) -->
     <key>CFBundleSignature</key>
@@ -82,7 +82,7 @@
 
     <!-- Numero interno di build (incrementale) -->
     <key>CFBundleVersion</key>
-    <string>$(FLUTTER_BUILD_NUMBER)</string>
+    <string>$(CURRENT_PROJECT_VERSION)</string>
 
     <!-- Configurazioni Facebook SDK -->
     <key>FacebookAppID</key>
