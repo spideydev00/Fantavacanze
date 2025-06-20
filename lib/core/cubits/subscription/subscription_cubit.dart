@@ -4,10 +4,18 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit.dart';
+import 'package:fantavacanze_official/core/cubits/app_league/app_league_cubit.dart';
+import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc.dart';
+import 'package:fantavacanze_official/features/league/presentation/bloc/league_event.dart';
 import 'subscription_state.dart';
 
 class SubscriptionCubit extends Cubit<SubscriptionState> {
   final InAppPurchase _inAppPurchase;
+  final AppUserCubit _appUserCubit;
+  final LeagueBloc _leagueBloc;
+  final AppLeagueCubit _appLeagueCubit;
+  
   StreamSubscription<List<PurchaseDetails>>? _purchaseSubscription;
 
   // Keys for local storage
@@ -21,7 +29,12 @@ class SubscriptionCubit extends Cubit<SubscriptionState> {
     'auto_renew_annual_plan',
   };
 
-  SubscriptionCubit(this._inAppPurchase) : super(const SubscriptionState()) {
+  SubscriptionCubit(
+    this._inAppPurchase, 
+    this._appUserCubit,
+    this._leagueBloc,
+    this._appLeagueCubit,
+  ) : super(const SubscriptionState()) {
     _listenToPurchaseUpdates();
     initialize();
     checkSubscriptionStatus();
@@ -152,22 +165,44 @@ class SubscriptionCubit extends Cubit<SubscriptionState> {
 
   Future<void> _processPurchase(PurchaseDetails purchaseDetails) async {
     try {
+      // Ottieni l'ID utente corrente
+      String userId = "";
+      final userState = _appUserCubit.state;
+      if (userState is AppUserIsLoggedIn) {
+        userId = userState.user.id;
+      }
+      
       final now = DateTime.now();
-      final String userId =
-          "user_id"; // Replace with actual user ID when available
 
-      if (purchaseDetails.productID == 'monthly_subscription') {
+      if (purchaseDetails.productID.contains('monthly')) {
         await _savePurchase(purchaseDetails.productID, userId, now, 30);
-      } else if (purchaseDetails.productID == 'annual_subscription') {
+      } else if (purchaseDetails.productID.contains('annual')) {
         await _savePurchase(purchaseDetails.productID, userId, now, 365);
       }
 
       await checkSubscriptionStatus();
 
+      // Aggiorna lo stato dell'abbonamento
       emit(state.copyWith(
           status: purchaseDetails.status == PurchaseStatus.restored
               ? SubscriptionStatus.restored
-              : SubscriptionStatus.purchased));
+              : SubscriptionStatus.purchased,
+          hasActiveSubscription: true,
+      ));
+      
+      // 1. Aggiorna lo stato premium dell'utente
+      await _appUserCubit.becomePremium();
+      
+      // 2. Aggiorna le sfide giornaliere se c'è una lega selezionata
+      final leagueState = _appLeagueCubit.state;
+      if (leagueState is AppLeagueExists && userState is AppUserIsLoggedIn) {
+        _leagueBloc.add(GetDailyChallengesEvent(
+          userId: userState.user.id,
+          leagueId: leagueState.selectedLeague.id,
+        ));
+      }
+      
+      log("Utente aggiornato a premium e sfide giornaliere aggiornate");
     } catch (e) {
       emit(state.copyWith(
           status: SubscriptionStatus.error,
