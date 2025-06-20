@@ -43,16 +43,6 @@ Future<void> initDependencies() async {
       () => InAppPurchase.instance,
     );
 
-    // Register SubscriptionCubit
-        serviceLocator.registerLazySingleton<SubscriptionCubit>(
-      () => SubscriptionCubit(
-        serviceLocator<InAppPurchase>(),
-        serviceLocator<AppUserCubit>(),
-        serviceLocator<LeagueBloc>(),
-        serviceLocator<AppLeagueCubit>(),
-      ),
-    );
-
     // core cubits
     serviceLocator
       //1. user cubit

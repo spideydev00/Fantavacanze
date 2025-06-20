@@ -6,7 +6,6 @@ import 'package:fantavacanze_official/core/cubits/app_navigation/app_navigation_
 import 'package:fantavacanze_official/core/cubits/app_theme/app_theme_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/notification_count/notification_count_cubit.dart';
-import 'package:fantavacanze_official/core/cubits/subscription/subscription_cubit.dart';
 import 'package:fantavacanze_official/core/theme/theme.dart';
 import 'package:fantavacanze_official/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:fantavacanze_official/features/games/presentation/bloc/never_have_i_ever/never_have_i_ever_bloc.dart';
@@ -50,7 +49,6 @@ void main() async {
           BlocProvider(create: (_) => serviceLocator<AppLeagueCubit>()),
           BlocProvider(create: (_) => serviceLocator<AppNavigationCubit>()),
           BlocProvider(create: (_) => serviceLocator<NotificationCountCubit>()),
-          BlocProvider(create: (_) => serviceLocator<SubscriptionCubit>()),
           BlocProvider.value(value: themeCubit),
           BlocProvider(create: (_) => serviceLocator<LobbyBloc>()),
           BlocProvider(create: (_) => serviceLocator<WordBombBloc>()),

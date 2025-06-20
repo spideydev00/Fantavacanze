@@ -1,6 +1,5 @@
 import 'package:fantavacanze_official/core/cubits/app_navigation/app_navigation_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit.dart';
-import 'package:fantavacanze_official/core/cubits/subscription/subscription_cubit.dart';
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/extensions/context_extension.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
@@ -18,7 +17,6 @@ import 'package:fantavacanze_official/features/games/presentation/pages/game_hos
 import 'package:fantavacanze_official/features/league/presentation/pages/dashboard/sections/dashboard.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:fantavacanze_official/core/widgets/in_app_purchase/subscription_dialog.dart';
 
 class GameSelectionPage extends StatefulWidget {
   static const String routeName = '/game_selection';
@@ -161,14 +159,11 @@ class _GameSelectionPageState extends State<GameSelectionPage> {
                           isTrialAvailable: hasWordBombTrial,
                           showInfoIcon: true,
                           onPremiumRequested: () {
-                            showSubscriptionDialog(
+                            // TODO: Implementare nuovo sistema premium con SDK alternativo
+                            showSpecificSnackBar(
                               context,
-                              title: "Sblocca Word Bomb",
-                              onProductSelected: (product) {
-                                if (product != null) {
-                                  context.read<SubscriptionCubit>().purchaseProduct(product);
-                                }
-                              },
+                              "Funzionalità premium presto disponibili!",
+                              color: ColorPalette.premiumUser,
                             );
                           },
                           onInfoIconTapped: () {
