@@ -39,8 +39,8 @@ import 'package:fantavacanze_official/features/league/domain/use_cases/remote/le
 import 'package:fantavacanze_official/features/league/domain/use_cases/remote/league/update_league_info.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/remote/league/delete_league.dart';
-import 'package:fantavacanze_official/features/league/presentation/bloc/league_event.dart';
-import 'package:fantavacanze_official/features/league/presentation/bloc/league_state.dart';
+import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc/league_event.dart';
+import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc/league_state.dart';
 
 class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
   final CreateLeague createLeague;

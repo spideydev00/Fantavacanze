@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:fantavacanze_official/core/cubits/app_league/app_league_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/app_navigation/app_navigation_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/app_theme/app_theme_cubit.dart';
@@ -45,6 +47,9 @@ import 'package:fantavacanze_official/features/games/presentation/bloc/lobby/lob
 import 'package:fantavacanze_official/features/games/presentation/bloc/never_have_i_ever/never_have_i_ever_bloc.dart';
 import 'package:fantavacanze_official/features/games/presentation/bloc/truth_or_dare/truth_or_dare_bloc.dart';
 import 'package:fantavacanze_official/features/games/presentation/bloc/word_bomb/word_bomb_bloc.dart';
+import 'package:fantavacanze_official/features/league/data/datasources/subscription_remote_data_source.dart';
+import 'package:fantavacanze_official/features/league/data/repository/subscription_repository_impl.dart';
+import 'package:fantavacanze_official/features/league/domain/repository/subscription_repository.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/remote/daily_challenges/approve_daily_challenge.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/remote/daily_challenges/unlock_daily_challenge.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/remote/notifications/delete_notification.dart';
@@ -104,7 +109,12 @@ import 'package:fantavacanze_official/features/league/domain/use_cases/remote/le
 import 'package:fantavacanze_official/features/league/domain/use_cases/remote/league/update_team_name.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/remote/league/upload_image.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/remote/league/upload_team_logo.dart';
-import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc.dart';
+import 'package:fantavacanze_official/features/league/domain/use_cases/remote/subscription/check_premium_status.dart';
+import 'package:fantavacanze_official/features/league/domain/use_cases/remote/subscription/get_products.dart';
+import 'package:fantavacanze_official/features/league/domain/use_cases/remote/subscription/purchase_product.dart';
+import 'package:fantavacanze_official/features/league/domain/use_cases/remote/subscription/restore_purchases.dart';
+import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc/league_bloc.dart';
+import 'package:fantavacanze_official/features/league/presentation/bloc/subscription_bloc/subscription_bloc.dart';
 import 'package:fantavacanze_official/firebase_options.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -114,6 +124,7 @@ import 'package:hive/hive.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
 import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:purchases_flutter/purchases_flutter.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';

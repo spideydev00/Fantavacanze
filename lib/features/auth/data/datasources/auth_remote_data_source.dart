@@ -8,6 +8,7 @@ import 'package:fantavacanze_official/features/auth/data/models/user_model.dart'
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:purchases_flutter/purchases_flutter.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:fantavacanze_official/init_dependencies/init_dependencies.dart';
@@ -52,9 +53,9 @@ abstract interface class AuthRemoteDataSource {
 
   // USER DATA ACCESS
   Future<UserModel?> getCurrentUserData();
-  
+
   Future<UserModel> becomePremium();
-  
+
   Session? get currentSession;
 }
 
@@ -112,6 +113,8 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
 
       final userModel = UserModel.fromJson(combinedData)
           .copyWith(email: currentSession!.user.email);
+
+      await Purchases.logIn(userModel.id);
 
       String token = '';
 
@@ -270,6 +273,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   Future<void> signOut() async {
     try {
       await supabaseClient.auth.signOut();
+      await Purchases.logOut();
 
       _tokenSubscription?.cancel();
     } catch (e) {
@@ -498,23 +502,23 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       throw ServerException(_extractErrorMessage(e));
     }
   }
-  
- @override
-Future<UserModel> becomePremium() async {
-  try {
-    final userId = currentSession?.user.id;
 
-    if (userId == null) throw ServerException('Utente non autenticato');
+  @override
+  Future<UserModel> becomePremium() async {
+    try {
+      final userId = currentSession?.user.id;
 
-    // Chiama la funzione RPC 'become_premium' passando l'ID utente
-    final authUserResponse = await supabaseClient
-        .rpc('become_premium', params: {'p_user_id': userId});
-    
-    return UserModel.fromJson(authUserResponse).copyWith(
-      email: currentSession!.user.email,
-    );
-  } catch (e) {
-    throw ServerException(_extractErrorMessage(e));
+      if (userId == null) throw ServerException('Utente non autenticato');
+
+      // Chiama la funzione RPC 'become_premium' passando l'ID utente
+      final authUserResponse = await supabaseClient
+          .rpc('become_premium', params: {'p_user_id': userId});
+
+      return UserModel.fromJson(authUserResponse).copyWith(
+        email: currentSession!.user.email,
+      );
+    } catch (e) {
+      throw ServerException(_extractErrorMessage(e));
+    }
   }
-}
 }

@@ -14,9 +14,9 @@ import 'package:fantavacanze_official/features/league/domain/entities/individual
 import 'package:fantavacanze_official/features/league/domain/entities/league.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/rule/rule.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/team_participant.dart';
-import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc.dart';
-import 'package:fantavacanze_official/features/league/presentation/bloc/league_event.dart';
-import 'package:fantavacanze_official/features/league/presentation/bloc/league_state.dart';
+import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc/league_bloc.dart';
+import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc/league_event.dart';
+import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc/league_state.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/events/widgets/app_search_bar.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/events/widgets/event_preview_card.dart';
 import 'package:fantavacanze_official/core/widgets/buttons/gradient_option_button.dart';

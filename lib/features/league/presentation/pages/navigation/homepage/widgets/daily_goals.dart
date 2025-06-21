@@ -14,9 +14,9 @@ import 'package:fantavacanze_official/core/widgets/divider.dart';
 import 'package:fantavacanze_official/core/widgets/loader.dart';
 import 'package:fantavacanze_official/core/widgets/dialogs/premium_access_dialog.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/daily_challenge.dart';
-import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc.dart';
-import 'package:fantavacanze_official/features/league/presentation/bloc/league_event.dart';
-import 'package:fantavacanze_official/features/league/presentation/bloc/league_state.dart';
+import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc/league_bloc.dart';
+import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc/league_event.dart';
+import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc/league_state.dart';
 import 'package:shimmer/shimmer.dart';
 import 'daily_goal_card.dart';
 

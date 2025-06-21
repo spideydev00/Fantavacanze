@@ -9,9 +9,9 @@ import 'package:fantavacanze_official/core/widgets/info_container.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/individual_participant.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/league.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/team_participant.dart';
-import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc.dart';
-import 'package:fantavacanze_official/features/league/presentation/bloc/league_event.dart';
-import 'package:fantavacanze_official/features/league/presentation/bloc/league_state.dart';
+import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc/league_bloc.dart';
+import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc/league_event.dart';
+import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc/league_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 

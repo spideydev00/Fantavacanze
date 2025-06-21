@@ -9,7 +9,7 @@ import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/utils/show_snackbar.dart';
 import 'package:fantavacanze_official/core/widgets/become_premium_button.dart';
 // import 'package:fantavacanze_official/core/widgets/become_premium_button.dart';
-import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc.dart';
+import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc/league_bloc.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/dashboard/widgets/side_menu/league_dropdown.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/settings/privacy_policy.dart';
 import 'package:flutter/material.dart';
