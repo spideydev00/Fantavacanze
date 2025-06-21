@@ -1,6 +1,6 @@
 import 'dart:async';
+import 'package:fantavacanze_official/features/league/presentation/bloc/subscription_bloc/subscription_bloc.dart';
 import 'package:flutter/material.dart';
-import 'package:fantavacanze_official/core/localization/app_localizations.dart';
 import 'package:fantavacanze_official/core/cubits/app_league/app_league_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/app_navigation/app_navigation_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/app_theme/app_theme_cubit.dart';
@@ -11,13 +11,15 @@ import 'package:fantavacanze_official/features/auth/presentation/bloc/auth_bloc.
 import 'package:fantavacanze_official/features/games/presentation/bloc/never_have_i_ever/never_have_i_ever_bloc.dart';
 import 'package:fantavacanze_official/features/games/presentation/bloc/truth_or_dare/truth_or_dare_bloc.dart';
 import 'package:fantavacanze_official/features/games/presentation/bloc/word_bomb/word_bomb_bloc.dart';
-import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc.dart';
+import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc/league_bloc.dart';
 import 'package:fantavacanze_official/features/games/presentation/bloc/lobby/lobby_bloc.dart';
 import 'package:fantavacanze_official/init_dependencies/init_dependencies.dart';
 import 'package:fantavacanze_official/initial_page.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
+import 'package:purchases_flutter/purchases_flutter.dart';
 
 /// Key per mostrare SnackBar globali
 final GlobalKey<ScaffoldMessengerState> messengerKey =
@@ -45,6 +47,7 @@ void main() async {
         providers: [
           BlocProvider(create: (_) => serviceLocator<AuthBloc>()),
           BlocProvider(create: (_) => serviceLocator<LeagueBloc>()),
+          BlocProvider(create: (_) => serviceLocator<SubscriptionBloc>()),
           BlocProvider(create: (_) => serviceLocator<AppUserCubit>()),
           BlocProvider(create: (_) => serviceLocator<AppLeagueCubit>()),
           BlocProvider(create: (_) => serviceLocator<AppNavigationCubit>()),
@@ -72,6 +75,7 @@ class _MyAppState extends State<MyApp> {
   void initState() {
     super.initState();
     _initializeApp();
+    _listenToPremiumStatusChanges();
   }
 
   Future<void> _initializeApp() async {
@@ -91,6 +95,28 @@ class _MyAppState extends State<MyApp> {
     }
   }
 
+  void _listenToPremiumStatusChanges() {
+    Purchases.addCustomerInfoUpdateListener((customerInfo) {
+      // Check premium entitlement status
+      final entitlements = customerInfo.entitlements.active;
+
+      final isPremium = entitlements.containsKey('premium') &&
+          entitlements['premium']?.isActive == true;
+
+      final userState = context.read<AppUserCubit>().state;
+
+      if (userState is AppUserIsLoggedIn &&
+          userState.user.isPremium != isPremium) {
+        if (isPremium) {
+          context.read<AppUserCubit>().becomePremium();
+        } else {
+          // If your cubit has a method to remove premium, call it here
+          // Otherwise, you might need to add one: context.read<AppUserCubit>().removePremium();
+        }
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<AppThemeCubit, AppThemeState>(
@@ -104,11 +130,18 @@ class _MyAppState extends State<MyApp> {
           theme: AppTheme.getLightTheme(context),
           darkTheme: AppTheme.getDarkTheme(context),
           debugShowCheckedModeBanner: false,
-          
-          // Configurazione della localizzazione
-          locale: const Locale('it'),
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
-          supportedLocales: AppLocalizations.supportedLocales,
+          localizationsDelegates: const [
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          supportedLocales: const [
+            Locale('it', 'IT'),
+          ],
+          locale: const Locale(
+            'it',
+            'IT',
+          ),
         );
       },
     );

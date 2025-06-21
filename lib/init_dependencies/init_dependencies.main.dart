@@ -34,6 +34,8 @@ Future<void> initDependencies() async {
     _initAuth();
     _initLeague();
     _initGames();
+    await _initRevenueCat();
+    _initSubscription();
 
     // Register UUID generator
     serviceLocator.registerLazySingleton(() => const Uuid());
@@ -95,6 +97,83 @@ Future<void> initDependencies() async {
     // Rethrow to be caught by main()
     rethrow;
   }
+}
+
+Future<void> _initRevenueCat() async {
+  try {
+    // Initialize RevenueCat with your API keys
+    await Purchases.setLogLevel(LogLevel.debug); // Remove in production
+
+    // Get user ID if available
+    String? appUserId;
+
+    final appUserState = serviceLocator<AppUserCubit>().state;
+    if (appUserState is AppUserIsLoggedIn) {
+      appUserId = appUserState.user.id;
+    }
+
+    // Use the appropriate API key based on platform
+    if (Platform.isAndroid) {
+      await Purchases.configure(
+          PurchasesConfiguration(AppSecrets.revenueCatAndroidApiKey)
+            ..appUserID = appUserId);
+    } else if (Platform.isIOS) {
+      await Purchases.configure(
+          PurchasesConfiguration(AppSecrets.revenueCatIosApiKey)
+            ..appUserID = appUserId);
+    }
+
+    debugPrint("✅ RevenueCat initialized successfully");
+  } catch (e) {
+    debugPrint("Error initializing RevenueCat: $e");
+    rethrow;
+  }
+}
+
+// Add this function to register subscription dependencies
+void _initSubscription() {
+  // DataSources
+  serviceLocator.registerLazySingleton<SubscriptionRemoteDataSource>(
+    () => SubscriptionRemoteDataSourceImpl(
+      supabaseClient: serviceLocator(),
+    ),
+  );
+
+  // Repositories
+  serviceLocator.registerLazySingleton<SubscriptionRepository>(
+    () => SubscriptionRepositoryImpl(
+      remoteDataSource: serviceLocator(),
+      connectionChecker: serviceLocator(),
+    ),
+  );
+
+  // Use cases
+  serviceLocator.registerLazySingleton(
+    () => GetProducts(repository: serviceLocator()),
+  );
+
+  serviceLocator.registerLazySingleton(
+    () => PurchaseProduct(repository: serviceLocator()),
+  );
+
+  serviceLocator.registerLazySingleton(
+    () => RestorePurchases(repository: serviceLocator()),
+  );
+
+  serviceLocator.registerLazySingleton(
+    () => CheckPremiumStatus(repository: serviceLocator()),
+  );
+
+  // Bloc
+  serviceLocator.registerFactory(
+    () => SubscriptionBloc(
+      getProducts: serviceLocator(),
+      purchaseProduct: serviceLocator(),
+      restorePurchases: serviceLocator(),
+      checkPremiumStatus: serviceLocator(),
+      appUserCubit: serviceLocator(),
+    ),
+  );
 }
 
 /// Initialize Hive with proper error handling
