@@ -40,6 +40,7 @@ abstract interface class AuthRemoteDataSource {
   Future<void> updatePassword(
       String oldPassword, String newPassword, String captchaToken);
   Future<void> deleteAccount();
+  Future<UserModel> markReviewLeft();
 
   // CONSENTS MANAGEMENT
   Future<void> removeConsents({
@@ -351,6 +352,29 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     try {
       await supabaseClient.rpc('delete_user_account');
       _tokenSubscription?.cancel();
+    } catch (e) {
+      throw ServerException(_extractErrorMessage(e));
+    }
+  }
+
+  // ------------------ MARK REVIEW LEFT ------------------ //
+  @override
+  Future<UserModel> markReviewLeft() async {
+    try {
+      final userId = currentSession?.user.id;
+
+      if (userId == null) throw ServerException('Utente non autenticato');
+
+      final authUserResponse = await supabaseClient
+          .from('profiles')
+          .update({'has_left_review': true})
+          .eq('id', userId)
+          .select()
+          .single();
+
+      return UserModel.fromJson(authUserResponse).copyWith(
+        email: currentSession!.user.email,
+      );
     } catch (e) {
       throw ServerException(_extractErrorMessage(e));
     }

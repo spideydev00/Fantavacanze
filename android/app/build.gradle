@@ -39,7 +39,7 @@ android {
 
     defaultConfig {
         applicationId = "com.spideyDev.fantavacanze"
-        minSdkVersion = 23
+        minSdkVersion = 24
         targetSdkVersion = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName

@@ -31,11 +31,22 @@ Future<void> initDependencies() async {
     final sharedPreferences = await SharedPreferences.getInstance();
     serviceLocator.registerSingleton<SharedPreferences>(sharedPreferences);
 
+    // Register InAppReview instance
+    serviceLocator.registerLazySingleton<InAppReview>(
+      () => InAppReview.instance,
+    );
+
+    // Register ReviewService as a singleton
+    serviceLocator.registerLazySingleton<ReviewService>(
+      () => ReviewService(
+        preferences: serviceLocator<SharedPreferences>(),
+        inAppReview: serviceLocator<InAppReview>(),
+      ),
+    );
+
     _initAuth();
     _initLeague();
     _initGames();
-    await _initRevenueCat();
-    _initSubscription();
 
     // Register UUID generator
     serviceLocator.registerLazySingleton(() => const Uuid());
@@ -58,6 +69,7 @@ Future<void> initDependencies() async {
           updateGender: serviceLocator(),
           removeConsents: serviceLocator(),
           becomePremium: serviceLocator(),
+          markReviewLeft: serviceLocator(),
         ),
       )
       //2. navigation cubit
@@ -91,6 +103,9 @@ Future<void> initDependencies() async {
         ),
       );
 
+    await _initRevenueCat();
+    _initSubscription();
+
     debugPrint("⬆ Dipendenze inizializzate correttamente con get_it");
   } catch (e) {
     debugPrint("Errore di inizializzazione delle dipendenze: $e");
@@ -102,12 +117,13 @@ Future<void> initDependencies() async {
 Future<void> _initRevenueCat() async {
   try {
     // Initialize RevenueCat with your API keys
-    await Purchases.setLogLevel(LogLevel.debug); // Remove in production
+    await Purchases.setLogLevel(LogLevel.debug);
 
     // Get user ID if available
     String? appUserId;
 
     final appUserState = serviceLocator<AppUserCubit>().state;
+
     if (appUserState is AppUserIsLoggedIn) {
       appUserId = appUserState.user.id;
     }
@@ -305,6 +321,9 @@ void _initAuth() {
     )
     ..registerFactory(
       () => BecomePremium(authRepository: serviceLocator()),
+    )
+    ..registerFactory(
+      () => MarkReviewLeft(authRepository: serviceLocator()),
     )
     //bloc
     ..registerLazySingleton(

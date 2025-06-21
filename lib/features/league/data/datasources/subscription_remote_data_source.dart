@@ -41,6 +41,7 @@ class SubscriptionRemoteDataSourceImpl implements SubscriptionRemoteDataSource {
     try {
       // Find the package with the given productId
       final offerings = await Purchases.getOfferings();
+
       if (offerings.current == null) {
         throw ServerException('No offerings available');
       }
@@ -85,8 +86,8 @@ class SubscriptionRemoteDataSourceImpl implements SubscriptionRemoteDataSource {
 
       // Check if premium entitlement is active
       final entitlements = customerInfo.entitlements.active;
-      final isPremium = entitlements.containsKey('premium') &&
-          entitlements['premium']?.isActive == true;
+      final isPremium = entitlements.containsKey('premium_benefit') &&
+          entitlements['premium_benefit']?.isActive == true;
 
       return isPremium;
     } catch (e) {

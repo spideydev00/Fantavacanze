@@ -100,8 +100,8 @@ class _MyAppState extends State<MyApp> {
       // Check premium entitlement status
       final entitlements = customerInfo.entitlements.active;
 
-      final isPremium = entitlements.containsKey('premium') &&
-          entitlements['premium']?.isActive == true;
+      final isPremium = entitlements.containsKey('premium_benefit') &&
+          entitlements['premium_benefit']?.isActive == true;
 
       final userState = context.read<AppUserCubit>().state;
 
