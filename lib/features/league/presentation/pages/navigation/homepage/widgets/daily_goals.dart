@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math' show min;
 
 import 'package:flutter/material.dart';
@@ -30,11 +31,24 @@ class DailyGoals extends StatefulWidget {
 class _DailyGoalsState extends State<DailyGoals> {
   List<DailyChallenge>? _allChallenges;
   bool _isLoading = false;
+  StreamSubscription? _userSubscription;
 
   @override
   void initState() {
     super.initState();
     _loadDailyChallenges();
+
+    // Listen to premium status changes
+    _userSubscription = context.read<AppUserCubit>().stream.listen((state) {
+      if (state is AppUserIsLoggedIn && mounted) {
+        final prevState = context.read<AppUserCubit>().state;
+        // If premium status changed, reload challenges
+        if (prevState is AppUserIsLoggedIn &&
+            prevState.user.isPremium != state.user.isPremium) {
+          _loadDailyChallenges();
+        }
+      }
+    });
   }
 
   @override
@@ -64,6 +78,12 @@ class _DailyGoalsState extends State<DailyGoals> {
             ),
           );
     }
+  }
+
+  @override
+  void dispose() {
+    _userSubscription?.cancel();
+    super.dispose();
   }
 
   @override
@@ -239,13 +259,6 @@ class _DailyGoalsState extends State<DailyGoals> {
         onAdsBtnTapped: lockType == LockType.ads
             ? () => AdHelper().showRewardedAd(context)
             : null,
-        onPremiumBtnTapped: () {
-          // TODO: Implementare nuovo sistema premium con SDK alternativo
-          showSnackBar(
-            "Funzionalità premium presto disponibili!",
-            color: ColorPalette.premiumUser,
-          );
-        },
       ),
     ).then((granted) {
       if (granted == true && lockType == LockType.ads) {

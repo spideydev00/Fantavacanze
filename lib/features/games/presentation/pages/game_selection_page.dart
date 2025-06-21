@@ -158,14 +158,6 @@ class _GameSelectionPageState extends State<GameSelectionPage> {
                           isPremium: !isPremiumUser,
                           isTrialAvailable: hasWordBombTrial,
                           showInfoIcon: true,
-                          onPremiumRequested: () {
-                            // TODO: Implementare nuovo sistema premium con SDK alternativo
-                            showSpecificSnackBar(
-                              context,
-                              "Funzionalità premium presto disponibili!",
-                              color: ColorPalette.premiumUser,
-                            );
-                          },
                           onInfoIconTapped: () {
                             showDialog(
                               context: context,
@@ -307,7 +299,7 @@ class _GameSelectionPageState extends State<GameSelectionPage> {
                                 _inviteCodeController.text
                                     .toUpperCase()
                                     .endsWith('B');
-                            
+
                             if (_inviteCodeController.text.isNotEmpty) {
                               if (isWordBombInviteCode &&
                                   !hasWordBombTrial &&
@@ -320,18 +312,11 @@ class _GameSelectionPageState extends State<GameSelectionPage> {
                                     title: 'Accesso Premium Richiesto',
                                     description:
                                         'Per accedere a una lobby Word Bomb devi essere un utente premium!',
-                                    onPremiumBtnTapped: () {
-                                      showSpecificSnackBar(
-                                        context,
-                                        "Funzionalità premium presto disponibili!",
-                                        color: ColorPalette.premiumUser,
-                                      );
-                                    },
                                   ),
                                 );
                                 return;
                               }
-                              
+
                               context.read<LobbyBloc>().add(
                                     JoinSessionRequested(
                                       _inviteCodeController.text.trim(),

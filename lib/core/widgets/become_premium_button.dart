@@ -2,15 +2,13 @@ import 'dart:ui';
 
 import 'package:fantavacanze_official/core/extensions/context_extension.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
+import 'package:fantavacanze_official/core/utils/show_premium_paywall.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 class BecomePremiumButton extends StatelessWidget {
-  final VoidCallback onPressed;
-
   const BecomePremiumButton({
     super.key,
-    required this.onPressed,
   });
 
   @override
@@ -53,7 +51,9 @@ class BecomePremiumButton extends StatelessWidget {
                 "assets/images/icons/homepage_icons/premium-icon.svg",
                 width: 28,
               ),
-              onPressed: onPressed,
+              onPressed: () {
+                showPremiumPaywall(context);
+              },
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFFf9af48).withValues(alpha: 0.8),
                 fixedSize: Size(

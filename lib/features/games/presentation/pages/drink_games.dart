@@ -134,14 +134,6 @@ class DrinkGames extends StatelessWidget {
 
               return granted;
             },
-            // Premium: chiudo con false e mostro snack
-            onPremiumBtnTapped: () {
-              // TODO: Implementare nuovo sistema premium con SDK alternativo
-              showSnackBar(
-                "Funzionalità premium presto disponibili!",
-                color: ColorPalette.premiumUser,
-              );
-            },
           ),
         ) ??
         false;

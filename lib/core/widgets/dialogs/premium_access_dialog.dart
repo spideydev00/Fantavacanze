@@ -1,3 +1,4 @@
+import 'package:fantavacanze_official/core/utils/show_premium_paywall.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
@@ -168,6 +169,9 @@ class _PremiumAccessDialogState extends State<PremiumAccessDialog>
             HapticFeedback.mediumImpact();
             // chiudo dialog restituendo false (no ads)
             Navigator.of(context).pop(false);
+
+            showPremiumPaywall(context);
+
             widget.onPremiumBtnTapped?.call();
           },
         ),
@@ -191,6 +195,9 @@ class _PremiumAccessDialogState extends State<PremiumAccessDialog>
               if (_isLoading) return;
               HapticFeedback.mediumImpact();
               Navigator.of(context).pop(false);
+
+              showPremiumPaywall(context);
+
               widget.onPremiumBtnTapped?.call();
             },
           ),

@@ -76,6 +76,7 @@ dependencies:
   flutter_localizations:
     sdk: flutter
   purchases_flutter: ^8.10.3
+  purchases_ui_flutter: ^8.10.3
 
 dev_dependencies:
   flutter_test:

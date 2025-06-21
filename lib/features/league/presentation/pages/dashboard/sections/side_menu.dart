@@ -5,8 +5,6 @@ import 'package:fantavacanze_official/core/cubits/app_league/app_league_cubit.da
 import 'package:fantavacanze_official/core/cubits/app_theme/app_theme_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit.dart';
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
-import 'package:fantavacanze_official/core/theme/colors.dart';
-import 'package:fantavacanze_official/core/utils/show_snackbar.dart';
 import 'package:fantavacanze_official/core/widgets/become_premium_button.dart';
 // import 'package:fantavacanze_official/core/widgets/become_premium_button.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc/league_bloc.dart';
@@ -89,14 +87,7 @@ class SideMenu extends StatelessWidget {
                                     vertical: ThemeSizes.md),
                                 child: CustomDivider(text: "Sostienici"),
                               ),
-                              // TODO: Implementare nuovo sistema premium con SDK alternativo
-                              BecomePremiumButton(onPressed: () {
-                                // Premium functionality disabled
-                                showSnackBar(
-                                  "Funzionalità premium presto disponibili!",
-                                  color: ColorPalette.premiumUser,
-                                );
-                              }),
+                              BecomePremiumButton(),
                               const SizedBox(height: 20),
                             ],
                           );
