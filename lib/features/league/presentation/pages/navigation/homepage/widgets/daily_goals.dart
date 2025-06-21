@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:math' show min;
 
+import 'package:fantavacanze_official/core/services/review_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -18,6 +19,7 @@ import 'package:fantavacanze_official/features/league/domain/entities/daily_chal
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc/league_bloc.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc/league_event.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc/league_state.dart';
+import 'package:get_it/get_it.dart';
 import 'package:shimmer/shimmer.dart';
 import 'daily_goal_card.dart';
 
@@ -32,6 +34,7 @@ class _DailyGoalsState extends State<DailyGoals> {
   List<DailyChallenge>? _allChallenges;
   bool _isLoading = false;
   StreamSubscription? _userSubscription;
+  final _reviewService = GetIt.instance<ReviewService>();
 
   @override
   void initState() {
@@ -78,6 +81,18 @@ class _DailyGoalsState extends State<DailyGoals> {
             ),
           );
     }
+  }
+
+  void _checkAndRequestReview() {
+    // Add a small delay so the snackbar for challenge refresh can be seen first
+    Future.delayed(const Duration(milliseconds: 1000), () {
+      if (mounted) {
+        _reviewService.checkAndRequestReview(
+          context,
+          context.read<AppUserCubit>(),
+        );
+      }
+    });
   }
 
   @override
@@ -146,6 +161,8 @@ class _DailyGoalsState extends State<DailyGoals> {
         "Obiettivo aggiornato con successo!",
         color: ColorPalette.success,
       );
+
+      _checkAndRequestReview();
     }
   }
 

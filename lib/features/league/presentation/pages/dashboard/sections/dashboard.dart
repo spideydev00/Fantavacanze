@@ -7,6 +7,7 @@ import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/notification_count/notification_count_cubit.dart';
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/services/ad_helper.dart';
+import 'package:fantavacanze_official/core/services/review_service.dart';
 import 'package:fantavacanze_official/core/widgets/dialogs/notification_dialog.dart';
 import 'package:fantavacanze_official/core/widgets/notification_badge.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc/league_bloc.dart';
@@ -23,6 +24,7 @@ import 'package:fantavacanze_official/core/constants/constants.dart';
 import 'package:fantavacanze_official/core/cubits/app_navigation/app_navigation_cubit.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/dashboard/sections/bottom_navigation_bar.dart';
+import 'package:get_it/get_it.dart';
 
 class DashboardScreen extends StatefulWidget {
   static const String routeName = '/dashboard';
@@ -42,6 +44,7 @@ class _DashboardScreenState extends State<DashboardScreen>
     with SingleTickerProviderStateMixin {
   bool isSideMenuOpen = false;
   AdHelper? _adHelper;
+  final _reviewService = GetIt.instance<ReviewService>();
 
   late AnimationController _animationController;
   late Animation<double> animation;
@@ -69,6 +72,7 @@ class _DashboardScreenState extends State<DashboardScreen>
     );
 
     _loadAds();
+    _checkAndRequestReview();
 
     context.read<LeagueBloc>().add(GetNotificationsEvent());
     // Ascolto notifiche
@@ -106,6 +110,13 @@ class _DashboardScreenState extends State<DashboardScreen>
     if (mounted) {
       adHelper.startAdTimer(context);
     }
+  }
+
+  void _checkAndRequestReview() {
+    _reviewService.checkAndRequestReview(
+      context,
+      context.read<AppUserCubit>(),
+    );
   }
 
   @override

@@ -9,6 +9,7 @@ class User {
   final String authProvider;
   final String? fcmToken;
   final bool isWordBombTrialAvailable;
+  final bool hasLeftReview;
 
   const User({
     required this.id,
@@ -21,6 +22,7 @@ class User {
     this.authProvider = '',
     this.fcmToken,
     required this.isWordBombTrialAvailable,
+    this.hasLeftReview = false,
   });
 
   User copyWith({
@@ -34,6 +36,7 @@ class User {
     String? authProvider,
     String? fcmToken,
     bool? isWordBombTrialAvailable,
+    bool? hasLeftReview,
   }) {
     return User(
       id: id ?? this.id,
@@ -47,6 +50,7 @@ class User {
       fcmToken: fcmToken ?? this.fcmToken,
       isWordBombTrialAvailable:
           isWordBombTrialAvailable ?? this.isWordBombTrialAvailable,
+      hasLeftReview: hasLeftReview ?? this.hasLeftReview,
     );
   }
 }

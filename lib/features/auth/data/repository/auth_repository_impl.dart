@@ -285,8 +285,24 @@ class AuthRepositoryImpl implements AuthRepository {
         return left(
             Failure("Connessione a internet assente. Riprova più tardi."));
       }
-      
+
       final res = await authRemoteDataSource.becomePremium();
+
+      return right(res);
+    } on ServerException catch (e) {
+      return left(Failure(e.message));
+    }
+  }
+
+  @override
+  Future<Either<Failure, User>> markReviewLeft() async {
+    try {
+      if (!await connectionChecker.isConnected) {
+        return left(
+            Failure("Connessione a internet assente. Riprova più tardi."));
+      }
+
+      final res = await authRemoteDataSource.markReviewLeft();
 
       return right(res);
     } on ServerException catch (e) {
