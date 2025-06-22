@@ -40,20 +40,20 @@ class AdHelper {
 
   // --- Ad Unit IDs ---
   static String get _interstitialUnitId {
-    if (true) {
-      // Change to a proper environment check later
-      return testInterstitialAdUnitId;
-    }
+    // if (true) {
+    //   // Change to a proper environment check later
+    //   return testInterstitialAdUnitId;
+    // }
     if (Platform.isAndroid) return AppSecrets.androidInterstitialAdUnitId;
     if (Platform.isIOS) return AppSecrets.iosInterstitialAdUnitId;
     throw UnsupportedError('Unsupported platform');
   }
 
   static String get _rewardedUnitId {
-    if (true) {
-      // Change to a proper environment check later
-      return testRewardedAdUnitId;
-    }
+    // if (true) {
+    //   // Change to a proper environment check later
+    //   return testRewardedAdUnitId;
+    // }
 
     if (Platform.isAndroid) return AppSecrets.androidRewardedAdUnitId;
     if (Platform.isIOS) return AppSecrets.iosRewardedAdUnitId;
