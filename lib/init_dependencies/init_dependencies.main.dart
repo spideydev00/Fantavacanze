@@ -47,6 +47,7 @@ Future<void> initDependencies() async {
     _initAuth();
     _initLeague();
     _initGames();
+    // _initAlbum();
 
     // Register UUID generator
     serviceLocator.registerLazySingleton(() => const Uuid());
@@ -638,3 +639,107 @@ void _initGames() {
       ),
     );
 }
+
+// void _initAlbum() {
+//   try {
+//     // Register Hive adapters for album models
+//     Hive.registerAdapter(AlbumModelAdapter());
+//     Hive.registerAdapter(PhotoModelAdapter());
+//     Hive.registerAdapter(GroupPhotoModelAdapter());
+//     Hive.registerAdapter(VacationPlaceModelAdapter());
+//     Hive.registerAdapter(AlbumFormatAdapter());
+//     Hive.registerAdapter(AlbumStatusAdapter());
+//     Hive.registerAdapter(PhotoSourceAdapter());
+
+//     // Open Hive box for albums
+//     final albumsBox = Hive.openBox<AlbumModel>('albums_box');
+
+//     serviceLocator.registerSingletonAsync<Box<AlbumModel>>(
+//       () => albumsBox,
+//     );
+
+//     // Data sources
+//     serviceLocator
+//       ..registerFactory<AlbumRemoteDataSource>(
+//         () => AlbumRemoteDataSourceImpl(
+//           supabaseClient: serviceLocator(),
+//           uuid: serviceLocator(),
+//         ),
+//       )
+//       ..registerFactory<AlbumLocalDataSource>(
+//         () => AlbumLocalDataSourceImpl(
+//           albumsBox: serviceLocator(),
+//         ),
+//       );
+
+//     // Repository
+//     serviceLocator.registerFactory<AlbumRepository>(
+//       () => AlbumRepositoryImpl(
+//         remoteDataSource: serviceLocator(),
+//         localDataSource: serviceLocator(),
+//         connectionChecker: serviceLocator(),
+//       ),
+//     );
+
+//     // Use cases
+//     serviceLocator
+//       ..registerFactory(() => CreateAlbum(albumRepository: serviceLocator()))
+//       ..registerFactory(() => GetAlbum(albumRepository: serviceLocator()))
+//       ..registerFactory(() => GetUserAlbums(albumRepository: serviceLocator()))
+//       ..registerFactory(() => UpdateAlbum(albumRepository: serviceLocator()))
+//       ..registerFactory(() => DeleteAlbum(albumRepository: serviceLocator()))
+//       ..registerFactory(
+//           () => AddPhotoFromMemory(albumRepository: serviceLocator()))
+//       ..registerFactory(
+//           () => AddPhotoFromFile(albumRepository: serviceLocator()))
+//       ..registerFactory(
+//           () => AddGroupPhotoFromMemory(albumRepository: serviceLocator()))
+//       ..registerFactory(
+//           () => AddGroupPhotoFromFile(albumRepository: serviceLocator()))
+//       ..registerFactory(() => RemovePhoto(albumRepository: serviceLocator()))
+//       ..registerFactory(
+//           () => RemoveGroupPhoto(albumRepository: serviceLocator()))
+//       ..registerFactory(
+//           () => GenerateAlbumPdf(albumRepository: serviceLocator()))
+//       ..registerFactory(
+//           () => GetDownloadLink(albumRepository: serviceLocator()))
+//       ..registerFactory(() => SendToGelato(albumRepository: serviceLocator()))
+//       ..registerFactory(
+//           () => FetchOrderStatus(albumRepository: serviceLocator()))
+//       ..registerFactory(
+//           () => CreatePaymentIntent(albumRepository: serviceLocator()))
+//       ..registerFactory(
+//           () => UpdateVacationPlace(albumRepository: serviceLocator()));
+
+//     // Bloc
+//     serviceLocator.registerFactory(
+//       () => AlbumBloc(
+//         createAlbum: serviceLocator(),
+//         getAlbum: serviceLocator(),
+//         getUserAlbums: serviceLocator(),
+//         updateAlbum: serviceLocator(),
+//         deleteAlbum: serviceLocator(),
+//         addPhotoFromMemory: serviceLocator(),
+//         addPhotoFromFile: serviceLocator(),
+//         addGroupPhotoFromMemory: serviceLocator(),
+//         addGroupPhotoFromFile: serviceLocator(),
+//         removePhoto: serviceLocator(),
+//         removeGroupPhoto: serviceLocator(),
+//         generateAlbumPdf: serviceLocator(),
+//         getDownloadLink: serviceLocator(),
+//         sendToGelato: serviceLocator(),
+//         fetchOrderStatus: serviceLocator(),
+//         createPaymentIntent: serviceLocator(),
+//         updateVacationPlace: serviceLocator(),
+//         appUserCubit: serviceLocator(),
+//         appLeagueCubit: serviceLocator(),
+//       ),
+//     );
+
+//     debugPrint("📔 Album feature dependencies initialized successfully");
+//   } catch (e) {
+//     debugPrint("⚠️ Error initializing album dependencies: $e");
+//     // Propagate the error up
+//     rethrow;
+//   }
+// }
