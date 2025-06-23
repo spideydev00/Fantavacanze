@@ -295,14 +295,14 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<Either<Failure, User>> markReviewLeft() async {
+  Future<Either<Failure, User>> removePremium() async {
     try {
       if (!await connectionChecker.isConnected) {
         return left(
             Failure("Connessione a internet assente. Riprova più tardi."));
       }
 
-      final res = await authRemoteDataSource.markReviewLeft();
+      final res = await authRemoteDataSource.removePremium();
 
       return right(res);
     } on ServerException catch (e) {

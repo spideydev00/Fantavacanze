@@ -12,7 +12,6 @@ class PremiumAccessDialog extends StatefulWidget {
   final String? title;
   final String? description;
   final Future<bool> Function()? onAdsBtnTapped;
-  final VoidCallback? onPremiumBtnTapped;
 
   const PremiumAccessDialog({
     super.key,
@@ -20,7 +19,6 @@ class PremiumAccessDialog extends StatefulWidget {
     this.title,
     this.description,
     this.onAdsBtnTapped,
-    this.onPremiumBtnTapped,
   });
 
   @override
@@ -164,15 +162,16 @@ class _PremiumAccessDialogState extends State<PremiumAccessDialog>
           icon: Icons.star,
           primaryColor: ColorPalette.premiumGradient[0],
           secondaryColor: ColorPalette.premiumGradient[2],
-          onTap: () {
+          onTap: () async {
             if (_isLoading) return;
             HapticFeedback.mediumImpact();
-            // chiudo dialog restituendo false (no ads)
-            Navigator.of(context).pop(false);
 
-            showPremiumPaywall(context);
+            // chiudi il dialogo ma passa true se l'acquisto è andato a buon fine
+            final isPremium = await showPremiumPaywall(context);
 
-            widget.onPremiumBtnTapped?.call();
+            if (context.mounted) {
+              Navigator.of(context).pop(isPremium);
+            }
           },
         ),
       ),
@@ -191,14 +190,16 @@ class _PremiumAccessDialogState extends State<PremiumAccessDialog>
             icon: Icons.star,
             primaryColor: ColorPalette.premiumGradient[0],
             secondaryColor: ColorPalette.premiumGradient[2],
-            onTap: () {
+            onTap: () async {
               if (_isLoading) return;
               HapticFeedback.mediumImpact();
-              Navigator.of(context).pop(false);
 
-              showPremiumPaywall(context);
+              // Chiudi il dialogo e attendi l'acquisto
+              final isPremium = await showPremiumPaywall(context);
 
-              widget.onPremiumBtnTapped?.call();
+              if (context.mounted) {
+                Navigator.of(context).pop(isPremium);
+              }
             },
           ),
         ),

@@ -4,7 +4,7 @@ import 'package:fantavacanze_official/core/use-case/usecase.dart';
 import 'package:fantavacanze_official/features/auth/domain/entities/user.dart';
 import 'package:fantavacanze_official/features/auth/domain/use-cases/become_premium.dart';
 import 'package:fantavacanze_official/features/auth/domain/use-cases/get_current_user.dart';
-import 'package:fantavacanze_official/features/auth/domain/use-cases/mark_review_left.dart';
+import 'package:fantavacanze_official/features/auth/domain/use-cases/remove_premium.dart';
 import 'package:fantavacanze_official/features/auth/domain/use-cases/sign_out.dart';
 import 'package:fantavacanze_official/features/auth/domain/use-cases/update_display_name.dart';
 import 'package:fantavacanze_official/features/auth/domain/use-cases/update_gender.dart';
@@ -25,7 +25,7 @@ class AppUserCubit extends Cubit<AppUserState> {
   final RemoveConsents _removeConsents;
   final UpdateGender _updateGender;
   final BecomePremium _becomePremium;
-  final MarkReviewLeft _markReviewLeft;
+  final RemovePremium _removePremium;
 
   AppUserCubit({
     required GetCurrentUser getCurrentUser,
@@ -36,7 +36,7 @@ class AppUserCubit extends Cubit<AppUserState> {
     required RemoveConsents removeConsents,
     required UpdateGender updateGender,
     required BecomePremium becomePremium,
-    required MarkReviewLeft markReviewLeft,
+    required RemovePremium removePremium,
   })  : _getCurrentUser = getCurrentUser,
         _signOut = signOut,
         _updateDisplayName = updateDisplayName,
@@ -45,7 +45,7 @@ class AppUserCubit extends Cubit<AppUserState> {
         _removeConsents = removeConsents,
         _updateGender = updateGender,
         _becomePremium = becomePremium,
-        _markReviewLeft = markReviewLeft,
+        _removePremium = removePremium,
         super(AppUserInitial());
 
   // Gets current user when app starts
@@ -228,12 +228,12 @@ class AppUserCubit extends Cubit<AppUserState> {
     }
   }
 
-  // Marks that the user has left a review
-  Future<void> markReviewLeft() async {
+  // Removes premium status from user
+  Future<void> removePremium() async {
     if (state is AppUserIsLoggedIn) {
       final currentState = state as AppUserIsLoggedIn;
 
-      final res = await _markReviewLeft.call(NoParams());
+      final res = await _removePremium.call(NoParams());
 
       res.fold(
         (failure) => emit(AppUserIsLoggedIn(

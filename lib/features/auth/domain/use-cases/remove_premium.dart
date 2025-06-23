@@ -4,15 +4,13 @@ import 'package:fantavacanze_official/features/auth/domain/entities/user.dart';
 import 'package:fantavacanze_official/features/auth/domain/repository/auth_repository.dart';
 import 'package:fpdart/fpdart.dart';
 
-class MarkReviewLeft implements Usecase<User, NoParams> {
-  final AuthRepository _authRepository;
+class RemovePremium implements Usecase<void, NoParams> {
+  final AuthRepository authRepository;
 
-  MarkReviewLeft({
-    required AuthRepository authRepository,
-  }) : _authRepository = authRepository;
+  RemovePremium({required this.authRepository});
 
   @override
-  Future<Either<Failure, User>> call(NoParams params) {
-    return _authRepository.markReviewLeft();
+  Future<Either<Failure, User>> call(NoParams params) async {
+    return await authRepository.removePremium();
   }
 }

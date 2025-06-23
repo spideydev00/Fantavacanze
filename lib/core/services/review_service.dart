@@ -25,7 +25,7 @@ class ReviewService {
 
       final userState = userCubit.state;
 
-      if (userState is AppUserIsLoggedIn && !userState.user.hasLeftReview) {
+      if (userState is AppUserIsLoggedIn) {
         final lastRequestDate =
             _preferences.getInt('last_review_request_date') ?? 0;
 
@@ -41,9 +41,6 @@ class ReviewService {
 
             // Save last request date
             await _preferences.setInt('last_review_request_date', now);
-
-            // Mark user as having left review
-            await userCubit.markReviewLeft();
 
             // Show review dialog
             await _inAppReview.requestReview();

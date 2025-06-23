@@ -11,8 +11,11 @@ import 'package:fantavacanze_official/core/widgets/loader.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/daily_challenge_notification.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/notification.dart'
     as app_notification;
+import 'package:fantavacanze_official/features/league/presentation/bloc/daily_challenges_bloc/daily_challenges_bloc.dart';
+import 'package:fantavacanze_official/features/league/presentation/bloc/daily_challenges_bloc/daily_challenges_event.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc/league_bloc.dart';
-import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc/league_event.dart';
+import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc/league_event.dart'
+    hide ApproveDailyChallengeEvent;
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc/league_state.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/notifications/widgets/notification_card.dart';
 import 'package:flutter/material.dart';
@@ -253,7 +256,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
     // Mark as processing immediately to provide instant feedback
     _markNotificationAsProcessing(notification.id);
 
-    context.read<LeagueBloc>().add(
+    context.read<DailyChallengesBloc>().add(
           ApproveDailyChallengeEvent(
             notificationId: notification.id,
           ),
@@ -265,7 +268,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
     // Mark as processing immediately to provide instant feedback
     _markNotificationAsProcessing(notification.id);
 
-    context.read<LeagueBloc>().add(
+    context.read<DailyChallengesBloc>().add(
           RejectDailyChallengeEvent(
             notificationId: notification.id,
             challengeId: notification.challengeId,
