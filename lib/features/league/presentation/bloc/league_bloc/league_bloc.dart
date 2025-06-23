@@ -163,16 +163,10 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
     on<RemoveParticipantsEvent>(_onRemoveParticipants);
     on<UpdateLeagueInfoEvent>(_onUpdateLeagueInfo);
     on<DeleteLeagueEvent>(_onDeleteLeague);
-    on<GetDailyChallengesEvent>(_onGetDailyChallenges);
-    on<MarkChallengeAsCompletedEvent>(_onMarkChallengeAsCompleted);
-    on<RefreshDailyChallengeEvent>(_onRefreshDailyChallenge);
     on<ListenToNotificationEvent>(_onListenToNotification);
     on<GetNotificationsEvent>(_onGetNotifications);
     on<MarkNotificationAsReadEvent>(_onMarkNotificationAsRead);
     on<DeleteNotificationEvent>(_onDeleteNotification);
-    on<ApproveDailyChallengeEvent>(_onApproveDailyChallenge);
-    on<RejectDailyChallengeEvent>(_onRejectDailyChallenge);
-    on<UnlockDailyChallengeEvent>(_onUnlockDailyChallenge);
     on<LeagueResetStateEvent>((event, emit) {
       emit(LeagueInitial());
     });
@@ -870,109 +864,6 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
       },
     );
   }
-
-  // =====================================================================
-  // DAILY CHALLENGES OPERATIONS
-  // =====================================================================
-
-  // G E T   D A I L Y   C H A L L E N G E S
-  Future<void> _onGetDailyChallenges(
-    GetDailyChallengesEvent event,
-    Emitter<LeagueState> emit,
-  ) async {
-    emit(LeagueLoading());
-
-    final result = await getDailyChallenges.call(
-      GetDailyChallengesParams(
-        userId: event.userId,
-        leagueId: event.leagueId,
-      ),
-    );
-
-    result.fold(
-      (failure) => emit(LeagueError(message: failure.message)),
-      (challenges) => emit(DailyChallengesLoaded(challenges: challenges)),
-    );
-  }
-
-  void _onUnlockDailyChallenge(
-    UnlockDailyChallengeEvent event,
-    Emitter<LeagueState> emit,
-  ) async {
-    emit(LeagueLoading());
-
-    final result = await unlockDailyChallenge.call(
-      UnlockDailyChallengeParams(
-        challengeId: event.challengeId,
-        primaryPosition: event.primaryPosition,
-        leagueId: event.leagueId,
-        isUnlocked: event.isUnlocked,
-      ),
-    );
-
-    result.fold(
-      (failure) => emit(LeagueError(message: failure.message)),
-      (challenge) => emit(ChallengeUnlocked()),
-    );
-  }
-
-  // M A R K   C H A L L E N G E   A S   C O M P L E T E D
-  void _onMarkChallengeAsCompleted(
-    MarkChallengeAsCompletedEvent event,
-    Emitter<LeagueState> emit,
-  ) async {
-    // First emit loading state
-    emit(LeagueLoading());
-
-    // This allows the UI to update before the server responds
-    emit(ChallengeMarkedAsCompleted(challenge: event.challenge));
-
-    // Now call the repository to persist the change
-    final result = await markChallengeAsCompleted.call(
-      MarkChallengeAsCompletedParams(
-        challenge: event.challenge,
-        userId: event.userId,
-        league: event.league,
-      ),
-    );
-
-    // Handle any errors from the repository
-    result.fold(
-      (failure) => emit(LeagueError(message: failure.message)),
-      (_) {
-        // If admin completed the challenge, also refresh the league to get updated events
-        if (event.league.admins.contains(event.userId)) {
-          // Fetch updated league data to refresh events
-          add(GetLeagueEvent(leagueId: event.league.id));
-        }
-      },
-    );
-  }
-
-  // R E F R E S H   D A I L Y   C H A L L E N G E
-  Future<void> _onRefreshDailyChallenge(
-    RefreshDailyChallengeEvent event,
-    Emitter<LeagueState> emit,
-  ) async {
-    emit(LeagueLoading());
-
-    final result = await updateChallengeRefreshStatus(
-      UpdateChallengeRefreshStatusParams(
-        challengeId: event.challengeId,
-        userId: event.userId,
-        isRefreshed: true,
-      ),
-    );
-
-    result.fold(
-      (failure) => emit(LeagueError(message: failure.message)),
-      (_) {
-        // First emit ChallengeRefreshed to notify the UI
-        emit(ChallengeRefreshed(challengeId: event.challengeId));
-      },
-    );
-  }
-
   // =====================================================================
   // NOTIFICATIONS OPERATIONS
   // =====================================================================
@@ -1054,67 +945,6 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
         // For daily challenges, we'll handle this when they're approved/rejected
         emit(NotificationActionSuccess(
           action: 'mark_as_read',
-          notificationId: event.notificationId,
-        ));
-      },
-    );
-  }
-
-  // Update approve daily challenge to properly emit the notification ID
-  Future<void> _onApproveDailyChallenge(
-    ApproveDailyChallengeEvent event,
-    Emitter<LeagueState> emit,
-  ) async {
-    emit(LeagueLoading());
-
-    final result = await approveDailyChallenge.call(
-      ApproveDailyChallengeParams(notificationId: event.notificationId),
-    );
-
-    result.fold(
-      (failure) => emit(LeagueError(message: failure.message)),
-      (_) {
-        // Decrement notification count since we're removing a notification
-        notificationCountCubit.decrement();
-
-        // Emit success with the notification ID to remove it from the UI
-        emit(NotificationActionSuccess(
-          action: 'approve',
-          notificationId: event.notificationId,
-        ));
-
-        // Then refresh the selected league to get updated events
-        final leagueState = appLeagueCubit.state;
-        if (leagueState is AppLeagueExists) {
-          add(GetLeagueEvent(leagueId: leagueState.selectedLeague.id));
-        }
-      },
-    );
-  }
-
-  // Update reject daily challenge to properly emit the notification ID
-  Future<void> _onRejectDailyChallenge(
-    RejectDailyChallengeEvent event,
-    Emitter<LeagueState> emit,
-  ) async {
-    emit(LeagueLoading());
-
-    final result = await rejectDailyChallenge.call(
-      RejectDailyChallengeParams(
-        notificationId: event.notificationId,
-        challengeId: event.challengeId,
-      ),
-    );
-
-    result.fold(
-      (failure) => emit(LeagueError(message: failure.message)),
-      (_) {
-        // Decrement notification count since we're removing a notification
-        notificationCountCubit.decrement();
-
-        // Emit success with the notification ID to remove it from the UI
-        emit(NotificationActionSuccess(
-          action: 'reject',
           notificationId: event.notificationId,
         ));
       },

@@ -1,4 +1,6 @@
+import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:purchases_ui_flutter/purchases_ui_flutter.dart';
 import 'package:fantavacanze_official/core/utils/show_snackbar.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
@@ -8,15 +10,18 @@ Future<bool> showPremiumPaywall(BuildContext context) async {
     final result = await RevenueCatUI.presentPaywall();
 
     // Check the result
-    if (result == PaywallResult.purchased) {
+    if (result == PaywallResult.purchased && context.mounted) {
       // The user has made a purchase, check if it was successful
-      // No need to manually update the premium status - the listener will handle it
+      await context.read<AppUserCubit>().becomePremium();
+
       showSnackBar(
         "Abbonamento Premium attivato con successo!",
         color: ColorPalette.success,
       );
       return true;
-    } else if (result == PaywallResult.restored) {
+    } else if (result == PaywallResult.restored && context.mounted) {
+      await context.read<AppUserCubit>().becomePremium();
+
       showSnackBar(
         "Abbonamento Premium ripristinato!",
         color: ColorPalette.success,

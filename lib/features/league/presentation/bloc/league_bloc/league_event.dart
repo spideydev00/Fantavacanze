@@ -1,5 +1,4 @@
 import 'package:equatable/equatable.dart';
-import 'package:fantavacanze_official/features/league/domain/entities/daily_challenge.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/note.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/rule/rule.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/league.dart';
@@ -354,49 +353,7 @@ class DeleteLeagueEvent extends LeagueEvent {
   List<Object?> get props => [leagueId];
 }
 
-// Daily challenges events
-class GetDailyChallengesEvent extends LeagueEvent {
-  final String userId;
-  final String leagueId;
-
-  const GetDailyChallengesEvent({
-    required this.userId,
-    required this.leagueId,
-  });
-
-  @override
-  List<Object?> get props => [userId, leagueId];
-}
-
-class MarkChallengeAsCompletedEvent extends LeagueEvent {
-  final DailyChallenge challenge;
-  final String userId;
-  final League league;
-
-  const MarkChallengeAsCompletedEvent({
-    required this.challenge,
-    required this.userId,
-    required this.league,
-  });
-
-  @override
-  List<Object?> get props => [challenge, userId, league];
-}
-
-class RefreshDailyChallengeEvent extends LeagueEvent {
-  final String challengeId;
-  final String leagueId;
-  final String userId;
-
-  const RefreshDailyChallengeEvent({
-    required this.challengeId,
-    required this.leagueId,
-    required this.userId,
-  });
-
-  @override
-  List<Object?> get props => [challengeId, leagueId, userId];
-}
+// Daily challenges events moved to daily_challenges_event.dart
 
 class ListenToNotificationEvent extends LeagueEvent {}
 
@@ -446,17 +403,6 @@ class ApproveDailyChallengeEvent extends LeagueEvent {
 
   @override
   List<Object?> get props => [notificationId];
-}
-
-class RejectDailyChallengeEvent extends LeagueEvent {
-  final String notificationId;
-  final String challengeId;
-
-  const RejectDailyChallengeEvent(
-      {required this.notificationId, required this.challengeId});
-
-  @override
-  List<Object?> get props => [notificationId, challengeId];
 }
 
 class LeagueResetStateEvent extends LeagueEvent {

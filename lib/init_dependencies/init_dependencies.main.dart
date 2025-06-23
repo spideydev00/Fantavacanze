@@ -69,7 +69,7 @@ Future<void> initDependencies() async {
           updateGender: serviceLocator(),
           removeConsents: serviceLocator(),
           becomePremium: serviceLocator(),
-          markReviewLeft: serviceLocator(),
+          removePremium: serviceLocator(),
         ),
       )
       //2. navigation cubit
@@ -131,12 +131,14 @@ Future<void> _initRevenueCat() async {
     // Use the appropriate API key based on platform
     if (Platform.isAndroid) {
       await Purchases.configure(
-          PurchasesConfiguration(AppSecrets.revenueCatAndroidApiKey)
-            ..appUserID = appUserId);
+        PurchasesConfiguration(AppSecrets.revenueCatAndroidApiKey)
+          ..appUserID = appUserId,
+      );
     } else if (Platform.isIOS) {
       await Purchases.configure(
-          PurchasesConfiguration(AppSecrets.revenueCatIosApiKey)
-            ..appUserID = appUserId);
+        PurchasesConfiguration(AppSecrets.revenueCatIosApiKey)
+          ..appUserID = appUserId,
+      );
     }
 
     debugPrint("✅ RevenueCat initialized successfully");
@@ -323,7 +325,7 @@ void _initAuth() {
       () => BecomePremium(authRepository: serviceLocator()),
     )
     ..registerFactory(
-      () => MarkReviewLeft(authRepository: serviceLocator()),
+      () => RemovePremium(authRepository: serviceLocator()),
     )
     //bloc
     ..registerLazySingleton(
@@ -519,6 +521,19 @@ void _initLeague() {
         deleteNotification: serviceLocator(),
         approveDailyChallenge: serviceLocator(),
         rejectDailyChallenge: serviceLocator(),
+      ),
+    )
+    // daily challenges bloc
+    ..registerFactory(
+      () => DailyChallengesBloc(
+        getDailyChallenges: serviceLocator(),
+        markChallengeAsCompleted: serviceLocator(),
+        updateChallengeRefreshStatus: serviceLocator(),
+        unlockDailyChallenge: serviceLocator(),
+        approveDailyChallenge: serviceLocator(),
+        rejectDailyChallenge: serviceLocator(),
+        appUserCubit: serviceLocator(),
+        appLeagueCubit: serviceLocator(),
       ),
     );
 }

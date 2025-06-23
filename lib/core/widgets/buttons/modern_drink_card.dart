@@ -111,7 +111,6 @@ class ModernDrinkCard extends StatelessWidget {
             title: 'Accesso Premium Richiesto',
             description:
                 'Sblocca "$label" e tutte le altre funzionalità premium!',
-            onPremiumBtnTapped: onPremiumRequested,
           ),
         );
       } else {

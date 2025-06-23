@@ -12,6 +12,7 @@ import 'package:fantavacanze_official/features/games/presentation/bloc/never_hav
 import 'package:fantavacanze_official/features/games/presentation/bloc/truth_or_dare/truth_or_dare_bloc.dart';
 import 'package:fantavacanze_official/features/games/presentation/bloc/word_bomb/word_bomb_bloc.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc/league_bloc.dart';
+import 'package:fantavacanze_official/features/league/presentation/bloc/daily_challenges_bloc/daily_challenges_bloc.dart';
 import 'package:fantavacanze_official/features/games/presentation/bloc/lobby/lobby_bloc.dart';
 import 'package:fantavacanze_official/init_dependencies/init_dependencies.dart';
 import 'package:fantavacanze_official/initial_page.dart';
@@ -47,6 +48,7 @@ void main() async {
         providers: [
           BlocProvider(create: (_) => serviceLocator<AuthBloc>()),
           BlocProvider(create: (_) => serviceLocator<LeagueBloc>()),
+          BlocProvider(create: (_) => serviceLocator<DailyChallengesBloc>()),
           BlocProvider(create: (_) => serviceLocator<SubscriptionBloc>()),
           BlocProvider(create: (_) => serviceLocator<AppUserCubit>()),
           BlocProvider(create: (_) => serviceLocator<AppLeagueCubit>()),
@@ -96,25 +98,21 @@ class _MyAppState extends State<MyApp> {
   }
 
   void _listenToPremiumStatusChanges() {
-    Purchases.addCustomerInfoUpdateListener((customerInfo) {
-      // Check premium entitlement status
-      final entitlements = customerInfo.entitlements.active;
+    Purchases.addCustomerInfoUpdateListener(
+      (customerInfo) {
+        final entitlement = customerInfo.entitlements.all['premium_benefit'];
 
-      final isPremium = entitlements.containsKey('premium_benefit') &&
-          entitlements['premium_benefit']?.isActive == true;
-
-      final userState = context.read<AppUserCubit>().state;
-
-      if (userState is AppUserIsLoggedIn &&
-          userState.user.isPremium != isPremium) {
-        if (isPremium) {
-          context.read<AppUserCubit>().becomePremium();
-        } else {
-          // If your cubit has a method to remove premium, call it here
-          // Otherwise, you might need to add one: context.read<AppUserCubit>().removePremium();
+        if (entitlement == null) {
+          return;
         }
-      }
-    });
+
+        final isPremium = entitlement.isActive;
+
+        if (!isPremium) {
+          context.read<AppUserCubit>().removePremium();
+        }
+      },
+    );
   }
 
   @override

@@ -40,7 +40,6 @@ abstract interface class AuthRemoteDataSource {
   Future<void> updatePassword(
       String oldPassword, String newPassword, String captchaToken);
   Future<void> deleteAccount();
-  Future<UserModel> markReviewLeft();
 
   // CONSENTS MANAGEMENT
   Future<void> removeConsents({
@@ -48,14 +47,15 @@ abstract interface class AuthRemoteDataSource {
   });
   Future<UserModel> updateConsents({
     required bool isAdult,
-    // required bool isTermsAccepted,
   });
+
   Future<UserModel> updateGender({required String? gender});
 
   // USER DATA ACCESS
   Future<UserModel?> getCurrentUserData();
 
   Future<UserModel> becomePremium();
+  Future<UserModel> removePremium();
 
   Session? get currentSession;
 }
@@ -357,29 +357,6 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     }
   }
 
-  // ------------------ MARK REVIEW LEFT ------------------ //
-  @override
-  Future<UserModel> markReviewLeft() async {
-    try {
-      final userId = currentSession?.user.id;
-
-      if (userId == null) throw ServerException('Utente non autenticato');
-
-      final authUserResponse = await supabaseClient
-          .from('profiles')
-          .update({'has_left_review': true})
-          .eq('id', userId)
-          .select()
-          .single();
-
-      return UserModel.fromJson(authUserResponse).copyWith(
-        email: currentSession!.user.email,
-      );
-    } catch (e) {
-      throw ServerException(_extractErrorMessage(e));
-    }
-  }
-
   // =====================================================================
   // CONSENT MANAGEMENT
   // =====================================================================
@@ -535,12 +512,29 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       if (userId == null) throw ServerException('Utente non autenticato');
 
       // Chiama la funzione RPC 'become_premium' passando l'ID utente
-      final authUserResponse = await supabaseClient
-          .rpc('become_premium', params: {'p_user_id': userId});
+      await supabaseClient.rpc('become_premium', params: {'p_user_id': userId});
 
-      return UserModel.fromJson(authUserResponse).copyWith(
-        email: currentSession!.user.email,
-      );
+      final user = await getCurrentUserData();
+
+      return user!;
+    } catch (e) {
+      throw ServerException(_extractErrorMessage(e));
+    }
+  }
+
+  @override
+  Future<UserModel> removePremium() async {
+    try {
+      final userId = currentSession?.user.id;
+
+      if (userId == null) throw ServerException('Utente non autenticato');
+
+      // Chiama la funzione RPC 'become_premium' passando l'ID utente
+      await supabaseClient.rpc('remove_premium', params: {'p_user_id': userId});
+
+      final user = await getCurrentUserData();
+
+      return user!;
     } catch (e) {
       throw ServerException(_extractErrorMessage(e));
     }

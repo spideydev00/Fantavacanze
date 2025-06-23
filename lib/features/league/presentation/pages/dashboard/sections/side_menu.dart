@@ -1,3 +1,4 @@
+import 'dart:async';
 // ignore: depend_on_referenced_packages
 import 'package:collection/collection.dart';
 import 'package:fantavacanze_official/core/constants/navigation_items.dart';
@@ -21,13 +22,56 @@ import 'package:fantavacanze_official/core/widgets/divider.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/dashboard/widgets/side_menu/side_menu_navigation_asset.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-class SideMenu extends StatelessWidget {
+class SideMenu extends StatefulWidget {
   final VoidCallback? closeMenuCallback;
 
   const SideMenu({
     super.key,
     this.closeMenuCallback,
   });
+
+  @override
+  State<SideMenu> createState() => _SideMenuState();
+}
+
+class _SideMenuState extends State<SideMenu> {
+  StreamSubscription? _userSubscription;
+  bool _userIsPremium = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkPremiumStatus();
+
+    // Listen to premium status changes
+    _userSubscription = context.read<AppUserCubit>().stream.listen((state) {
+      if (state is AppUserIsLoggedIn && mounted) {
+        final isPremium = state.user.isPremium == true;
+
+        if (_userIsPremium != isPremium) {
+          setState(() {
+            _userIsPremium = isPremium;
+          });
+        }
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _userSubscription?.cancel();
+    super.dispose();
+  }
+
+  void _checkPremiumStatus() {
+    final userState = context.read<AppUserCubit>().state;
+
+    if (userState is AppUserIsLoggedIn) {
+      setState(() {
+        _userIsPremium = userState.user.isPremium == true;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -74,25 +118,19 @@ class SideMenu extends StatelessWidget {
                           );
                         },
                       ),
-                      BlocBuilder<AppUserCubit, AppUserState>(
-                        builder: (context, state) {
-                          if (state is AppUserIsLoggedIn &&
-                              state.user.isPremium == true) {
-                            return const SizedBox.shrink();
-                          }
-                          return Column(
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.symmetric(
-                                    vertical: ThemeSizes.md),
-                                child: CustomDivider(text: "Sostienici"),
-                              ),
-                              BecomePremiumButton(),
-                              const SizedBox(height: 20),
-                            ],
-                          );
-                        },
-                      ),
+                      // Replace the existing BlocBuilder with our optimized version
+                      if (!_userIsPremium)
+                        Column(
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  vertical: ThemeSizes.md),
+                              child: CustomDivider(text: "Sostienici"),
+                            ),
+                            BecomePremiumButton(),
+                            const SizedBox(height: 20),
+                          ],
+                        ),
                     ],
                   ),
                 ),
@@ -188,7 +226,7 @@ class SideMenu extends StatelessWidget {
         MaterialPageRoute(builder: (context) => item.screen),
       );
       // Close menu even after pushing a new route
-      closeMenuCallback?.call();
+      widget.closeMenuCallback?.call();
       return;
     }
 
@@ -196,7 +234,7 @@ class SideMenu extends StatelessWidget {
     context.read<AppNavigationCubit>().setIndex(originalItemIndex);
 
     // Call the callback to close the menu
-    closeMenuCallback?.call();
+    widget.closeMenuCallback?.call();
   }
 
   // Footer fisso in basso

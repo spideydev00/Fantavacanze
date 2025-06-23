@@ -37,9 +37,6 @@ class MockAdHelper implements AdHelper {
   Future<void> initialize() async => Future.value();
 
   @override
-  Future<bool> loadRewardedAd() async => true;
-
-  @override
   Future<void> showInterstitialAd({bool ignoreInterval = false}) async {}
 
   @override
@@ -50,4 +47,9 @@ class MockAdHelper implements AdHelper {
 
   @override
   void dispose() {}
+
+  @override
+  Future<bool> loadRewardedAd({int retryCount = 0}) {
+    return Future.value(true);
+  }
 }

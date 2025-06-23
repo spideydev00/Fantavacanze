@@ -110,8 +110,6 @@ class AdHelper {
         onAdFailedToLoad: (err) {
           debugPrint('Interstitial load failed: $err');
           _isInterstitialLoading = false;
-          _interstitialAd!.dispose();
-          _interstitialAd = null;
         },
       ),
     );
@@ -171,8 +169,6 @@ class AdHelper {
         onAdFailedToLoad: (err) {
           debugPrint('Rewarded load failed: $err');
           _isRewardedLoading = false;
-          _rewardedAd!.dispose();
-          _rewardedAd = null;
           completer.complete(false);
         },
       ),

@@ -12,7 +12,7 @@ class UserModel extends User {
     required super.authProvider,
     super.fcmToken,
     required super.isWordBombTrialAvailable,
-    super.hasLeftReview,
+    super.hasBeenPromptedToLeaveReview,
   });
 
   factory UserModel.fromJson(Map<String, dynamic> map) {
@@ -36,7 +36,8 @@ class UserModel extends User {
       authProvider: authProvider,
       fcmToken: map['fcm_token'] as String?,
       isWordBombTrialAvailable: map['is_word_bomb_trial_available'] == true,
-      hasLeftReview: map['has_left_review'] == true,
+      hasBeenPromptedToLeaveReview:
+          map['has_been_prompted_to_leave_review'] == true,
     );
   }
 
@@ -52,7 +53,7 @@ class UserModel extends User {
     String? authProvider,
     String? fcmToken,
     bool? isWordBombTrialAvailable,
-    bool? hasLeftReview,
+    bool? hasBeenPromptedToLeaveReview,
   }) {
     return UserModel(
       id: id ?? this.id,
@@ -66,7 +67,8 @@ class UserModel extends User {
       fcmToken: fcmToken ?? this.fcmToken,
       isWordBombTrialAvailable:
           isWordBombTrialAvailable ?? this.isWordBombTrialAvailable,
-      hasLeftReview: hasLeftReview ?? this.hasLeftReview,
+      hasBeenPromptedToLeaveReview:
+          hasBeenPromptedToLeaveReview ?? this.hasBeenPromptedToLeaveReview,
     );
   }
 }
