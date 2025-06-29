@@ -336,7 +336,7 @@ class _NotesPageState extends State<NotesPage> {
         IconButton(
           icon: const Icon(
             Icons.close_rounded,
-            size: 18,
+            size: 22,
           ),
           color: ColorPalette.error,
           onPressed: _cancelEditing,
@@ -346,7 +346,7 @@ class _NotesPageState extends State<NotesPage> {
           child: IconButton(
             icon: const Icon(
               Icons.check_rounded,
-              size: 18,
+              size: 22,
             ),
             color: ColorPalette.success,
             onPressed: _saveNote,

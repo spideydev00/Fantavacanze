@@ -20,6 +20,9 @@ import 'package:fantavacanze_official/features/auth/domain/use-cases/email_sign_
 import 'package:fantavacanze_official/features/auth/domain/use-cases/get_current_user.dart';
 import 'package:fantavacanze_official/features/auth/domain/use-cases/google_sign_in.dart';
 import 'package:fantavacanze_official/features/auth/domain/use-cases/remove_premium.dart';
+import 'package:fantavacanze_official/features/auth/domain/use-cases/reset_password.dart';
+import 'package:fantavacanze_official/features/auth/domain/use-cases/send_otp_email.dart';
+import 'package:fantavacanze_official/features/auth/domain/use-cases/verify_otp.dart';
 import 'package:fantavacanze_official/features/games/data/datasources/game_remote_data_source.dart';
 import 'package:fantavacanze_official/features/games/data/datasources/never_have_i_ever_remote_data_source.dart';
 import 'package:fantavacanze_official/features/games/data/datasources/truth_or_dare_remote_data_source.dart';

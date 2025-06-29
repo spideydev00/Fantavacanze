@@ -10,6 +10,7 @@ class User {
   final String? fcmToken;
   final bool isWordBombTrialAvailable;
   final bool hasBeenPromptedToLeaveReview;
+  final String? imageUrl; // New field for user profile image
 
   const User({
     required this.id,
@@ -23,6 +24,7 @@ class User {
     this.fcmToken,
     required this.isWordBombTrialAvailable,
     this.hasBeenPromptedToLeaveReview = false,
+    this.imageUrl, // Add to constructor
   });
 
   User copyWith({
@@ -37,6 +39,7 @@ class User {
     String? fcmToken,
     bool? isWordBombTrialAvailable,
     bool? hasBeenPromptedToLeaveReview,
+    String? imageUrl, // Add to copyWith
   }) {
     return User(
       id: id ?? this.id,
@@ -52,6 +55,7 @@ class User {
           isWordBombTrialAvailable ?? this.isWordBombTrialAvailable,
       hasBeenPromptedToLeaveReview:
           hasBeenPromptedToLeaveReview ?? this.hasBeenPromptedToLeaveReview,
+      imageUrl: imageUrl ?? this.imageUrl, // Include in copyWith
     );
   }
 }

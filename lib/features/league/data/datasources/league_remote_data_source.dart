@@ -131,11 +131,13 @@ abstract class LeagueRemoteDataSource {
     required String leagueId,
     required File imageFile,
   });
+
   Future<String> uploadTeamLogo({
     required String leagueId,
     required String teamName,
     required File imageFile,
   });
+
   Future<LeagueModel> updateTeamLogo({
     required LeagueModel league,
     required String teamName,
@@ -840,6 +842,7 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
   }) async {
     return _tryDatabaseOperation(() async {
       final path = leagueId;
+
       return await _uploadImageToStorage(
         bucket: 'memories',
         path: path,
@@ -857,6 +860,7 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
   }) async {
     return _tryDatabaseOperation(() async {
       final path = '$leagueId/$teamName';
+
       return await _uploadImageToStorage(
         bucket: 'team-logos',
         path: path,

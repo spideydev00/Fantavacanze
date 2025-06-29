@@ -45,3 +45,19 @@ class AuthConsentsUpdated extends AuthState {
   final User user;
   AuthConsentsUpdated(this.user);
 }
+
+// New states for password reset flow
+class AuthOtpSent extends AuthState {
+  final String email;
+  AuthOtpSent(this.email);
+}
+
+class AuthOtpVerified extends AuthState {
+  final String email;
+  AuthOtpVerified(this.email);
+}
+
+class AuthPasswordReset extends AuthState {
+  final String email;
+  AuthPasswordReset(this.email);
+}

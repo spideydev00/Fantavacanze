@@ -60,3 +60,38 @@ class AuthUpdateGender extends AuthEvent {
     required this.gender,
   });
 }
+
+// New events for password reset
+class AuthSendOtpEmail extends AuthEvent {
+  final String email;
+  final String hCaptcha;
+
+  AuthSendOtpEmail({
+    required this.email, 
+    required this.hCaptcha,
+  });
+}
+
+class AuthVerifyOtp extends AuthEvent {
+  final String email;
+  final String otp;
+  final bool isPasswordReset;
+
+  AuthVerifyOtp({
+    required this.email,
+    required this.otp,
+    this.isPasswordReset = false,
+  });
+}
+
+class AuthResetPassword extends AuthEvent {
+  final String email;
+  final String token;
+  final String newPassword;
+
+  AuthResetPassword({
+    required this.email,
+    required this.token,
+    required this.newPassword,
+  });
+}
