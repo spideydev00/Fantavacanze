@@ -327,6 +327,16 @@ void _initAuth() {
     ..registerFactory(
       () => RemovePremium(authRepository: serviceLocator()),
     )
+    // New use cases for password reset
+    ..registerFactory(
+      () => SendOtpEmail(authRepository: serviceLocator()),
+    )
+    ..registerFactory(
+      () => VerifyOtp(authRepository: serviceLocator()),
+    )
+    ..registerFactory(
+      () => ResetPassword(authRepository: serviceLocator()),
+    )
     //bloc
     ..registerLazySingleton(
       () => AuthBloc(
@@ -340,6 +350,10 @@ void _initAuth() {
         changeIsOnboardedValue: serviceLocator(),
         updateConsents: serviceLocator(),
         updateGender: serviceLocator(),
+        // Add the new use cases
+        sendOtpEmail: serviceLocator(),
+        verifyOtp: serviceLocator(),
+        resetPassword: serviceLocator(),
       ),
     );
 }

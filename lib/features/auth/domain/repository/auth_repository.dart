@@ -54,4 +54,22 @@ abstract interface class AuthRepository {
   Future<Either<Failure, User>> updateGender({required String? gender});
   Future<Either<Failure, User>> becomePremium();
   Future<Either<Failure, User>> removePremium();
+
+  // New methods for password reset
+  Future<Either<Failure, void>> sendPasswordResetOtp({
+    required String email,
+    required String hCaptcha,
+  });
+
+  Future<Either<Failure, void>> verifyOtp({
+    required String email,
+    required String otp,
+    bool isPasswordReset,
+  });
+
+  Future<Either<Failure, void>> resetPassword({
+    required String email,
+    required String token,
+    required String newPassword,
+  });
 }

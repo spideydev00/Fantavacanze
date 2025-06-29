@@ -309,4 +309,78 @@ class AuthRepositoryImpl implements AuthRepository {
       return left(Failure(e.message));
     }
   }
+
+  // =====================================================================
+  // PASSWORD RESET METHODS
+  // =====================================================================
+
+  @override
+  Future<Either<Failure, void>> sendPasswordResetOtp({
+    required String email,
+    required String hCaptcha,
+  }) async {
+    try {
+      if (!await connectionChecker.isConnected) {
+        return left(
+            Failure("Connessione a internet assente. Riprova più tardi."));
+      }
+
+      await authRemoteDataSource.sendPasswordResetOtp(
+        email: email,
+        hCaptcha: hCaptcha,
+      );
+
+      return right(null);
+    } on ServerException catch (e) {
+      return left(Failure(e.message));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> verifyOtp({
+    required String email,
+    required String otp,
+    bool isPasswordReset = false,
+  }) async {
+    try {
+      if (!await connectionChecker.isConnected) {
+        return left(
+            Failure("Connessione a internet assente. Riprova più tardi."));
+      }
+
+      await authRemoteDataSource.verifyOtp(
+        email: email,
+        otp: otp,
+        isPasswordReset: isPasswordReset,
+      );
+
+      return right(null);
+    } on ServerException catch (e) {
+      return left(Failure(e.message));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> resetPassword({
+    required String email,
+    required String token,
+    required String newPassword,
+  }) async {
+    try {
+      if (!await connectionChecker.isConnected) {
+        return left(
+            Failure("Connessione a internet assente. Riprova più tardi."));
+      }
+
+      await authRemoteDataSource.resetPassword(
+        email: email,
+        token: token,
+        newPassword: newPassword,
+      );
+
+      return right(null);
+    } on ServerException catch (e) {
+      return left(Failure(e.message));
+    }
+  }
 }

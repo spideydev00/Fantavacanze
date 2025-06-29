@@ -9,9 +9,12 @@ import 'package:fantavacanze_official/features/auth/domain/use-cases/change_is_o
 import 'package:fantavacanze_official/features/auth/domain/use-cases/email_sign_in.dart';
 import 'package:fantavacanze_official/features/auth/domain/use-cases/email_sign_up.dart';
 import 'package:fantavacanze_official/features/auth/domain/use-cases/google_sign_in.dart';
+import 'package:fantavacanze_official/features/auth/domain/use-cases/reset_password.dart';
+import 'package:fantavacanze_official/features/auth/domain/use-cases/send_otp_email.dart';
 import 'package:fantavacanze_official/features/auth/domain/use-cases/sign_out.dart';
 import 'package:fantavacanze_official/features/auth/domain/use-cases/update_consents.dart';
 import 'package:fantavacanze_official/features/auth/domain/use-cases/update_gender.dart';
+import 'package:fantavacanze_official/features/auth/domain/use-cases/verify_otp.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -29,6 +32,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final ChangeIsOnboardedValue _changeIsOnboardedValue;
   final UpdateConsents _updateConsents;
   final UpdateGender _updateGender;
+  // New use cases
+  final SendOtpEmail _sendOtpEmail;
+  final VerifyOtp _verifyOtp;
+  final ResetPassword _resetPassword;
 
   /// Qui salviamo qual è l'evento di login pendente (Email/Google/Apple)
   AuthEvent? _pendingAuthEvent;
@@ -44,6 +51,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     required ChangeIsOnboardedValue changeIsOnboardedValue,
     required UpdateConsents updateConsents,
     required UpdateGender updateGender,
+    required SendOtpEmail sendOtpEmail,
+    required VerifyOtp verifyOtp,
+    required ResetPassword resetPassword,
   })  : _googleSignIn = googleSignIn,
         _appleSignIn = appleSignIn,
         _emailSignIn = emailSignIn,
@@ -54,6 +64,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         _changeIsOnboardedValue = changeIsOnboardedValue,
         _updateConsents = updateConsents,
         _updateGender = updateGender,
+        _sendOtpEmail = sendOtpEmail,
+        _verifyOtp = verifyOtp,
+        _resetPassword = resetPassword,
         super(AuthInitial()) {
     // =====================================================================
     // EVENT REGISTRATION
@@ -66,6 +79,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<AuthChangeIsOnboardedValue>(_onChangeIsOnboardedValue);
     on<AuthUpdateConsents>(_onUpdateConsents);
     on<AuthUpdateGender>(_onUpdateGender);
+    // Register new event handlers
+    on<AuthSendOtpEmail>(_onSendOtpEmail);
+    on<AuthVerifyOtp>(_onVerifyOtp);
+    on<AuthResetPassword>(_onResetPassword);
   }
 
   // =====================================================================
@@ -229,6 +246,57 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       (user) {
         _emitAuthSuccess(user, emit);
       },
+    );
+  }
+
+  // =====================================================================
+  // PASSWORD RESET HANDLERS
+  // =====================================================================
+
+  Future<void> _onSendOtpEmail(
+      AuthSendOtpEmail event, Emitter<AuthState> emit) async {
+    emit(AuthLoading());
+
+    final result = await _sendOtpEmail.call(SendOtpEmailParams(
+      email: event.email,
+      hCaptcha: event.hCaptcha,
+    ));
+
+    result.fold(
+      (failure) => emit(AuthFailure(failure.message, "send_otp_email")),
+      (_) => emit(AuthOtpSent(event.email)),
+    );
+  }
+
+  Future<void> _onVerifyOtp(
+      AuthVerifyOtp event, Emitter<AuthState> emit) async {
+    emit(AuthLoading());
+
+    final result = await _verifyOtp.call(VerifyOtpParams(
+      email: event.email,
+      otp: event.otp,
+      isPasswordReset: event.isPasswordReset,
+    ));
+
+    result.fold(
+      (failure) => emit(AuthFailure(failure.message, "verify_otp")),
+      (_) => emit(AuthOtpVerified(event.email)),
+    );
+  }
+
+  Future<void> _onResetPassword(
+      AuthResetPassword event, Emitter<AuthState> emit) async {
+    emit(AuthLoading());
+
+    final result = await _resetPassword.call(ResetPasswordParams(
+      email: event.email,
+      token: event.token,
+      newPassword: event.newPassword,
+    ));
+
+    result.fold(
+      (failure) => emit(AuthFailure(failure.message, "reset_password")),
+      (_) => emit(AuthPasswordReset(event.email)),
     );
   }
 

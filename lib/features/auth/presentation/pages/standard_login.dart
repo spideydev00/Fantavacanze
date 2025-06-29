@@ -1,3 +1,4 @@
+import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/extensions/context_extension.dart';
 import 'package:fantavacanze_official/core/utils/show_snackbar.dart';
 import 'package:fantavacanze_official/core/widgets/loader.dart';
@@ -6,6 +7,7 @@ import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:fantavacanze_official/core/widgets/dialogs/auth_dialog_box.dart';
 import 'package:fantavacanze_official/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:fantavacanze_official/features/auth/presentation/pages/forgot_password_page.dart';
 import 'package:fantavacanze_official/features/auth/presentation/pages/signup.dart';
 import 'package:fantavacanze_official/features/auth/presentation/widgets/age_verification_dialog.dart';
 import 'package:fantavacanze_official/features/auth/presentation/widgets/auth_field.dart';
@@ -127,6 +129,21 @@ class _StandardLoginPageState extends State<StandardLoginPage> {
                     child: SvgPicture.asset(
                       "assets/images/icons/auth_field_icons/lock-icon.svg",
                       width: 33,
+                    ),
+                  ),
+                ),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: TextButton(
+                    onPressed: () {
+                      Navigator.of(context).push(ForgotPasswordPage.route);
+                    },
+                    child: Text(
+                      "Hai dimenticato la password?",
+                      style: context.textTheme.labelMedium!.copyWith(
+                        color: context.secondaryColor,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
                 ),

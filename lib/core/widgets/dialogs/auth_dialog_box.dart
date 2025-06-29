@@ -14,6 +14,7 @@ class AuthDialogBox extends StatelessWidget {
   final String buttonText;
   final Color? bgColor;
   final bool isMultiButton;
+  final VoidCallback? onPrimaryButtonPressed; // Add this callback
 
   const AuthDialogBox({
     super.key,
@@ -23,6 +24,7 @@ class AuthDialogBox extends StatelessWidget {
     this.isMultiButton = false,
     this.buttonText = "Chiudi",
     this.bgColor,
+    this.onPrimaryButtonPressed, // Add to constructor
   });
 
   @override
@@ -36,7 +38,7 @@ class AuthDialogBox extends StatelessWidget {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusLg),
         ),
-        // Aggiungo un po’ di padding per dare aria al contenuto
+        // Aggiungo un po' di padding per dare aria al contenuto
         padding: const EdgeInsets.all(ThemeSizes.md),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -99,7 +101,12 @@ class AuthDialogBox extends StatelessWidget {
                       ),
                     ),
                     onPressed: () {
-                      Navigator.of(context).pop();
+                      // Use the callback if provided, otherwise just pop
+                      if (onPrimaryButtonPressed != null) {
+                        onPrimaryButtonPressed!();
+                      } else {
+                        Navigator.of(context).pop();
+                      }
                     },
                     child: Text(buttonText),
                   )

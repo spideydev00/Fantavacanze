@@ -57,6 +57,24 @@ abstract interface class AuthRemoteDataSource {
   Future<UserModel> becomePremium();
   Future<UserModel> removePremium();
 
+  // PASSWORD RESET METHODS
+  Future<void> sendPasswordResetOtp({
+    required String email,
+    required String hCaptcha,
+  });
+
+  Future<void> verifyOtp({
+    required String email,
+    required String otp,
+    bool isPasswordReset,
+  });
+
+  Future<void> resetPassword({
+    required String email,
+    required String token,
+    required String newPassword,
+  });
+
   Session? get currentSession;
 }
 
@@ -535,6 +553,74 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       final user = await getCurrentUserData();
 
       return user!;
+    } catch (e) {
+      throw ServerException(_extractErrorMessage(e));
+    }
+  }
+
+  // =====================================================================
+  // PASSWORD RESET METHODS
+  // =====================================================================
+
+  @override
+  Future<void> sendPasswordResetOtp({
+    required String email,
+    required String hCaptcha,
+  }) async {
+    try {
+      await supabaseClient.auth.resetPasswordForEmail(
+        email,
+        captchaToken: hCaptcha,
+        redirectTo: "https://fantavacanze.it/reset-password",
+      );
+    } catch (e) {
+      throw ServerException(_extractErrorMessage(e));
+    }
+  }
+
+  @override
+  Future<void> verifyOtp({
+    required String email,
+    required String otp,
+    bool isPasswordReset = false,
+  }) async {
+    try {
+      // For password reset flow, we just verify the OTP
+      // The actual OTP verification will happen when we reset the password
+      if (isPasswordReset) {
+        // Just validate format here - actual validation happens with resetPassword
+        if (otp.length != 6) {
+          throw ServerException("Il codice OTP deve essere di 6 cifre");
+        }
+        return;
+      }
+
+      // For other OTP verifications, implement specific logic
+      // This is a placeholder for now
+      throw ServerException("Funzionalità non ancora implementata");
+    } catch (e) {
+      throw ServerException(_extractErrorMessage(e));
+    }
+  }
+
+  @override
+  Future<void> resetPassword({
+    required String email,
+    required String token,
+    required String newPassword,
+  }) async {
+    try {
+      await supabaseClient.auth.verifyOTP(
+        email: email,
+        token: token,
+        type: OtpType.recovery,
+      );
+
+      await supabaseClient.auth.updateUser(
+        UserAttributes(
+          password: newPassword,
+        ),
+      );
     } catch (e) {
       throw ServerException(_extractErrorMessage(e));
     }

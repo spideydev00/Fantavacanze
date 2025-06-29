@@ -13,6 +13,7 @@ class UserModel extends User {
     super.fcmToken,
     required super.isWordBombTrialAvailable,
     super.hasBeenPromptedToLeaveReview,
+    super.imageUrl, // Add to constructor
   });
 
   factory UserModel.fromJson(Map<String, dynamic> map) {
@@ -38,6 +39,7 @@ class UserModel extends User {
       isWordBombTrialAvailable: map['is_word_bomb_trial_available'] == true,
       hasBeenPromptedToLeaveReview:
           map['has_been_prompted_to_leave_review'] == true,
+      imageUrl: map['image_url'] as String?,
     );
   }
 
@@ -54,6 +56,7 @@ class UserModel extends User {
     String? fcmToken,
     bool? isWordBombTrialAvailable,
     bool? hasBeenPromptedToLeaveReview,
+    String? imageUrl,
   }) {
     return UserModel(
       id: id ?? this.id,
@@ -69,6 +72,7 @@ class UserModel extends User {
           isWordBombTrialAvailable ?? this.isWordBombTrialAvailable,
       hasBeenPromptedToLeaveReview:
           hasBeenPromptedToLeaveReview ?? this.hasBeenPromptedToLeaveReview,
+      imageUrl: imageUrl ?? this.imageUrl,
     );
   }
 }
