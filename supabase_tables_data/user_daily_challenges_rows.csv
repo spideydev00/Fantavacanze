@@ -1,3 +1,0 @@
-id,user_id,league_id,challenge_id,points,is_completed,is_refreshed,created_at,refreshed_at,completed_at,position,name,is_pending_approval
-1364050f-3d43-45e9-b934-1af037656534,1c653926-d26f-4fdd-a53d-c4ba64386920,c5b0371d-841a-4f61-a2c1-1b515b84d568,c5392536-9230-44e4-b71b-cb1ac095788d,10,false,false,2025-06-05 14:26:57.743754+00,2025-06-05 14:26:57.743754+00,,3,Trova il tuo “sosia” tra la folla e fatevi fotografare insieme (dovete essere gemelli).,false
-40c3d9c2-4340-4db2-b86d-65d40a79dc31,1c653926-d26f-4fdd-a53d-c4ba64386920,c5b0371d-841a-4f61-a2c1-1b515b84d568,c0307b0c-33ce-452e-a931-584346272b5d,7,false,false,2025-06-05 14:26:57.743754+00,2025-06-05 14:26:57.743754+00,,4,Inventa una challenge “abbordaggio educato”: vince chi riceve risposta positiva.,false

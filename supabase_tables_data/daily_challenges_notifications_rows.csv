@@ -1,2 +1,0 @@
-id,title,message,created_at,is_read,type,challenge_id,challenge_name,challenge_points,league_id,user_id,target_user_ids
-0786a84c-1008-4639-aa21-065ecf5a7fbd,ssaf,afadfd,2025-06-05 11:31:15.76074+00,false,daily_challenge,32d33e91-c1f9-4625-bccb-c461bd475043,Regala un bigliettino con scritto: “Baciami prima che diventi virale”.,3,c5b0371d-841a-4f61-a2c1-1b515b84d568,9cb9f8e1-26ab-4f1b-902c-169942c08b21,"[""9cb9f8e1-26ab-4f1b-902c-169942c08b21""]"

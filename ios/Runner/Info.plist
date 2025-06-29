@@ -8,7 +8,7 @@
 
     <!-- Lingua di sviluppo predefinita per le risorse localizzate (sostituita da build setting) -->
     <key>CFBundleDevelopmentRegion</key>
-    <string>$(DEVELOPMENT_LANGUAGE)</string>
+    <string>it</string>
 
     <!-- Nome visualizzato sotto l'icona dell'app sulla Home -->
     <key>CFBundleDisplayName</key>
