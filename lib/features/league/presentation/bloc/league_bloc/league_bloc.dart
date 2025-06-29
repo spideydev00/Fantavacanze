@@ -194,14 +194,14 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
 
     result.fold(
       (failure) => emit(LeagueError(message: failure.message)),
-      (league) {
+      (league) async {
         emit(LeagueSuccess(league: league, operation: 'create_league'));
 
         // Delete previous selected league from shared preferences
         appLeagueCubit.selectLeague(league);
 
         // Make sure to update the list of user leagues
-        appLeagueCubit.getUserLeagues();
+        await appLeagueCubit.getUserLeagues();
       },
     );
   }
@@ -257,7 +257,7 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
         (failure) {
           emit(LeagueError(message: failure.message));
         },
-        (league) {
+        (league) async {
           emit(LeagueSuccess(
             league: league,
             operation: 'join_league',
@@ -267,7 +267,7 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
           appLeagueCubit.selectLeague(league);
 
           // Make sure to update the list of user leagues
-          appLeagueCubit.getUserLeagues();
+          await appLeagueCubit.getUserLeagues();
         },
       );
     } catch (e) {
@@ -299,13 +299,13 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
 
       result.fold(
         (failure) => emit(LeagueError(message: failure.message)),
-        (_) {
+        (_) async {
           emit(ExitLeagueSuccess());
           // Remove selected league from shared preferences
           appLeagueCubit.clearSelectedLeague();
 
           // Refresh app league cubit after exiting
-          appLeagueCubit.getUserLeagues();
+          await appLeagueCubit.getUserLeagues();
         },
       );
     } catch (e) {
@@ -352,14 +352,14 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
 
     result.fold(
       (failure) => emit(LeagueError(message: failure.message)),
-      (_) {
+      (_) async {
         emit(DeleteLeagueSuccess());
 
         // Remove selected league from shared preferences
         appLeagueCubit.clearSelectedLeague();
 
         // Refresh app league cubit after exiting
-        appLeagueCubit.getUserLeagues();
+        await appLeagueCubit.getUserLeagues();
       },
     );
   }

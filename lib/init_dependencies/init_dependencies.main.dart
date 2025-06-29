@@ -234,6 +234,7 @@ void _registerHiveAdapters() {
 /// Open all Hive boxes
 Future<void> _openHiveBoxes() async {
   try {
+    await Hive.deleteFromDisk();
     // Open boxes one by one with error handling
     final leaguesBox = await Hive.openBox<LeagueModel>('leagues_box');
 

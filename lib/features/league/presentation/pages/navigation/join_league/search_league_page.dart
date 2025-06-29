@@ -101,19 +101,26 @@ class _SearchLeaguePageState extends State<SearchLeaguePage> {
           BlocConsumer<LeagueBloc, LeagueState>(
             listener: (context, state) {
               if (state is LeagueError) {
-                showSnackBar(state.message, color: ColorPalette.error);
+                showSnackBar(
+                  state.message,
+                  color: ColorPalette.error,
+                );
                 setState(() {
                   _searchingStatus = SearchingStatus.initial;
                   _isJoiningLeague = false;
                 });
               } else if (state is MultiplePossibleLeagues) {
-                setState(() => _searchingStatus = SearchingStatus.initial);
+                setState(
+                  () => _searchingStatus = SearchingStatus.initial,
+                );
                 _showMultipleLeaguesDialog(
                   state.possibleLeagues,
                   state.inviteCode,
                 );
               } else if (state is LeagueWithInviteCode) {
-                setState(() => _searchingStatus = SearchingStatus.initial);
+                setState(
+                  () => _searchingStatus = SearchingStatus.initial,
+                );
                 _showLeagueFoundConfirmation(
                   context,
                   state.league,
@@ -121,9 +128,18 @@ class _SearchLeaguePageState extends State<SearchLeaguePage> {
                 );
               } else if (state is LeagueSuccess &&
                   state.operation == 'join_league') {
-                setState(() => _isJoiningLeague = false);
-                Navigator.of(context).popUntil((route) => route.isFirst);
+                setState(
+                  () => _isJoiningLeague = false,
+                );
+                Navigator.of(context).popUntil(
+                  (route) => route.isFirst,
+                );
                 context.read<AppNavigationCubit>().setIndex(0);
+
+                showSnackBar(
+                  'Unione alla lega completata!',
+                  color: ColorPalette.success,
+                );
               }
             },
             builder: (context, state) {
@@ -616,7 +632,9 @@ class _SearchLeaguePageState extends State<SearchLeaguePage> {
                             ),
                             onPressed: () {
                               Navigator.of(dialogContext).pop();
+
                               setState(() => _isJoiningLeague = true);
+
                               context.read<LeagueBloc>().add(
                                     JoinLeagueEvent(
                                       inviteCode: inviteCode,

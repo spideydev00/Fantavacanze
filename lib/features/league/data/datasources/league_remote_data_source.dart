@@ -131,13 +131,11 @@ abstract class LeagueRemoteDataSource {
     required String leagueId,
     required File imageFile,
   });
-
   Future<String> uploadTeamLogo({
     required String leagueId,
     required String teamName,
     required File imageFile,
   });
-
   Future<LeagueModel> updateTeamLogo({
     required LeagueModel league,
     required String teamName,
@@ -463,7 +461,10 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
 
       // Create a SimpleParticipantModel for the current user
       final currentUserParticipant = SimpleParticipantModel(
-          userId: currentUserId, name: currentUserName, points: 0);
+        userId: currentUserId,
+        name: currentUserName,
+        points: 0,
+      );
 
       // Use RPC function for joining league
       final response = await supabaseClient.rpc(
@@ -842,7 +843,6 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
   }) async {
     return _tryDatabaseOperation(() async {
       final path = leagueId;
-
       return await _uploadImageToStorage(
         bucket: 'memories',
         path: path,
@@ -860,7 +860,6 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
   }) async {
     return _tryDatabaseOperation(() async {
       final path = '$leagueId/$teamName';
-
       return await _uploadImageToStorage(
         bucket: 'team-logos',
         path: path,

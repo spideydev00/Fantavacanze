@@ -86,9 +86,12 @@ class _MyAppState extends State<MyApp> {
         await context.read<AppUserCubit>().getCurrentUser();
       }
 
-      // If user is logged in, then load their specific data
+      // If user is logged in, then load their specific data and check subscription
       if (mounted && context.read<AppUserCubit>().state is AppUserIsLoggedIn) {
-        await context.read<AppLeagueCubit>().getUserLeagues();
+        await _checkSubscriptionOnStartup();
+        if (mounted) {
+          await context.read<AppLeagueCubit>().getUserLeagues();
+        }
       }
     } catch (e) {
       debugPrint("Errore di inizializzazione nel main: $e");
@@ -97,19 +100,44 @@ class _MyAppState extends State<MyApp> {
     }
   }
 
+  Future<void> _checkSubscriptionOnStartup() async {
+    try {
+      final customerInfo = await Purchases.getCustomerInfo();
+
+      final entitlement = customerInfo.entitlements.all['premium_benefit'];
+      final isPremium = entitlement?.isActive ?? false;
+
+      // If the user is no longer premium, update their status in the app
+      if (!isPremium && mounted) {
+        // Also check if the user in the cubit is currently premium before removing it
+        final userState = context.read<AppUserCubit>().state;
+        if (userState is AppUserIsLoggedIn && userState.user.isPremium) {
+          context.read<AppUserCubit>().removePremium();
+        }
+      }
+    } catch (e) {
+      debugPrint("Error checking subscription on startup: $e");
+    }
+  }
+
   void _listenToPremiumStatusChanges() {
     Purchases.addCustomerInfoUpdateListener(
       (customerInfo) {
         final entitlement = customerInfo.entitlements.all['premium_benefit'];
 
+        // If the entitlement doesn't exist, do nothing.
         if (entitlement == null) {
           return;
         }
 
         final isPremium = entitlement.isActive;
 
-        if (!isPremium) {
-          context.read<AppUserCubit>().removePremium();
+        if (!isPremium && mounted) {
+          // We can add the same check here for consistency
+          final userState = context.read<AppUserCubit>().state;
+          if (userState is AppUserIsLoggedIn && userState.user.isPremium) {
+            context.read<AppUserCubit>().removePremium();
+          }
         }
       },
     );
