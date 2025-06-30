@@ -25,6 +25,7 @@ class GameSelectionPage extends StatefulWidget {
         builder: (context) => const GameSelectionPage(),
         settings: const RouteSettings(name: routeName),
       );
+
   const GameSelectionPage({super.key});
 
   @override
@@ -33,7 +34,7 @@ class GameSelectionPage extends StatefulWidget {
 
 class _GameSelectionPageState extends State<GameSelectionPage> {
   final _inviteCodeController = TextEditingController();
-  GameType _selectedGameType = GameType.truthOrDare; // Default selection
+  GameType _selectedGameType = GameType.truthOrDare;
 
   @override
   void dispose() {

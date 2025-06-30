@@ -146,7 +146,10 @@ class GameRemoteDataSourceImpl implements GameRemoteDataSource {
     return _tryDatabaseOperation(() async {
       final result = await supabaseClient.rpc(
         'leave_game_session',
-        params: {'p_session_id': sessionId, 'p_user_id': userId},
+        params: {
+          'p_session_id': sessionId,
+          'p_user_id': userId,
+        },
       );
       return result as bool;
     });

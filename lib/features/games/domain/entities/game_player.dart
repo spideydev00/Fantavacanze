@@ -37,7 +37,7 @@ class GamePlayer extends Equatable {
         isGhost,
         hasUsedSpecialAbility,
         hasUsedGhostProtocol,
-        changeCategoryUsesLeft, // Add to props
+        changeCategoryUsesLeft,
         joinedAt,
       ];
 

@@ -205,15 +205,15 @@ class LobbyBloc extends Bloc<LobbyEvent, LobbyState> {
         return;
       }
 
-      // ---------- UNCOMMENTE IF YOU WANT TO ENFORCE MINIMUM PLAYERS ---------
-      // if (currentLobbyState.players.length < 2 &&
-      //     currentLobbyState.session.gameType != GameType.wordBomb) {
-      //   // WordBomb can be played solo
-      //   emit(LobbyError(
-      //       "Sono necessari almeno 2 giocatori per iniziare questa partita."));
-      //   emit(currentLobbyState.copyWith(isLoadingNextAction: false));
-      //   return;
-      // }
+      // ---------- COMMENT IF YOU DO NOT WANT TO ENFORCE MINIMUM PLAYERS ---------
+      if (currentLobbyState.players.length < 2 &&
+          currentLobbyState.session.gameType != GameType.wordBomb) {
+        // WordBomb can be played solo
+        emit(LobbyError(
+            "Sono necessari almeno 2 giocatori per iniziare questa partita."));
+        emit(currentLobbyState.copyWith(isLoadingNextAction: false));
+        return;
+      }
 
       emit(currentLobbyState.copyWith(isLoadingNextAction: true));
 
