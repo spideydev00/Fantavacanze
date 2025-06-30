@@ -204,7 +204,7 @@ class GameLobbyPage extends StatelessWidget {
                                             player,
                                             session.id),
                                   ),
-                                  if (!isThisPlayerTheAdmin) // Admin cannot remove themselves here
+                                  if (!isThisPlayerTheAdmin)
                                     IconButton(
                                       icon: Icon(Icons.delete,
                                           color: ColorPalette.error

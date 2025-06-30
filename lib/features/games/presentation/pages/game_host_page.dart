@@ -51,8 +51,9 @@ class GameHostPage extends StatelessWidget {
                       ElevatedButton(
                         onPressed: () {
                           // Navigate back to game selection or home
-                          Navigator.of(context)
-                              .popUntil((route) => route.isFirst);
+                          Navigator.of(context).popUntil(
+                            (route) => route.isFirst,
+                          );
                           // Optionally clear lobby state if needed
                           // context.read<LobbyBloc>().add(ClearLobbyState());
                         },
@@ -67,9 +68,9 @@ class GameHostPage extends StatelessWidget {
               body: Center(child: CircularProgressIndicator()));
         } else if (lobbyState is LobbyError) {
           return Scaffold(
-              appBar: AppBar(title: const Text("Errore!")),
-              body: Center(
-                  child: Column(
+            appBar: AppBar(title: const Text("Errore!")),
+            body: Center(
+              child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
@@ -89,7 +90,9 @@ class GameHostPage extends StatelessWidget {
                     child: const Text("Indietro"),
                   )
                 ],
-              )));
+              ),
+            ),
+          );
         }
         // Default or error state: navigate back or show error
         // This might happen if the session ID doesn't match or lobby state is initial.
