@@ -77,6 +77,8 @@ class _GameSelectionPageState extends State<GameSelectionPage> {
         ),
       ),
       body: BlocListener<LobbyBloc, LobbyState>(
+        listenWhen: (previous, current) =>
+            previous is! LobbySessionActive && current is LobbySessionActive,
         listener: (context, state) {
           if (state is LobbySessionActive) {
             // Navigate to GameHostPage when a session becomes active
