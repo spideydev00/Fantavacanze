@@ -100,7 +100,6 @@ class _GenderSelectionPageState extends State<GenderSelectionPage> {
               return Padding(
                 padding: const EdgeInsets.all(ThemeSizes.lg),
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     // Titolo
                     Text(
@@ -118,7 +117,7 @@ class _GenderSelectionPageState extends State<GenderSelectionPage> {
                     InfoContainer(
                       title: 'Informazione Importante',
                       message:
-                          'Le leghe e le funzionalità di Fantavacanze sono influenzate dal genere dell\'utente. È necessario selezionare un\'opzione per accedere a tutte le funzionalità in modo corretto.',
+                          'Le leghe e le funzionalità di Fantavacanze sono influenzate dal genere dell\'utente. Seleziona un opzione per godere di tutti i vantaggi.',
                       icon: Icons.info_outline,
                       color: ColorPalette.info,
                     ),
