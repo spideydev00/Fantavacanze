@@ -51,3 +51,5 @@ app.*.map.json
 /lib/features/auth/data/examples/
 /lib/core/database_table_examples/
 
+# Other
+useful-terminal-commands.md
