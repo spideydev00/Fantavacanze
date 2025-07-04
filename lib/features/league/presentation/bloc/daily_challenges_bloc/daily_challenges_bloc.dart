@@ -216,7 +216,7 @@ class DailyChallengesBloc
           // Sblocca sia la sfida selezionata che la sua corrispondente sostitutiva
           if (c.id == updatedChallenge.id) {
             return updatedChallenge;
-          } else if (event.challenge.position < 3 &&
+          } else if (event.challenge.position <= 3 &&
               c.position == event.challenge.position + 3) {
             return c.copyWith(isUnlocked: true);
           }

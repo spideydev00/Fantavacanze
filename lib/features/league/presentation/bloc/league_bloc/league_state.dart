@@ -1,7 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/league.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/note.dart';
-import 'package:fantavacanze_official/features/league/domain/entities/notification.dart';
 
 abstract class LeagueState extends Equatable {
   const LeagueState();
@@ -130,39 +129,4 @@ class AdminOperationSuccess extends LeagueState {
 
   @override
   List<Object> get props => [league, operation];
-}
-
-class NotificationReceived extends LeagueState {
-  final Notification notification;
-
-  const NotificationReceived({
-    required this.notification,
-  });
-
-  @override
-  List<Object?> get props => [notification];
-}
-
-class NotificationsLoaded extends LeagueState {
-  final List<Notification> notifications;
-
-  const NotificationsLoaded({
-    required this.notifications,
-  });
-
-  @override
-  List<Object?> get props => [notifications];
-}
-
-class NotificationActionSuccess extends LeagueState {
-  final String action;
-  final String? notificationId;
-
-  const NotificationActionSuccess({
-    required this.action,
-    this.notificationId,
-  });
-
-  @override
-  List<Object?> get props => [action, notificationId];
 }

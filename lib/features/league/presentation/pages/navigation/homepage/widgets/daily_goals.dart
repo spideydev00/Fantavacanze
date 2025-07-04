@@ -113,17 +113,18 @@ class _DailyGoalsState extends State<DailyGoals> {
         );
       } else if (state.operation == 'premium_unlocked') {
         // Aggiornamento già gestito attraverso lo stato del bloc
-      } else if (state.operation == 'approve_challenge') {
-        showSnackBar(
-          "Sfida approvata con successo!",
-          color: ColorPalette.success,
-        );
-      } else if (state.operation == 'reject_challenge') {
-        showSnackBar(
-          "Sfida rifiutata!",
-          color: ColorPalette.error,
-        );
       }
+      // else if (state.operation == 'approve_challenge') {
+      //   showSnackBar(
+      //     "Sfida approvata con successo!",
+      //     color: ColorPalette.success,
+      //   );
+      // } else if (state.operation == 'reject_challenge') {
+      //   showSnackBar(
+      //     "Sfida rifiutata!",
+      //     color: ColorPalette.error,
+      //   );
+      // }
     } else if (state is DailyChallengesError) {
       setState(() => _isLoading = false);
       showSnackBar(state.message);

@@ -2,33 +2,20 @@ import 'dart:async';
 
 import 'package:fantavacanze_official/core/cubits/app_league/app_league_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit.dart';
-import 'package:fantavacanze_official/core/cubits/notification_count/notification_count_cubit.dart';
-import 'package:fantavacanze_official/core/use-case/usecase.dart';
-import 'package:fantavacanze_official/features/league/domain/entities/notification.dart';
-import 'package:fantavacanze_official/features/league/domain/use_cases/remote/daily_challenges/approve_daily_challenge.dart';
-import 'package:fantavacanze_official/features/league/domain/use_cases/remote/daily_challenges/reject_daily_challenge.dart';
-import 'package:fantavacanze_official/features/league/domain/use_cases/remote/daily_challenges/unlock_daily_challenge.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/remote/events/add_event.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/remote/memory/add_memory.dart';
-import 'package:fantavacanze_official/features/league/domain/use_cases/remote/notifications/delete_notification.dart';
-import 'package:fantavacanze_official/features/league/domain/use_cases/remote/notifications/get_notifications.dart';
-import 'package:fantavacanze_official/features/league/domain/use_cases/remote/notifications/mark_notification_as_read.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/remote/rules/add_rule.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/remote/league/create_league.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/remote/notes/delete_note.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/remote/rules/delete_rule.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/remote/league/exit_league.dart';
-import 'package:fantavacanze_official/features/league/domain/use_cases/remote/daily_challenges/get_daily_challenges.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/remote/league/get_league.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/remote/notes/get_notes.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/remote/league/join_league.dart';
-import 'package:fantavacanze_official/features/league/domain/use_cases/remote/notifications/listen_to_notification.dart';
-import 'package:fantavacanze_official/features/league/domain/use_cases/remote/daily_challenges/mark_challenge_as_completed.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/remote/memory/remove_memory.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/remote/league/remove_team_participants.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/remote/notes/save_note.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/remote/league/search_league.dart';
-import 'package:fantavacanze_official/features/league/domain/use_cases/remote/daily_challenges/update_challenge_refresh_status.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/remote/rules/update_rule.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/remote/league/update_team_name.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/remote/league/upload_image.dart';
@@ -70,24 +57,7 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
   //cubits
   final AppUserCubit appUserCubit;
   final AppLeagueCubit appLeagueCubit;
-  final NotificationCountCubit notificationCountCubit;
 
-  // Daily challenges and notifications
-  final GetDailyChallenges getDailyChallenges;
-  final UnlockDailyChallenge unlockDailyChallenge;
-  final MarkChallengeAsCompleted markChallengeAsCompleted;
-  final UpdateChallengeRefreshStatus updateChallengeRefreshStatus;
-  final ListenToNotification listenToNotification;
-
-  // Add missing notification use case properties
-  final GetNotifications getNotifications;
-  final MarkNotificationAsRead markNotificationAsRead;
-  final DeleteNotification deleteNotification;
-  final ApproveDailyChallenge approveDailyChallenge;
-  final RejectDailyChallenge rejectDailyChallenge;
-
-  // Stream subscription for notifications
-  StreamSubscription<Notification>? _notificationSubscription;
   StreamSubscription? _appUserSubscription;
 
   LeagueBloc({
@@ -117,19 +87,6 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
     //cubits
     required this.appUserCubit,
     required this.appLeagueCubit,
-    required this.notificationCountCubit,
-    //challenges
-    required this.getDailyChallenges,
-    required this.unlockDailyChallenge,
-    required this.markChallengeAsCompleted,
-    required this.updateChallengeRefreshStatus,
-    required this.approveDailyChallenge,
-    required this.rejectDailyChallenge,
-    //notifications
-    required this.listenToNotification,
-    required this.getNotifications,
-    required this.markNotificationAsRead,
-    required this.deleteNotification,
   }) : super(LeagueInitial()) {
     _appUserSubscription = appUserCubit.stream.listen((userState) {
       if (userState is AppUserInitial) {
@@ -163,10 +120,6 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
     on<RemoveParticipantsEvent>(_onRemoveParticipants);
     on<UpdateLeagueInfoEvent>(_onUpdateLeagueInfo);
     on<DeleteLeagueEvent>(_onDeleteLeague);
-    on<ListenToNotificationEvent>(_onListenToNotification);
-    on<GetNotificationsEvent>(_onGetNotifications);
-    on<MarkNotificationAsReadEvent>(_onMarkNotificationAsRead);
-    on<DeleteNotificationEvent>(_onDeleteNotification);
     on<LeagueResetStateEvent>((event, emit) {
       emit(LeagueInitial());
     });
@@ -864,117 +817,13 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
       },
     );
   }
-  // =====================================================================
-  // NOTIFICATIONS OPERATIONS
-  // =====================================================================
-
-  Future<void> _onListenToNotification(
-    ListenToNotificationEvent event,
-    Emitter<LeagueState> emit,
-  ) async {
-    emit(LeagueLoading());
-
-    _notificationSubscription?.cancel();
-
-    final result = await listenToNotification.call(NoParams());
-
-    result.fold(
-      (failure) {
-        emit(LeagueError(message: failure.message));
-      },
-      (notificationStream) {
-        emit.forEach<Notification>(
-          notificationStream,
-          onData: (notification) {
-            // Increment notification count
-            notificationCountCubit.increment();
-            // Return the notification state that will be emitted
-            return NotificationReceived(notification: notification);
-          },
-          onError: (error, stackTrace) =>
-              LeagueError(message: error.toString()),
-        );
-      },
-    );
-  }
 
   // M E T O D O   P E R   L A   C H I U S U R A
   @override
   Future<void> close() {
-    _notificationSubscription?.cancel();
     _appUserSubscription?.cancel();
 
     return super.close();
-  }
-
-  // Fix the _onGetNotifications method to properly count unread notifications
-  Future<void> _onGetNotifications(
-    GetNotificationsEvent event,
-    Emitter<LeagueState> emit,
-  ) async {
-    emit(LeagueLoading());
-
-    final result = await getNotifications(NoParams());
-
-    result.fold((failure) => emit(LeagueError(message: failure.message)),
-        (notifications) {
-      // Update notification count in the cubit - count ALL unread notifications
-      final unreadCount = notifications.where((n) => !n.isRead).length;
-      notificationCountCubit.setCount(unreadCount);
-
-      emit(NotificationsLoaded(notifications: notifications));
-    });
-  }
-
-  // Fix notification marking as read - only decrement count for non-daily challenge notifications
-  Future<void> _onMarkNotificationAsRead(
-    MarkNotificationAsReadEvent event,
-    Emitter<LeagueState> emit,
-  ) async {
-    emit(LeagueLoading());
-
-    final result =
-        await markNotificationAsRead.call(MarkNotificationAsReadParams(
-      notificationId: event.notificationId,
-    ));
-
-    result.fold(
-      (failure) => emit(LeagueError(message: failure.message)),
-      (_) {
-        // Update notification count only if this is a regular notification
-        // For daily challenges, we'll handle this when they're approved/rejected
-        emit(NotificationActionSuccess(
-          action: 'mark_as_read',
-          notificationId: event.notificationId,
-        ));
-      },
-    );
-  }
-
-  // Method to handle notification deletion
-  Future<void> _onDeleteNotification(
-    DeleteNotificationEvent event,
-    Emitter<LeagueState> emit,
-  ) async {
-    emit(LeagueLoading());
-
-    final result = await deleteNotification.call(
-      DeleteNotificationParams(notificationId: event.notificationId),
-    );
-
-    result.fold(
-      (failure) => emit(LeagueError(message: failure.message)),
-      (_) {
-        // Decrement notification count since we're removing a notification
-        notificationCountCubit.decrement();
-
-        // Emit success with the notification ID to remove it from the UI
-        emit(NotificationActionSuccess(
-          action: 'delete',
-          notificationId: event.notificationId,
-        ));
-      },
-    );
   }
 
   // =====================================================================

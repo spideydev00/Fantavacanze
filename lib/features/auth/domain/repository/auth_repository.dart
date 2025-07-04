@@ -72,4 +72,7 @@ abstract interface class AuthRepository {
     required String token,
     required String newPassword,
   });
+
+  // New method for setting review status
+  Future<Either<Failure, User>> setHasLeftReview({required bool hasLeftReview});
 }

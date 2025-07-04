@@ -1,6 +1,5 @@
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/extensions/context_extension.dart';
-import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/notification.dart'
     as app_notification;
@@ -57,7 +56,7 @@ class NotificationDialog extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: ColorPalette.info.withValues(alpha: 0.1),
+            color: context.primaryColor.withValues(alpha: 0.1),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),
@@ -81,8 +80,8 @@ class NotificationDialog extends StatelessWidget {
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                       colors: [
-                        ColorPalette.info,
-                        ColorPalette.info.withValues(alpha: 0.8),
+                        context.primaryColor,
+                        context.primaryColor.withValues(alpha: 0.8),
                       ],
                     ),
                   ),
@@ -159,7 +158,7 @@ class NotificationDialog extends StatelessWidget {
                       Navigator.of(context).pop();
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: ColorPalette.info,
+                      backgroundColor: context.primaryColor,
                       foregroundColor: Colors.white,
                       elevation: 0,
                       shape: RoundedRectangleBorder(

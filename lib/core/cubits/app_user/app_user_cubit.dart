@@ -5,6 +5,7 @@ import 'package:fantavacanze_official/features/auth/domain/entities/user.dart';
 import 'package:fantavacanze_official/features/auth/domain/use-cases/become_premium.dart';
 import 'package:fantavacanze_official/features/auth/domain/use-cases/get_current_user.dart';
 import 'package:fantavacanze_official/features/auth/domain/use-cases/remove_premium.dart';
+import 'package:fantavacanze_official/features/auth/domain/use-cases/set_has_left_review.dart';
 import 'package:fantavacanze_official/features/auth/domain/use-cases/sign_out.dart';
 import 'package:fantavacanze_official/features/auth/domain/use-cases/update_display_name.dart';
 import 'package:fantavacanze_official/features/auth/domain/use-cases/update_gender.dart';
@@ -26,6 +27,7 @@ class AppUserCubit extends Cubit<AppUserState> {
   final UpdateGender _updateGender;
   final BecomePremium _becomePremium;
   final RemovePremium _removePremium;
+  final SetHasLeftReview _setHasLeftReview;
 
   AppUserCubit({
     required GetCurrentUser getCurrentUser,
@@ -37,6 +39,7 @@ class AppUserCubit extends Cubit<AppUserState> {
     required UpdateGender updateGender,
     required BecomePremium becomePremium,
     required RemovePremium removePremium,
+    required SetHasLeftReview setHasLeftReview,
   })  : _getCurrentUser = getCurrentUser,
         _signOut = signOut,
         _updateDisplayName = updateDisplayName,
@@ -46,6 +49,7 @@ class AppUserCubit extends Cubit<AppUserState> {
         _updateGender = updateGender,
         _becomePremium = becomePremium,
         _removePremium = removePremium,
+        _setHasLeftReview = setHasLeftReview,
         super(AppUserInitial());
 
   // Gets current user when app starts
@@ -234,6 +238,27 @@ class AppUserCubit extends Cubit<AppUserState> {
       final currentState = state as AppUserIsLoggedIn;
 
       final res = await _removePremium.call(NoParams());
+
+      res.fold(
+        (failure) => emit(AppUserIsLoggedIn(
+          user: currentState.user,
+          errorMessage: failure.message,
+        )),
+        (user) {
+          emit(AppUserIsLoggedIn(user: user));
+        },
+      );
+    }
+  }
+
+  // Set user's review status
+  Future<void> setHasLeftReview(bool hasLeftReview) async {
+    if (state is AppUserIsLoggedIn) {
+      final currentState = state as AppUserIsLoggedIn;
+
+      final res = await _setHasLeftReview.call(
+        SetHasLeftReviewParams(hasLeftReview: hasLeftReview),
+      );
 
       res.fold(
         (failure) => emit(AppUserIsLoggedIn(

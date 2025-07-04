@@ -10,9 +10,11 @@ import 'package:fantavacanze_official/core/services/ad_helper.dart';
 import 'package:fantavacanze_official/core/services/review_service.dart';
 import 'package:fantavacanze_official/core/widgets/dialogs/notification_dialog.dart';
 import 'package:fantavacanze_official/core/widgets/notification_badge.dart';
-import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc/league_bloc.dart';
-import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc/league_event.dart';
-import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc/league_state.dart';
+import 'package:fantavacanze_official/features/league/presentation/bloc/daily_challenges_bloc/daily_challenges_bloc.dart';
+import 'package:fantavacanze_official/features/league/presentation/bloc/daily_challenges_bloc/daily_challenges_state.dart';
+import 'package:fantavacanze_official/features/league/presentation/bloc/notifications_bloc/notifications_bloc.dart';
+import 'package:fantavacanze_official/features/league/presentation/bloc/notifications_bloc/notifications_event.dart';
+import 'package:fantavacanze_official/features/league/presentation/bloc/notifications_bloc/notifications_state.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/notifications/notifications_page.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/settings/settings.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/dashboard/widgets/side_menu/custom_menu_icon.dart';
@@ -74,9 +76,10 @@ class _DashboardScreenState extends State<DashboardScreen>
     _loadAds();
     _checkAndRequestReview();
 
-    context.read<LeagueBloc>().add(GetNotificationsEvent());
-    // Ascolto notifiche
-    context.read<LeagueBloc>().add(ListenToNotificationEvent());
+    // Load notifications and update count on startup
+    context.read<NotificationsBloc>().add(GetNotificationsEvent());
+    // Listen for new notifications
+    context.read<NotificationsBloc>().add(ListenToNotificationEvent());
   }
 
   @override
@@ -115,26 +118,55 @@ class _DashboardScreenState extends State<DashboardScreen>
   }
 
   void _checkAndRequestReview() {
-    _reviewService.checkAndRequestReview(
-      context,
-      context.read<AppUserCubit>(),
-    );
+    Future.delayed(const Duration(milliseconds: 1500), () {
+      if (mounted) {
+        final dailyChallengesState = context.read<DailyChallengesBloc>().state;
+
+        if (dailyChallengesState is DailyChallengesLoaded) {
+          // Daily challenges are loaded, now check for reviews
+          _reviewService.checkAndRequestReview(
+            context,
+            context.read<AppUserCubit>(),
+          );
+        } else {
+          // If challenges aren't loaded yet, try again after a short delay
+          Future.delayed(
+            const Duration(milliseconds: 1000),
+            () {
+              if (mounted) {
+                _checkAndRequestReview();
+              }
+            },
+          );
+        }
+      }
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     final bool isKeyboardVisible = MediaQuery.of(context).viewInsets.bottom > 0;
     final double menuWidth = Constants.getWidth(context) * 0.70;
+    final appUserCubit = context.read<AppUserCubit>().state;
 
-    return BlocListener<LeagueBloc, LeagueState>(
+    return BlocListener<NotificationsBloc, NotificationsState>(
       listener: (context, state) {
         if (state is NotificationReceived) {
+          // Show dialog for new notifications
           showDialog(
             context: context,
             builder: (_) => NotificationDialog.fromNotification(
               notification: state.notification,
             ),
           );
+        }
+        // Always ensure the notification count is updated whenever notifications state changes
+        if (state is NotificationsLoaded) {
+          // The NotificationsBloc already updates the count internally,
+          // but we can force a refresh here if needed
+          final notificationCount =
+              state.notifications.where((n) => !n.isRead).length;
+          context.read<NotificationCountCubit>().setCount(notificationCount);
         }
       },
       child: Scaffold(
@@ -185,24 +217,26 @@ class _DashboardScreenState extends State<DashboardScreen>
                           isActive: isSideMenuOpen,
                         ),
                         actions: [
-                          BlocBuilder<NotificationCountCubit, int>(
-                            builder: (_, count) => GestureDetector(
-                              onTap: () => Navigator.push(
-                                  context, NotificationsPage.route),
-                              child: Padding(
-                                padding:
-                                    const EdgeInsets.only(right: ThemeSizes.md),
-                                child: NotificationBadge(
-                                  count: count,
-                                  child: Icon(
-                                    Icons.notifications_outlined,
-                                    size: 24,
-                                    color: context.textPrimaryColor,
+                          (appUserCubit as AppUserIsLoggedIn).user.isPremium
+                              ? BlocBuilder<NotificationCountCubit, int>(
+                                  builder: (_, count) => GestureDetector(
+                                    onTap: () => Navigator.push(
+                                        context, NotificationsPage.route),
+                                    child: Padding(
+                                      padding: const EdgeInsets.only(
+                                          right: ThemeSizes.md),
+                                      child: NotificationBadge(
+                                        count: count,
+                                        child: Icon(
+                                          Icons.notifications_outlined,
+                                          size: 24,
+                                          color: context.textPrimaryColor,
+                                        ),
+                                      ),
+                                    ),
                                   ),
-                                ),
-                              ),
-                            ),
-                          ),
+                                )
+                              : SizedBox.shrink(),
                           GestureDetector(
                             onTap: () =>
                                 Navigator.push(context, SettingsPage.route),
