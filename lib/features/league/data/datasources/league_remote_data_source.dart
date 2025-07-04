@@ -999,8 +999,7 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
       // Insert notification
       await supabaseClient
           .from('daily_challenges_notifications')
-          .insert(notificationData)
-          .select();
+          .insert(notificationData);
     });
   }
 

@@ -355,56 +355,6 @@ class DeleteLeagueEvent extends LeagueEvent {
 
 // Daily challenges events moved to daily_challenges_event.dart
 
-class ListenToNotificationEvent extends LeagueEvent {}
-
-class GetNotificationsEvent extends LeagueEvent {}
-
-class MarkNotificationAsReadEvent extends LeagueEvent {
-  final String notificationId;
-
-  const MarkNotificationAsReadEvent({required this.notificationId});
-
-  @override
-  List<Object?> get props => [notificationId];
-}
-
-class DeleteNotificationEvent extends LeagueEvent {
-  final String notificationId;
-
-  const DeleteNotificationEvent({required this.notificationId});
-
-  @override
-  List<Object?> get props => [notificationId];
-}
-
-class UnlockDailyChallengeEvent extends LeagueEvent {
-  final String challengeId;
-  final String leagueId;
-  final int primaryPosition;
-
-  final bool isUnlocked;
-
-  const UnlockDailyChallengeEvent({
-    required this.challengeId,
-    required this.leagueId,
-    required this.isUnlocked,
-    this.primaryPosition = 2,
-  });
-
-  @override
-  List<Object?> get props =>
-      [challengeId, leagueId, primaryPosition, isUnlocked];
-}
-
-class ApproveDailyChallengeEvent extends LeagueEvent {
-  final String notificationId;
-
-  const ApproveDailyChallengeEvent({required this.notificationId});
-
-  @override
-  List<Object?> get props => [notificationId];
-}
-
 class LeagueResetStateEvent extends LeagueEvent {
   const LeagueResetStateEvent();
 }

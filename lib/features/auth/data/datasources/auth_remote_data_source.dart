@@ -75,6 +75,8 @@ abstract interface class AuthRemoteDataSource {
     required String newPassword,
   });
 
+  Future<UserModel> setHasLeftReview({required bool hasLeftReview});
+
   Session? get currentSession;
 }
 
@@ -621,6 +623,27 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
           password: newPassword,
         ),
       );
+    } catch (e) {
+      throw ServerException(_extractErrorMessage(e));
+    }
+  }
+
+  @override
+  Future<UserModel> setHasLeftReview({required bool hasLeftReview}) async {
+    try {
+      final userId = currentSession?.user.id;
+
+      if (userId == null) throw ServerException('Utente non autenticato');
+
+      // Update the has_left_review field in the profiles table
+      await supabaseClient
+          .from('profiles')
+          .update({'has_left_review': hasLeftReview}).eq('id', userId);
+
+      // Get the updated user data
+      final user = await getCurrentUserData();
+
+      return user!;
     } catch (e) {
       throw ServerException(_extractErrorMessage(e));
     }

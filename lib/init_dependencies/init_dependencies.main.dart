@@ -70,6 +70,7 @@ Future<void> initDependencies() async {
           removeConsents: serviceLocator(),
           becomePremium: serviceLocator(),
           removePremium: serviceLocator(),
+          setHasLeftReview: serviceLocator(),
         ),
       )
       //2. navigation cubit
@@ -337,6 +338,9 @@ void _initAuth() {
     ..registerFactory(
       () => ResetPassword(authRepository: serviceLocator()),
     )
+    ..registerFactory(
+      () => SetHasLeftReview(authRepository: serviceLocator()),
+    )
     //bloc
     ..registerLazySingleton(
       () => AuthBloc(
@@ -512,7 +516,6 @@ void _initLeague() {
         deleteRule: serviceLocator(),
         appUserCubit: serviceLocator(),
         appLeagueCubit: serviceLocator(),
-        notificationCountCubit: serviceLocator(),
         removeTeamParticipants: serviceLocator(),
         searchLeague: serviceLocator(),
         getNotes: serviceLocator(),
@@ -525,16 +528,16 @@ void _initLeague() {
         removeParticipants: serviceLocator(),
         updateLeagueInfo: serviceLocator(),
         deleteLeague: serviceLocator(),
-        getDailyChallenges: serviceLocator(),
-        unlockDailyChallenge: serviceLocator(),
-        markChallengeAsCompleted: serviceLocator(),
-        updateChallengeRefreshStatus: serviceLocator(),
-        listenToNotification: serviceLocator(),
+      ),
+    )
+    // notifications bloc
+    ..registerFactory(
+      () => NotificationsBloc(
         getNotifications: serviceLocator(),
         markNotificationAsRead: serviceLocator(),
         deleteNotification: serviceLocator(),
-        approveDailyChallenge: serviceLocator(),
-        rejectDailyChallenge: serviceLocator(),
+        listenToNotification: serviceLocator(),
+        notificationCountCubit: serviceLocator(),
       ),
     )
     // daily challenges bloc

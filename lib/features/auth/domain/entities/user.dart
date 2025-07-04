@@ -1,4 +1,6 @@
-class User {
+import 'package:equatable/equatable.dart';
+
+class User extends Equatable {
   final String id;
   final String email;
   final String name;
@@ -9,7 +11,7 @@ class User {
   final String authProvider;
   final String? fcmToken;
   final bool isWordBombTrialAvailable;
-  final bool hasBeenPromptedToLeaveReview;
+  final bool hasLeftReview; // New field for tracking reviews
 
   const User({
     required this.id,
@@ -22,7 +24,7 @@ class User {
     this.authProvider = '',
     this.fcmToken,
     required this.isWordBombTrialAvailable,
-    this.hasBeenPromptedToLeaveReview = false,
+    this.hasLeftReview = false, // Default to false
   });
 
   User copyWith({
@@ -36,7 +38,7 @@ class User {
     String? authProvider,
     String? fcmToken,
     bool? isWordBombTrialAvailable,
-    bool? hasBeenPromptedToLeaveReview,
+    bool? hasLeftReview,
   }) {
     return User(
       id: id ?? this.id,
@@ -50,8 +52,22 @@ class User {
       fcmToken: fcmToken ?? this.fcmToken,
       isWordBombTrialAvailable:
           isWordBombTrialAvailable ?? this.isWordBombTrialAvailable,
-      hasBeenPromptedToLeaveReview:
-          hasBeenPromptedToLeaveReview ?? this.hasBeenPromptedToLeaveReview,
+      hasLeftReview: hasLeftReview ?? this.hasLeftReview,
     );
   }
+
+  @override
+  List<Object?> get props => [
+        id,
+        email,
+        name,
+        gender,
+        isPremium,
+        isOnboarded,
+        isAdult,
+        authProvider,
+        fcmToken,
+        isWordBombTrialAvailable,
+        hasLeftReview,
+      ];
 }

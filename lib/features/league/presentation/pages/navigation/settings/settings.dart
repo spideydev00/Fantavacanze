@@ -187,7 +187,8 @@ class SettingsPage extends StatelessWidget {
         SettingsTile(
           icon: Icons.info,
           title: 'Versione App',
-          subtitle: '1.0.0',
+          //TODO: Get version dynamically
+          subtitle: '1.0.5',
           onTap: () {
             AppInfoDialog.show(context);
           },

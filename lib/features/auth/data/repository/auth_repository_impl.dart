@@ -383,4 +383,21 @@ class AuthRepositoryImpl implements AuthRepository {
       return left(Failure(e.message));
     }
   }
+
+  @override
+  Future<Either<Failure, User>> setHasLeftReview(
+      {required bool hasLeftReview}) async {
+    try {
+      if (!await connectionChecker.isConnected) {
+        return left(
+            Failure("Connessione a internet assente. Riprova più tardi."));
+      }
+
+      final user = await authRemoteDataSource.setHasLeftReview(
+          hasLeftReview: hasLeftReview);
+      return right(user);
+    } on ServerException catch (e) {
+      return left(Failure(e.message));
+    }
+  }
 }
