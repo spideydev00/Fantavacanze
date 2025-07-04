@@ -12,6 +12,7 @@ import 'package:fantavacanze_official/core/widgets/dialogs/notification_dialog.d
 import 'package:fantavacanze_official/core/widgets/notification_badge.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/daily_challenges_bloc/daily_challenges_bloc.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/daily_challenges_bloc/daily_challenges_state.dart';
+import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc/league_bloc.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/notifications_bloc/notifications_bloc.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/notifications_bloc/notifications_event.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/notifications_bloc/notifications_state.dart';
@@ -127,6 +128,7 @@ class _DashboardScreenState extends State<DashboardScreen>
           _reviewService.checkAndRequestReview(
             context,
             context.read<AppUserCubit>(),
+            context.read<AppLeagueCubit>(),
           );
         } else {
           // If challenges aren't loaded yet, try again after a short delay
@@ -147,7 +149,9 @@ class _DashboardScreenState extends State<DashboardScreen>
   Widget build(BuildContext context) {
     final bool isKeyboardVisible = MediaQuery.of(context).viewInsets.bottom > 0;
     final double menuWidth = Constants.getWidth(context) * 0.70;
-    final appUserCubit = context.read<AppUserCubit>().state;
+
+    final leagueBloc = context.read<LeagueBloc>();
+    final appLeagueCubit = context.read<AppLeagueCubit>();
 
     return BlocListener<NotificationsBloc, NotificationsState>(
       listener: (context, state) {
@@ -217,7 +221,8 @@ class _DashboardScreenState extends State<DashboardScreen>
                           isActive: isSideMenuOpen,
                         ),
                         actions: [
-                          (appUserCubit as AppUserIsLoggedIn).user.isPremium
+                          appLeagueCubit.state is AppLeagueExists &&
+                                  leagueBloc.isAdmin()
                               ? BlocBuilder<NotificationCountCubit, int>(
                                   builder: (_, count) => GestureDetector(
                                     onTap: () => Navigator.push(

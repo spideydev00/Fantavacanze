@@ -30,14 +30,16 @@ class ReviewService {
   Future<void> checkAndRequestReview(
     BuildContext context,
     AppUserCubit userCubit,
+    AppLeagueCubit leagueCubit,
   ) async {
     try {
       // Skip if already requested this session
       if (_hasRequestedReviewThisSession) return;
 
       final userState = userCubit.state;
+      final leagueState = leagueCubit.state;
 
-      if (userState is AppUserIsLoggedIn) {
+      if (userState is AppUserIsLoggedIn && leagueState is AppLeagueExists) {
         // Skip if user has already left a review
         if (userState.user.hasLeftReview) return;
 
@@ -78,7 +80,11 @@ class ReviewService {
                 const Duration(seconds: 10),
                 () {
                   if (context.mounted) {
-                    _unlockDailyChallenge(context, userState.user.id);
+                    _unlockDailyChallenge(
+                      context,
+                      userState.user.id,
+                      leagueCubit,
+                    );
                   }
                 },
               );
@@ -95,9 +101,14 @@ class ReviewService {
   }
 
   // Unlock the premium daily challenge
-  void _unlockDailyChallenge(BuildContext context, String userId) {
+  void _unlockDailyChallenge(
+    BuildContext context,
+    String userId,
+    AppLeagueCubit leagueCubit,
+  ) {
     try {
-      final leagueState = context.read<AppLeagueCubit>().state;
+      final leagueState = leagueCubit.state;
+
       if (leagueState is AppLeagueExists) {
         final String leagueId = leagueState.selectedLeague.id;
 
@@ -126,10 +137,5 @@ class ReviewService {
     } catch (e) {
       debugPrint('Error unlocking daily challenge: $e');
     }
-  }
-
-  // For testing purposes only
-  void resetSessionFlag() {
-    _hasRequestedReviewThisSession = false;
   }
 }
