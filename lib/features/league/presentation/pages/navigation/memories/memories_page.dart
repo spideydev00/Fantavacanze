@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fantavacanze_official/core/constants/constants.dart';
 import 'package:fantavacanze_official/core/cubits/app_league/app_league_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit.dart';
@@ -10,7 +9,6 @@ import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:fantavacanze_official/core/utils/show_snackbar.dart';
 import 'package:fantavacanze_official/core/utils/sort_by_date.dart';
 import 'package:fantavacanze_official/core/widgets/buttons/gradient_option_button.dart';
-import 'package:fantavacanze_official/core/widgets/loader.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/event.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/league.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/memory.dart';
@@ -37,6 +35,7 @@ class _MemoriesPageState extends State<MemoriesPage>
     with AutomaticKeepAliveClientMixin {
   League? _currentLeague;
   String? _currentUserId;
+
   bool _isAdmin = false;
   bool _isLoading = false;
 
@@ -76,12 +75,17 @@ class _MemoriesPageState extends State<MemoriesPage>
         league: _currentLeague!,
         events: _currentLeague!.events,
         onSave: _handleSaveMemory,
+        currentUserId: _currentUserId!, // Add this parameter
       ),
     );
   }
 
   void _handleSaveMemory(
-      File imageFile, String text, Event? event, String? eventName) {
+    File mediaFile,
+    String text,
+    Event? event,
+    String? eventName,
+  ) {
     if (_currentLeague == null || _currentUserId == null) return;
 
     // Store the form values for later use
@@ -90,10 +94,12 @@ class _MemoriesPageState extends State<MemoriesPage>
     _pendingEventName = eventName;
 
     // First upload the image
-    context.read<LeagueBloc>().add(UploadImageEvent(
-          leagueId: _currentLeague!.id,
-          imageFile: imageFile,
-        ));
+    context.read<LeagueBloc>().add(
+          UploadMediaEvent(
+            leagueId: _currentLeague!.id,
+            mediaFile: mediaFile,
+          ),
+        );
 
     setState(() {
       _isLoading = true;
@@ -164,6 +170,7 @@ class _MemoriesPageState extends State<MemoriesPage>
           memory: memory,
           isCurrentUserAuthor: memory.userId == _currentUserId || _isAdmin,
           onDelete: () => _deleteMemoryImmediate(memory.id),
+          league: _currentLeague,
         ),
       ),
     );
@@ -339,7 +346,6 @@ class _MemoriesPageState extends State<MemoriesPage>
               ),
             ),
           ),
-          SliverToBoxAdapter(child: _buildRecentMemories(memories)),
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.symmetric(
@@ -397,191 +403,6 @@ class _MemoriesPageState extends State<MemoriesPage>
           const SliverToBoxAdapter(child: SizedBox(height: 40)),
         ],
       ),
-    );
-  }
-
-  Widget _buildRecentMemories(List<Memory> memories) {
-    if (memories.length <= 3) return const SizedBox.shrink();
-
-    // Use the utility function for recent memories too
-    final recentMemories = sortMemoriesByDate(memories);
-    final topMemories = recentMemories.take(5).toList();
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.only(
-            left: ThemeSizes.md,
-            right: ThemeSizes.md,
-            top: ThemeSizes.md,
-          ),
-          child: Row(
-            children: [
-              Icon(Icons.access_time_rounded,
-                  size: 16, color: context.primaryColor),
-              const SizedBox(width: 8),
-              Text(
-                'Ricordi recenti',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: context.textPrimaryColor,
-                ),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: ThemeSizes.sm),
-        SizedBox(
-          height: 180,
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            physics: const BouncingScrollPhysics(),
-            padding: const EdgeInsets.only(
-              left: ThemeSizes.sm,
-              right: ThemeSizes.sm,
-              bottom: ThemeSizes.sm,
-            ),
-            itemCount: topMemories.length,
-            itemBuilder: (context, index) {
-              final memory = topMemories[index];
-              return Padding(
-                padding: const EdgeInsets.symmetric(horizontal: ThemeSizes.sm),
-                child: GestureDetector(
-                  onTap: () => _openMemoryDetail(memory),
-                  child: Container(
-                    width: 160,
-                    decoration: BoxDecoration(
-                      borderRadius:
-                          BorderRadius.circular(ThemeSizes.borderRadiusLg),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.1),
-                          blurRadius: 8,
-                          offset: const Offset(0, 3),
-                        ),
-                      ],
-                    ),
-                    clipBehavior: Clip.antiAlias,
-                    child: Stack(
-                      fit: StackFit.expand,
-                      children: [
-                        Hero(
-                          tag: 'recent_memory_${memory.id}',
-                          child: CachedNetworkImage(
-                            imageUrl: memory.imageUrl,
-                            fit: BoxFit.cover,
-                            placeholder: (context, url) => Container(
-                                color: context.secondaryBgColor,
-                                child: Loader(
-                                  color: ColorPalette.info,
-                                )),
-                            errorWidget: (context, url, error) => Container(
-                              color: context.secondaryBgColor,
-                              child: const Icon(Icons.error),
-                            ),
-                          ),
-                        ),
-                        Positioned.fill(
-                          child: Container(
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                begin: Alignment.topCenter,
-                                end: Alignment.bottomCenter,
-                                colors: [
-                                  Colors.transparent,
-                                  Colors.black.withValues(alpha: 0.3),
-                                  Colors.black.withValues(alpha: 0.8),
-                                ],
-                                stops: const [0.5, 0.8, 1.0],
-                              ),
-                            ),
-                          ),
-                        ),
-                        Positioned(
-                          bottom: 0,
-                          left: 0,
-                          right: 0,
-                          child: Padding(
-                            padding: const EdgeInsets.all(ThemeSizes.sm),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                if (memory.eventName != null)
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 6, vertical: 2),
-                                    decoration: BoxDecoration(
-                                      color: context.primaryColor,
-                                      borderRadius: BorderRadius.circular(4),
-                                    ),
-                                    child: Text(
-                                      memory.eventName!,
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 10,
-                                      ),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ),
-                                const SizedBox(height: 4),
-                                Row(
-                                  children: [
-                                    CircleAvatar(
-                                      radius: 10,
-                                      backgroundColor:
-                                          ColorPalette.getGradientFromId(
-                                                  memory.userId)
-                                              .colors
-                                              .first,
-                                      child: Text(
-                                        memory.participantName
-                                            .substring(0, 1)
-                                            .toUpperCase(),
-                                        style: const TextStyle(
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 10,
-                                        ),
-                                      ),
-                                    ),
-                                    const SizedBox(width: 6),
-                                    Expanded(
-                                      child: Text(
-                                        memory.participantName,
-                                        style: const TextStyle(
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 12,
-                                          shadows: [
-                                            Shadow(
-                                                color: Colors.black,
-                                                blurRadius: 2)
-                                          ],
-                                        ),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              );
-            },
-          ),
-        ),
-      ],
     );
   }
 }

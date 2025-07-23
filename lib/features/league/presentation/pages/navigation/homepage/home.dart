@@ -1,10 +1,13 @@
 import 'package:fantavacanze_official/core/cubits/app_league/app_league_cubit.dart';
+import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit.dart';
+import 'package:fantavacanze_official/core/extensions/context_extension.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:fantavacanze_official/core/widgets/divider.dart';
 import 'package:fantavacanze_official/core/widgets/events/events_list_widget.dart';
 import 'package:fantavacanze_official/features/blog/presentation/widgets/article_page.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/league.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc/league_bloc.dart';
+import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc/league_event.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/create_league/create_league_page.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/events/add_event_page.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/homepage/widgets/action_buttons_row.dart';
@@ -20,13 +23,23 @@ class HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final currentUser = context.read<AppUserCubit>().state;
+
+    final currentUserId =
+        currentUser is AppUserIsLoggedIn ? currentUser.user.id : null;
+
     return BlocBuilder<AppLeagueCubit, AppLeagueState>(
       builder: (context, state) {
         // User has leagues and a selected league
         if (state is AppLeagueExists) {
           return SingleChildScrollView(
             physics: const ClampingScrollPhysics(),
-            child: _buildParticipantContent(context, state.selectedLeague),
+            child: _buildParticipantContent(
+                context,
+                state.selectedLeague.admins.contains(currentUserId)
+                    ? true
+                    : false,
+                state.selectedLeague),
           );
         }
 
@@ -58,9 +71,8 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  Widget _buildParticipantContent(BuildContext context, League league) {
-    final isAdmin = context.read<LeagueBloc>().isAdmin();
-
+  Widget _buildParticipantContent(
+      BuildContext context, bool isAdmin, League league) {
     return Column(
       children: [
         DailyGoals(),
@@ -76,22 +88,45 @@ class HomePage extends StatelessWidget {
           _buildAdminActions(context),
         ],
 
-        // Latest events section (visible to everyone)
+        // Latest events section
         const SizedBox(height: 25),
+
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: ThemeSizes.xl),
           child: CustomDivider(text: 'Ultimi Eventi'),
         ),
+
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: ThemeSizes.xl),
+          child: Text(
+            isAdmin
+                ? 'Fai scroll verso sinistra su un evento per eliminarlo e rimuovere i punti associati.'
+                : 'Ultimi eventi aggiunti nella lega.',
+            textAlign: TextAlign.center,
+            style: context.textTheme.bodySmall?.copyWith(
+              color: context.colorScheme.onSurface.withValues(alpha: .7),
+            ),
+          ),
+        ),
+
         const SizedBox(height: 15),
 
-        // Use our new reusable component
+        // Events list with dismiss capability for admins only
         EventsListWidget(
           league: league,
           limit: 5,
           showAllEvents: true,
-          onEventTap: (event) {
-            // Handle event tap if needed
-          },
+          allowDismiss: isAdmin,
+          onEventDismiss: isAdmin
+              ? (event) {
+                  context.read<LeagueBloc>().add(
+                        RemoveEventEvent(
+                          league: league,
+                          eventId: event.id,
+                        ),
+                      );
+                }
+              : null,
         ),
 
         const SizedBox(height: 25),

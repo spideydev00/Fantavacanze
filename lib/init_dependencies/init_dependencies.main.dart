@@ -142,9 +142,9 @@ Future<void> _initRevenueCat() async {
       );
     }
 
-    debugPrint("✅ RevenueCat initialized successfully");
+    debugPrint("✅ RevenueCat inizializzato correttamente");
   } catch (e) {
-    debugPrint("Error initializing RevenueCat: $e");
+    debugPrint("❌ Errore nell'inizializzazione di RevenueCat: $e");
     rethrow;
   }
 }
@@ -414,6 +414,9 @@ void _initLeague() {
       () => AddEvent(leagueRepository: serviceLocator()),
     )
     ..registerFactory(
+      () => RemoveEvent(leagueRepository: serviceLocator()),
+    )
+    ..registerFactory(
       () => AddMemory(leagueRepository: serviceLocator()),
     )
     ..registerFactory(
@@ -444,7 +447,7 @@ void _initLeague() {
       () => DeleteNote(leagueRepository: serviceLocator()),
     )
     ..registerFactory(
-      () => UploadImage(leagueRepository: serviceLocator()),
+      () => UploadMedia(leagueRepository: serviceLocator()),
     )
     ..registerFactory(
       () => UploadTeamLogo(leagueRepository: serviceLocator()),
@@ -509,6 +512,7 @@ void _initLeague() {
         exitLeague: serviceLocator(),
         updateTeamName: serviceLocator(),
         addEvent: serviceLocator(),
+        removeEvent: serviceLocator(),
         addMemory: serviceLocator(),
         removeMemory: serviceLocator(),
         updateRule: serviceLocator(),
@@ -521,7 +525,7 @@ void _initLeague() {
         getNotes: serviceLocator(),
         saveNote: serviceLocator(),
         deleteNote: serviceLocator(),
-        uploadImage: serviceLocator(),
+        uploadMedia: serviceLocator(),
         uploadTeamLogo: serviceLocator(),
         updateTeamLogo: serviceLocator(),
         addAdministrators: serviceLocator(),

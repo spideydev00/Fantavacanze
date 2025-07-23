@@ -91,6 +91,11 @@ abstract class LeagueRemoteDataSource {
     String? description,
   });
 
+  Future<LeagueModel> removeEvent({
+    required LeagueModel league,
+    required String eventId,
+  });
+
   // =====================================================================
   // MEMORY OPERATIONS
   // =====================================================================
@@ -127,9 +132,9 @@ abstract class LeagueRemoteDataSource {
   // =====================================================================
   // STORAGE OPERATIONS
   // =====================================================================
-  Future<String> uploadImage({
+  Future<String> uploadMedia({
     required String leagueId,
-    required File imageFile,
+    required File mediaFile,
   });
   Future<String> uploadTeamLogo({
     required String leagueId,
@@ -664,6 +669,31 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
     });
   }
 
+  @override
+  Future<LeagueModel> removeEvent({
+    required LeagueModel league,
+    required String eventId,
+  }) async {
+    return _tryDatabaseOperation(() async {
+      final currentUserId = _checkAuthentication();
+
+      final response = await supabaseClient.rpc(
+        'remove_event_from_league',
+        params: {
+          'p_league_id': league.id,
+          'p_event_id': eventId,
+          'p_user_id': currentUserId,
+        },
+      );
+
+      if (response == null) {
+        throw ServerException('Errore nella rimozione dell\'evento');
+      }
+
+      return _convertResponseToModel(response as Map<String, dynamic>);
+    });
+  }
+
   // =====================================================================
   // MEMORY OPERATIONS IMPLEMENTATION
   // =====================================================================
@@ -735,7 +765,7 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
       // Delete the image from storage
       await _deleteFileFromStorage(
         bucket: 'memories',
-        url: memoryToRemove.imageUrl,
+        url: memoryToRemove.mediaUrl,
       );
 
       // Remove the memory efficiently
@@ -837,16 +867,16 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
   // =====================================================================
 
   @override
-  Future<String> uploadImage({
+  Future<String> uploadMedia({
     required String leagueId,
-    required File imageFile,
+    required File mediaFile,
   }) async {
     return _tryDatabaseOperation(() async {
       final path = leagueId;
-      return await _uploadImageToStorage(
+      return await _uploadMediaToStorage(
         bucket: 'memories',
         path: path,
-        imageFile: imageFile,
+        mediaFile: mediaFile,
         expiresIn: 60 * 60 * 24 * 365,
       );
     });
@@ -860,11 +890,11 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
   }) async {
     return _tryDatabaseOperation(() async {
       final path = '$leagueId/$teamName';
-      return await _uploadImageToStorage(
+      return await _uploadMediaToStorage(
         bucket: 'team-logos',
         path: path,
-        imageFile: imageFile,
-        expiresIn: 60 * 60 * 24 * 365, // 1 year
+        mediaFile: imageFile,
+        expiresIn: 60 * 60 * 24 * 365,
       );
     });
   }
@@ -1236,22 +1266,26 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
   // PRIVATE HELPER METHODS
   // =====================================================================
 
-  /// Uploads an image to storage
-  Future<String> _uploadImageToStorage({
+  /// Uploads a media file (image or video) to storage
+  Future<String> _uploadMediaToStorage({
     required String bucket,
     required String path,
-    required File imageFile,
+    required File mediaFile,
     required int expiresIn,
   }) async {
     try {
       final currentTime = DateTime.now().millisecondsSinceEpoch;
-      final fileName = '$currentTime.jpg';
+
+      // Determine file extension based on file content or path
+      String fileExtension = _getFileExtension(mediaFile);
+
+      final fullFileName = '$currentTime$fileExtension';
       final fullPath =
-          path.endsWith('/') ? '$path$fileName' : '$path/$fileName';
+          path.endsWith('/') ? '$path$fullFileName' : '$path/$fullFileName';
 
       await supabaseClient.storage.from(bucket).upload(
             fullPath,
-            imageFile,
+            mediaFile,
             fileOptions: const FileOptions(
               cacheControl: '3600',
               upsert: true,
@@ -1266,6 +1300,34 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
       return signedUrl;
     } catch (e) {
       throw ServerException(_extractErrorMessage(e));
+    }
+  }
+
+  /// Determines file extension from file path or content
+  String _getFileExtension(File file) {
+    final fileName = file.path.toLowerCase();
+
+    // Check for video extensions
+    if (fileName.endsWith('.mp4') || fileName.contains('video')) {
+      return '.mp4';
+    } else if (fileName.endsWith('.mov')) {
+      return '.mov';
+    } else if (fileName.endsWith('.avi')) {
+      return '.avi';
+    } else if (fileName.endsWith('.mkv')) {
+      return '.mkv';
+    }
+    // Check for image extensions
+    else if (fileName.endsWith('.png')) {
+      return '.png';
+    } else if (fileName.endsWith('.gif')) {
+      return '.gif';
+    } else if (fileName.endsWith('.jpeg')) {
+      return '.jpeg';
+    }
+    // Default to jpg
+    else {
+      return '.jpg';
     }
   }
 

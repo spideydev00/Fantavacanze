@@ -2,6 +2,7 @@ import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/extensions/context_extension.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
+import 'package:fantavacanze_official/core/widgets/dialogs/confirmation_dialog.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/rule/rule.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -11,15 +12,19 @@ class EventCard extends StatelessWidget {
 
   final dynamic event;
   final VoidCallback? onTap;
+  final VoidCallback? onDismiss;
   final DateFormat? dateFormat;
   final bool showDetails;
+  final bool allowDismiss;
 
   const EventCard({
     super.key,
     required this.event,
     this.onTap,
+    this.onDismiss,
     this.dateFormat,
     this.showDetails = true,
+    this.allowDismiss = false,
   });
 
   @override
@@ -31,7 +36,7 @@ class EventCard extends StatelessWidget {
     final bool isBonus = event.type == RuleType.bonus;
     final DateTime createdAt = event.createdAt;
 
-    // Use targetUser directly - it should already be resolved by _EventWithResolvedName
+    // Use targetUser directly - it should already be resolved by EventWithResolvedName
     final String targetName = event.targetUser;
 
     final String formattedDate =
@@ -57,7 +62,7 @@ class EventCard extends StatelessWidget {
     final Color gradientEnd = secondaryColor.withValues(alpha: 0.8);
     final Color overlayColor = primaryColor.withValues(alpha: 0.05);
 
-    return Container(
+    Widget cardContent = Container(
       margin: const EdgeInsets.only(bottom: ThemeSizes.md),
       decoration: BoxDecoration(
         gradient: LinearGradient(
@@ -226,5 +231,67 @@ class EventCard extends StatelessWidget {
         ),
       ),
     );
+
+    // Se allowDismiss è true, wrap con Dismissible
+    if (allowDismiss && onDismiss != null) {
+      return Dismissible(
+        key: Key('event_${event.id}'),
+        direction: DismissDirection.endToStart,
+        dismissThresholds: const {DismissDirection.endToStart: 0.3},
+        confirmDismiss: (direction) async {
+          final result = await showDialog<bool>(
+            context: context,
+            builder: (context) => ConfirmationDialog.delete(
+              itemType: 'evento',
+              customMessage:
+                  'Sei sicuro di voler rimuovere questo evento? I punti associati verranno sottratti dalla classifica.',
+              onDelete: onDismiss!,
+            ),
+          );
+          return result ?? false;
+        },
+        background: Container(
+          margin: const EdgeInsets.only(bottom: ThemeSizes.md),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.centerRight,
+              end: Alignment.centerLeft,
+              colors: [
+                ColorPalette.error.withValues(alpha: 0.9),
+                ColorPalette.error.withValues(alpha: 0.7),
+              ],
+            ),
+            borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusMd),
+          ),
+          child: const Align(
+            alignment: Alignment.centerRight,
+            child: Padding(
+              padding: EdgeInsets.only(right: 20.0),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'Elimina',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  SizedBox(width: 8),
+                  Icon(
+                    Icons.delete_rounded,
+                    color: Colors.white,
+                    size: 24,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+        child: cardContent,
+      );
+    }
+
+    return cardContent;
   }
 }

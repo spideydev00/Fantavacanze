@@ -5,27 +5,27 @@ import 'package:fantavacanze_official/features/league/domain/repository/league_r
 import 'package:fpdart/fpdart.dart';
 import 'package:flutter/foundation.dart';
 
-class UploadImage implements Usecase<String, UploadImageParams> {
+class UploadMedia implements Usecase<String, UploadMediaParams> {
   final LeagueRepository leagueRepository;
 
-  UploadImage({required this.leagueRepository});
+  UploadMedia({required this.leagueRepository});
 
   @override
-  Future<Either<Failure, String>> call(UploadImageParams params) async {
-    return leagueRepository.uploadImage(
+  Future<Either<Failure, String>> call(UploadMediaParams params) async {
+    return leagueRepository.uploadMedia(
       leagueId: params.leagueId,
-      imageFile: params.imageFile,
+      mediaFile: params.mediaFile,
     );
   }
 }
 
 @immutable
-class UploadImageParams {
+class UploadMediaParams {
   final String leagueId;
-  final File imageFile;
+  final File mediaFile;
 
-  const UploadImageParams({
+  const UploadMediaParams({
     required this.leagueId,
-    required this.imageFile,
+    required this.mediaFile,
   });
 }

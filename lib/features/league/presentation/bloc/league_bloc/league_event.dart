@@ -117,6 +117,19 @@ class AddEventEvent extends LeagueEvent {
       ];
 }
 
+class RemoveEventEvent extends LeagueEvent {
+  final League league;
+  final String eventId;
+
+  const RemoveEventEvent({
+    required this.league,
+    required this.eventId,
+  });
+
+  @override
+  List<Object?> get props => [league, eventId];
+}
+
 class AddMemoryEvent extends LeagueEvent {
   final League league;
   final String imageUrl;
@@ -258,17 +271,17 @@ class DeleteNoteEvent extends LeagueEvent {
   List<Object?> get props => [leagueId, noteId];
 }
 
-class UploadImageEvent extends LeagueEvent {
+class UploadMediaEvent extends LeagueEvent {
   final String leagueId;
-  final File imageFile;
+  final File mediaFile;
 
-  const UploadImageEvent({
+  const UploadMediaEvent({
     required this.leagueId,
-    required this.imageFile,
+    required this.mediaFile,
   });
 
   @override
-  List<Object?> get props => [leagueId, imageFile];
+  List<Object?> get props => [leagueId, mediaFile];
 }
 
 class UploadTeamLogoEvent extends LeagueEvent {

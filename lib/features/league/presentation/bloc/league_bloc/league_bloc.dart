@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:fantavacanze_official/core/cubits/app_league/app_league_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/remote/events/add_event.dart';
+import 'package:fantavacanze_official/features/league/domain/use_cases/remote/events/remove_event.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/remote/memory/add_memory.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/remote/rules/add_rule.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/remote/league/create_league.dart';
@@ -18,7 +19,7 @@ import 'package:fantavacanze_official/features/league/domain/use_cases/remote/no
 import 'package:fantavacanze_official/features/league/domain/use_cases/remote/league/search_league.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/remote/rules/update_rule.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/remote/league/update_team_name.dart';
-import 'package:fantavacanze_official/features/league/domain/use_cases/remote/league/upload_image.dart';
+import 'package:fantavacanze_official/features/league/domain/use_cases/remote/league/upload_media.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/remote/league/upload_team_logo.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/remote/league/update_team_logo.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/remote/league/add_administrators.dart';
@@ -36,6 +37,7 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
   final ExitLeague exitLeague;
   final UpdateTeamName updateTeamName;
   final AddEvent addEvent;
+  final RemoveEvent removeEvent;
   final AddMemory addMemory;
   final RemoveMemory removeMemory;
   final RemoveTeamParticipants removeTeamParticipants;
@@ -46,7 +48,7 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
   final GetNotes getNotes;
   final SaveNote saveNote;
   final DeleteNote deleteNote;
-  final UploadImage uploadImage;
+  final UploadMedia uploadMedia;
   final UploadTeamLogo uploadTeamLogo;
   final UpdateTeamLogo updateTeamLogo;
   final AddAdministrators addAdministrators;
@@ -72,6 +74,7 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
     required this.removeTeamParticipants,
     required this.removeParticipants,
     required this.addEvent,
+    required this.removeEvent,
     required this.addMemory,
     required this.removeMemory,
     required this.updateRule,
@@ -81,7 +84,7 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
     required this.getNotes,
     required this.saveNote,
     required this.deleteNote,
-    required this.uploadImage,
+    required this.uploadMedia,
     required this.uploadTeamLogo,
     required this.updateTeamLogo,
     //cubits
@@ -104,6 +107,7 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
     on<ExitLeagueEvent>(_onExitLeague);
     on<UpdateTeamNameEvent>(_onUpdateTeamName);
     on<AddEventEvent>(_onAddEventEvent);
+    on<RemoveEventEvent>(_onRemoveEvent);
     on<AddMemoryEvent>(_onAddMemory);
     on<RemoveMemoryEvent>(_onRemoveMemory);
     on<UpdateRuleEvent>(_onUpdateRule);
@@ -113,7 +117,7 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
     on<GetNotesEvent>(_onGetNotes);
     on<SaveNoteEvent>(_onSaveNote);
     on<DeleteNoteEvent>(_onDeleteNote);
-    on<UploadImageEvent>(_onUploadImage);
+    on<UploadMediaEvent>(_onUploadMedia);
     on<UploadTeamLogoEvent>(_onUploadTeamLogo);
     on<UpdateTeamLogoEvent>(_onUpdateTeamLogo);
     on<AddAdministratorsEvent>(_onAddAdministrators);
@@ -460,6 +464,27 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
     );
   }
 
+  // R E M O V E   E V E N T
+  Future<void> _onRemoveEvent(
+    RemoveEventEvent event,
+    Emitter<LeagueState> emit,
+  ) async {
+    emit(LeagueLoading());
+
+    final result = await removeEvent(RemoveEventParams(
+      league: event.league,
+      eventId: event.eventId,
+    ));
+
+    result.fold(
+      (failure) => emit(LeagueError(message: failure.message)),
+      (league) {
+        appLeagueCubit.selectLeague(league);
+        emit(LeagueSuccess(league: league, operation: 'remove_event'));
+      },
+    );
+  }
+
   // A D D   M E M O R Y
   Future<void> _onAddMemory(
     AddMemoryEvent event,
@@ -655,17 +680,17 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
   // IMAGE UPLOAD
   // =====================================================================
 
-  // Handle image upload
-  Future<void> _onUploadImage(
-    UploadImageEvent event,
+  // Handle media upload
+  Future<void> _onUploadMedia(
+    UploadMediaEvent event,
     Emitter<LeagueState> emit,
   ) async {
     emit(LeagueLoading());
 
-    final result = await uploadImage(
-      UploadImageParams(
+    final result = await uploadMedia(
+      UploadMediaParams(
         leagueId: event.leagueId,
-        imageFile: event.imageFile,
+        mediaFile: event.mediaFile,
       ),
     );
 

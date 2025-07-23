@@ -65,10 +65,15 @@ class _DailyGoalsState extends State<DailyGoals> {
           children: [
             const SizedBox(height: ThemeSizes.md),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: ThemeSizes.xl),
-              child: CustomDivider(text: "Obiettivi giornalieri"),
+              padding: const EdgeInsets.symmetric(horizontal: ThemeSizes.lg),
+              child: CustomDivider(
+                text: "Obiettivi giornalieri",
+                hasDropdown: true,
+                dropdownText:
+                    '1. Fai scroll per approvare un obiettivo giornaliero. Se non sei admin, attendi approvazione. \n\n2. Puoi fare il refresh una volta sola per obiettivo. \n\n3. Per sbloccare tutti gli obiettivi, serve un abbonamento premium. ',
+              ),
             ),
-            const SizedBox(height: ThemeSizes.md),
+            const SizedBox(height: ThemeSizes.lg),
             if (state is DailyChallengesLoading && _isLoading)
               Center(
                 child: Padding(
@@ -111,20 +116,7 @@ class _DailyGoalsState extends State<DailyGoals> {
           "Sfida sbloccata con successo!",
           color: ColorPalette.success,
         );
-      } else if (state.operation == 'premium_unlocked') {
-        // Aggiornamento già gestito attraverso lo stato del bloc
       }
-      // else if (state.operation == 'approve_challenge') {
-      //   showSnackBar(
-      //     "Sfida approvata con successo!",
-      //     color: ColorPalette.success,
-      //   );
-      // } else if (state.operation == 'reject_challenge') {
-      //   showSnackBar(
-      //     "Sfida rifiutata!",
-      //     color: ColorPalette.error,
-      //   );
-      // }
     } else if (state is DailyChallengesError) {
       setState(() => _isLoading = false);
       showSnackBar(state.message);

@@ -1,5 +1,7 @@
 import 'dart:async';
 
+// import 'package:advertising_id/advertising_id.dart';
+// import 'package:app_tracking_transparency/app_tracking_transparency.dart';
 import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit.dart';
 import 'package:fantavacanze_official/core/services/gdpr_service.dart';
 import 'package:fantavacanze_official/features/auth/presentation/pages/gender_selection_page.dart';
@@ -31,8 +33,13 @@ class _InitialPageState extends State<InitialPage> {
     // 1. Chiama il tuo GdprService che usa l'SDK UMP.
     await GdprService().initializeAndShowForm();
 
+    // //per iOS
     // final idfa = await AppTrackingTransparency.getAdvertisingIdentifier();
     // debugPrint('IDFA dispositivo: $idfa');
+
+    // //per Android
+    // final adId = await AdvertisingId.id(true);
+    // debugPrint('Advertising ID dispositivo: $adId');
 
     // 2. Inizializza l'SDK di AdMob solo dopo che il flusso di consenso è terminato.
     await MobileAds.instance.initialize();
