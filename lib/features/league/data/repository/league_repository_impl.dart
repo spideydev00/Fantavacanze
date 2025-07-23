@@ -333,6 +333,32 @@ class LeagueRepositoryImpl implements LeagueRepository {
   }
 
   @override
+  Future<Either<Failure, League>> removeEvent({
+    required League league,
+    required String eventId,
+  }) async {
+    try {
+      if (!await connectionChecker.isConnected) {
+        return Left(Failure('Nessuna connessione internet'));
+      }
+
+      final updatedLeague = await remoteDataSource.removeEvent(
+        league: league as LeagueModel,
+        eventId: eventId,
+      );
+
+      // Update cache
+      await localDataSource.cacheLeague(updatedLeague);
+
+      return Right(updatedLeague);
+    } on ServerException catch (e) {
+      return Left(Failure(e.message));
+    } on CacheException catch (e) {
+      return Left(Failure('Errore nella cache: ${e.message}'));
+    }
+  }
+
+  @override
   Future<Either<Failure, League>> addMemory({
     required League league,
     required String imageUrl,
@@ -610,9 +636,9 @@ class LeagueRepositoryImpl implements LeagueRepository {
   }
 
   @override
-  Future<Either<Failure, String>> uploadImage({
+  Future<Either<Failure, String>> uploadMedia({
     required String leagueId,
-    required File imageFile,
+    required File mediaFile,
   }) async {
     try {
       if (!await connectionChecker.isConnected) {
@@ -622,12 +648,12 @@ class LeagueRepositoryImpl implements LeagueRepository {
         );
       }
 
-      final imageUrl = await remoteDataSource.uploadImage(
+      final mediaUrl = await remoteDataSource.uploadMedia(
         leagueId: leagueId,
-        imageFile: imageFile,
+        mediaFile: mediaFile,
       );
 
-      return Right(imageUrl);
+      return Right(mediaUrl);
     } on ServerException catch (e) {
       return Left(Failure(e.message));
     } catch (e) {

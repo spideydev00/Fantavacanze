@@ -35,8 +35,8 @@ class DrinkGames extends StatelessWidget {
                 right: 0,
                 child: Opacity(
                   opacity: 0.15,
-                  child: Image.asset(
-                    'assets/images/icons/homepage_icons/friends-hug-icon.png',
+                  child: SvgPicture.asset(
+                    'assets/images/icons/homepage_icons/drink-games-page-icon.svg',
                     height: MediaQuery.of(context).size.height * 0.45,
                   ),
                 ),

@@ -1,7 +1,9 @@
 part of 'app_user_cubit.dart';
 
 @immutable
-sealed class AppUserState {}
+sealed class AppUserState {
+  get user => null;
+}
 
 class AppUserInitial extends AppUserState {}
 

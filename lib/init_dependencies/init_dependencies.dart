@@ -58,6 +58,7 @@ import 'package:fantavacanze_official/features/league/data/repository/subscripti
 import 'package:fantavacanze_official/features/league/domain/repository/subscription_repository.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/remote/daily_challenges/approve_daily_challenge.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/remote/daily_challenges/unlock_daily_challenge.dart';
+import 'package:fantavacanze_official/features/league/domain/use_cases/remote/events/remove_event.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/remote/notifications/delete_notification.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/remote/notifications/get_notifications.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/remote/notifications/listen_to_notification.dart';
@@ -113,7 +114,7 @@ import 'package:fantavacanze_official/features/league/domain/use_cases/remote/le
 import 'package:fantavacanze_official/features/league/domain/use_cases/remote/rules/update_rule.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/remote/league/update_team_logo.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/remote/league/update_team_name.dart';
-import 'package:fantavacanze_official/features/league/domain/use_cases/remote/league/upload_image.dart';
+import 'package:fantavacanze_official/features/league/domain/use_cases/remote/league/upload_media.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/remote/league/upload_team_logo.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/remote/subscription/check_premium_status.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/remote/subscription/get_products.dart';

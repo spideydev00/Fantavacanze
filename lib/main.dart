@@ -118,7 +118,7 @@ class _MyAppState extends State<MyApp> {
         }
       }
     } catch (e) {
-      debugPrint("Error checking subscription on startup: $e");
+      debugPrint("Errore durante il controllo dell'abbonamento all'avvio: $e");
     }
   }
 
@@ -150,6 +150,7 @@ class _MyAppState extends State<MyApp> {
     return BlocBuilder<AppThemeCubit, AppThemeState>(
       builder: (context, state) {
         return MaterialApp(
+          showSemanticsDebugger: false,
           navigatorKey: navigatorKey,
           scaffoldMessengerKey: messengerKey,
           title: 'Fantavacanze',

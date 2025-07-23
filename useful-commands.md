@@ -4,4 +4,4 @@
 
 # Stop daemon (useful when disk space is little)
 
-./gradlew signingReport
+

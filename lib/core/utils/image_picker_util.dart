@@ -18,13 +18,12 @@ class ImagePickerUtil {
     bool enableCropping = true,
     bool isCircular = false,
     double? aspectRatio,
-    ImageSource source =
-        ImageSource.gallery, // Using image_picker's ImageSource
+    ImageSource source = ImageSource.gallery,
   }) async {
     try {
       final XFile? pickedFile = await _picker.pickImage(
         source: source,
-        imageQuality: 85, // Slight compression to reduce file size
+        imageQuality: 85,
       );
 
       if (pickedFile == null) return null;
@@ -49,6 +48,32 @@ class ImagePickerUtil {
       if (context.mounted) {
         showSnackBar(
           'Si è verificato un errore durante la selezione dell\'immagine',
+        );
+      }
+
+      return null;
+    }
+  }
+
+  /// Picks a video from the specified source
+  /// Returns the File if successful, null otherwise
+  static Future<File?> pickVideo({
+    required BuildContext context,
+    ImageSource source = ImageSource.gallery,
+  }) async {
+    try {
+      final XFile? pickedFile = await _picker.pickVideo(
+        source: source,
+        maxDuration: const Duration(seconds: 60),
+      );
+
+      if (pickedFile == null) return null;
+
+      return File(pickedFile.path);
+    } catch (e) {
+      if (context.mounted) {
+        showSnackBar(
+          'Si è verificato un errore durante la selezione del video',
         );
       }
 

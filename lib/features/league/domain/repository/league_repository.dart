@@ -69,6 +69,11 @@ abstract class LeagueRepository {
     String? description,
   });
 
+  Future<Either<Failure, League>> removeEvent({
+    required League league,
+    required String eventId,
+  });
+
   Future<Either<Failure, League>> addMemory({
     required League league,
     required String imageUrl,
@@ -107,10 +112,10 @@ abstract class LeagueRepository {
   Future<Either<Failure, void>> saveNote(String leagueId, Note note);
   Future<Either<Failure, void>> deleteNote(String leagueId, String noteId);
 
-  // Image operations
-  Future<Either<Failure, String>> uploadImage({
+  // Media operations
+  Future<Either<Failure, String>> uploadMedia({
     required String leagueId,
-    required File imageFile,
+    required File mediaFile,
   });
 
   Future<Either<Failure, String>> uploadTeamLogo({
