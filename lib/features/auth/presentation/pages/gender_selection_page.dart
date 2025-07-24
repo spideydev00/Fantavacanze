@@ -97,75 +97,87 @@ class _GenderSelectionPageState extends State<GenderSelectionPage> {
               }
             },
             builder: (context, state) {
-              return Padding(
-                padding: const EdgeInsets.all(ThemeSizes.lg),
-                child: Column(
-                  children: [
-                    // Titolo
-                    Text(
-                      'Seleziona il tuo genere',
-                      style: context.textTheme.headlineSmall!.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: context.textPrimaryColor,
+              return SingleChildScrollView(
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    minHeight: MediaQuery.of(context).size.height -
+                        MediaQuery.of(context).padding.top -
+                        MediaQuery.of(context).padding.bottom,
+                  ),
+                  child: IntrinsicHeight(
+                    child: Padding(
+                      padding: const EdgeInsets.all(ThemeSizes.lg),
+                      child: Column(
+                        children: [
+                          // Titolo
+                          Text(
+                            'Seleziona il tuo genere',
+                            style: context.textTheme.headlineSmall!.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: context.textPrimaryColor,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+
+                          const SizedBox(height: ThemeSizes.lg),
+
+                          // Info container che spiega perché la selezione è necessaria
+                          InfoContainer(
+                            title: 'Informazione Importante',
+                            message:
+                                'Le funzionalità sono influenzate dal genere dell\'utente.',
+                            icon: Icons.info_outline,
+                            color: ColorPalette.info,
+                          ),
+
+                          const SizedBox(height: ThemeSizes.xxl),
+
+                          // Opzioni di genere (maschile e femminile)
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              // Opzione Uomo
+                              _buildGenderOption(
+                                  'male', Icons.male, ColorPalette.info),
+
+                              // Opzione Donna
+                              _buildGenderOption('female', Icons.female,
+                                  context.secondaryColor),
+                            ],
+                          ),
+
+                          const SizedBox(height: ThemeSizes.lg),
+
+                          // Opzione "Preferisco non dirlo"
+                          _buildGenderOption(
+                            'undefined',
+                            Icons.do_not_disturb_rounded,
+                            ColorPalette.darkGrey,
+                          ),
+
+                          SizedBox(height: ThemeSizes.xxl),
+
+                          // Pulsante continua
+                          ElevatedButton(
+                            onPressed: _isLoading || _selectedGender == null
+                                ? null
+                                : _confirmGenderSelection,
+                            style:
+                                context.elevatedButtonThemeData.style!.copyWith(
+                              backgroundColor: WidgetStatePropertyAll(
+                                _selectedGender == null
+                                    ? ColorPalette.buttonDisabled
+                                    : context.primaryColor,
+                              ),
+                            ),
+                            child: _isLoading
+                                ? Loader(color: context.textPrimaryColor)
+                                : const Text('Continua'),
+                          ),
+                        ],
                       ),
-                      textAlign: TextAlign.center,
                     ),
-
-                    const SizedBox(height: ThemeSizes.lg),
-
-                    // Info container che spiega perché la selezione è necessaria
-                    InfoContainer(
-                      title: 'Informazione Importante',
-                      message:
-                          'Le leghe e le funzionalità di Fantavacanze sono influenzate dal genere dell\'utente. Seleziona un opzione per godere di tutti i vantaggi.',
-                      icon: Icons.info_outline,
-                      color: ColorPalette.info,
-                    ),
-
-                    const SizedBox(height: ThemeSizes.xxl),
-
-                    // Opzioni di genere (maschile e femminile)
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        // Opzione Uomo
-                        _buildGenderOption(
-                            'male', Icons.male, ColorPalette.info),
-
-                        // Opzione Donna
-                        _buildGenderOption(
-                            'female', Icons.female, context.secondaryColor),
-                      ],
-                    ),
-
-                    const SizedBox(height: ThemeSizes.lg),
-
-                    // Opzione "Preferisco non dirlo"
-                    _buildGenderOption(
-                      'undefined',
-                      Icons.do_not_disturb_rounded,
-                      ColorPalette.darkGrey,
-                    ),
-
-                    const Spacer(),
-
-                    // Pulsante continua
-                    ElevatedButton(
-                      onPressed: _isLoading || _selectedGender == null
-                          ? null
-                          : _confirmGenderSelection,
-                      style: context.elevatedButtonThemeData.style!.copyWith(
-                        backgroundColor: WidgetStatePropertyAll(
-                          _selectedGender == null
-                              ? ColorPalette.buttonDisabled
-                              : context.primaryColor,
-                        ),
-                      ),
-                      child: _isLoading
-                          ? Loader(color: context.textPrimaryColor)
-                          : const Text('Continua'),
-                    ),
-                  ],
+                  ),
                 ),
               );
             },

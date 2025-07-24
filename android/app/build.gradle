@@ -61,6 +61,9 @@ android {
     }
 
     buildTypes {
+        debug {
+          applicationIdSuffix ".debug"
+        }
         release {
             // Usa la configurazione di firma "release" per la build di release
             signingConfig = signingConfigs.getByName("release")
