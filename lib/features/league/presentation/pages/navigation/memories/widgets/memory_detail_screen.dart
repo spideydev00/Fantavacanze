@@ -293,12 +293,10 @@ class MemoryDetailScreen extends StatelessWidget {
   // ------------------- MEDIA WIDGETS -------------------
 
   Widget _buildVideoPlayer(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      height: double.infinity,
-      color: Colors.black,
-      child: ClipRect(
-        child: ChewieVideoPlayer(videoUrl: memory.mediaUrl),
+    return SizedBox.expand(
+      child: BetterVideoPlayerWidget(
+        videoUrl: memory.mediaUrl,
+        fit: BoxFit.cover,
       ),
     );
   }
