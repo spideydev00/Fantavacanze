@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:equatable/equatable.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit.dart';
 import 'package:fantavacanze_official/features/auth/domain/entities/user.dart'
@@ -38,6 +39,8 @@ class LobbyBloc extends Bloc<LobbyEvent, LobbyState> {
 
   StreamSubscription<dynamic>? _sessionSubscription;
   StreamSubscription<dynamic>? _playersSubscription;
+
+  bool _isFirstPlayersStreamAttempt = true;
 
   // =====================================================================
   // CONSTRUCTOR
@@ -433,6 +436,29 @@ class LobbyBloc extends Bloc<LobbyEvent, LobbyState> {
     _StreamErrorOccurred event,
     Emitter<LobbyState> emit,
   ) {
+    debugPrint('Stream error occurred: ${event.message}');
+
+    // Se è il primo tentativo e contiene errore Realtime, riprova
+    if (_isFirstPlayersStreamAttempt &&
+        (event.message.contains('Realtime') ||
+            event.message.contains('connect') ||
+            event.message.contains('unable to connect'))) {
+      _isFirstPlayersStreamAttempt = false;
+
+      if (state is LobbySessionActive) {
+        final currentState = state as LobbySessionActive;
+        debugPrint('Riprovando connessione Realtime...');
+
+        // Riprova dopo un delay più lungo
+        Future.delayed(const Duration(seconds: 3), () {
+          if (!isClosed) {
+            _startPlayersStream(currentState.session.id);
+          }
+        });
+        return;
+      }
+    }
+
     _cancelSubscriptions();
     emit(LobbyError(event.message));
   }
@@ -445,24 +471,45 @@ class LobbyBloc extends Bloc<LobbyEvent, LobbyState> {
   void _initStreams(String sessionId, Emitter<LobbyState> emit) {
     _cancelSubscriptions();
 
+    // Aggiungi un delay per assicurarti che Supabase sia completamente inizializzato
+    Future.delayed(const Duration(milliseconds: 1000), () {
+      if (!isClosed) {
+        _startSessionStream(sessionId);
+        _startPlayersStream(sessionId);
+      }
+    });
+  }
+
+  void _startSessionStream(String sessionId) {
     _sessionSubscription = _streamGameSession(sessionId).listen(
       (eitherSession) => eitherSession.fold(
         (failure) =>
             add(_StreamErrorOccurred('Errore sessione: ${failure.message}')),
         (session) => add(_SessionUpdated(session)),
       ),
-      onError: (error) =>
-          add(_StreamErrorOccurred('Errore stream sessione: $error')),
+      onError: (error) {
+        debugPrint('Session stream error: $error');
+        add(_StreamErrorOccurred('Errore stream sessione: $error'));
+      },
     );
+  }
 
+  void _startPlayersStream(String sessionId) {
     _playersSubscription = _streamLobbyPlayers(sessionId).listen(
       (eitherPlayers) => eitherPlayers.fold(
         (failure) =>
             add(_StreamErrorOccurred('Errore giocatori: ${failure.message}')),
         (players) => add(_PlayersUpdated(players)),
       ),
-      onError: (error) =>
-          add(_StreamErrorOccurred('Errore stream giocatori: $error')),
+      onError: (error) {
+        debugPrint('Players stream error: $error');
+        // Riprova automaticamente dopo il primo errore
+        Future.delayed(const Duration(seconds: 2), () {
+          if (!isClosed) {
+            _startPlayersStream(sessionId);
+          }
+        });
+      },
     );
   }
 
