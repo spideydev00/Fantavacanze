@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:awesome_video_player/awesome_video_player.dart';
+import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:flutter/material.dart';
 
 class BetterVideoPlayerWidget extends StatefulWidget {
@@ -7,10 +8,10 @@ class BetterVideoPlayerWidget extends StatefulWidget {
   final BoxFit fit;
 
   const BetterVideoPlayerWidget({
-    Key? key,
+    super.key,
     required this.videoUrl,
     this.fit = BoxFit.cover,
-  }) : super(key: key);
+  });
 
   @override
   State<BetterVideoPlayerWidget> createState() =>
@@ -64,11 +65,11 @@ class _BetterVideoPlayerWidgetState extends State<BetterVideoPlayerWidget> {
           controlBarHeight: 48.0,
 
           // Colorazioni
-          controlBarColor: Colors.black.withOpacity(0.8),
-          progressBarPlayedColor: Colors.blueAccent,
-          progressBarHandleColor: Colors.blueAccent,
-          progressBarBackgroundColor: Colors.white.withOpacity(0.3),
-          progressBarBufferedColor: Colors.blueAccent.withOpacity(0.5),
+          controlBarColor: Colors.black.withValues(alpha: 0.8),
+          progressBarPlayedColor: ColorPalette.info,
+          progressBarHandleColor: ColorPalette.info,
+          progressBarBackgroundColor: Colors.white.withValues(alpha: 0.3),
+          progressBarBufferedColor: ColorPalette.info.withValues(alpha: 0.5),
         ),
         placeholder: Container(
           color: Colors.black,
