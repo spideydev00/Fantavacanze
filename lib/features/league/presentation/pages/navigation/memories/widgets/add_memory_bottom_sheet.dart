@@ -663,31 +663,74 @@ class _AddMemoryBottomSheetState extends State<AddMemoryBottomSheet> {
                               ),
                             ],
                           )
-                        : // Image close button
-                        Positioned(
-                            top: 8,
-                            right: 8,
-                            child: Material(
-                              color: Colors.black54,
-                              shape: const CircleBorder(),
-                              child: InkWell(
-                                customBorder: const CircleBorder(),
-                                onTap: () {
-                                  setState(() {
-                                    _selectedMedia = null;
-                                    _isVideo = false;
-                                  });
-                                },
-                                child: const Padding(
-                                  padding: EdgeInsets.all(8.0),
-                                  child: Icon(
-                                    Icons.close,
-                                    color: Colors.white,
-                                    size: 16,
+                        : // Image preview with proper handling
+                        Stack(
+                            children: [
+                              // Image preview
+                              Positioned.fill(
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(
+                                      ThemeSizes.borderRadiusLg),
+                                  child: Image.file(
+                                    _selectedMedia!,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (context, error, stackTrace) {
+                                      return Center(
+                                        child: Column(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            Icon(
+                                              Icons.error_outline,
+                                              size: 60,
+                                              color: ColorPalette.error,
+                                            ),
+                                            const SizedBox(
+                                                height: ThemeSizes.sm),
+                                            Text(
+                                              'Errore nel caricamento immagine',
+                                              style: TextStyle(
+                                                color: context.textPrimaryColor,
+                                                fontWeight: FontWeight.w600,
+                                                fontSize: 16,
+                                              ),
+                                              textAlign: TextAlign.center,
+                                            ),
+                                          ],
+                                        ),
+                                      );
+                                    },
                                   ),
                                 ),
                               ),
-                            ),
+
+                              // Close button
+                              Positioned(
+                                top: 8,
+                                right: 8,
+                                child: Material(
+                                  color: Colors.black54,
+                                  shape: const CircleBorder(),
+                                  child: InkWell(
+                                    customBorder: const CircleBorder(),
+                                    onTap: () {
+                                      setState(() {
+                                        _selectedMedia = null;
+                                        _isVideo = false;
+                                      });
+                                    },
+                                    child: const Padding(
+                                      padding: EdgeInsets.all(8.0),
+                                      child: Icon(
+                                        Icons.close,
+                                        color: Colors.white,
+                                        size: 16,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
               ),
             ),
