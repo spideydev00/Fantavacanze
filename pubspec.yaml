@@ -195,6 +195,7 @@ flutter:
     - assets/images/icons/games_icons/balance.png
     - assets/images/icons/games_icons/team-icon.png
     - assets/images/icons/homepage_icons/friends-hug-icon.png
+    - assets/images/icons/homepage_icons/robot-icon.svg
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-assets/images

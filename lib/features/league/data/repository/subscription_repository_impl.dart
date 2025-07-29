@@ -2,7 +2,7 @@ import 'package:fantavacanze_official/core/errors/exceptions.dart';
 import 'package:fantavacanze_official/core/errors/failure.dart';
 import 'package:fantavacanze_official/core/network/connection_checker.dart';
 import 'package:fantavacanze_official/features/auth/domain/entities/user.dart';
-import 'package:fantavacanze_official/features/league/data/datasources/subscription_remote_data_source.dart';
+import 'package:fantavacanze_official/features/league/data/datasources/remote/subscription_remote_data_source.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/subscription.dart';
 import 'package:fantavacanze_official/features/league/domain/repository/subscription_repository.dart';
 import 'package:fpdart/fpdart.dart';

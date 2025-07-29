@@ -1,16 +1,16 @@
 import 'package:fantavacanze_official/core/errors/failure.dart';
 import 'package:fantavacanze_official/core/use-case/usecase.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/notification.dart';
-import 'package:fantavacanze_official/features/league/domain/repository/league_repository.dart';
+import 'package:fantavacanze_official/features/league/domain/repository/notifications_repository.dart';
 import 'package:fpdart/fpdart.dart';
 
 class ListenToNotification implements Usecase<Stream<Notification>, NoParams> {
-  final LeagueRepository leagueRepository;
+  final NotificationsRepository notificationsRepository;
 
-  ListenToNotification({required this.leagueRepository});
+  ListenToNotification({required this.notificationsRepository});
 
   @override
   Future<Either<Failure, Stream<Notification>>> call(NoParams params) async {
-    return leagueRepository.listenToNotification();
+    return notificationsRepository.listenToNotification();
   }
 }

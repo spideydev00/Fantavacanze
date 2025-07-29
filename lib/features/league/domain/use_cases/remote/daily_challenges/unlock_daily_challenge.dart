@@ -1,6 +1,6 @@
 import 'package:fantavacanze_official/core/errors/failure.dart';
 import 'package:fantavacanze_official/core/use-case/usecase.dart';
-import 'package:fantavacanze_official/features/league/domain/repository/league_repository.dart';
+import 'package:fantavacanze_official/features/league/domain/repository/daily_challenges_repository.dart';
 import 'package:fpdart/fpdart.dart';
 
 class UnlockDailyChallengeParams {
@@ -19,13 +19,13 @@ class UnlockDailyChallengeParams {
 
 class UnlockDailyChallenge
     implements Usecase<void, UnlockDailyChallengeParams> {
-  final LeagueRepository leagueRepository;
+  final DailyChallengesRepository dailyChallengesRepository;
 
-  UnlockDailyChallenge({required this.leagueRepository});
+  UnlockDailyChallenge({required this.dailyChallengesRepository});
 
   @override
   Future<Either<Failure, void>> call(UnlockDailyChallengeParams params) async {
-    return await leagueRepository.unlockDailyChallenge(
+    return await dailyChallengesRepository.unlockDailyChallenge(
       challengeId: params.challengeId,
       leagueId: params.leagueId,
       isUnlocked: params.isUnlocked,

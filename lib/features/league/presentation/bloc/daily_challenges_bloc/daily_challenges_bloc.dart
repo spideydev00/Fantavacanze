@@ -255,7 +255,8 @@ class DailyChallengesBloc
 
     result.fold(
       (failure) => emit(DailyChallengesError(message: failure.message)),
-      (_) {
+      (_) async {
+        await _appLeagueCubit.getUserLeagues();
         // Emettiamo un unico stato aggiornato con l'operazione completata
         emit(DailyChallengesLoaded(
           challenges: currentState.challenges,
@@ -289,8 +290,7 @@ class DailyChallengesBloc
       (_) {
         // Emettiamo un unico stato aggiornato con l'operazione completata
         emit(DailyChallengesLoaded(
-          challenges:
-              currentState.challenges, // mantenere le challenge esistenti
+          challenges: currentState.challenges,
           leagueId: currentState.leagueId,
           userId: currentState.userId,
           operation: 'reject_challenge',

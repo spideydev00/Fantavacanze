@@ -2,7 +2,7 @@ import 'package:fantavacanze_official/core/errors/failure.dart';
 import 'package:fantavacanze_official/core/use-case/usecase.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/daily_challenge.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/league.dart';
-import 'package:fantavacanze_official/features/league/domain/repository/league_repository.dart';
+import 'package:fantavacanze_official/features/league/domain/repository/daily_challenges_repository.dart';
 import 'package:fpdart/fpdart.dart';
 
 class MarkChallengeAsCompletedParams {
@@ -19,14 +19,14 @@ class MarkChallengeAsCompletedParams {
 
 class MarkChallengeAsCompleted
     implements Usecase<void, MarkChallengeAsCompletedParams> {
-  final LeagueRepository leagueRepository;
+  final DailyChallengesRepository dailyChallengesRepository;
 
-  MarkChallengeAsCompleted({required this.leagueRepository});
+  MarkChallengeAsCompleted({required this.dailyChallengesRepository});
 
   @override
   Future<Either<Failure, void>> call(
       MarkChallengeAsCompletedParams params) async {
-    return await leagueRepository.markChallengeAsCompleted(
+    return await dailyChallengesRepository.markChallengeAsCompleted(
       challenge: params.challenge,
       userId: params.userId,
       league: params.league,

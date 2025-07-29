@@ -1,6 +1,6 @@
 import 'package:fantavacanze_official/core/errors/failure.dart';
 import 'package:fantavacanze_official/core/use-case/usecase.dart';
-import 'package:fantavacanze_official/features/league/domain/repository/league_repository.dart';
+import 'package:fantavacanze_official/features/league/domain/repository/notifications_repository.dart';
 import 'package:fpdart/fpdart.dart';
 
 class DeleteNotificationParams {
@@ -10,12 +10,13 @@ class DeleteNotificationParams {
 }
 
 class DeleteNotification implements Usecase<void, DeleteNotificationParams> {
-  final LeagueRepository leagueRepository;
+  final NotificationsRepository notificationsRepository;
 
-  DeleteNotification({required this.leagueRepository});
+  DeleteNotification({required this.notificationsRepository});
 
   @override
   Future<Either<Failure, void>> call(DeleteNotificationParams params) async {
-    return await leagueRepository.deleteNotification(params.notificationId);
+    return await notificationsRepository
+        .deleteNotification(params.notificationId);
   }
 }

@@ -2,18 +2,14 @@ import 'dart:async';
 import 'dart:io';
 import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit.dart';
 import 'package:fantavacanze_official/core/errors/exceptions.dart';
-import 'package:fantavacanze_official/features/league/data/models/daily_challenge_model/daily_challenge_model.dart';
 import 'package:fantavacanze_official/features/league/data/models/individual_participant_model/individual_participant_model.dart';
 import 'package:fantavacanze_official/features/league/data/models/league_model/league_model.dart';
 import 'package:fantavacanze_official/features/league/data/models/memory_model/memory_model.dart';
-import 'package:fantavacanze_official/features/league/data/models/notification_model/daily_challenge_notification/daily_challenge_notification_model.dart';
-import 'package:fantavacanze_official/features/league/data/models/notification_model/notification/notification_model.dart';
 import 'package:fantavacanze_official/features/league/data/models/participant_model/participant_model.dart';
 import 'package:fantavacanze_official/features/league/data/models/rule_model/rule_model.dart';
 import 'package:fantavacanze_official/features/league/data/models/team_participant_model/team_participant_model.dart';
 import 'package:fantavacanze_official/features/league/data/models/simple_participant_model/simple_participant_model.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/rule/rule.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:uuid/uuid.dart';
@@ -29,14 +25,19 @@ abstract class LeagueRemoteDataSource {
     required List<RuleModel> rules,
   });
   Future<LeagueModel> getLeague(String leagueId);
+
   Future<List<LeagueModel>> getUserLeagues();
+
   Future<LeagueModel> updateLeagueNameOrDescription({
     required String leagueId,
     String? name,
     String? description,
   });
+
   Future<void> deleteLeague(String leagueId);
+
   Future<List<LeagueModel>> searchLeague({required String inviteCode});
+
   Future<LeagueModel> updateLeagueInfo({
     required LeagueModel league,
     String? name,
@@ -52,25 +53,30 @@ abstract class LeagueRemoteDataSource {
     List<String>? teamMembers,
     String? specificLeagueId,
   });
+
   Future<void> exitLeague({
     required LeagueModel league,
     required String userId,
   });
+
   Future<LeagueModel> removeTeamParticipants({
     required LeagueModel league,
     required String teamName,
     required List<String> userIdsToRemove,
     required String requestingUserId,
   });
+
   Future<LeagueModel> updateTeamName({
     required LeagueModel league,
     required String userId,
     required String newName,
   });
+
   Future<LeagueModel> addAdministrators({
     required LeagueModel league,
     required List<String> userIds,
   });
+
   Future<LeagueModel> removeParticipants({
     required LeagueModel league,
     required List<String> participantIds,
@@ -146,57 +152,6 @@ abstract class LeagueRemoteDataSource {
     required String teamName,
     required String logoUrl,
   });
-
-  // =====================================================================
-  // DAILY CHALLENGE OPERATIONS
-  // =====================================================================
-  Future<List<DailyChallengeModel>> getDailyChallenges({
-    required String userId,
-    required String leagueId,
-  });
-
-  Future<void> unlockDailyChallenge({
-    required String challengeId,
-    required bool isUnlocked,
-    required String leagueId,
-    int primaryPosition = 2,
-  });
-
-  Future<void> sendChallengeNotification({
-    required LeagueModel league,
-    required DailyChallengeModel challenge,
-    required String userId,
-  });
-
-  Future<void> markChallengeAsCompleted({
-    required DailyChallengeModel challenge,
-    required LeagueModel league,
-    required String userId,
-  });
-
-  Future<void> updateChallengeRefreshStatus({
-    required String challengeId,
-    required String userId,
-    required bool isRefreshed,
-  });
-
-  // =====================================================================
-  // NOTIFICATION OPERATIONS
-  // =====================================================================
-  Stream<NotificationModel> listenToNotification();
-
-  Future<List<NotificationModel>> getNotifications();
-
-  Future<void> markAsRead(String notificationId);
-
-  Future<void> deleteNotification(String notificationId);
-
-  Future<void> approveDailyChallenge(String notificationId);
-
-  Future<void> rejectDailyChallenge(
-    String notificationId,
-    String challengeId,
-  );
 }
 
 class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
@@ -204,34 +159,11 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
   final Uuid uuid;
   final AppUserCubit appUserCubit;
 
-  final _notificationModelController =
-      StreamController<NotificationModel>.broadcast();
-
-  Stream<NotificationModel> get notificationModelStream =>
-      _notificationModelController.stream;
-
-  void initNotificationListener() {
-    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      if (message.notification != null) {
-        // Converti direttamente in NotificationModel
-        convertRemoteNotificationToModel(message.notification!, message)
-            .then((notificationModel) {
-          if (notificationModel != null) {
-            _notificationModelController.add(notificationModel);
-            debugPrint('📨 Notifica convertita: ${notificationModel.title}');
-          }
-        });
-      }
-    });
-  }
-
   LeagueRemoteDataSourceImpl({
     required this.supabaseClient,
     required this.uuid,
     required this.appUserCubit,
-  }) {
-    initNotificationListener();
-  }
+  });
 
   // =====================================================================
   // HELPER METHODS - USER AUTHENTICATION & ERROR HANDLING
@@ -940,326 +872,6 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
         },
       );
     });
-  }
-
-  // =====================================================================
-  // DAILY CHALLENGE OPERATIONS IMPLEMENTATION
-  // =====================================================================
-
-  @override
-  Future<List<DailyChallengeModel>> getDailyChallenges({
-    required String userId,
-    required String leagueId,
-  }) async {
-    return _tryDatabaseOperation(() async {
-      // Call the RPC function to get challenges efficiently
-      final response = await supabaseClient.rpc(
-        'get_user_daily_challenges',
-        params: {
-          'p_user_id': userId,
-          'p_league_id': leagueId,
-        },
-      );
-
-      if (response == null) {
-        throw ServerException('Impossibile recuperare le sfide giornaliere');
-      }
-
-      // Convert to models
-      final List<dynamic> challengesJson = response as List<dynamic>;
-
-      final result = challengesJson
-          .map((json) => DailyChallengeModel.fromJson(json))
-          .toList();
-
-      return result;
-    });
-  }
-
-  @override
-  Future<void> unlockDailyChallenge({
-    required String challengeId,
-    required bool isUnlocked,
-    required String leagueId,
-    int primaryPosition = 2,
-  }) async {
-    return _tryDatabaseOperation(() async {
-      // Calculate the substitute position (primary position + 3)
-      final substitutePosition = primaryPosition + 3;
-
-      // Use a new RPC function to unlock both challenges at once
-      await supabaseClient.rpc(
-        'unlock_daily_challenges',
-        params: {
-          'p_league_id': leagueId,
-          'p_primary_position': primaryPosition,
-          'p_substitute_position': substitutePosition,
-          'p_is_unlocked': isUnlocked,
-        },
-      );
-    });
-  }
-
-  @override
-  Future<void> sendChallengeNotification({
-    required LeagueModel league,
-    required DailyChallengeModel challenge,
-    required String userId,
-  }) async {
-    return _tryDatabaseOperation(() async {
-      final now = DateTime.now();
-      final userName = _getCurrentUserName();
-
-      // Create notification data
-      final notificationData = {
-        'id': const Uuid().v4(),
-        'title': 'Nuova sfida completata',
-        'message': '$userName ha completato la sfida "${challenge.name}"',
-        'created_at': now.toIso8601String(),
-        'is_read': false,
-        'type': 'daily_challenge',
-        'user_id': userId,
-        'league_id': league.id,
-        'challenge_id': challenge.id,
-        'challenge_name': challenge.name,
-        'challenge_points': challenge.points,
-        'target_user_ids': league.admins,
-      };
-
-      // Insert notification
-      await supabaseClient
-          .from('daily_challenges_notifications')
-          .insert(notificationData);
-    });
-  }
-
-  @override
-  Future<void> markChallengeAsCompleted({
-    required DailyChallengeModel challenge,
-    required LeagueModel league,
-    required String userId,
-  }) async {
-    return _tryDatabaseOperation(() async {
-      // 1) Check if the user is an admin
-      final isAdmin = league.admins.contains(userId);
-
-      if (isAdmin) {
-        // Admin completes challenge directly - Add event and update challenge status
-        await addEvent(
-          league: league,
-          name: challenge.name,
-          points: challenge.points,
-          creatorId: userId,
-          targetUser: userId,
-          type: RuleType.bonus,
-          isTeamMember: league.isTeamBased,
-        );
-
-        // Also update the challenge record to mark it as completed
-        await supabaseClient.from('user_daily_challenges').update({
-          'is_completed': true,
-          'completed_at': DateTime.now().toIso8601String(),
-        }).eq('id', challenge.id);
-      } else {
-        // Non-admin - send notification to admins for approval
-        await sendChallengeNotification(
-          league: league,
-          challenge: challenge,
-          userId: userId,
-        );
-
-        // Update challenge as pending approval
-        await supabaseClient.from('user_daily_challenges').update({
-          'is_pending_approval': true,
-        }).eq('id', challenge.id);
-      }
-    });
-  }
-
-  @override
-  Future<void> updateChallengeRefreshStatus({
-    required String challengeId,
-    required String userId,
-    required bool isRefreshed,
-  }) async {
-    return _tryDatabaseOperation(
-      () async {
-        // Update the challenge refresh status in the database
-        await supabaseClient
-            .from('user_daily_challenges')
-            .update({
-              'is_refreshed': isRefreshed,
-              'refreshed_at': DateTime.now().toIso8601String(),
-            })
-            .eq('id', challengeId)
-            .select();
-      },
-    );
-  }
-
-  // =====================================================================
-  // NOTIFICATION OPERATIONS IMPLEMENTATION
-  // =====================================================================
-
-  @override
-  Future<List<NotificationModel>> getNotifications() async {
-    return _tryDatabaseOperation(() async {
-      final userId = _checkAuthentication();
-
-      // Use the updated RPC function
-      final response = await supabaseClient.rpc(
-        'get_user_notifications',
-        params: {'p_user_id': userId},
-      );
-
-      // The response now contains objects with a "notification" field
-      final List<dynamic> notificationsWithDate = response as List<dynamic>;
-
-      // Extract just the notification objects
-      final notifications = notificationsWithDate.map((item) {
-        final json = item['notification'];
-
-        if (json['type'] == 'daily_challenge') {
-          return DailyChallengeNotificationModel.fromJson(json);
-        } else {
-          return NotificationModel.fromJson(json);
-        }
-      }).toList();
-
-      return notifications;
-    });
-  }
-
-  @override
-  Future<void> markAsRead(String notificationId) async {
-    return _tryDatabaseOperation(() async {
-      await supabaseClient.rpc(
-        'mark_notification_as_read',
-        params: {'p_notification_id': notificationId},
-      );
-    });
-  }
-
-  @override
-  Future<void> deleteNotification(String notificationId) async {
-    return _tryDatabaseOperation(
-      () async {
-        // Delete from standard notifications table
-        await supabaseClient
-            .from('notifications')
-            .delete()
-            .eq('id', notificationId);
-
-        // Delete from daily challenge notifications table
-        await supabaseClient
-            .from('daily_challenges_notifications')
-            .delete()
-            .eq('id', notificationId);
-      },
-    );
-  }
-
-  @override
-  Future<void> approveDailyChallenge(String notificationId) async {
-    return _tryDatabaseOperation(() async {
-      final eventId = uuid.v4();
-
-      // Call the RPC function with just the notification ID and necessary parameters
-      await supabaseClient.rpc(
-        'approve_daily_challenge',
-        params: {
-          'p_notification_id': notificationId,
-          'p_created_at': DateTime.now().toIso8601String(),
-          'p_event_id': eventId,
-        },
-      );
-    });
-  }
-
-  @override
-  Future<void> rejectDailyChallenge(
-      String notificationId, String challengeId) async {
-    return _tryDatabaseOperation(() async {
-      // 1. If we have a challenge ID, update its pending status
-      await supabaseClient.from('user_daily_challenges').update({
-        'is_pending_approval': false,
-      }).eq('id', challengeId);
-
-      // 3. Delete the notification
-      await deleteNotification(notificationId);
-    });
-  }
-
-  @override
-  Stream<NotificationModel> listenToNotification() {
-    try {
-      return notificationModelStream;
-    } catch (e) {
-      throw ServerException(
-          'Errore nell\'ascolto delle notifiche: ${_extractErrorMessage(e)}');
-    }
-  }
-
-  Future<NotificationModel?> convertRemoteNotificationToModel(
-    RemoteNotification notification,
-    RemoteMessage message,
-  ) async {
-    try {
-      final data = message.data;
-      if (data.isEmpty) return null;
-
-      // Ottieni i dati dal payload FCM o usa valori di default
-      final id = data['id'] ?? const Uuid().v4();
-      final title = data['title'] ?? notification.title ?? 'Nuova notifica';
-      final messageText = data['message'] ?? notification.body ?? '';
-      final type = data['type'] ?? 'generic';
-      final userId = data['user_id'] ?? _getCurrentUserId() ?? '';
-      final leagueId = data['league_id'] ?? '';
-      final createdAt = data['created_at'] != null
-          ? DateTime.parse(data['created_at'])
-          : DateTime.now();
-      final isRead = data['is_read'] == 'true';
-
-      // Parsing di target_user_ids
-      List<String> targetUserIds = [];
-      if (data['target_user_ids'] != null) {
-        final rawIds = data['target_user_ids'].toString();
-        targetUserIds = rawIds.split(',').where((id) => id.isNotEmpty).toList();
-      }
-
-      // Crea il modello appropriato in base al tipo
-      if (type == 'daily_challenge') {
-        return DailyChallengeNotificationModel(
-          id: id,
-          title: title,
-          message: messageText,
-          createdAt: createdAt,
-          isRead: isRead,
-          type: type,
-          userId: userId,
-          leagueId: leagueId,
-          challengeId: data['challenge_id'] ?? '',
-          challengeName: data['challenge_name'] ?? '',
-          challengePoints:
-              double.tryParse(data['challenge_points'] ?? '0') ?? 0.0,
-          targetUserIds: targetUserIds,
-        );
-      } else {
-        // Notifica generica
-        return NotificationModel(
-          id: id,
-          title: title,
-          message: messageText,
-          createdAt: createdAt,
-          isRead: isRead,
-          type: type,
-          leagueId: leagueId,
-        );
-      }
-    } catch (e) {
-      debugPrint("⚠️ Errore nella conversione della notifica: $e");
-      return null;
-    }
   }
 
   // =====================================================================
