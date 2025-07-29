@@ -1,4 +1,4 @@
-part of 'lobby_bloc.dart';
+part of 'game_bloc.dart';
 
 sealed class LobbyState extends Equatable {
   const LobbyState();

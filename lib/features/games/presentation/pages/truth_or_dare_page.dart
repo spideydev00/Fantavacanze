@@ -11,7 +11,7 @@ import 'package:fantavacanze_official/core/widgets/info_container.dart';
 import 'package:fantavacanze_official/core/widgets/loader.dart';
 import 'package:fantavacanze_official/features/games/domain/entities/game_player.dart';
 import 'package:fantavacanze_official/features/games/domain/entities/truth_or_dare_question.dart';
-import 'package:fantavacanze_official/features/games/presentation/bloc/lobby/lobby_bloc.dart';
+import 'package:fantavacanze_official/features/games/presentation/bloc/game/game_bloc.dart';
 import 'package:fantavacanze_official/features/games/presentation/bloc/truth_or_dare/truth_or_dare_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';

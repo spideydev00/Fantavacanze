@@ -11,7 +11,7 @@ import 'package:fantavacanze_official/core/widgets/divider.dart';
 import 'package:fantavacanze_official/core/widgets/loader.dart';
 import 'package:fantavacanze_official/core/widgets/app_information_dialog.dart';
 import 'package:fantavacanze_official/features/games/domain/entities/game_type_enum.dart';
-import 'package:fantavacanze_official/features/games/presentation/bloc/lobby/lobby_bloc.dart';
+import 'package:fantavacanze_official/features/games/presentation/bloc/game/game_bloc.dart';
 import 'package:fantavacanze_official/features/games/presentation/bloc/word_bomb/word_bomb_bloc.dart';
 import 'package:fantavacanze_official/features/games/presentation/pages/game_host_page.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/dashboard/sections/dashboard.dart';

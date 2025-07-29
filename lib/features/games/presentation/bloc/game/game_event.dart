@@ -1,4 +1,4 @@
-part of 'lobby_bloc.dart';
+part of 'game_bloc.dart';
 
 sealed class LobbyEvent extends Equatable {
   const LobbyEvent();
@@ -16,7 +16,7 @@ class CreateSessionRequested extends LobbyEvent {
 
 class JoinSessionRequested extends LobbyEvent {
   final String inviteCode;
-  
+
   const JoinSessionRequested(this.inviteCode);
 
   @override

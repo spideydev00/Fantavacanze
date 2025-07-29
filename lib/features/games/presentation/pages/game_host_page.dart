@@ -3,7 +3,7 @@ import 'package:fantavacanze_official/features/games/domain/entities/game_player
 import 'package:fantavacanze_official/features/games/domain/entities/game_session.dart';
 import 'package:fantavacanze_official/features/games/domain/entities/game_status_enum.dart';
 import 'package:fantavacanze_official/features/games/domain/entities/game_type_enum.dart';
-import 'package:fantavacanze_official/features/games/presentation/bloc/lobby/lobby_bloc.dart';
+import 'package:fantavacanze_official/features/games/presentation/bloc/game/game_bloc.dart';
 import 'package:fantavacanze_official/features/games/presentation/bloc/truth_or_dare/truth_or_dare_bloc.dart';
 import 'package:fantavacanze_official/features/games/presentation/bloc/word_bomb/word_bomb_bloc.dart';
 import 'package:fantavacanze_official/features/games/presentation/bloc/never_have_i_ever/never_have_i_ever_bloc.dart';
