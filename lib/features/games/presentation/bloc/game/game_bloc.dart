@@ -19,8 +19,8 @@ import 'package:fantavacanze_official/features/games/domain/usecases/kill_game_s
 import 'package:fantavacanze_official/features/games/domain/usecases/update_game_player_name_in_lobby.dart';
 import 'package:fantavacanze_official/features/games/domain/usecases/remove_game_player_from_lobby.dart';
 
-part 'lobby_event.dart';
-part 'lobby_state.dart';
+part 'game_event.dart';
+part 'game_state.dart';
 
 class LobbyBloc extends Bloc<LobbyEvent, LobbyState> {
   // =====================================================================

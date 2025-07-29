@@ -9,7 +9,7 @@ import 'package:fantavacanze_official/core/widgets/info_banner.dart';
 import 'package:fantavacanze_official/features/games/domain/entities/game_player.dart';
 import 'package:fantavacanze_official/features/games/domain/entities/game_session.dart';
 import 'package:fantavacanze_official/features/games/domain/entities/game_type_enum.dart';
-import 'package:fantavacanze_official/features/games/presentation/bloc/lobby/lobby_bloc.dart';
+import 'package:fantavacanze_official/features/games/presentation/bloc/game/game_bloc.dart';
 import 'package:fantavacanze_official/features/games/presentation/widgets/edit_game_player_name_dialog.dart'; // Import new dialog
 import 'package:fantavacanze_official/core/widgets/dialogs/confirmation_dialog.dart'; // Import ConfirmationDialog
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/team_info/widgets/section_card.dart';

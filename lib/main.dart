@@ -14,7 +14,7 @@ import 'package:fantavacanze_official/features/games/presentation/bloc/truth_or_
 import 'package:fantavacanze_official/features/games/presentation/bloc/word_bomb/word_bomb_bloc.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc/league_bloc.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/daily_challenges_bloc/daily_challenges_bloc.dart';
-import 'package:fantavacanze_official/features/games/presentation/bloc/lobby/lobby_bloc.dart';
+import 'package:fantavacanze_official/features/games/presentation/bloc/game/game_bloc.dart';
 import 'package:fantavacanze_official/init_dependencies/init_dependencies.dart';
 import 'package:fantavacanze_official/initial_page.dart';
 import 'package:flutter/services.dart';

@@ -49,7 +49,7 @@ import 'package:fantavacanze_official/features/games/domain/usecases/stream_lobb
 import 'package:fantavacanze_official/features/games/domain/usecases/update_game_player.dart';
 import 'package:fantavacanze_official/features/games/domain/usecases/update_game_player_name_in_lobby.dart';
 import 'package:fantavacanze_official/features/games/domain/usecases/update_game_state.dart';
-import 'package:fantavacanze_official/features/games/presentation/bloc/lobby/lobby_bloc.dart';
+import 'package:fantavacanze_official/features/games/presentation/bloc/game/game_bloc.dart';
 import 'package:fantavacanze_official/features/games/presentation/bloc/never_have_i_ever/never_have_i_ever_bloc.dart';
 import 'package:fantavacanze_official/features/games/presentation/bloc/truth_or_dare/truth_or_dare_bloc.dart';
 import 'package:fantavacanze_official/features/games/presentation/bloc/word_bomb/word_bomb_bloc.dart';
