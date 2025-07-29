@@ -8,7 +8,7 @@ import 'package:fantavacanze_official/features/league/data/models/note_model/not
 import 'package:fantavacanze_official/features/league/data/models/daily_challenge_model/daily_challenge_model.dart';
 import 'package:fantavacanze_official/features/league/data/models/notification_model/notification/notification_model.dart';
 
-abstract interface class LeagueLocalDataSource {
+abstract interface class LocalDataSource {
   // =====================================================================
   // LEAGUE OPERATIONS
   // =====================================================================
@@ -60,14 +60,14 @@ abstract interface class LeagueLocalDataSource {
   Future<void> clearCache();
 }
 
-class LeagueLocalDataSourceImpl implements LeagueLocalDataSource {
+class LocalDataSourceImpl implements LocalDataSource {
   final Box<LeagueModel> leaguesBox;
   final Box<List<RuleModel>> rulesBox;
   final Box<NoteModel> notesBox;
   final Box<DailyChallengeModel> challengesBox;
   final Box<NotificationModel> notificationsBox;
 
-  LeagueLocalDataSourceImpl({
+  LocalDataSourceImpl({
     required this.leaguesBox,
     required this.rulesBox,
     required this.notesBox,
@@ -408,24 +408,22 @@ class LeagueLocalDataSourceImpl implements LeagueLocalDataSource {
 
   @override
   Future<void> cleanupOldNotifications() async {
-    
-      final notifications = notificationsBox.values.toList();
+    final notifications = notificationsBox.values.toList();
 
-      const int maxCacheNotifications = 100;
-      if (notifications.length <= maxCacheNotifications) return;
+    const int maxCacheNotifications = 100;
+    if (notifications.length <= maxCacheNotifications) return;
 
-      // Ordina per data (più vecchie prima)
-      notifications.sort((a, b) => a.createdAt.compareTo(b.createdAt));
+    // Ordina per data (più vecchie prima)
+    notifications.sort((a, b) => a.createdAt.compareTo(b.createdAt));
 
-      // Prendi quelle da eliminare
-      final toDelete = notifications.sublist(
-          0, notifications.length - maxCacheNotifications);
+    // Prendi quelle da eliminare
+    final toDelete =
+        notifications.sublist(0, notifications.length - maxCacheNotifications);
 
-      // Elimina le notifiche più vecchie
-      for (final notification in toDelete) {
-        await notificationsBox.delete(notification.id);
-      }
-   
+    // Elimina le notifiche più vecchie
+    for (final notification in toDelete) {
+      await notificationsBox.delete(notification.id);
+    }
   }
 
   @override

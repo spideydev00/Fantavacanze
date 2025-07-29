@@ -46,6 +46,8 @@ Future<void> initDependencies() async {
 
     _initAuth();
     _initLeague();
+    _initDailyChallenges();
+    _initNotifications();
     _initGames();
 
     // Register UUID generator
@@ -372,8 +374,8 @@ void _initLeague() {
         uuid: serviceLocator(),
       ),
     )
-    ..registerFactory<LeagueLocalDataSource>(
-      () => LeagueLocalDataSourceImpl(
+    ..registerFactory<LocalDataSource>(
+      () => LocalDataSourceImpl(
         leaguesBox: serviceLocator(),
         rulesBox: serviceLocator(),
         notesBox: serviceLocator(),
@@ -468,40 +470,7 @@ void _initLeague() {
       () => DeleteLeague(leagueRepository: serviceLocator()),
     )
     ..registerFactory(
-      () => GetDailyChallenges(leagueRepository: serviceLocator()),
-    )
-    ..registerFactory(
-      () => MarkChallengeAsCompleted(leagueRepository: serviceLocator()),
-    )
-    ..registerFactory(
-      () => UpdateChallengeRefreshStatus(leagueRepository: serviceLocator()),
-    )
-    ..registerFactory(
       () => ClearLocalCache(leagueRepository: serviceLocator()),
-    )
-    ..registerFactory(
-      () => ListenToNotification(leagueRepository: serviceLocator()),
-    )
-    ..registerFactory(
-      () => ApproveDailyChallenge(leagueRepository: serviceLocator()),
-    )
-    ..registerFactory(
-      () => DeleteNotification(leagueRepository: serviceLocator()),
-    )
-    ..registerFactory(
-      () => GetNotifications(leagueRepository: serviceLocator()),
-    )
-    ..registerFactory(
-      () => MarkNotificationAsRead(leagueRepository: serviceLocator()),
-    )
-    ..registerFactory(
-      () => RejectDailyChallenge(leagueRepository: serviceLocator()),
-    )
-    ..registerFactory(
-      () => SendChallengeNotification(leagueRepository: serviceLocator()),
-    )
-    ..registerFactory(
-      () => UnlockDailyChallenge(leagueRepository: serviceLocator()),
     )
     // bloc
     ..registerFactory(
@@ -532,29 +501,6 @@ void _initLeague() {
         removeParticipants: serviceLocator(),
         updateLeagueInfo: serviceLocator(),
         deleteLeague: serviceLocator(),
-      ),
-    )
-    // notifications bloc
-    ..registerFactory(
-      () => NotificationsBloc(
-        getNotifications: serviceLocator(),
-        markNotificationAsRead: serviceLocator(),
-        deleteNotification: serviceLocator(),
-        listenToNotification: serviceLocator(),
-        notificationCountCubit: serviceLocator(),
-      ),
-    )
-    // daily challenges bloc
-    ..registerFactory(
-      () => DailyChallengesBloc(
-        getDailyChallenges: serviceLocator(),
-        markChallengeAsCompleted: serviceLocator(),
-        updateChallengeRefreshStatus: serviceLocator(),
-        unlockDailyChallenge: serviceLocator(),
-        approveDailyChallenge: serviceLocator(),
-        rejectDailyChallenge: serviceLocator(),
-        appUserCubit: serviceLocator(),
-        appLeagueCubit: serviceLocator(),
       ),
     );
 }
@@ -673,4 +619,138 @@ void _initGames() {
         appUserCubit: serviceLocator(),
       ),
     );
+}
+
+Future<void> _initNotifications() async {
+  // DataSources
+  serviceLocator.registerLazySingleton<NotificationRemoteDataSource>(
+    () => NotificationRemoteDataSourceImpl(
+      supabaseClient: serviceLocator(),
+      appUserCubit: serviceLocator(),
+    ),
+  );
+
+  // Repositories
+  serviceLocator.registerLazySingleton<NotificationsRepository>(
+    () => NotificationsRepositoryImpl(
+      remoteDataSource: serviceLocator(),
+      connectionChecker: serviceLocator(),
+      localDataSource: serviceLocator(),
+    ),
+  );
+
+  // Use cases
+  serviceLocator
+    ..registerFactory(
+      () => ListenToNotification(notificationsRepository: serviceLocator()),
+    )
+    ..registerFactory(
+      () => DeleteNotification(notificationsRepository: serviceLocator()),
+    )
+    ..registerFactory(
+      () => GetNotifications(notificationsRepository: serviceLocator()),
+    )
+    ..registerFactory(
+      () => MarkNotificationAsRead(notificationsRepository: serviceLocator()),
+    )
+    // notifications bloc
+    ..registerFactory(
+      () => NotificationsBloc(
+        getNotifications: serviceLocator(),
+        markNotificationAsRead: serviceLocator(),
+        deleteNotification: serviceLocator(),
+        listenToNotification: serviceLocator(),
+        notificationCountCubit: serviceLocator(),
+      ),
+    );
+
+  // Bloc
+  serviceLocator.registerFactory(
+    () => NotificationsBloc(
+      getNotifications: serviceLocator(),
+      markNotificationAsRead: serviceLocator(),
+      deleteNotification: serviceLocator(),
+      listenToNotification: serviceLocator(),
+      notificationCountCubit: serviceLocator(),
+    ),
+  );
+}
+
+Future<void> _initDailyChallenges() async {
+  // DataSources
+  serviceLocator.registerLazySingleton<DailyChallengesRemoteDataSource>(
+    () => DailyChallengesRemoteDataSourceImpl(
+      supabaseClient: serviceLocator(),
+      appUserCubit: serviceLocator(),
+      leagueRemoteDataSource: serviceLocator(),
+      notificationRemoteDataSource: serviceLocator(),
+    ),
+  );
+
+  // Repositories
+  serviceLocator.registerLazySingleton<DailyChallengesRepository>(
+    () => DailyChallengesRepositoryImpl(
+      remoteDataSource: serviceLocator(),
+      connectionChecker: serviceLocator(),
+      localDataSource: serviceLocator(),
+    ),
+  );
+
+  // Use cases
+  serviceLocator
+    ..registerFactory(
+      () => GetDailyChallenges(
+        dailyChallengesRepository: serviceLocator(),
+      ),
+    )
+    ..registerFactory(
+      () => MarkChallengeAsCompleted(
+        dailyChallengesRepository: serviceLocator(),
+      ),
+    )
+    ..registerFactory(
+      () => UpdateChallengeRefreshStatus(
+        dailyChallengesRepository: serviceLocator(),
+      ),
+    )
+    ..registerFactory(
+      () => UnlockDailyChallenge(dailyChallengesRepository: serviceLocator()),
+    )
+    ..registerFactory(
+      () => ApproveDailyChallenge(dailyChallengesRepository: serviceLocator()),
+    )
+    ..registerFactory(
+      () => RejectDailyChallenge(dailyChallengesRepository: serviceLocator()),
+    )
+    ..registerFactory(
+      () => SendChallengeNotification(
+          dailyChallengesRepository: serviceLocator()),
+    )
+    // daily challenges bloc
+    ..registerFactory(
+      () => DailyChallengesBloc(
+        getDailyChallenges: serviceLocator(),
+        markChallengeAsCompleted: serviceLocator(),
+        updateChallengeRefreshStatus: serviceLocator(),
+        unlockDailyChallenge: serviceLocator(),
+        approveDailyChallenge: serviceLocator(),
+        rejectDailyChallenge: serviceLocator(),
+        appUserCubit: serviceLocator(),
+        appLeagueCubit: serviceLocator(),
+      ),
+    );
+
+  // Bloc
+  serviceLocator.registerFactory(
+    () => DailyChallengesBloc(
+      getDailyChallenges: serviceLocator(),
+      markChallengeAsCompleted: serviceLocator(),
+      updateChallengeRefreshStatus: serviceLocator(),
+      unlockDailyChallenge: serviceLocator(),
+      approveDailyChallenge: serviceLocator(),
+      rejectDailyChallenge: serviceLocator(),
+      appUserCubit: serviceLocator(),
+      appLeagueCubit: serviceLocator(),
+    ),
+  );
 }

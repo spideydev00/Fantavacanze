@@ -53,8 +53,14 @@ import 'package:fantavacanze_official/features/games/presentation/bloc/lobby/lob
 import 'package:fantavacanze_official/features/games/presentation/bloc/never_have_i_ever/never_have_i_ever_bloc.dart';
 import 'package:fantavacanze_official/features/games/presentation/bloc/truth_or_dare/truth_or_dare_bloc.dart';
 import 'package:fantavacanze_official/features/games/presentation/bloc/word_bomb/word_bomb_bloc.dart';
-import 'package:fantavacanze_official/features/league/data/datasources/subscription_remote_data_source.dart';
+import 'package:fantavacanze_official/features/league/data/datasources/remote/daily_challenges_remote_data_source.dart';
+import 'package:fantavacanze_official/features/league/data/datasources/remote/notification_remote_data_source.dart';
+import 'package:fantavacanze_official/features/league/data/datasources/remote/subscription_remote_data_source.dart';
+import 'package:fantavacanze_official/features/league/data/repository/daily_challenges_repository_impl.dart';
+import 'package:fantavacanze_official/features/league/data/repository/notifications_repository_impl.dart';
 import 'package:fantavacanze_official/features/league/data/repository/subscription_repository_impl.dart';
+import 'package:fantavacanze_official/features/league/domain/repository/daily_challenges_repository.dart';
+import 'package:fantavacanze_official/features/league/domain/repository/notifications_repository.dart';
 import 'package:fantavacanze_official/features/league/domain/repository/subscription_repository.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/remote/daily_challenges/approve_daily_challenge.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/remote/daily_challenges/unlock_daily_challenge.dart';
@@ -69,8 +75,8 @@ import 'package:fantavacanze_official/features/auth/domain/use-cases/update_disp
 import 'package:fantavacanze_official/features/auth/domain/use-cases/update_gender.dart';
 import 'package:fantavacanze_official/features/auth/domain/use-cases/update_password.dart';
 import 'package:fantavacanze_official/features/auth/presentation/bloc/auth_bloc.dart';
-import 'package:fantavacanze_official/features/league/data/datasources/league_local_data_source.dart';
-import 'package:fantavacanze_official/features/league/data/datasources/league_remote_data_source.dart';
+import 'package:fantavacanze_official/features/league/data/datasources/local/local_data_source.dart';
+import 'package:fantavacanze_official/features/league/data/datasources/remote/league_remote_data_source.dart';
 import 'package:fantavacanze_official/features/league/data/models/daily_challenge_model/daily_challenge_model.dart';
 import 'package:fantavacanze_official/features/league/data/models/event_model/event_model.dart';
 import 'package:fantavacanze_official/features/league/data/models/individual_participant_model/individual_participant_model.dart';

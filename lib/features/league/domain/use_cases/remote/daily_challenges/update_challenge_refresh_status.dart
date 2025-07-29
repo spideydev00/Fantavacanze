@@ -1,6 +1,6 @@
 import 'package:fantavacanze_official/core/errors/failure.dart';
 import 'package:fantavacanze_official/core/use-case/usecase.dart';
-import 'package:fantavacanze_official/features/league/domain/repository/league_repository.dart';
+import 'package:fantavacanze_official/features/league/domain/repository/daily_challenges_repository.dart';
 import 'package:fpdart/fpdart.dart';
 
 class UpdateChallengeRefreshStatusParams {
@@ -17,14 +17,14 @@ class UpdateChallengeRefreshStatusParams {
 
 class UpdateChallengeRefreshStatus
     implements Usecase<void, UpdateChallengeRefreshStatusParams> {
-  final LeagueRepository leagueRepository;
+  final DailyChallengesRepository dailyChallengesRepository;
 
-  UpdateChallengeRefreshStatus({required this.leagueRepository});
+  UpdateChallengeRefreshStatus({required this.dailyChallengesRepository});
 
   @override
   Future<Either<Failure, void>> call(
       UpdateChallengeRefreshStatusParams params) async {
-    return await leagueRepository.updateChallengeRefreshStatus(
+    return await dailyChallengesRepository.updateChallengeRefreshStatus(
       challengeId: params.challengeId,
       userId: params.userId,
       isRefreshed: params.isRefreshed,

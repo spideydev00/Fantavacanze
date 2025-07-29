@@ -49,7 +49,7 @@ All dependencies must be registered in `lib/init_dependencies/init_dependencies.
 
 ### Caching Strategy
 All data operations follow offline-first pattern:
-- Check local cache first via `LeagueLocalDataSource` 
+- Check local cache first via `LocalDataSource` 
 - If network available and cache empty/stale, fetch from remote
 - Always cache successful remote responses
 - Use `ConnectionChecker` to determine data source
