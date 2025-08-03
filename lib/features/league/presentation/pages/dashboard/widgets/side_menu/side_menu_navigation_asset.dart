@@ -1,4 +1,4 @@
-import 'package:fantavacanze_official/core/navigation/navigation_asset.dart';
+import 'package:fantavacanze_official/core/entities/navigation/navigation_asset.dart';
 import 'package:flutter/material.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';

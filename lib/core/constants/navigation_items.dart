@@ -1,7 +1,6 @@
-import 'package:fantavacanze_official/core/navigation/navigation_item.dart';
+import 'package:fantavacanze_official/core/entities/navigation/navigation_item.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/admin/admin_page.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/events/add_event_page.dart';
-import 'package:fantavacanze_official/features/league/presentation/pages/navigation/fv_bot/fv_bot_page.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/homepage/home.dart';
 import 'package:fantavacanze_official/features/games/presentation/pages/drink_games.dart';
 // import 'package:fantavacanze_official/features/games/presentation/pages/quick_challenge.dart';
@@ -12,6 +11,7 @@ import 'package:fantavacanze_official/features/league/presentation/pages/navigat
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/notes/notes_page.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/rules/rules_page.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/team_info/team_info_page.dart';
+import 'package:fantavacanze_official/features/league/presentation/pages/navigation/tutorial/tutorial_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 
@@ -30,19 +30,27 @@ List<NavigationItem> nonParticipantNavbarItems = [
     subsection: "Naviga",
   ),
   NavigationItem(
+    title: "Tutorial",
+    darkSvgIcon: 'assets/images/icons/homepage_icons/question-mark-icon.svg',
+    lightSvgIcon:
+        'assets/images/icons/homepage_icons/question-mark-icon-dark.svg',
+    screen: const TutorialPage(),
+    subsection: "Naviga",
+  ),
+  NavigationItem(
     title: "Giochi",
     darkSvgIcon: 'assets/images/icons/homepage_icons/dice-icon.svg',
     lightSvgIcon: 'assets/images/icons/homepage_icons/dice-icon.svg',
     screen: const DrinkGames(),
     subsection: "Games",
   ),
-  NavigationItem(
-    title: "FV Bot",
-    darkSvgIcon: 'assets/images/icons/homepage_icons/robot-icon.svg',
-    lightSvgIcon: 'assets/images/icons/homepage_icons/robot-icon.svg',
-    screen: const FvBotPage(),
-    subsection: "Games",
-  ),
+  // NavigationItem(
+  //   title: "FV Bot",
+  //   darkSvgIcon: 'assets/images/icons/homepage_icons/robot-icon.svg',
+  //   lightSvgIcon: 'assets/images/icons/homepage_icons/robot-icon.svg',
+  //   screen: const FvBotPage(),
+  //   subsection: "Games",
+  // ),
   NavigationItem(
     title: "Crea Lega",
     darkSvgIcon: 'assets/images/icons/homepage_icons/create-league-icon.svg',
@@ -83,13 +91,13 @@ List<NavigationItem> participantNavbarItems = [
     screen: LeaderboardPage(),
     subsection: "Naviga",
   ),
-  NavigationItem(
-    title: "FV Bot",
-    darkSvgIcon: 'assets/images/icons/homepage_icons/robot-icon.svg',
-    lightSvgIcon: 'assets/images/icons/homepage_icons/robot-icon.svg',
-    screen: const FvBotPage(),
-    subsection: "Games",
-  ),
+  // NavigationItem(
+  //   title: "FV Bot",
+  //   darkSvgIcon: 'assets/images/icons/homepage_icons/robot-icon.svg',
+  //   lightSvgIcon: 'assets/images/icons/homepage_icons/robot-icon.svg',
+  //   screen: const FvBotPage(),
+  //   subsection: "Games",
+  // ),
   NavigationItem(
     title: "Regole",
     darkSvgIcon: 'assets/images/icons/homepage_icons/rules-icon.svg',
@@ -116,6 +124,14 @@ List<NavigationItem> participantNavbarItems = [
     darkSvgIcon: 'assets/images/icons/homepage_icons/notes-icon.svg',
     lightSvgIcon: 'assets/images/icons/homepage_icons/notes-icon-dark.svg',
     screen: const NotesPage(),
+    subsection: "Naviga",
+  ),
+  NavigationItem(
+    title: "Tutorial",
+    darkSvgIcon: 'assets/images/icons/homepage_icons/question-mark-icon.svg',
+    lightSvgIcon:
+        'assets/images/icons/homepage_icons/question-mark-icon-dark.svg',
+    screen: const TutorialPage(),
     subsection: "Naviga",
   ),
   NavigationItem(
