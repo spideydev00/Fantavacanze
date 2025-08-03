@@ -294,8 +294,8 @@ class MemoryDetailScreen extends StatelessWidget {
 
   Widget _buildVideoPlayer(BuildContext context) {
     return SizedBox.expand(
-      child: BetterVideoPlayerWidget(
-        videoUrl: memory.mediaUrl,
+      child: BetterVideoPlayer(
+        videoSource: memory.mediaUrl,
         fit: BoxFit.cover,
       ),
     );
