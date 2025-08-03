@@ -860,15 +860,6 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
       final teamParticipant =
           league.participants[teamIndex] as TeamParticipantModel;
 
-      // Delete old logo if exists
-      if (teamParticipant.teamLogoUrl != null &&
-          teamParticipant.teamLogoUrl!.isNotEmpty) {
-        await _deleteFileFromStorage(
-          bucket: 'team-logos',
-          url: teamParticipant.teamLogoUrl!,
-        );
-      }
-
       // Update team with new logo
       final updatedTeam = teamParticipant.copyWith(teamLogoUrl: logoUrl);
       final updatedParticipants = List<dynamic>.from(league.participants);
