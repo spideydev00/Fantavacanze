@@ -1,6 +1,6 @@
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/extensions/context_extension.dart';
-import 'package:fantavacanze_official/core/utils/show_snackbar.dart';
+import 'package:fantavacanze_official/core/utils/show-snackbar-or-paywall/show_snackbar.dart';
 import 'package:fantavacanze_official/core/widgets/loader.dart';
 import 'package:fantavacanze_official/core/pages/empty_branded_page.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';

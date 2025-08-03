@@ -1,7 +1,7 @@
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
-import 'package:fantavacanze_official/core/utils/number_formatter.dart';
+import 'package:fantavacanze_official/core/utils/dates-and-numbers/number_formatter.dart';
 import 'package:flutter/material.dart';
 
 class StatCard extends StatelessWidget {

@@ -3,8 +3,8 @@ import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/extensions/context_extension.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
-import 'package:fantavacanze_official/core/utils/participant_name_resolver.dart';
-import 'package:fantavacanze_official/core/utils/show_snackbar.dart';
+import 'package:fantavacanze_official/core/utils/in-game/participant_name_resolver.dart';
+import 'package:fantavacanze_official/core/utils/show-snackbar-or-paywall/show_snackbar.dart';
 import 'package:fantavacanze_official/core/widgets/events/event_card.dart';
 import 'package:fantavacanze_official/core/widgets/events/event_with_resolved_name.dart';
 import 'package:fantavacanze_official/core/widgets/media/video_thumbnail.dart';
@@ -13,7 +13,7 @@ import 'package:fantavacanze_official/features/league/domain/entities/league.dar
 import 'package:fantavacanze_official/features/league/domain/entities/rule/rule.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/team_participant.dart';
 import 'package:flutter/material.dart';
-import 'package:fantavacanze_official/core/utils/image_picker_util.dart';
+import 'package:fantavacanze_official/core/utils/media/image_picker_util.dart';
 import 'package:image_picker/image_picker.dart' as image_picker;
 
 class AddMemoryBottomSheet extends StatefulWidget {

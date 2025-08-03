@@ -1,5 +1,5 @@
 import 'package:fantavacanze_official/core/extensions/context_extension.dart';
-import 'package:fantavacanze_official/core/utils/show_snackbar.dart';
+import 'package:fantavacanze_official/core/utils/show-snackbar-or-paywall/show_snackbar.dart';
 import 'package:fantavacanze_official/features/games/presentation/pages/game_selection_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';

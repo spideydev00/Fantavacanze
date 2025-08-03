@@ -4,7 +4,7 @@ import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/extensions/context_extension.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
-import 'package:fantavacanze_official/core/utils/show_page_specific_snackbar.dart';
+import 'package:fantavacanze_official/core/utils/show-snackbar-or-paywall/show_page_specific_snackbar.dart';
 import 'package:fantavacanze_official/core/widgets/info_banner.dart';
 import 'package:fantavacanze_official/features/games/domain/entities/game_player.dart';
 import 'package:fantavacanze_official/features/games/domain/entities/game_session.dart';

@@ -2,7 +2,7 @@ import 'dart:ui';
 
 import 'package:fantavacanze_official/core/extensions/context_extension.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
-import 'package:fantavacanze_official/core/utils/show_premium_paywall.dart';
+import 'package:fantavacanze_official/core/utils/show-snackbar-or-paywall/show_premium_paywall.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 

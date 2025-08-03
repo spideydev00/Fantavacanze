@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:fantavacanze_official/core/cubits/app_theme/app_theme_cubit.dart';
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
-import 'package:fantavacanze_official/core/utils/show_page_specific_snackbar.dart';
+import 'package:fantavacanze_official/core/utils/show-snackbar-or-paywall/show_page_specific_snackbar.dart';
 import 'package:fantavacanze_official/core/widgets/loader.dart';
 import 'package:fantavacanze_official/features/games/domain/entities/word_bomb_game_state.dart';
 import 'package:fantavacanze_official/features/games/presentation/bloc/word_bomb/word_bomb_bloc.dart';

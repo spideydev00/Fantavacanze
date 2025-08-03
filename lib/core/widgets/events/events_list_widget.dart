@@ -1,9 +1,9 @@
-import 'package:fantavacanze_official/core/utils/participant_name_resolver.dart';
+import 'package:fantavacanze_official/core/utils/in-game/participant_name_resolver.dart';
 import 'package:fantavacanze_official/core/widgets/events/event_with_resolved_name.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/event.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/league.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/participant.dart';
-import 'package:fantavacanze_official/core/utils/event_finder.dart';
+import 'package:fantavacanze_official/core/utils/in-game/event_finder.dart';
 import 'package:fantavacanze_official/core/widgets/events/event_card.dart';
 import 'package:fantavacanze_official/core/widgets/empty_state.dart';
 import 'package:flutter/material.dart';

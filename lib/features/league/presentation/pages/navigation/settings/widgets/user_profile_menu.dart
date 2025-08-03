@@ -3,7 +3,7 @@ import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/extensions/context_extension.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
-import 'package:fantavacanze_official/core/utils/show_snackbar.dart';
+import 'package:fantavacanze_official/core/utils/show-snackbar-or-paywall/show_snackbar.dart';
 import 'package:fantavacanze_official/core/widgets/buttons/danger_action_button.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/settings/widgets/consent_settings_dialog.dart';
 import 'package:fantavacanze_official/core/widgets/dialogs/gdpr_consent_dialog.dart'; // Import the new dialog

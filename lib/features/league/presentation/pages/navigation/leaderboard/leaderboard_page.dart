@@ -2,7 +2,7 @@ import 'package:fantavacanze_official/core/cubits/app_league/app_league_cubit.da
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/extensions/context_extension.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
-import 'package:fantavacanze_official/core/utils/number_formatter.dart';
+import 'package:fantavacanze_official/core/utils/dates-and-numbers/number_formatter.dart';
 import 'package:fantavacanze_official/core/widgets/custom_tab.dart';
 import 'package:fantavacanze_official/core/widgets/custom_tab_bar.dart';
 import 'package:fantavacanze_official/core/widgets/empty_state.dart';
