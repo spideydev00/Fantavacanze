@@ -371,19 +371,30 @@ class _TeamBasedInfoState extends State<_TeamBasedInfo>
                   Padding(
                     padding: const EdgeInsets.only(right: 16.0),
                     child: IconButton(
-                      icon: Icon(Icons.edit),
+                      icon: Icon(
+                        Icons.edit,
+                        size: ThemeSizes.lg,
+                      ),
                       onPressed: _toggleEdit,
                       tooltip: 'Modifica nome',
                     ),
                   ),
                 if (_isEditing) ...[
                   IconButton(
-                    icon: const Icon(Icons.check, color: ColorPalette.success),
+                    icon: const Icon(
+                      Icons.check,
+                      color: ColorPalette.success,
+                      size: ThemeSizes.lg,
+                    ),
                     onPressed: _updateTeamName,
                     tooltip: 'Salva',
                   ),
                   IconButton(
-                    icon: const Icon(Icons.close, color: ColorPalette.error),
+                    icon: const Icon(
+                      Icons.close,
+                      color: ColorPalette.error,
+                      size: ThemeSizes.lg,
+                    ),
                     onPressed: _toggleEdit,
                     tooltip: 'Annulla',
                   ),

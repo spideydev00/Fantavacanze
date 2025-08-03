@@ -821,6 +821,18 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
     required File imageFile,
   }) async {
     return _tryDatabaseOperation(() async {
+      final existingFiles = await supabaseClient.storage
+          .from('team-logos')
+          .list(path: '$leagueId/$teamName');
+
+      if (existingFiles.isNotEmpty) {
+        final filesToRemove = existingFiles
+            .map((file) => '$leagueId/$teamName/${file.name}')
+            .toList();
+
+        await supabaseClient.storage.from('team-logos').remove(filesToRemove);
+      }
+
       final path = '$leagueId/$teamName';
       return await _uploadMediaToStorage(
         bucket: 'team-logos',
