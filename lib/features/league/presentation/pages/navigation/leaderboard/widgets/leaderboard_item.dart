@@ -2,12 +2,12 @@ import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/extensions/context_extension.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
-import 'package:fantavacanze_official/core/utils/number_formatter.dart';
+import 'package:fantavacanze_official/core/utils/dates-and-numbers/number_formatter.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/event.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/league.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/participant.dart';
-import 'package:fantavacanze_official/core/utils/event_finder.dart';
-import 'package:fantavacanze_official/core/utils/participant_name_resolver.dart';
+import 'package:fantavacanze_official/core/utils/in-game/event_finder.dart';
+import 'package:fantavacanze_official/core/utils/in-game/participant_name_resolver.dart';
 import 'package:flutter/material.dart';
 
 /// A flexible component that displays a participant item in a leaderboard

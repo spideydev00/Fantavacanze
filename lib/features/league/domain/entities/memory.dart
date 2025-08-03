@@ -1,5 +1,5 @@
 import 'package:flutter/foundation.dart';
-import 'package:fantavacanze_official/core/utils/media_utils.dart';
+import 'package:fantavacanze_official/core/utils/media/media_utils.dart';
 
 @immutable
 class Memory {

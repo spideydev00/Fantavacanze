@@ -1,4 +1,4 @@
-import 'package:fantavacanze_official/core/utils/get_rive_controller.dart';
+import 'package:fantavacanze_official/core/utils/rive/get_rive_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:rive/rive.dart';
 

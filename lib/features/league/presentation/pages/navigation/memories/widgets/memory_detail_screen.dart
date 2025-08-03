@@ -7,7 +7,7 @@ import 'package:fantavacanze_official/core/widgets/media/video_player.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/memory.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/league.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/rule/rule.dart';
-import 'package:fantavacanze_official/core/utils/find_event_from_memory.dart';
+import 'package:fantavacanze_official/core/utils/in-game/find_event_from_memory.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
