@@ -232,7 +232,11 @@ class _NotesPageState extends State<NotesPage> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 const CustomDivider(
-                                    text: "Scegli un partecipante"),
+                                  text: "Scegli un partecipante",
+                                  hasDropdown: true,
+                                  dropdownText:
+                                      'Non hai voglia o tempo di creare ora un evento? Crea una nota per ricordarti tutto!',
+                                ),
                                 const SizedBox(height: ThemeSizes.sm),
                                 ParticipantSelector<Participant>(
                                   items: participants,

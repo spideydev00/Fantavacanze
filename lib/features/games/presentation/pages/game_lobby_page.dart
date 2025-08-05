@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:fantavacanze_official/core/constants/constants.dart';
 import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit.dart';
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
@@ -231,9 +233,25 @@ class GameLobbyPage extends StatelessWidget {
                                     .isLoadingNextAction
                                 ? null
                                 : () {
+                                    // Aggiungi il StartGameRequested
                                     context
                                         .read<LobbyBloc>()
                                         .add(StartGameRequested(session.id));
+
+                                    // SAFETY NET: Reset automatico dopo 10 secondi se bloccato
+                                    Timer(const Duration(seconds: 10), () {
+                                      final currentState =
+                                          context.read<LobbyBloc>().state;
+                                      if (currentState is LobbySessionActive &&
+                                          currentState.isLoadingNextAction) {
+                                        // Force reset se ancora in loading dopo 10 secondi
+                                        showSpecificSnackBar(
+                                          context,
+                                          "Timeout avvio partita. Riprova.",
+                                          color: ColorPalette.warning,
+                                        );
+                                      }
+                                    });
                                   },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: (context.watch<LobbyBloc>().state

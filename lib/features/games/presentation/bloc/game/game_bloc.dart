@@ -193,53 +193,50 @@ class LobbyBloc extends Bloc<LobbyEvent, LobbyState> {
       final user = _currentUser;
 
       if (user == null || user.id != currentLobbyState.session.adminId) {
-        emit(LobbyError("Solo l'admin può iniziare la partita."));
-
-        emit(currentLobbyState.copyWith());
-
-        return;
-      }
-
-      if (currentLobbyState.players.isEmpty) {
-        emit(LobbyError(
-            "Non ci sono giocatori nella lobby per iniziare la partita."));
-
+        emit(const LobbyError("Solo l'admin può iniziare la partita."));
+        // IMPORTANTE: Reset isLoadingNextAction anche in caso di errore
         emit(currentLobbyState.copyWith(isLoadingNextAction: false));
         return;
       }
 
-      // // ---------- COMMENT IF YOU DO NOT WANT TO ENFORCE MINIMUM PLAYERS ---------
-      // if (currentLobbyState.players.length < 2 &&
-      //     currentLobbyState.session.gameType != GameType.wordBomb) {
-      //   // WordBomb can be played solo
-      //   emit(LobbyError(
-      //       "Sono necessari almeno 2 giocatori per iniziare questa partita."));
-      //   emit(currentLobbyState.copyWith(isLoadingNextAction: false));
-      //   return;
-      // }
+      if (currentLobbyState.players.isEmpty) {
+        emit(const LobbyError(
+            "Non ci sono giocatori nella lobby per iniziare la partita."));
+        // IMPORTANTE: Reset isLoadingNextAction
+        emit(currentLobbyState.copyWith(isLoadingNextAction: false));
+        return;
+      }
 
+      // Set loading state
       emit(currentLobbyState.copyWith(isLoadingNextAction: true));
 
       final String firstPlayerUserId = currentLobbyState.players.first.userId;
 
-      final result = await _updateGameState(
-        UpdateGameStateParams(
-          sessionId: event.sessionId,
-          status: GameStatus.inProgress,
-          currentTurnUserId: firstPlayerUserId,
-        ),
-      );
-
-      result.fold((failure) {
-        emit(LobbyError(failure.message));
-        emit(
-          currentLobbyState.copyWith(
-            isLoadingNextAction: false,
+      try {
+        final result = await _updateGameState(
+          UpdateGameStateParams(
+            sessionId: event.sessionId,
+            status: GameStatus.inProgress,
+            currentTurnUserId: firstPlayerUserId,
           ),
         );
-      }, (_) {
-        // Session stream will update the state to inProgress.
-      });
+
+        result.fold(
+          (failure) {
+            emit(LobbyError(failure.message));
+            // IMPORTANTE: Reset loading state dopo errore
+            emit(currentLobbyState.copyWith(isLoadingNextAction: false));
+          },
+          (_) {
+            // Session stream will update the state to inProgress
+            // Mantieni isLoadingNextAction true fino al prossimo stream update
+          },
+        );
+      } catch (e) {
+        // IMPORTANTE: Cattura eccezioni non gestite
+        emit(LobbyError("Errore durante l'avvio della partita: ${e.toString()}"));
+        emit(currentLobbyState.copyWith(isLoadingNextAction: false));
+      }
     }
   }
 

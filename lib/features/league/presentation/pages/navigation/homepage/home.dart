@@ -1,6 +1,5 @@
 import 'package:fantavacanze_official/core/cubits/app_league/app_league_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit.dart';
-import 'package:fantavacanze_official/core/extensions/context_extension.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:fantavacanze_official/core/widgets/divider.dart';
 import 'package:fantavacanze_official/core/widgets/events/events_list_widget.dart';
@@ -76,13 +75,16 @@ class HomePage extends StatelessWidget {
     return Column(
       children: [
         DailyGoals(),
-
+        const SizedBox(height: 15),
         // Admin section for creating events
         if (isAdmin) ...[
-          const SizedBox(height: 25),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: ThemeSizes.xl),
-            child: CustomDivider(text: 'Nuovo Evento'),
+            child: CustomDivider(
+              text: 'Nuovo Evento',
+              hasDropdown: true,
+              dropdownText: "Clicca qui per aggiungere un bonus o un malus",
+            ),
           ),
           const SizedBox(height: 15),
           _buildAdminActions(context),
@@ -93,19 +95,11 @@ class HomePage extends StatelessWidget {
 
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: ThemeSizes.xl),
-          child: CustomDivider(text: 'Ultimi Eventi'),
-        ),
-
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: ThemeSizes.xl),
-          child: Text(
-            isAdmin
-                ? 'Fai scroll verso sinistra su un evento per eliminarlo e rimuovere i punti associati.'
-                : 'Ultimi eventi aggiunti nella lega.',
-            textAlign: TextAlign.center,
-            style: context.textTheme.bodySmall?.copyWith(
-              color: context.colorScheme.onSurface.withValues(alpha: .7),
-            ),
+          child: CustomDivider(
+            text: 'Ultimi Eventi',
+            hasDropdown: true,
+            dropdownText:
+                'Fai scroll verso sinistra su un evento per eliminarlo rimuovere i punti associati.',
           ),
         ),
 

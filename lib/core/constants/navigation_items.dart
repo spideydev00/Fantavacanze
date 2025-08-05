@@ -30,7 +30,7 @@ List<NavigationItem> nonParticipantNavbarItems = [
     subsection: "Naviga",
   ),
   NavigationItem(
-    title: "Tutorial",
+    title: "Come Funziona?",
     darkSvgIcon: 'assets/images/icons/homepage_icons/question-mark-icon.svg',
     lightSvgIcon:
         'assets/images/icons/homepage_icons/question-mark-icon-dark.svg',
@@ -127,7 +127,7 @@ List<NavigationItem> participantNavbarItems = [
     subsection: "Naviga",
   ),
   NavigationItem(
-    title: "Tutorial",
+    title: "Come Funziona?",
     darkSvgIcon: 'assets/images/icons/homepage_icons/question-mark-icon.svg',
     lightSvgIcon:
         'assets/images/icons/homepage_icons/question-mark-icon-dark.svg',

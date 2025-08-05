@@ -30,18 +30,16 @@ class BetterVideoPlayer extends StatefulWidget {
   const BetterVideoPlayer.forMemories({
     super.key,
     required String videoUrl,
-    BoxFit fit = BoxFit.cover,
+    this.fit = BoxFit.cover,
   })  : videoSource = videoUrl,
-        fit = fit,
         mode = VideoPlayerMode.memories,
         isAsset = false;
 
   const BetterVideoPlayer.forTutorials({
     super.key,
     required String assetPath,
-    BoxFit fit = BoxFit.contain,
+    this.fit = BoxFit.contain,
   })  : videoSource = assetPath,
-        fit = fit,
         mode = VideoPlayerMode.tutorials,
         isAsset = true;
 
@@ -49,54 +47,96 @@ class BetterVideoPlayer extends StatefulWidget {
   State<BetterVideoPlayer> createState() => _BetterVideoPlayerState();
 }
 
-class _BetterVideoPlayerState extends State<BetterVideoPlayer> {
+class _BetterVideoPlayerState extends State<BetterVideoPlayer>
+    with WidgetsBindingObserver {
   BetterPlayerController? _controller;
   bool _isLoading = true;
   bool _hasError = false;
   String? _errorMessage;
-  bool _isInFullscreen = false;
+  final bool _isInFullscreen = false;
+  bool _isDisposed = false;
   String? _tempFilePath; // Store temp file path for cleanup
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    if (_controller == null) {
+    if (_controller == null && !_isDisposed) {
       _initializePlayer();
     }
   }
 
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    if (_controller != null && !_isDisposed) {
+      switch (state) {
+        case AppLifecycleState.paused:
+          _controller?.pause();
+          break;
+        case AppLifecycleState.resumed:
+          // Don't auto-resume for tutorials
+          if (widget.mode == VideoPlayerMode.memories) {
+            _controller?.play();
+          }
+          break;
+        default:
+          break;
+      }
+    }
+  }
+
   Future<void> _initializePlayer() async {
+    if (_isDisposed) return;
+
     try {
       final config = _buildPlayerConfiguration();
       final dataSource = await _buildDataSource();
 
+      if (_isDisposed) return;
+
       _controller = BetterPlayerController(config);
       await _controller!.setupDataSource(dataSource);
 
-      // Setup fullscreen listener for tutorials mode
-      if (widget.mode == VideoPlayerMode.tutorials) {
-        _controller!.addEventsListener(_onPlayerEvent);
+      if (_isDisposed) {
+        _controller?.dispose();
+        return;
       }
 
-      setState(() => _isLoading = false);
+      if (mounted && !_isDisposed) {
+        setState(() => _isLoading = false);
+      }
     } catch (e) {
-      setState(() {
-        _hasError = true;
-        _errorMessage = e.toString();
-        _isLoading = false;
-      });
+      if (mounted && !_isDisposed) {
+        setState(() {
+          _hasError = true;
+          _errorMessage = e.toString();
+          _isLoading = false;
+        });
+      }
     }
   }
 
   BetterPlayerConfiguration _buildPlayerConfiguration() {
-    final screenRatio = MediaQuery.of(context).size.aspectRatio;
+    // Usa MediaQuery.sizeOf per ottenere dimensioni affidabili
+    final screenSize = MediaQuery.sizeOf(context);
+    final screenRatio = screenSize.width / screenSize.height;
+
+    // Assicurati che il ratio sia sempre valido
+    final safeScreenRatio = screenRatio.isFinite && screenRatio > 0
+        ? screenRatio.clamp(0.1, 10.0)
+        : 16 / 9;
 
     switch (widget.mode) {
       case VideoPlayerMode.memories:
         return BetterPlayerConfiguration(
-          aspectRatio: screenRatio,
+          aspectRatio: safeScreenRatio,
           fit: widget.fit,
-          autoPlay: true,
           looping: false,
           fullScreenByDefault: false,
           allowedScreenSleep: false,
@@ -114,8 +154,8 @@ class _BetterVideoPlayerState extends State<BetterVideoPlayer> {
             enableProgressBar: true,
             enableProgressText: false,
             enableProgressBarDrag: false,
-            showControlsOnInitialize: false,
-            controlsHideTime: const Duration(seconds: 2),
+            showControlsOnInitialize: true,
+            controlsHideTime: const Duration(milliseconds: 300),
             controlBarHeight: 48.0,
             // Colors
             controlBarColor: Colors.black.withValues(alpha: 0.8),
@@ -132,8 +172,8 @@ class _BetterVideoPlayerState extends State<BetterVideoPlayer> {
         return BetterPlayerConfiguration(
           aspectRatio: 16 / 9, // Fixed aspect ratio for tutorials
           fit: widget.fit,
-          autoPlay: false, // User decides when to start
-          looping: true, // Tutorials can loop
+          autoPlay: false,
+          looping: false,
           fullScreenByDefault: false,
           allowedScreenSleep: false,
           expandToFill: false,
@@ -150,14 +190,14 @@ class _BetterVideoPlayerState extends State<BetterVideoPlayer> {
             // Full controls for tutorials
             enableFullscreen: true,
             enableMute: true,
-            enableOverflowMenu: true,
+            enableOverflowMenu: false,
             enableSkips: true,
             enablePlayPause: true,
             enableProgressBar: true,
             enableProgressText: true,
             enableProgressBarDrag: true,
             showControlsOnInitialize: true,
-            controlsHideTime: const Duration(seconds: 4),
+            controlsHideTime: const Duration(milliseconds: 300),
             controlBarHeight: 56.0,
             // Enhanced colors for tutorials
             controlBarColor: Colors.black.withValues(alpha: 0.9),
@@ -194,8 +234,10 @@ class _BetterVideoPlayerState extends State<BetterVideoPlayer> {
         // Create temporary file
         final File tempFile = File(path.join(tempDir.path, tempFileName));
 
-        // Write bytes to temporary file
-        await tempFile.writeAsBytes(bytes);
+        // Check if file already exists to avoid unnecessary writes
+        if (!await tempFile.exists()) {
+          await tempFile.writeAsBytes(bytes);
+        }
 
         // Store path for cleanup
         _tempFilePath = tempFile.path;
@@ -231,16 +273,6 @@ class _BetterVideoPlayerState extends State<BetterVideoPlayer> {
                   : Colors.white,
               strokeWidth: 3,
             ),
-            if (widget.mode == VideoPlayerMode.tutorials) ...[
-              const SizedBox(height: 16),
-              Text(
-                'Caricamento tutorial...',
-                style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.8),
-                  fontSize: 14,
-                ),
-              ),
-            ],
           ],
         ),
       ),
@@ -291,32 +323,6 @@ class _BetterVideoPlayerState extends State<BetterVideoPlayer> {
     );
   }
 
-  void _onPlayerEvent(BetterPlayerEvent event) {
-    if (widget.mode != VideoPlayerMode.tutorials) return;
-
-    switch (event.betterPlayerEventType) {
-      case BetterPlayerEventType.openFullscreen:
-        setState(() => _isInFullscreen = true);
-        // Force landscape for tutorials in fullscreen
-        SystemChrome.setPreferredOrientations([
-          DeviceOrientation.landscapeLeft,
-          DeviceOrientation.landscapeRight,
-        ]);
-        break;
-
-      case BetterPlayerEventType.hideFullscreen:
-        setState(() => _isInFullscreen = false);
-        // Return to portrait
-        SystemChrome.setPreferredOrientations([
-          DeviceOrientation.portraitUp,
-        ]);
-        break;
-
-      default:
-        break;
-    }
-  }
-
   Future<void> _cleanupTempFile() async {
     if (_tempFilePath != null) {
       try {
@@ -326,22 +332,24 @@ class _BetterVideoPlayerState extends State<BetterVideoPlayer> {
         }
       } catch (e) {
         // Ignore cleanup errors
+        debugPrint('Failed to cleanup temp file: $e');
       }
     }
   }
 
   @override
   void dispose() {
+    _isDisposed = true;
+    WidgetsBinding.instance.removeObserver(this);
+
     if (widget.mode == VideoPlayerMode.tutorials) {
-      // Ensure orientation is reset
       SystemChrome.setPreferredOrientations([
         DeviceOrientation.portraitUp,
       ]);
     }
 
     _controller?.dispose();
-
-    // Cleanup temporary file
+    _controller = null;
     _cleanupTempFile();
 
     super.dispose();
@@ -353,35 +361,49 @@ class _BetterVideoPlayerState extends State<BetterVideoPlayer> {
       return _buildPlaceholder();
     }
 
-    if (_hasError || _controller == null) {
+    if (_hasError || _controller == null || _isDisposed) {
       return _buildErrorWidget(context, _errorMessage);
     }
 
     return LayoutBuilder(
       builder: (context, constraints) {
+        // Validazione robusta delle dimensioni
         final w = constraints.maxWidth;
         final h = constraints.maxHeight;
 
-        // Ensure valid dimensions to prevent NaN
-        final validWidth = w.isFinite && w > 0 ? w : 1.0;
-        final validHeight = h.isFinite && h > 0 ? h : 1.0;
+        // Debug per identificare valori problematici
+        if (!w.isFinite || !h.isFinite || w <= 0 || h <= 0) {
+          debugPrint('Invalid constraints: width=$w, height=$h');
+          return _buildErrorWidget(context, 'Dimensioni widget non valide');
+        }
 
-        final aspect = validWidth / validHeight;
-
-        // Ensure aspect ratio is valid and reasonable
+        // Calcola aspect ratio sicuro
+        final aspect = w / h;
         final safeAspectRatio = aspect.isFinite && aspect > 0
             ? aspect.clamp(0.1, 10.0)
-            : (widget.mode == VideoPlayerMode.tutorials ? 16 / 9 : aspect);
+            : (widget.mode == VideoPlayerMode.tutorials ? 16 / 9 : 1.0);
+
+        // Debug per confermare valori validi
+        if (!safeAspectRatio.isFinite) {
+          debugPrint('Invalid aspect ratio: $safeAspectRatio from w=$w, h=$h');
+          return _buildErrorWidget(context, 'Aspect ratio non valido');
+        }
 
         Widget player = ClipRect(
-          child: AspectRatio(
-            aspectRatio: safeAspectRatio,
-            child: GestureDetector(
-              behavior: HitTestBehavior.opaque,
-              onTap: () {
-                _controller?.setControlsVisibility(true);
-              },
-              child: BetterPlayer(controller: _controller!),
+          child: SizedBox(
+            width: w,
+            height: h,
+            child: AspectRatio(
+              aspectRatio: safeAspectRatio,
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: () {
+                  if (_controller != null && !_isDisposed) {
+                    _controller!.setControlsVisibility(true);
+                  }
+                },
+                child: BetterPlayer(controller: _controller!),
+              ),
             ),
           ),
         );
@@ -389,6 +411,8 @@ class _BetterVideoPlayerState extends State<BetterVideoPlayer> {
         // Add container with rounded corners for tutorials
         if (widget.mode == VideoPlayerMode.tutorials && !_isInFullscreen) {
           player = Container(
+            width: w,
+            height: h,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(12),
               boxShadow: [
