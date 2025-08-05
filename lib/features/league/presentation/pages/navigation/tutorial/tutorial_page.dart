@@ -187,7 +187,7 @@ class _TutorialPageState extends State<TutorialPage>
         GradientSectionDivider(
           text: section.title,
           sectionNumber: sectionNumber,
-          color: _getSectionColor(sectionNumber),
+          color: ColorPalette.info,
         ),
 
         const SizedBox(height: ThemeSizes.lg),
@@ -232,23 +232,5 @@ class _TutorialPageState extends State<TutorialPage>
         const SizedBox(height: ThemeSizes.xl),
       ],
     );
-  }
-
-  Color _getSectionColor(int sectionNumber) {
-    // Cycle through different colors for visual variety
-    final colors = [
-      ColorPalette.info,
-      ColorPalette.success,
-      ColorPalette.warning,
-      ColorPalette.error,
-      ColorPalette.info,
-      ColorPalette.success,
-      ColorPalette.warning,
-      ColorPalette.error,
-      ColorPalette.info,
-      ColorPalette.success,
-    ];
-
-    return colors[(sectionNumber - 1) % colors.length];
   }
 }

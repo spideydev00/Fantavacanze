@@ -1,4 +1,5 @@
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
+import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:fantavacanze_official/core/extensions/context_extension.dart';
@@ -126,6 +127,7 @@ class AppInformationDialog extends StatelessWidget {
                     closeButtonText,
                     style: context.textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.bold,
+                      color: ColorPalette.white,
                     ),
                   ),
                 ),

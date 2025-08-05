@@ -63,7 +63,7 @@ class _DailyGoalsState extends State<DailyGoals> {
         return Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const SizedBox(height: ThemeSizes.md),
+            const SizedBox(height: 15),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: ThemeSizes.lg),
               child: CustomDivider(
@@ -73,7 +73,7 @@ class _DailyGoalsState extends State<DailyGoals> {
                     '1. Fai scroll per approvare un obiettivo giornaliero. Se non sei admin, attendi approvazione. \n\n2. Puoi fare il refresh una volta sola per obiettivo. \n\n3. Per sbloccare tutti gli obiettivi, serve un abbonamento premium. ',
               ),
             ),
-            const SizedBox(height: ThemeSizes.lg),
+            const SizedBox(height: 15),
             if (state is DailyChallengesLoading && _isLoading)
               Center(
                 child: Padding(

@@ -75,7 +75,7 @@ class _CustomDividerState extends State<CustomDivider>
   @override
   Widget build(BuildContext context) {
     final dividerColor =
-        widget.color ?? context.textSecondaryColor.withValues(alpha: 0.6);
+        widget.color ?? context.textPrimaryColor.withValues(alpha: 0.6);
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -137,7 +137,7 @@ class _CustomDividerState extends State<CustomDivider>
                           _isExpanded
                               ? Icons.close
                               : Icons.info_outline_rounded,
-                          size: 18,
+                          size: 20,
                           color: context.colorScheme.onSurface
                               .withValues(alpha: .7),
                         ),

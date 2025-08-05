@@ -16,6 +16,7 @@ import 'package:fantavacanze_official/features/league/presentation/bloc/league_b
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc/league_event.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc/league_state.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/memories/widgets/add_memory_bottom_sheet.dart';
+import 'package:fantavacanze_official/features/league/presentation/pages/navigation/memories/widgets/continue_button.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/memories/widgets/memory_card.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/memories/widgets/memory_detail_screen.dart';
 import 'package:flutter/material.dart';
@@ -38,6 +39,10 @@ class _MemoriesPageState extends State<MemoriesPage>
 
   bool _isAdmin = false;
   bool _isLoading = false;
+
+  // Variabili per il caricamento progressivo
+  int _visibleMemoriesCount = 5;
+  static const int _memoriesPerPage = 5;
 
   // Variabili per memorizzare i dati del form
   String _pendingMemoryText = '';
@@ -103,6 +108,20 @@ class _MemoriesPageState extends State<MemoriesPage>
 
     setState(() {
       _isLoading = true;
+    });
+  }
+
+  /// Carica altre memories
+  void _loadMoreMemories() {
+    setState(() {
+      _visibleMemoriesCount += _memoriesPerPage;
+    });
+  }
+
+  /// Reset del contatore quando si ricarica la pagina
+  void _resetMemoriesCount() {
+    setState(() {
+      _visibleMemoriesCount = _memoriesPerPage;
     });
   }
 
@@ -323,9 +342,15 @@ class _MemoriesPageState extends State<MemoriesPage>
     // Use the utility function to sort memories by creation date (newest first)
     final sortedMemories = sortMemoriesByDate(memories);
 
+    // Determina quante memories mostrare
+    final memoriesToShow = sortedMemories.take(_visibleMemoriesCount).toList();
+    final hasMoreMemories = sortedMemories.length > _visibleMemoriesCount;
+    final remainingCount = sortedMemories.length - _visibleMemoriesCount;
+
     return RefreshIndicator(
       onRefresh: () async {
         if (_currentLeague != null) {
+          _resetMemoriesCount(); // Reset del contatore al refresh
           context.read<LeagueBloc>().add(
                 GetLeagueEvent(leagueId: _currentLeague!.id),
               );
@@ -377,7 +402,7 @@ class _MemoriesPageState extends State<MemoriesPage>
                 crossAxisCount: 2,
                 mainAxisSpacing: ThemeSizes.md,
                 crossAxisSpacing: ThemeSizes.md,
-                itemCount: sortedMemories.length + 1, // Use sortedMemories
+                itemCount: memoriesToShow.length + 1, // Usa memoriesToShow
                 itemBuilder: (context, index) {
                   // Place add button as the second item
                   if (index == 1) {
@@ -387,7 +412,7 @@ class _MemoriesPageState extends State<MemoriesPage>
                   // Adjust index for memories
                   final memoryIndex = index > 1 ? index - 1 : index;
                   final memory =
-                      sortedMemories[memoryIndex]; // Use sortedMemories
+                      memoriesToShow[memoryIndex]; // Usa memoriesToShow
 
                   return MemoryCard(
                     memory: memory,
@@ -400,7 +425,18 @@ class _MemoriesPageState extends State<MemoriesPage>
               ),
             ),
           ),
-          const SliverToBoxAdapter(child: SizedBox(height: 40)),
+          // Bottone "Continua" se ci sono più memories
+          if (hasMoreMemories)
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: ThemeSizes.md),
+                child: ContinueButton(
+                  remainingCount: remainingCount,
+                  onTap: _loadMoreMemories,
+                ),
+              ),
+            ),
+          const SliverToBoxAdapter(child: SizedBox(height: 20)),
         ],
       ),
     );
