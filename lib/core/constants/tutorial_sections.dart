@@ -36,7 +36,7 @@ List<TutorialSection> tutorialSections = [
   TutorialSection(
     title: "Aggiungi Bonus/Malus",
     description:
-        "Per aggiungere un bonus o un malus (ovvero un evento) vai su:\n1. \"Nuovo Evento\" (Che trovi sia nella home che nel menù laterale)\n.2. Scegli se appartiene al regolamento o meno\n3. Scegli a chi assegnarlo (in caso di lega a squadre puoi scegliere l'intero team o un membro del team)",
+        "Per aggiungere un bonus o un malus (ovvero un evento) vai su:\n1. \"Nuovo Evento\" (Che trovi sia nella home che nel menù laterale)\n2. Scegli se appartiene al regolamento o meno\n3. Scegli a chi assegnarlo (in caso di lega a squadre puoi scegliere l'intero team o un membro del team)",
     videoUrl: 'assets/tutorials/add-event.mp4',
     androidScreenshotPath: 'assets/tutorials/android-screenshots/add-event.png',
   ),
@@ -50,7 +50,7 @@ List<TutorialSection> tutorialSections = [
   TutorialSection(
     title: "Sfide Giornaliere",
     description:
-        "Le sfide giornaliere sono sfide \"EXTRA\" (estranee al regolamento) che danno punti maggiorati. Queste sono:\n1. Tre per gli utenti premium\n2. 2 (guardando un video ad) per gli utenti free\n\nPer approvare una sfida l'utente può scrollare verso destra e:\n1. Se l'utente è un admin i punti vengono assegnatti subito\n2. Se l'utente non è un admin verrà inviata una notifica all'admin che può approvare o meno\n3. In alternativa si può creare manualmente un evento",
+        "Le sfide giornaliere sono sfide \"EXTRA\" (estranee al regolamento) che danno punti maggiorati. Queste sono:\n1. Tre per gli utenti premium\n2. 2 (guardando un video ad) per gli utenti free\n\nPer approvare una sfida l'utente può scrollare verso destra e:\n1. Se l'utente è un admin i punti vengono assegnati subito\n2. Se l'utente non è un admin verrà inviata una notifica all'admin che può approvare o meno\n3. In alternativa si può creare manualmente un evento",
     videoUrl: 'assets/tutorials/daily-challenge.mp4',
     androidScreenshotPath:
         'assets/tutorials/android-screenshots/daily-challenge.png',
@@ -58,7 +58,7 @@ List<TutorialSection> tutorialSections = [
   TutorialSection(
     title: "Giochi Alcolici",
     description:
-        "Ti proponiamo tre giochi alcolici (IN MULTIPLAYER) tra cui scegliere:\n1. Truth Or Dare\n2. Non Ho Mai\n3. Drop Bomb (disponibile 1 free trial e successivamente solo per utenti premium). Per accedere alla sezione dovrai:\n1. Guardare una pubblicità e potrai accedere per 15 minuti\n2. Accesso libero con abbonamento premium",
+        "Ti proponiamo tre giochi alcolici (IN MULTIPLAYER) tra cui scegliere:\n1. Truth Or Dare\n2. Non Ho Mai\n3. Drop Bomb (disponibile 1 free trial e successivamente solo per utenti premium).\n\nPer accedere alla sezione dovrai:\n1. Guardare una pubblicità e potrai accedere per 15 minuti\n2. Accesso libero con abbonamento premium",
     videoUrl: 'assets/tutorials/drink-games.mp4',
     androidScreenshotPath:
         'assets/tutorials/android-screenshots/giochi-alcolici.png',
