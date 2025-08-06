@@ -212,13 +212,6 @@ class _TutorialPageState extends State<TutorialPage>
           margin: const EdgeInsets.symmetric(horizontal: ThemeSizes.sm),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusLg),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.1),
-                blurRadius: 8,
-                offset: const Offset(0, 4),
-              ),
-            ],
           ),
           clipBehavior: Clip.antiAlias,
           child: AspectRatio(

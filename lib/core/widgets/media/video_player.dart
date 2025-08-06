@@ -38,7 +38,7 @@ class BetterVideoPlayer extends StatefulWidget {
   const BetterVideoPlayer.forTutorials({
     super.key,
     required String assetPath,
-    this.fit = BoxFit.contain,
+    this.fit = BoxFit.cover,
   })  : videoSource = assetPath,
         mode = VideoPlayerMode.tutorials,
         isAsset = true;
@@ -53,9 +53,8 @@ class _BetterVideoPlayerState extends State<BetterVideoPlayer>
   bool _isLoading = true;
   bool _hasError = false;
   String? _errorMessage;
-  final bool _isInFullscreen = false;
   bool _isDisposed = false;
-  String? _tempFilePath; // Store temp file path for cleanup
+  String? _tempFilePath;
 
   @override
   void initState() {
@@ -123,19 +122,31 @@ class _BetterVideoPlayerState extends State<BetterVideoPlayer>
   }
 
   BetterPlayerConfiguration _buildPlayerConfiguration() {
-    // Usa MediaQuery.sizeOf per ottenere dimensioni affidabili
+    // Get screen dimensions with proper validation
     final screenSize = MediaQuery.sizeOf(context);
-    final screenRatio = screenSize.width / screenSize.height;
+    final screenWidth = screenSize.width;
+    final screenHeight = screenSize.height;
 
-    // Assicurati che il ratio sia sempre valido
-    final safeScreenRatio = screenRatio.isFinite && screenRatio > 0
-        ? screenRatio.clamp(0.1, 10.0)
-        : 16 / 9;
+    // Validate screen dimensions and provide fallbacks
+    final safeWidth =
+        (screenWidth.isFinite && screenWidth > 0) ? screenWidth : 390.0;
+    final safeHeight =
+        (screenHeight.isFinite && screenHeight > 0) ? screenHeight : 844.0;
+
+    double safeScreenRatio = safeWidth / safeHeight;
+
+    // Additional validation for the calculated ratio
+    if (!safeScreenRatio.isFinite || safeScreenRatio <= 0) {
+      safeScreenRatio = 9.0 / 16.0;
+    }
+
+    // Clamp to reasonable bounds
+    safeScreenRatio = safeScreenRatio.clamp(0.1, 10.0);
 
     switch (widget.mode) {
       case VideoPlayerMode.memories:
         return BetterPlayerConfiguration(
-          aspectRatio: safeScreenRatio,
+          aspectRatio: 9.0 / 16.0,
           fit: widget.fit,
           looping: false,
           fullScreenByDefault: false,
@@ -170,21 +181,15 @@ class _BetterVideoPlayerState extends State<BetterVideoPlayer>
 
       case VideoPlayerMode.tutorials:
         return BetterPlayerConfiguration(
-          aspectRatio: 16 / 9, // Fixed aspect ratio for tutorials
+          aspectRatio: safeScreenRatio,
+          fullScreenAspectRatio: safeScreenRatio,
           fit: widget.fit,
-          autoPlay: false,
-          looping: false,
-          fullScreenByDefault: false,
           allowedScreenSleep: false,
-          expandToFill: false,
-          autoDetectFullscreenDeviceOrientation: true,
           deviceOrientationsOnFullScreen: [
-            DeviceOrientation.landscapeLeft,
-            DeviceOrientation.landscapeRight,
-            DeviceOrientation.portraitUp,
+            DeviceOrientation.portraitDown,
           ],
           deviceOrientationsAfterFullScreen: [
-            DeviceOrientation.portraitUp,
+            DeviceOrientation.portraitDown,
           ],
           controlsConfiguration: BetterPlayerControlsConfiguration(
             // Full controls for tutorials
@@ -365,71 +370,29 @@ class _BetterVideoPlayerState extends State<BetterVideoPlayer>
       return _buildErrorWidget(context, _errorMessage);
     }
 
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        // Validazione robusta delle dimensioni
-        final w = constraints.maxWidth;
-        final h = constraints.maxHeight;
+    // Calculate safe aspect ratio for the widget wrapper
+    double aspectRatio = 9.0 / 16.0; // Default for memories
 
-        // Debug per identificare valori problematici
-        if (!w.isFinite || !h.isFinite || w <= 0 || h <= 0) {
-          debugPrint('Invalid constraints: width=$w, height=$h');
-          return _buildErrorWidget(context, 'Dimensioni widget non valide');
-        }
+    if (widget.mode == VideoPlayerMode.tutorials) {
+      final screenSize = MediaQuery.sizeOf(context);
+      final screenWidth = screenSize.width;
+      final screenHeight = screenSize.height;
 
-        // Calcola aspect ratio sicuro
-        final aspect = w / h;
-        final safeAspectRatio = aspect.isFinite && aspect > 0
-            ? aspect.clamp(0.1, 10.0)
-            : (widget.mode == VideoPlayerMode.tutorials ? 16 / 9 : 1.0);
+      if (screenWidth.isFinite &&
+          screenHeight.isFinite &&
+          screenWidth > 0 &&
+          screenHeight > 0) {
+        aspectRatio = (screenWidth / screenHeight).clamp(0.1, 10.0);
+      }
+    }
 
-        // Debug per confermare valori validi
-        if (!safeAspectRatio.isFinite) {
-          debugPrint('Invalid aspect ratio: $safeAspectRatio from w=$w, h=$h');
-          return _buildErrorWidget(context, 'Aspect ratio non valido');
-        }
-
-        Widget player = ClipRect(
-          child: SizedBox(
-            width: w,
-            height: h,
-            child: AspectRatio(
-              aspectRatio: safeAspectRatio,
-              child: GestureDetector(
-                behavior: HitTestBehavior.opaque,
-                onTap: () {
-                  if (_controller != null && !_isDisposed) {
-                    _controller!.setControlsVisibility(true);
-                  }
-                },
-                child: BetterPlayer(controller: _controller!),
-              ),
-            ),
-          ),
-        );
-
-        // Add container with rounded corners for tutorials
-        if (widget.mode == VideoPlayerMode.tutorials && !_isInFullscreen) {
-          player = Container(
-            width: w,
-            height: h,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(12),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.3),
-                  blurRadius: 8,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-            clipBehavior: Clip.antiAlias,
-            child: player,
-          );
-        }
-
-        return player;
-      },
+    return AspectRatio(
+      aspectRatio: aspectRatio,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: () => _controller?.setControlsVisibility(true),
+        child: BetterPlayer(controller: _controller!),
+      ),
     );
   }
 }
