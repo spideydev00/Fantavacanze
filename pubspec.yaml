@@ -198,15 +198,15 @@ flutter:
     - assets/images/icons/homepage_icons/robot-icon.svg
     - assets/images/icons/homepage_icons/question-mark-icon.svg
     - assets/images/icons/homepage_icons/question-mark-icon-dark.svg
-    - assets/tutorials/add-event.mp4
-    - assets/tutorials/admin.mp4
-    - assets/tutorials/daily-challenge.mp4
-    - assets/tutorials/drink-games.mp4
-    - assets/tutorials/memories.mp4
-    - assets/tutorials/join-league/join-individual-league.mp4
-    - assets/tutorials/join-league/join-team-league.mp4
-    - assets/tutorials/create-league/create-individual-league.mp4
-    - assets/tutorials/create-league/create-team-league.mp4
+    - assets/tutorials/ios-videos/add-event.mp4
+    - assets/tutorials/ios-videos/admin.mp4
+    - assets/tutorials/ios-videos/daily-challenge.mp4
+    - assets/tutorials/ios-videos/drink-games.mp4
+    - assets/tutorials/ios-videos/memories.mp4
+    - assets/tutorials/ios-videos/join-league/join-individual-league.mp4
+    - assets/tutorials/ios-videos/join-league/join-team-league.mp4
+    - assets/tutorials/ios-videos/create-league/create-individual-league.mp4
+    - assets/tutorials/ios-videos/create-league/create-team-league.mp4
     - assets/tutorials/android-screenshots/add-event.png
     - assets/tutorials/android-screenshots/admin.png
     - assets/tutorials/android-screenshots/create-league.png
