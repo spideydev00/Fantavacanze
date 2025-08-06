@@ -8,8 +8,8 @@ import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as path;
 
 enum VideoPlayerMode {
-  memories, // Minimal controls, no fullscreen
-  tutorials, // Full controls, fullscreen enabled
+  memories,
+  tutorials,
 }
 
 class BetterVideoPlayer extends StatefulWidget {
@@ -38,7 +38,7 @@ class BetterVideoPlayer extends StatefulWidget {
   const BetterVideoPlayer.forTutorials({
     super.key,
     required String assetPath,
-    this.fit = BoxFit.cover,
+    this.fit = BoxFit.contain,
   })  : videoSource = assetPath,
         mode = VideoPlayerMode.tutorials,
         isAsset = true;
@@ -130,6 +130,7 @@ class _BetterVideoPlayerState extends State<BetterVideoPlayer>
     // Validate screen dimensions and provide fallbacks
     final safeWidth =
         (screenWidth.isFinite && screenWidth > 0) ? screenWidth : 390.0;
+
     final safeHeight =
         (screenHeight.isFinite && screenHeight > 0) ? screenHeight : 844.0;
 

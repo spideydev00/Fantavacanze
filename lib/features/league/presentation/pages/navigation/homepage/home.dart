@@ -98,8 +98,9 @@ class HomePage extends StatelessWidget {
           child: CustomDivider(
             text: 'Ultimi Eventi',
             hasDropdown: true,
-            dropdownText:
-                'Fai scroll verso sinistra su un evento per eliminarlo rimuovere i punti associati.',
+            dropdownText: isAdmin
+                ? 'Fai scroll verso sinistra su un evento per eliminarlo rimuovere i punti associati.'
+                : 'Qui puoi consultare gli ultimi eventi.',
           ),
         ),
 

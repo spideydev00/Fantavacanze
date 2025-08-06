@@ -239,7 +239,7 @@ class GameLobbyPage extends StatelessWidget {
                                         .add(StartGameRequested(session.id));
 
                                     // SAFETY NET: Reset automatico dopo 10 secondi se bloccato
-                                    Timer(const Duration(seconds: 10), () {
+                                    Timer(const Duration(seconds: 3), () {
                                       final currentState =
                                           context.read<LobbyBloc>().state;
                                       if (currentState is LobbySessionActive &&
@@ -247,7 +247,7 @@ class GameLobbyPage extends StatelessWidget {
                                         // Force reset se ancora in loading dopo 10 secondi
                                         showSpecificSnackBar(
                                           context,
-                                          "Timeout avvio partita. Riprova.",
+                                          "Errore di connessione durante l'avvio. Riprova.",
                                           color: ColorPalette.warning,
                                         );
                                       }
