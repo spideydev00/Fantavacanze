@@ -99,7 +99,11 @@ Future<void> initDependencies() async {
       ..registerLazySingleton(
         () => NotificationCountCubit(),
       )
-      //6. connection checker
+      //6. floating button animation cubit
+      ..registerLazySingleton(
+        () => FloatingButtonAnimationCubit(),
+      )
+      //7. connection checker
       ..registerFactory<ConnectionChecker>(
         () => ConnectionCheckerImpl(
           serviceLocator(),

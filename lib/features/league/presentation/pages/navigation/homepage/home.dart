@@ -14,6 +14,7 @@ import 'package:fantavacanze_official/features/league/presentation/pages/navigat
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/homepage/widgets/articles_list.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/homepage/widgets/daily_goals.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/join_league/search_league_page.dart';
+import 'package:fantavacanze_official/features/league/presentation/pages/dashboard/widgets/bottom_navbar/animated_floating_action_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -27,26 +28,54 @@ class HomePage extends StatelessWidget {
     final currentUserId =
         currentUser is AppUserIsLoggedIn ? currentUser.user.id : null;
 
-    return BlocBuilder<AppLeagueCubit, AppLeagueState>(
-      builder: (context, state) {
-        // User has leagues and a selected league
-        if (state is AppLeagueExists) {
-          return SingleChildScrollView(
-            physics: const ClampingScrollPhysics(),
-            child: _buildParticipantContent(
-                context,
-                state.selectedLeague.admins.contains(currentUserId)
-                    ? true
-                    : false,
-                state.selectedLeague),
-          );
-        }
+    // Variable to store the show button callback
+    void Function()? showFloatingButton;
 
-        return SingleChildScrollView(
-          physics: const ClampingScrollPhysics(),
-          child: _buildNonParticipantContent(context),
-        );
-      },
+    return Scaffold(
+      body: GestureDetector(
+        // Add gesture detection for showing floating button
+        onPanEnd: (DragEndDetails details) {
+          // Swipe verso sinistra per mostrare il floating button
+          if (details.velocity.pixelsPerSecond.dx < -500) {
+            showFloatingButton?.call();
+          }
+        },
+        child: BlocBuilder<AppLeagueCubit, AppLeagueState>(
+          builder: (context, state) {
+            // User has leagues and a selected league
+            if (state is AppLeagueExists) {
+              return SingleChildScrollView(
+                physics: const ClampingScrollPhysics(),
+                child: _buildParticipantContent(
+                    context,
+                    state.selectedLeague.admins.contains(currentUserId)
+                        ? true
+                        : false,
+                    state.selectedLeague),
+              );
+            }
+
+            return SingleChildScrollView(
+              physics: const ClampingScrollPhysics(),
+              child: _buildNonParticipantContent(context),
+            );
+          },
+        ),
+      ),
+      floatingActionButton: AnimatedFloatingActionButton(
+        onPressed: () {
+          // Naviga alla pagina di creazione lega quando premuto
+          Navigator.push(
+            context,
+            CreateLeaguePage.route,
+          );
+        },
+        onRegisterShowCallback: (showCallback) {
+          // Register the callback to show the button
+          showFloatingButton = showCallback;
+        },
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
   }
 
@@ -109,7 +138,6 @@ class HomePage extends StatelessWidget {
         // Events list with dismiss capability for admins only
         EventsListWidget(
           league: league,
-          limit: 5,
           showAllEvents: true,
           allowDismiss: isAdmin,
           onEventDismiss: isAdmin

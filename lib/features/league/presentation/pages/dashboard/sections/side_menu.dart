@@ -20,6 +20,7 @@ import 'package:fantavacanze_official/core/entities/navigation/navigation_item.d
 import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:fantavacanze_official/core/widgets/divider.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/dashboard/widgets/side_menu/side_menu_navigation_asset.dart';
+import 'package:fantavacanze_official/features/league/presentation/pages/dashboard/widgets/side_menu/side_menu_gradient_button.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class SideMenu extends StatefulWidget {
@@ -148,11 +149,11 @@ class _SideMenuState extends State<SideMenu> {
     required int selectedIndex,
     required bool hasLeagues,
   }) {
-    // 1. Prendo l’elenco base degli item
+    // 1. Prendo l'elenco base degli item
     final navItems =
         hasLeagues ? participantNavbarItems : nonParticipantNavbarItems;
 
-    // 2. Controllo se l’utente è admin (solo haLeagues=true ha senso)
+    // 2. Controllo se l'utente è admin (solo haLeagues=true ha senso)
     final bloc = context.read<LeagueBloc>();
     final bool userIsAdmin = hasLeagues && bloc.isAdmin();
 
@@ -191,23 +192,46 @@ class _SideMenuState extends State<SideMenu> {
         final originalIndex = originalIndices[item.title];
         if (originalIndex == null) continue;
 
-        menuWidgets.add(
-          SideMenuNavigationAsset(
-            title: item.title,
-            svgIcon: context.read<AppThemeCubit>().isDarkMode(context)
-                ? item.darkSvgIcon
-                : item.lightSvgIcon,
-            isActive: selectedIndex == originalIndex,
-            onTap: () {
-              _handleNavigation(
-                context,
-                item,
-                originalIndex,
-                hasLeagues,
-              );
-            },
-          ),
-        );
+        if (item.title == "Fanta Serata") {
+          menuWidgets.add(
+            SideMenuGradientButton(
+              title: item.title,
+              svgIcon: context.read<AppThemeCubit>().isDarkMode(context)
+                  ? item.darkSvgIcon
+                  : item.lightSvgIcon,
+              isActive: selectedIndex == originalIndex,
+              emojiPath:
+                  'assets/images/icons/homepage_icons/fanta-serata-emoji.svg', // Aggiungi emoji path
+              onTap: () {
+                _handleNavigation(
+                  context,
+                  item,
+                  originalIndex,
+                  hasLeagues,
+                );
+              },
+            ),
+          );
+        } else {
+          // Use regular navigation asset for other items
+          menuWidgets.add(
+            SideMenuNavigationAsset(
+              title: item.title,
+              svgIcon: context.read<AppThemeCubit>().isDarkMode(context)
+                  ? item.darkSvgIcon
+                  : item.lightSvgIcon,
+              isActive: selectedIndex == originalIndex,
+              onTap: () {
+                _handleNavigation(
+                  context,
+                  item,
+                  originalIndex,
+                  hasLeagues,
+                );
+              },
+            ),
+          );
+        }
       }
     });
 

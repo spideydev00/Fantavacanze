@@ -5,6 +5,7 @@ import 'package:fantavacanze_official/core/cubits/app_navigation/app_navigation_
 import 'package:fantavacanze_official/core/cubits/app_theme/app_theme_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/notification_count/notification_count_cubit.dart';
+import 'package:fantavacanze_official/core/cubits/floating_button_animation/floating_button_animation_cubit.dart';
 import 'package:fantavacanze_official/core/network/connection_checker.dart';
 import 'package:fantavacanze_official/core/secrets/app_secrets.dart';
 import 'package:fantavacanze_official/core/services/review_service.dart';

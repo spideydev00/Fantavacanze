@@ -109,8 +109,14 @@ flutter:
   # the material Icons class.
   uses-material-design: true
 
-  # To add assets to your application, add an assets section, like this:
+  # Application assets organized by functionality
   assets:
+    # ===== BRANDING & LOGOS =====
+    - assets/images/logo.png
+    - assets/images/logo-dark.png
+    - assets/images/logo-high-padding.png
+    
+    # ===== BACKGROUNDS & GENERAL IMAGES =====
     - assets/images/bg.png
     - assets/images/avatar.png
     - assets/images/insert-name.jpg
@@ -118,10 +124,10 @@ flutter:
     - assets/images/emotions-bg.jpg
     - assets/images/social-enhance-bg.jpg
     - assets/images/add-event-bg.jpg
-    - assets/images/logo.png
-    - assets/images/logo.png
-    - assets/images/logo-dark.png
-    - assets/images/logo-high-padding.png
+    - assets/images/tutorial.jpg
+    - assets/images/about-us.jpg
+    
+    # ===== AUTHENTICATION ICONS =====
     - assets/images/otp-verification-icon.png
     - assets/images/icons/auth_icons/google.svg
     - assets/images/icons/auth_icons/apple.svg
@@ -131,33 +137,24 @@ flutter:
     - assets/images/icons/auth_icons/email.svg
     - assets/images/icons/auth_icons/sign-up-icon.svg
     - assets/images/icons/auth_icons/sign-in-icon.svg
-    - assets/images/icons/other/error-icon.svg
-    - assets/images/icons/other/success-icon.svg
-    - assets/images/icons/other/mail-notification.svg
-    - assets/images/icons/other/arrow-right-circle.svg
+    
+    # ===== AUTHENTICATION FIELD ICONS =====
     - assets/images/icons/auth_field_icons/eye-hide.svg
     - assets/images/icons/auth_field_icons/eye-show.svg
     - assets/images/icons/auth_field_icons/add-email-icon.svg
     - assets/images/icons/auth_field_icons/lock-icon.svg
     - assets/images/icons/auth_field_icons/user-icon.svg
-    - assets/images/icons/other/trophy-icon.svg
-    - assets/animations/rive/material_loader.riv
-    - assets/animations/rive/icons.riv
-    - assets/animations/rive/rive_game_icon.riv
-    - assets/animations/rive/menu_button.riv
-    - assets/animations/rive/menu_button_black.riv
+    
+    # ===== HOMEPAGE & NAVIGATION ICONS =====
     - assets/images/icons/homepage_icons/home-icon.svg
+    - assets/images/icons/homepage_icons/home-icon-dark.svg
     - assets/images/icons/homepage_icons/thunder-icon.svg
     - assets/images/icons/homepage_icons/thunder-icon-red.svg
-    - assets/images/icons/homepage_icons/drink-games-icon.svg
     - assets/images/icons/homepage_icons/create-league-icon.svg
-    - assets/images/icons/homepage_icons/search-league-icon.svg
-    - assets/images/icons/homepage_icons/premium-icon.svg
     - assets/images/icons/homepage_icons/create-league-icon-dark.svg
-    - assets/images/icons/homepage_icons/drink-games-icon-dark.svg
-    - assets/images/icons/homepage_icons/drink-games-icon-red.svg
+    - assets/images/icons/homepage_icons/search-league-icon.svg
     - assets/images/icons/homepage_icons/search-league-icon-dark.svg
-    - assets/images/icons/homepage_icons/home-icon-dark.svg
+    - assets/images/icons/homepage_icons/premium-icon.svg
     - assets/images/icons/homepage_icons/rankings-icon.svg
     - assets/images/icons/homepage_icons/rankings-icon-dark.svg
     - assets/images/icons/homepage_icons/rules-icon.svg
@@ -172,32 +169,56 @@ flutter:
     - assets/images/icons/homepage_icons/articles-icon-dark.svg
     - assets/images/icons/homepage_icons/admin-icon.svg
     - assets/images/icons/homepage_icons/admin-icon-dark.svg
+    - assets/images/icons/homepage_icons/event-icon.svg
+    - assets/images/icons/homepage_icons/event-icon-dark.svg
+    - assets/images/icons/homepage_icons/basic-avatar.png
+    - assets/images/icons/homepage_icons/friends.png
+    - assets/images/icons/homepage_icons/dice-icon.svg
+    - assets/images/icons/homepage_icons/friends-hug-icon.png
+    - assets/images/icons/homepage_icons/robot-icon.svg
+    - assets/images/icons/homepage_icons/question-mark-icon.svg
+    - assets/images/icons/homepage_icons/question-mark-icon-dark.svg
+    - assets/images/icons/homepage_icons/fanta-serata-emoji.svg
+    
+    # ===== LEAGUE TYPE ICONS =====
     - assets/images/icons/homepage_icons/bro-code-icon.png
     - assets/images/icons/homepage_icons/baddies-icon.png
     - assets/images/icons/homepage_icons/custom-rules-icon.png
     - assets/images/icons/homepage_icons/mixed-genders-icon.png
-    - assets/images/icons/other/notification-icon.svg
+    
+    # ===== DRINK GAMES ICONS =====
+    - assets/images/icons/homepage_icons/drink-games-icon.svg
+    - assets/images/icons/homepage_icons/drink-games-icon-dark.svg
+    - assets/images/icons/homepage_icons/drink-games-icon-red.svg
     - assets/images/icons/homepage_icons/drink-game-preview.svg
     - assets/images/icons/homepage_icons/drink-games-page-icon.svg
+    
+    # ===== GAME SPECIFIC ICONS =====
     - assets/images/icons/games_icons/yellow-tropical-drink-left.svg
     - assets/images/icons/games_icons/yellow-tropical-drink-right.svg
     - assets/images/icons/games_icons/blue-tropical-drink-left.svg
     - assets/images/icons/games_icons/blue-tropical-drink-right.svg
     - assets/images/icons/games_icons/bomb-icon.svg
-    - assets/images/icons/homepage_icons/event-icon.svg
-    - assets/images/icons/homepage_icons/event-icon-dark.svg
-    - assets/images/icons/homepage_icons/basic-avatar.png
-    - assets/images/tutorial.jpg
-    - assets/images/about-us.jpg
-    - assets/images/icons/homepage_icons/friends.png
     - assets/images/icons/games_icons/dices-icon.svg
-    - assets/images/icons/homepage_icons/dice-icon.svg
     - assets/images/icons/games_icons/balance.png
     - assets/images/icons/games_icons/team-icon.png
-    - assets/images/icons/homepage_icons/friends-hug-icon.png
-    - assets/images/icons/homepage_icons/robot-icon.svg
-    - assets/images/icons/homepage_icons/question-mark-icon.svg
-    - assets/images/icons/homepage_icons/question-mark-icon-dark.svg
+    
+    # ===== GENERAL UI ICONS =====
+    - assets/images/icons/other/error-icon.svg
+    - assets/images/icons/other/success-icon.svg
+    - assets/images/icons/other/mail-notification.svg
+    - assets/images/icons/other/arrow-right-circle.svg
+    - assets/images/icons/other/trophy-icon.svg
+    - assets/images/icons/other/notification-icon.svg
+    
+    # ===== ANIMATIONS =====
+    - assets/animations/rive/material_loader.riv
+    - assets/animations/rive/icons.riv
+    - assets/animations/rive/rive_game_icon.riv
+    - assets/animations/rive/menu_button.riv
+    - assets/animations/rive/menu_button_black.riv
+    
+    # ===== TUTORIAL VIDEOS (iOS) =====
     - assets/tutorials/ios-videos/add-event.mp4
     - assets/tutorials/ios-videos/admin.mp4
     - assets/tutorials/ios-videos/daily-challenge.mp4
@@ -207,6 +228,8 @@ flutter:
     - assets/tutorials/ios-videos/join-league/join-team-league.mp4
     - assets/tutorials/ios-videos/create-league/create-individual-league.mp4
     - assets/tutorials/ios-videos/create-league/create-team-league.mp4
+    
+    # ===== TUTORIAL SCREENSHOTS (Android) =====
     - assets/tutorials/android-screenshots/add-event.png
     - assets/tutorials/android-screenshots/admin.png
     - assets/tutorials/android-screenshots/create-league.png
@@ -227,7 +250,12 @@ flutter:
   # "family" key with the font family name, and a "fonts" key with a
   # list giving the asset and other descriptors for the font. For
   # example:
-  # fonts:
+  fonts:
+  - family: Falcon Sport one
+    fonts: 
+      - asset: assets/fonts/FalconSportOne-Regular.otf
+      - asset: assets/fonts/FalconSportOne-Italic.otf
+        style: italic
   #   - family: Schyler
   #     fonts:
   #       - asset: fonts/Schyler-Regular.ttf

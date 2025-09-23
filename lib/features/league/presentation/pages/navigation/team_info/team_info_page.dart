@@ -527,7 +527,6 @@ class _TeamBasedInfoState extends State<_TeamBasedInfo>
                     child: EventsListWidget(
                       league: widget.league,
                       participant: widget.team,
-                      limit: 5,
                     ),
                   ),
 
@@ -846,7 +845,6 @@ class _IndividualInfoState extends State<_IndividualInfo> {
                   child: EventsListWidget(
                     league: widget.league,
                     participant: widget.participant,
-                    limit: 5,
                   ),
                 ),
 

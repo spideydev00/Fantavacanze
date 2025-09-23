@@ -52,6 +52,14 @@ List<NavigationItem> nonParticipantNavbarItems = [
   //   subsection: "Games",
   // ),
   NavigationItem(
+    title: "FantaSerata",
+    darkSvgIcon: 'assets/images/icons/homepage_icons/create-league-icon.svg',
+    lightSvgIcon:
+        'assets/images/icons/homepage_icons/create-league-icon-dark.svg',
+    screen: const CreateLeaguePage(),
+    subsection: "Lega",
+  ),
+  NavigationItem(
     title: "Crea Lega",
     darkSvgIcon: 'assets/images/icons/homepage_icons/create-league-icon.svg',
     lightSvgIcon:
@@ -133,6 +141,14 @@ List<NavigationItem> participantNavbarItems = [
         'assets/images/icons/homepage_icons/question-mark-icon-dark.svg',
     screen: const TutorialPage(),
     subsection: "Naviga",
+  ),
+  NavigationItem(
+    title: "Fanta Serata",
+    darkSvgIcon: 'assets/images/icons/homepage_icons/create-league-icon.svg',
+    lightSvgIcon:
+        'assets/images/icons/homepage_icons/create-league-icon-dark.svg',
+    screen: const CreateLeaguePage(),
+    subsection: "Nuova Lega",
   ),
   NavigationItem(
     title: "Crea Lega",
