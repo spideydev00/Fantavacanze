@@ -887,7 +887,7 @@ class _AddMemoryBottomSheetState extends State<AddMemoryBottomSheet> {
                                     event, widget.league);
 
                             return EventCard(
-                              event: event.copyWith(name: resolvedName),
+                              event: event.copyWith(targetUser: resolvedName),
                               onTap: () => _selectEvent(event),
                             );
                           },

@@ -36,7 +36,6 @@ class EventCard extends StatelessWidget {
     final bool isBonus = event.type == RuleType.bonus;
     final DateTime createdAt = event.createdAt;
 
-    // Use targetUser directly - it should already be resolved by EventWithResolvedName
     final String targetName = event.targetUser;
 
     final String formattedDate =

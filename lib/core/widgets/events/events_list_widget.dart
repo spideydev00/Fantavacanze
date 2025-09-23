@@ -85,7 +85,7 @@ class EventsListWidget extends StatelessWidget {
                 ParticipantNameResolver.resolveParticipantName(event, league);
 
             return EventCard(
-              event: event.copyWith(name: resolvedName),
+              event: event.copyWith(targetUser: resolvedName),
               onTap: onEventTap != null ? () => onEventTap!(event) : null,
               showDetails: true,
               allowDismiss: allowDismiss,
