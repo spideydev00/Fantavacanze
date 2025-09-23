@@ -1,5 +1,4 @@
 import 'package:fantavacanze_official/core/utils/in-game/participant_name_resolver.dart';
-import 'package:fantavacanze_official/core/widgets/events/event_with_resolved_name.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/event.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/league.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/participant.dart';
@@ -85,14 +84,8 @@ class EventsListWidget extends StatelessWidget {
             String resolvedName =
                 ParticipantNameResolver.resolveParticipantName(event, league);
 
-            // Create a modified event with the resolved name
-            final displayEvent = EventWithResolvedName(
-              originalEvent: event,
-              resolvedName: resolvedName,
-            );
-
             return EventCard(
-              event: displayEvent,
+              event: event.copyWith(name: resolvedName),
               onTap: onEventTap != null ? () => onEventTap!(event) : null,
               showDetails: true,
               allowDismiss: allowDismiss,

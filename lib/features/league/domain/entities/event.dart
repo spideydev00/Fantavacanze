@@ -24,4 +24,28 @@ class Event {
     required this.isTeamMember,
     this.description,
   });
+
+  Event copyWith({
+    String? id,
+    String? name,
+    double? points,
+    String? creatorId,
+    String? targetUser,
+    DateTime? createdAt,
+    RuleType? type,
+    String? description,
+    bool? isTeamMember,
+  }) {
+    return Event(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      points: points ?? this.points,
+      creatorId: creatorId ?? this.creatorId,
+      targetUser: targetUser ?? this.targetUser,
+      createdAt: createdAt ?? this.createdAt,
+      type: type ?? this.type,
+      isTeamMember: isTeamMember ?? this.isTeamMember,
+      description: description ?? this.description,
+    );
+  }
 }

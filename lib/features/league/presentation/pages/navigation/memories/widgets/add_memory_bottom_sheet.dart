@@ -6,7 +6,6 @@ import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:fantavacanze_official/core/utils/in-game/participant_name_resolver.dart';
 import 'package:fantavacanze_official/core/utils/show-snackbar-or-paywall/show_snackbar.dart';
 import 'package:fantavacanze_official/core/widgets/events/event_card.dart';
-import 'package:fantavacanze_official/core/widgets/events/event_with_resolved_name.dart';
 import 'package:fantavacanze_official/core/widgets/media/video_thumbnail.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/event.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/league.dart';
@@ -887,14 +886,8 @@ class _AddMemoryBottomSheetState extends State<AddMemoryBottomSheet> {
                                 ParticipantNameResolver.resolveParticipantName(
                                     event, widget.league);
 
-                            // Create a modified event with the resolved name
-                            final displayEvent = EventWithResolvedName(
-                              originalEvent: event,
-                              resolvedName: resolvedName,
-                            );
-
                             return EventCard(
-                              event: displayEvent,
+                              event: event.copyWith(name: resolvedName),
                               onTap: () => _selectEvent(event),
                             );
                           },
