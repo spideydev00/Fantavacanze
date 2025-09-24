@@ -279,6 +279,24 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
+  Future<Either<Failure, User>> updateIsSingleStatus(
+      {required String? status}) async {
+    try {
+      if (!await connectionChecker.isConnected) {
+        return left(
+            Failure("Connessione a internet assente. Riprova più tardi."));
+      }
+
+      final res =
+          await authRemoteDataSource.updateIsSingleStatus(status: status);
+
+      return right(res);
+    } on ServerException catch (e) {
+      return left(Failure(e.message));
+    }
+  }
+
+  @override
   Future<Either<Failure, User>> becomePremium() async {
     try {
       if (!await connectionChecker.isConnected) {

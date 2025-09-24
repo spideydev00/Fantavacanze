@@ -50,6 +50,7 @@ abstract interface class AuthRemoteDataSource {
   });
 
   Future<UserModel> updateGender({required String? gender});
+  Future<UserModel> updateIsSingleStatus({required String? status});
 
   // USER DATA ACCESS
   Future<UserModel?> getCurrentUserData();
@@ -443,6 +444,30 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       final response = await supabaseClient
           .from('profiles')
           .update({'gender': gender})
+          .eq('id', userId)
+          .select()
+          .single();
+
+      final updatedUser = UserModel.fromJson(response)
+          .copyWith(email: currentSession!.user.email);
+
+      return updatedUser;
+    } catch (e) {
+      throw ServerException(_extractErrorMessage(e));
+    }
+  }
+
+  // ------------------ UPDATE IS SINGLE STATUS ------------------ //
+  @override
+  Future<UserModel> updateIsSingleStatus({required String? status}) async {
+    try {
+      final userId = currentSession?.user.id;
+
+      if (userId == null) throw ServerException('Utente non autenticato');
+
+      final response = await supabaseClient
+          .from('profiles')
+          .update({'sentimental_status': status})
           .eq('id', userId)
           .select()
           .single();

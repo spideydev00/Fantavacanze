@@ -203,101 +203,109 @@ class _DashboardScreenState extends State<DashboardScreen>
                     child: ClipRRect(
                       borderRadius:
                           BorderRadius.circular(ThemeSizes.borderRadiusXlg),
-                      child: Scaffold(
-                        appBar: AppBar(
-                          centerTitle: true,
-                          forceMaterialTransparency: true,
-                          toolbarHeight: ThemeSizes.appBarHeight,
-                          title: _buildLogo(context),
-                          leading: CustomMenuIcon(
-                            path: context
-                                    .read<AppThemeCubit>()
-                                    .isDarkMode(context)
-                                ? 'assets/animations/rive/menu_button.riv'
-                                : 'assets/animations/rive/menu_button_black.riv',
-                            artboard: 'Artboard',
-                            stateMachineName: 'switch',
-                            triggerValue: 'toggleX',
-                            onTap: _toggleSideMenu,
-                            isActive: isSideMenuOpen,
-                          ),
-                          actions: [
-                            appLeagueCubit.state is AppLeagueExists &&
-                                    leagueBloc.isAdmin()
-                                ? BlocBuilder<NotificationCountCubit, int>(
-                                    builder: (_, count) => GestureDetector(
-                                      onTap: () => Navigator.push(
-                                          context, NotificationsPage.route),
-                                      child: Padding(
-                                        padding: const EdgeInsets.only(
-                                            right: ThemeSizes.md),
-                                        child: NotificationBadge(
-                                          count: count,
-                                          child: Icon(
-                                            Icons.notifications_outlined,
-                                            size: 24,
-                                            color: context.textPrimaryColor,
+                      child: BlocBuilder<AppThemeCubit, AppThemeState>(
+                        builder: (context, themeState) {
+                          return Scaffold(
+                            appBar: AppBar(
+                              centerTitle: true,
+                              forceMaterialTransparency: true,
+                              toolbarHeight: ThemeSizes.appBarHeight,
+                              title: _buildLogo(context),
+                              leading: CustomMenuIcon(
+                                path: context
+                                        .read<AppThemeCubit>()
+                                        .isDarkMode(context)
+                                    ? 'assets/animations/rive/menu_button.riv'
+                                    : 'assets/animations/rive/menu_button_black.riv',
+                                artboard: 'Artboard',
+                                stateMachineName: 'switch',
+                                triggerValue: 'toggleX',
+                                onTap: _toggleSideMenu,
+                                isActive: isSideMenuOpen,
+                              ),
+                              actions: [
+                                appLeagueCubit.state is AppLeagueExists &&
+                                        leagueBloc.isAdmin()
+                                    ? BlocBuilder<NotificationCountCubit, int>(
+                                        builder: (_, count) => GestureDetector(
+                                          onTap: () => Navigator.push(
+                                              context, NotificationsPage.route),
+                                          child: Padding(
+                                            padding: const EdgeInsets.only(
+                                                right: ThemeSizes.md),
+                                            child: NotificationBadge(
+                                              count: count,
+                                              child: Icon(
+                                                Icons.notifications_outlined,
+                                                size: 24,
+                                                color: context.textPrimaryColor,
+                                              ),
+                                            ),
                                           ),
                                         ),
-                                      ),
+                                      )
+                                    : SizedBox.shrink(),
+                                GestureDetector(
+                                  onTap: () => Navigator.push(
+                                      context, SettingsPage.route),
+                                  child: Padding(
+                                    padding: const EdgeInsets.only(
+                                        right: ThemeSizes.lg),
+                                    child: Icon(
+                                      Icons.settings,
+                                      size: 24,
+                                      color: context.textPrimaryColor,
                                     ),
-                                  )
-                                : SizedBox.shrink(),
-                            GestureDetector(
-                              onTap: () =>
-                                  Navigator.push(context, SettingsPage.route),
-                              child: Padding(
-                                padding:
-                                    const EdgeInsets.only(right: ThemeSizes.lg),
-                                child: Icon(
-                                  Icons.settings,
-                                  size: 24,
-                                  color: context.textPrimaryColor,
+                                  ),
                                 ),
-                              ),
+                              ],
                             ),
-                          ],
-                        ),
-                        resizeToAvoidBottomInset: false,
-                        body: BlocBuilder<AppLeagueCubit, AppLeagueState>(
-                          builder: (context, leagueState) {
-                            final hasLeagues = leagueState is AppLeagueExists;
-                            return BlocBuilder<AppNavigationCubit, int>(
-                              builder: (context, selectedIndex) {
-                                final navItems = hasLeagues
-                                    ? participantNavbarItems
-                                    : nonParticipantNavbarItems;
-                                if (selectedIndex < 0 ||
-                                    selectedIndex >= navItems.length) {
-                                  return navItems[0].screen;
-                                }
-                                final selectedItem = navItems[selectedIndex];
-                                if (selectedItem.title == 'Crea Lega' ||
-                                    selectedItem.title == 'Cerca Lega') {
-                                  WidgetsBinding.instance.addPostFrameCallback(
-                                    (_) {
-                                      if (mounted) {
-                                        Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (_) => selectedItem.screen,
-                                          ),
-                                        );
-                                        context
-                                            .read<AppNavigationCubit>()
-                                            .setIndex(0);
-                                      }
-                                    },
-                                  );
-                                }
-                                return selectedItem.screen;
+                            resizeToAvoidBottomInset: false,
+                            body: BlocBuilder<AppLeagueCubit, AppLeagueState>(
+                              builder: (context, leagueState) {
+                                final hasLeagues =
+                                    leagueState is AppLeagueExists;
+                                return BlocBuilder<AppNavigationCubit, int>(
+                                  builder: (context, selectedIndex) {
+                                    final navItems = hasLeagues
+                                        ? participantNavbarItems
+                                        : nonParticipantNavbarItems;
+                                    if (selectedIndex < 0 ||
+                                        selectedIndex >= navItems.length) {
+                                      return navItems[0].screen;
+                                    }
+                                    final selectedItem =
+                                        navItems[selectedIndex];
+                                    if (selectedItem.title == 'Crea Lega' ||
+                                        selectedItem.title == 'Cerca Lega') {
+                                      WidgetsBinding.instance
+                                          .addPostFrameCallback(
+                                        (_) {
+                                          if (mounted) {
+                                            Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder: (_) =>
+                                                    selectedItem.screen,
+                                              ),
+                                            );
+                                            context
+                                                .read<AppNavigationCubit>()
+                                                .setIndex(0);
+                                          }
+                                        },
+                                      );
+                                    }
+                                    return selectedItem.screen;
+                                  },
+                                );
                               },
-                            );
-                          },
-                        ),
-                        bottomNavigationBar: isKeyboardVisible
-                            ? null
-                            : const CustomBottomNavigationBar(),
+                            ),
+                            bottomNavigationBar: isKeyboardVisible
+                                ? null
+                                : const CustomBottomNavigationBar(),
+                          );
+                        },
                       ),
                     ),
                   ),
@@ -338,12 +346,12 @@ class _DashboardScreenState extends State<DashboardScreen>
 
   Widget _buildLogo(BuildContext context) {
     final isTablet = MediaQuery.of(context).size.shortestSide >= 600;
-    final widthFactor = isTablet ? 0.13 : 0.18;
+    final widthFactor = isTablet ? 0.25 : 0.30;
 
     return Image.asset(
       context.read<AppThemeCubit>().isDarkMode(context)
-          ? 'assets/images/logo.png'
-          : 'assets/images/logo-dark.png',
+          ? 'assets/images/logos/logo-neon.png'
+          : 'assets/images/logos/logo-naked.png',
       width: Constants.getWidth(context) * widthFactor,
     );
   }

@@ -18,10 +18,10 @@ final class AppUserNeedsOnboarding extends AppUserState {
   AppUserNeedsOnboarding({required this.user});
 }
 
-final class AppUserNeedsGender extends AppUserState {
+final class AppUserNeedsGenderOrStatus extends AppUserState {
   final User user;
 
-  AppUserNeedsGender({
+  AppUserNeedsGenderOrStatus({
     required this.user,
   });
 }

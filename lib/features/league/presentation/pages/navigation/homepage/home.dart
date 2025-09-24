@@ -4,6 +4,7 @@ import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:fantavacanze_official/core/widgets/divider.dart';
 import 'package:fantavacanze_official/core/widgets/events/events_list_widget.dart';
 import 'package:fantavacanze_official/features/blog/presentation/widgets/article_page.dart';
+import 'package:fantavacanze_official/features/fantaserata/presentation/pages/fs_onboarding_screen.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/league.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc/league_bloc.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc/league_event.dart';
@@ -67,7 +68,7 @@ class HomePage extends StatelessWidget {
           // Naviga alla pagina di creazione lega quando premuto
           Navigator.push(
             context,
-            CreateLeaguePage.route,
+            FsOnboardingScreen.route,
           );
         },
         onRegisterShowCallback: (showCallback) {

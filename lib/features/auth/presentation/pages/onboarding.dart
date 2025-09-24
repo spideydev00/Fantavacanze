@@ -2,7 +2,7 @@ import 'package:fantavacanze_official/core/constants/constants.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:fantavacanze_official/features/auth/presentation/bloc/auth_bloc.dart';
-import 'package:fantavacanze_official/features/auth/presentation/pages/gender_selection_page.dart';
+import 'package:fantavacanze_official/features/auth/presentation/pages/gender_and_status_selection_page.dart';
 import 'package:fantavacanze_official/features/auth/presentation/widgets/on_boarding_page_content.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/dashboard/sections/dashboard.dart';
 import 'package:flutter/material.dart';
@@ -57,7 +57,7 @@ class _OnBoardingScreenState extends State<OnBoardingScreen> {
 
           if (user.gender == null) {
             Navigator.of(context).pushAndRemoveUntil(
-              GenderSelectionPage.route,
+              GenderAndStatusSelectionPage.route,
               (route) => false,
             );
           } else {
@@ -77,8 +77,8 @@ class _OnBoardingScreenState extends State<OnBoardingScreen> {
             child: Center(
               child: Image.asset(
                 pageIndex == 2
-                    ? "assets/images/logo-dark.png"
-                    : "assets/images/logo.png",
+                    ? "assets/images/logos/logo-naked.png"
+                    : "assets/images/logos/logo-neon.png",
                 width: Constants.getWidth(context) * 0.30,
               ),
             ),

@@ -13,6 +13,8 @@ class UserModel extends User {
     super.fcmToken,
     required super.isWordBombTrialAvailable,
     super.hasLeftReview,
+    required super.hasPlayedFs,
+    required super.sentimentalStatus,
   });
 
   factory UserModel.fromJson(Map<String, dynamic> map) {
@@ -37,6 +39,8 @@ class UserModel extends User {
       fcmToken: map['fcm_token'] as String?,
       isWordBombTrialAvailable: map['is_word_bomb_trial_available'] == true,
       hasLeftReview: map['has_left_review'] == true,
+      hasPlayedFs: map['has_played_fs'] == true,
+      sentimentalStatus: map['sentimental_status'],
     );
   }
 
@@ -53,6 +57,8 @@ class UserModel extends User {
     String? fcmToken,
     bool? isWordBombTrialAvailable,
     bool? hasLeftReview,
+    bool? hasPlayedFs,
+    String? sentimentalStatus,
   }) {
     return UserModel(
       id: id ?? this.id,
@@ -67,6 +73,8 @@ class UserModel extends User {
       isWordBombTrialAvailable:
           isWordBombTrialAvailable ?? this.isWordBombTrialAvailable,
       hasLeftReview: hasLeftReview ?? this.hasLeftReview,
+      hasPlayedFs: hasPlayedFs ?? this.hasPlayedFs,
+      sentimentalStatus: sentimentalStatus ?? this.sentimentalStatus,
     );
   }
 }

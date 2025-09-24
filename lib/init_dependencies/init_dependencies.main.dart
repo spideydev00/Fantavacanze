@@ -69,6 +69,7 @@ Future<void> initDependencies() async {
           updatePassword: serviceLocator(),
           deleteAccount: serviceLocator(),
           updateGender: serviceLocator(),
+          updateIsSingleStatus: serviceLocator(),
           removeConsents: serviceLocator(),
           becomePremium: serviceLocator(),
           removePremium: serviceLocator(),
@@ -329,6 +330,9 @@ void _initAuth() {
       () => UpdateGender(authRepository: serviceLocator()),
     )
     ..registerFactory(
+      () => UpdateIsSingleStatus(authRepository: serviceLocator()),
+    )
+    ..registerFactory(
       () => BecomePremium(authRepository: serviceLocator()),
     )
     ..registerFactory(
@@ -360,6 +364,7 @@ void _initAuth() {
         changeIsOnboardedValue: serviceLocator(),
         updateConsents: serviceLocator(),
         updateGender: serviceLocator(),
+        updateIsSingleStatus: serviceLocator(),
         // Add the new use cases
         sendOtpEmail: serviceLocator(),
         verifyOtp: serviceLocator(),

@@ -91,7 +91,7 @@ class _StandardLoginPageState extends State<StandardLoginPage> {
   @override
   Widget build(BuildContext context) {
     return EmptyBrandedPage(
-      logoImagePath: "assets/images/logo.png",
+      logoImagePath: "assets/images/logos/logo-neon.png",
       bgImagePath: "assets/images/bg.png",
       mainColumnAlignment: MainAxisAlignment.spaceBetween,
       isBackNavigationActive: true,

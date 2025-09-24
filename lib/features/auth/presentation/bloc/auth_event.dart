@@ -61,13 +61,21 @@ class AuthUpdateGender extends AuthEvent {
   });
 }
 
+class AuthUpdateIsSingleStatus extends AuthEvent {
+  final String? status;
+
+  AuthUpdateIsSingleStatus({
+    required this.status,
+  });
+}
+
 // New events for password reset
 class AuthSendOtpEmail extends AuthEvent {
   final String email;
   final String hCaptcha;
 
   AuthSendOtpEmail({
-    required this.email, 
+    required this.email,
     required this.hCaptcha,
   });
 }

@@ -9,6 +9,7 @@ import 'package:fantavacanze_official/features/auth/domain/use-cases/set_has_lef
 import 'package:fantavacanze_official/features/auth/domain/use-cases/sign_out.dart';
 import 'package:fantavacanze_official/features/auth/domain/use-cases/update_display_name.dart';
 import 'package:fantavacanze_official/features/auth/domain/use-cases/update_gender.dart';
+import 'package:fantavacanze_official/features/auth/domain/use-cases/update_is_single_status.dart';
 import 'package:fantavacanze_official/features/auth/domain/use-cases/update_password.dart';
 import 'package:fantavacanze_official/features/auth/domain/use-cases/delete_account.dart';
 import 'package:fantavacanze_official/features/auth/domain/use-cases/remove_consents.dart';
@@ -25,6 +26,7 @@ class AppUserCubit extends Cubit<AppUserState> {
   final DeleteAccount _deleteAccount;
   final RemoveConsents _removeConsents;
   final UpdateGender _updateGender;
+  final UpdateIsSingleStatus _updateIsSingleStatus;
   final BecomePremium _becomePremium;
   final RemovePremium _removePremium;
   final SetHasLeftReview _setHasLeftReview;
@@ -37,6 +39,7 @@ class AppUserCubit extends Cubit<AppUserState> {
     required DeleteAccount deleteAccount,
     required RemoveConsents removeConsents,
     required UpdateGender updateGender,
+    required UpdateIsSingleStatus updateIsSingleStatus,
     required BecomePremium becomePremium,
     required RemovePremium removePremium,
     required SetHasLeftReview setHasLeftReview,
@@ -47,6 +50,7 @@ class AppUserCubit extends Cubit<AppUserState> {
         _deleteAccount = deleteAccount,
         _removeConsents = removeConsents,
         _updateGender = updateGender,
+        _updateIsSingleStatus = updateIsSingleStatus,
         _becomePremium = becomePremium,
         _removePremium = removePremium,
         _setHasLeftReview = setHasLeftReview,
@@ -62,8 +66,8 @@ class AppUserCubit extends Cubit<AppUserState> {
         // Uniforma questa logica con quella di updateUser
         if (!user.isOnboarded) {
           emit(AppUserNeedsOnboarding(user: user));
-        } else if (user.gender == null) {
-          emit(AppUserNeedsGender(user: user));
+        } else if (user.gender == null || user.sentimentalStatus == null) {
+          emit(AppUserNeedsGenderOrStatus(user: user));
         } else {
           emit(AppUserIsLoggedIn(user: user));
         }
@@ -76,8 +80,8 @@ class AppUserCubit extends Cubit<AppUserState> {
       emit(AppUserInitial());
     } else if (!user.isOnboarded) {
       emit(AppUserNeedsOnboarding(user: user));
-    } else if (user.gender == null) {
-      emit(AppUserNeedsGender(user: user));
+    } else if (user.gender == null || user.sentimentalStatus == null) {
+      emit(AppUserNeedsGenderOrStatus(user: user));
     } else {
       emit(AppUserIsLoggedIn(user: user));
     }
@@ -269,6 +273,36 @@ class AppUserCubit extends Cubit<AppUserState> {
           emit(AppUserIsLoggedIn(user: user));
         },
       );
+    }
+  }
+
+  // Update sentimental status
+  Future<void> updateSentimentalStatus(String sentimentalStatus) async {
+    try {
+      final currentState = state;
+      if (currentState is! AppUserIsLoggedIn) return;
+
+      final result = await _updateIsSingleStatus(sentimentalStatus);
+
+      result.fold(
+        (failure) {
+          emit(AppUserIsLoggedIn(
+            user: currentState.user,
+            errorMessage: failure.message,
+          ));
+        },
+        (updatedUser) {
+          emit(AppUserIsLoggedIn(user: updatedUser));
+        },
+      );
+    } catch (e) {
+      final currentState = state;
+      if (currentState is AppUserIsLoggedIn) {
+        emit(AppUserIsLoggedIn(
+          user: currentState.user,
+          errorMessage: 'Errore nell\'aggiornamento dello stato sentimentale',
+        ));
+      }
     }
   }
 

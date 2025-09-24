@@ -11,7 +11,9 @@ class User extends Equatable {
   final String authProvider;
   final String? fcmToken;
   final bool isWordBombTrialAvailable;
-  final bool hasLeftReview; // New field for tracking reviews
+  final bool hasLeftReview;
+  final bool hasPlayedFs;
+  final String? sentimentalStatus;
 
   const User({
     required this.id,
@@ -24,7 +26,9 @@ class User extends Equatable {
     this.authProvider = '',
     this.fcmToken,
     required this.isWordBombTrialAvailable,
-    this.hasLeftReview = false, // Default to false
+    this.hasLeftReview = false,
+    required this.hasPlayedFs,
+    required this.sentimentalStatus,
   });
 
   User copyWith({
@@ -39,6 +43,8 @@ class User extends Equatable {
     String? fcmToken,
     bool? isWordBombTrialAvailable,
     bool? hasLeftReview,
+    bool? hasPlayedFs,
+    String? sentimentalStatus,
   }) {
     return User(
       id: id ?? this.id,
@@ -53,6 +59,8 @@ class User extends Equatable {
       isWordBombTrialAvailable:
           isWordBombTrialAvailable ?? this.isWordBombTrialAvailable,
       hasLeftReview: hasLeftReview ?? this.hasLeftReview,
+      hasPlayedFs: hasPlayedFs ?? this.hasPlayedFs,
+      sentimentalStatus: sentimentalStatus ?? this.sentimentalStatus,
     );
   }
 
@@ -69,5 +77,7 @@ class User extends Equatable {
         fcmToken,
         isWordBombTrialAvailable,
         hasLeftReview,
+        hasPlayedFs,
+        sentimentalStatus,
       ];
 }

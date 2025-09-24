@@ -40,7 +40,7 @@ class AppInfoDialog extends StatelessWidget {
               radius: 40,
               backgroundColor: ColorPalette.secondaryBgColor(ThemeMode.dark),
               child: Image.asset(
-                'assets/images/logo.png',
+                'assets/images/logos/logo-neon.png',
                 width: 50,
                 height: 50,
               ),

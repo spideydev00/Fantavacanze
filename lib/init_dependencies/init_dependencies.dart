@@ -24,6 +24,7 @@ import 'package:fantavacanze_official/features/auth/domain/use-cases/remove_prem
 import 'package:fantavacanze_official/features/auth/domain/use-cases/reset_password.dart';
 import 'package:fantavacanze_official/features/auth/domain/use-cases/send_otp_email.dart';
 import 'package:fantavacanze_official/features/auth/domain/use-cases/set_has_left_review.dart';
+import 'package:fantavacanze_official/features/auth/domain/use-cases/update_is_single_status.dart';
 import 'package:fantavacanze_official/features/auth/domain/use-cases/verify_otp.dart';
 import 'package:fantavacanze_official/features/games/data/datasources/game_remote_data_source.dart';
 import 'package:fantavacanze_official/features/games/data/datasources/never_have_i_ever_remote_data_source.dart';

@@ -66,7 +66,7 @@ class _EmptyBrandedPageState extends State<EmptyBrandedPage> {
                           padding: EdgeInsets.symmetric(vertical: 40),
                           child: Image.asset(
                             widget.logoImagePath,
-                            width: Constants.getWidth(context) * 0.20,
+                            width: Constants.getWidth(context) * 0.40,
                           ),
                         ),
                         const SizedBox(height: 10),

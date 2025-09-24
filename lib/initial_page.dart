@@ -4,7 +4,7 @@ import 'dart:async';
 // import 'package:app_tracking_transparency/app_tracking_transparency.dart';
 import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit.dart';
 import 'package:fantavacanze_official/core/services/gdpr_service.dart';
-import 'package:fantavacanze_official/features/auth/presentation/pages/gender_selection_page.dart';
+import 'package:fantavacanze_official/features/auth/presentation/pages/gender_and_status_selection_page.dart';
 import 'package:fantavacanze_official/features/auth/presentation/pages/onboarding.dart';
 import 'package:fantavacanze_official/features/auth/presentation/pages/social_login.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/dashboard/sections/dashboard.dart';
@@ -53,8 +53,8 @@ class _InitialPageState extends State<InitialPage> {
           return const DashboardScreen();
         } else if (state is AppUserNeedsOnboarding) {
           return OnBoardingScreen();
-        } else if (state is AppUserNeedsGender) {
-          return GenderSelectionPage();
+        } else if (state is AppUserNeedsGenderOrStatus) {
+          return GenderAndStatusSelectionPage();
         }
         return const SocialLoginPage();
       },

@@ -112,9 +112,21 @@ flutter:
   # Application assets organized by functionality
   assets:
     # ===== BRANDING & LOGOS =====
-    - assets/images/logo.png
-    - assets/images/logo-dark.png
-    - assets/images/logo-high-padding.png
+    - assets/images/logos/logo-neon.png
+    - assets/images/logos/logo-naked.png
+    - assets/images/logos/fantavacanze-esteso-neon.png
+    - assets/images/logos/fantavacanze-esteso.png
+    - assets/images/fantaserata/logo/Logo-Fs-Dark.png
+    - assets/images/fantaserata/logo/Logo-Fs.png
+
+    # ===== FANTASERATA =====
+    - assets/images/fantaserata/images/onboarding/1.png
+    - assets/images/fantaserata/images/onboarding/2.png
+    - assets/images/fantaserata/images/onboarding/3.png
+    - assets/images/fantaserata/images/onboarding/4.png
+    - assets/images/fantaserata/images/onboarding/5.png
+    - assets/images/fantaserata/images/onboarding/6.png
+
     
     # ===== BACKGROUNDS & GENERAL IMAGES =====
     - assets/images/bg.png

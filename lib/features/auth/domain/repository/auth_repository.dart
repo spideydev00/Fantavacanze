@@ -52,6 +52,8 @@ abstract interface class AuthRepository {
   });
 
   Future<Either<Failure, User>> updateGender({required String? gender});
+  Future<Either<Failure, User>> updateIsSingleStatus({required String? status});
+
   Future<Either<Failure, User>> becomePremium();
   Future<Either<Failure, User>> removePremium();
 

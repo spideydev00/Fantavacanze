@@ -29,12 +29,20 @@ class _EditProfileDialogState extends State<EditProfileDialog> {
   final _nameController = TextEditingController();
   String? _currentUserName;
   String? _currentUserGender;
+  String? _currentUserSentimentalStatus;
   String? _selectedGender;
+  String? _selectedSentimentalStatus;
   bool _isLoading = false;
 
   final Map<String, String> _genderOptions = {
     'male': 'Uomo',
     'female': 'Donna',
+    'undefined': 'Preferisco non dirlo',
+  };
+
+  final Map<String, String> _sentimentalStatusOptions = {
+    'single': 'Single',
+    'engaged': 'Fidanzato/a',
     'undefined': 'Preferisco non dirlo',
   };
 
@@ -46,8 +54,10 @@ class _EditProfileDialogState extends State<EditProfileDialog> {
     if (userState is AppUserIsLoggedIn) {
       _currentUserName = userState.user.name;
       _currentUserGender = userState.user.gender;
+      _currentUserSentimentalStatus = userState.user.sentimentalStatus;
       _nameController.text = _currentUserName ?? '';
       _selectedGender = _currentUserGender;
+      _selectedSentimentalStatus = _currentUserSentimentalStatus;
     }
   }
 
@@ -63,8 +73,10 @@ class _EditProfileDialogState extends State<EditProfileDialog> {
     final newName = _nameController.text.trim();
     final nameChanged = newName != _currentUserName;
     final genderChanged = _selectedGender != _currentUserGender;
+    final sentimentalStatusChanged =
+        _selectedSentimentalStatus != _currentUserSentimentalStatus;
 
-    if (!nameChanged && !genderChanged) return;
+    if (!nameChanged && !genderChanged && !sentimentalStatusChanged) return;
 
     setState(() => _isLoading = true);
 
@@ -74,6 +86,13 @@ class _EditProfileDialogState extends State<EditProfileDialog> {
       }
       if (genderChanged && _selectedGender != null && mounted) {
         await context.read<AppUserCubit>().updateGender(_selectedGender!);
+      }
+      if (sentimentalStatusChanged &&
+          _selectedSentimentalStatus != null &&
+          mounted) {
+        await context
+            .read<AppUserCubit>()
+            .updateSentimentalStatus(_selectedSentimentalStatus!);
       }
     } finally {
       if (mounted) {
@@ -134,6 +153,30 @@ class _EditProfileDialogState extends State<EditProfileDialog> {
                 onChanged: (value) {
                   setState(() {
                     _selectedGender = value;
+                  });
+                },
+              ),
+            ),
+            const SizedBox(height: ThemeSizes.md),
+            Theme(
+              data: Theme.of(context).copyWith(
+                canvasColor: context.bgColor,
+              ),
+              child: DropdownButtonFormField<String>(
+                value: _selectedSentimentalStatus,
+                decoration: InputDecoration(
+                  labelText: 'Stato Sentimentale',
+                  fillColor: context.bgColor,
+                ),
+                items: _sentimentalStatusOptions.entries.map((entry) {
+                  return DropdownMenuItem<String>(
+                    value: entry.key,
+                    child: Text(entry.value),
+                  );
+                }).toList(),
+                onChanged: (value) {
+                  setState(() {
+                    _selectedSentimentalStatus = value;
                   });
                 },
               ),

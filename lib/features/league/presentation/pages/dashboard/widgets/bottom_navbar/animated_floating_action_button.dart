@@ -281,13 +281,13 @@ class _AnimatedFloatingActionButtonState
                               textAlign: TextAlign.center,
                             ),
 
-                            // Testo "Prova Ora!" con animazione separata
                             Opacity(
                               opacity: _inviteOpacityAnimation.value,
                               child: Text(
                                 "Prova Ora!",
                                 style: context.textTheme.labelSmall!.copyWith(
                                   fontSize: 9,
+                                  color: Colors.white,
                                 ),
                                 textAlign: TextAlign.center,
                               ),
