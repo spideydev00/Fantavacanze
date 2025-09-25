@@ -8,7 +8,6 @@ class FsLeague {
   final String? description;
   final DateTime createdAt;
   final String inviteCode;
-  final List<String> admins;
   final List<FsParticipant> participants;
   final List<FsEvent> events;
   final List<FsMemory> memories;
@@ -19,7 +18,6 @@ class FsLeague {
     this.description,
     required this.createdAt,
     required this.inviteCode,
-    required this.admins,
     required this.participants,
     required this.events,
     required this.memories,

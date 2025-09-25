@@ -49,6 +49,7 @@ Future<void> initDependencies() async {
     _initDailyChallenges();
     _initNotifications();
     _initGames();
+    _initFantaserata();
 
     // Register UUID generator
     serviceLocator.registerLazySingleton(() => const Uuid());
@@ -236,6 +237,14 @@ void _registerHiveAdapters() {
   Hive.registerAdapter(TeamParticipantModelAdapter());
   Hive.registerAdapter(RuleTypeAdapter());
 
+  // Fantaserata adapters
+  Hive.registerAdapter(FsRuleModelAdapter());
+  Hive.registerAdapter(FsRuleTypeHiveAdapter());
+  Hive.registerAdapter(FsParticipantModelAdapter());
+  Hive.registerAdapter(FsEventModelAdapter());
+  Hive.registerAdapter(FsMemoryModelAdapter());
+  Hive.registerAdapter(FsLeagueModelAdapter());
+
   debugPrint("🔌 Tutti gli adapter di Hive registrati correttamente");
 }
 
@@ -259,13 +268,17 @@ Future<void> _openHiveBoxes() async {
 
     await notificationsBox.clear();
 
+    // Fantaserata box
+    final fsLeaguesBox = await Hive.openBox<FsLeagueModel>('fs_leagues_box');
+
     // Register boxes in GetIt
     serviceLocator
       ..registerLazySingleton(() => leaguesBox)
       ..registerLazySingleton(() => rulesBox)
       ..registerLazySingleton(() => notesBox)
       ..registerLazySingleton(() => challengesBox)
-      ..registerLazySingleton(() => notificationsBox);
+      ..registerLazySingleton(() => notificationsBox)
+      ..registerLazySingleton(() => fsLeaguesBox);
 
     debugPrint("📦 Tutti i box di Hive aperti correttamente");
   } catch (e) {
@@ -760,6 +773,86 @@ Future<void> _initDailyChallenges() async {
       rejectDailyChallenge: serviceLocator(),
       appUserCubit: serviceLocator(),
       appLeagueCubit: serviceLocator(),
+    ),
+  );
+}
+
+void _initFantaserata() {
+  // Data Sources
+  serviceLocator.registerFactory<FsRemoteDataSource>(
+    () => FsRemoteDataSourceImpl(
+      supabaseClient: serviceLocator(),
+      uuid: serviceLocator(),
+    ),
+  );
+
+  serviceLocator.registerFactory<FsLocalDataSource>(
+    () => FsLocalDataSourceImpl(serviceLocator()),
+  );
+
+  // Repository
+  serviceLocator.registerFactory<FsRepository>(
+    () => FsRepositoryImpl(
+      serviceLocator(),
+      serviceLocator(),
+      serviceLocator(),
+    ),
+  );
+
+  // Use Cases
+  serviceLocator.registerFactory(
+    () => CreateFsLeague(serviceLocator()),
+  );
+
+  serviceLocator.registerFactory(
+    () => JoinFsLeague(serviceLocator()),
+  );
+
+  serviceLocator.registerFactory(
+    () => GetFsLeagues(serviceLocator()),
+  );
+
+  serviceLocator.registerFactory(
+    () => SetRuleAsCompleted(serviceLocator()),
+  );
+
+  serviceLocator.registerFactory(
+    () => AddFsMemory(serviceLocator()),
+  );
+
+  serviceLocator.registerFactory(
+    () => DeleteFsMemory(serviceLocator()),
+  );
+
+  serviceLocator.registerFactory(
+    () => ExitFsLeague(serviceLocator()),
+  );
+
+  serviceLocator.registerFactory(
+    () => DeleteFsLeague(serviceLocator()),
+  );
+
+  serviceLocator.registerFactory(
+    () => RefreshFsRule(serviceLocator()),
+  );
+
+  serviceLocator.registerFactory(
+    () => UnlockFsRule(serviceLocator()),
+  );
+
+  // BLoC
+  serviceLocator.registerFactory(
+    () => FantaserataBloc(
+      createFsLeague: serviceLocator(),
+      joinFsLeague: serviceLocator(),
+      getFsLeagues: serviceLocator(),
+      setRuleAsCompleted: serviceLocator(),
+      addFsMemory: serviceLocator(),
+      deleteFsMemory: serviceLocator(),
+      exitFsLeague: serviceLocator(),
+      deleteFsLeague: serviceLocator(),
+      refreshFsRule: serviceLocator(),
+      unlockFsRule: serviceLocator(),
     ),
   );
 }

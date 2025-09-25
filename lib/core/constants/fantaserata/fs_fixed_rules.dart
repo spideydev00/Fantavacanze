@@ -1,7 +1,7 @@
 import 'package:fantavacanze_official/core/constants/fantaserata/default_fs_rule.dart';
 import 'package:fantavacanze_official/features/fantaserata/domain/entities/fs_rule.dart';
 
-class FsRules {
+class FsFixedRules {
   // ======= Single Males Rules =======
   List<DefaultFsRule> singleMalesRules = [
     DefaultFsRule(
