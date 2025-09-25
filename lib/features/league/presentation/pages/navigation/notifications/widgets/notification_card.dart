@@ -4,7 +4,7 @@ import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:fantavacanze_official/core/widgets/containers/gradient_card_container.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/daily_challenge_notification.dart';
-import 'package:fantavacanze_official/features/league/domain/entities/notification.dart'
+import 'package:fantavacanze_official/core/entities/notification/entity/notification.dart'
     as app_notification;
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/notifications/widgets/notification_action_buttons.dart';
 import 'package:flutter/material.dart';

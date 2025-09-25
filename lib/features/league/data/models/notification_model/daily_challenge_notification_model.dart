@@ -1,4 +1,4 @@
-import 'package:fantavacanze_official/features/league/data/models/notification_model/notification/notification_model.dart';
+import 'package:fantavacanze_official/core/entities/notification/model/notification_model.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/daily_challenge_notification.dart';
 import 'package:hive/hive.dart';
 

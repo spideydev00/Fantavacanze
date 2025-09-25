@@ -1,6 +1,6 @@
 class FsRule {
   String name;
-  String points;
+  double points;
   FsRuleType type;
 
   FsRule({

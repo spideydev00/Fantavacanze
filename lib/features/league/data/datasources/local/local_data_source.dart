@@ -1,4 +1,4 @@
-import 'package:fantavacanze_official/features/league/data/models/notification_model/daily_challenge_notification/daily_challenge_notification_model.dart';
+import 'package:fantavacanze_official/features/league/data/models/notification_model/daily_challenge_notification_model.dart';
 import 'package:hive/hive.dart';
 
 import 'package:fantavacanze_official/core/errors/exceptions.dart';
@@ -6,7 +6,7 @@ import 'package:fantavacanze_official/features/league/data/models/league_model/l
 import 'package:fantavacanze_official/features/league/data/models/rule_model/rule_model.dart';
 import 'package:fantavacanze_official/features/league/data/models/note_model/note_model.dart';
 import 'package:fantavacanze_official/features/league/data/models/daily_challenge_model/daily_challenge_model.dart';
-import 'package:fantavacanze_official/features/league/data/models/notification_model/notification/notification_model.dart';
+import 'package:fantavacanze_official/core/entities/notification/model/notification_model.dart';
 
 abstract interface class LocalDataSource {
   // =====================================================================

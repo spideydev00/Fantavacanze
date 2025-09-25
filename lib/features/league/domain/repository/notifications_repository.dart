@@ -1,5 +1,5 @@
 import 'package:fantavacanze_official/core/errors/failure.dart';
-import 'package:fantavacanze_official/features/league/domain/entities/notification.dart';
+import 'package:fantavacanze_official/core/entities/notification/entity/notification.dart';
 import 'package:fpdart/fpdart.dart';
 
 abstract class NotificationsRepository {

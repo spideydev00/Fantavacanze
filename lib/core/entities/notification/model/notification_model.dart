@@ -1,4 +1,4 @@
-import 'package:fantavacanze_official/features/league/domain/entities/notification.dart';
+import 'package:fantavacanze_official/core/entities/notification/entity/notification.dart';
 import 'package:hive/hive.dart';
 
 part 'notification_model.g.dart';

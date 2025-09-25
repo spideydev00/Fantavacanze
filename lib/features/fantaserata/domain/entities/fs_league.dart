@@ -1,4 +1,5 @@
 import 'package:fantavacanze_official/features/fantaserata/domain/entities/fs_event.dart';
+import 'package:fantavacanze_official/features/fantaserata/domain/entities/fs_memory.dart';
 import 'package:fantavacanze_official/features/fantaserata/domain/entities/fs_participant.dart';
 
 class FsLeague {
@@ -10,7 +11,7 @@ class FsLeague {
   final List<String> admins;
   final List<FsParticipant> participants;
   final List<FsEvent> events;
-  final bool isActive = true;
+  final List<FsMemory> memories;
 
   FsLeague({
     required this.id,
@@ -21,5 +22,6 @@ class FsLeague {
     required this.admins,
     required this.participants,
     required this.events,
+    required this.memories,
   });
 }

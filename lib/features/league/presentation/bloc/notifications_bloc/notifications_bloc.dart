@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fantavacanze_official/core/cubits/notification_count/notification_count_cubit.dart';
 import 'package:fantavacanze_official/core/use-case/usecase.dart';
-import 'package:fantavacanze_official/features/league/domain/entities/notification.dart';
+import 'package:fantavacanze_official/core/entities/notification/entity/notification.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/daily_challenge_notification.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/remote/notifications/delete_notification.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/remote/notifications/get_notifications.dart';

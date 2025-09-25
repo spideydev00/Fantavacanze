@@ -85,8 +85,8 @@ import 'package:fantavacanze_official/features/league/data/models/individual_par
 import 'package:fantavacanze_official/features/league/data/models/league_model/league_model.dart';
 import 'package:fantavacanze_official/features/league/data/models/memory_model/memory_model.dart';
 import 'package:fantavacanze_official/features/league/data/models/note_model/note_model.dart';
-import 'package:fantavacanze_official/features/league/data/models/notification_model/daily_challenge_notification/daily_challenge_notification_model.dart';
-import 'package:fantavacanze_official/features/league/data/models/notification_model/notification/notification_model.dart';
+import 'package:fantavacanze_official/features/league/data/models/notification_model/daily_challenge_notification_model.dart';
+import 'package:fantavacanze_official/core/entities/notification/model/notification_model.dart';
 import 'package:fantavacanze_official/features/league/data/models/rule_model/rule_model.dart';
 import 'package:fantavacanze_official/features/league/data/models/simple_participant_model/simple_participant_model.dart';
 import 'package:fantavacanze_official/features/league/data/models/team_participant_model/team_participant_model.dart';

@@ -12,7 +12,7 @@ import 'package:fantavacanze_official/core/widgets/empty_state.dart';
 import 'package:fantavacanze_official/core/widgets/loader.dart';
 
 import 'package:fantavacanze_official/features/league/domain/entities/daily_challenge_notification.dart';
-import 'package:fantavacanze_official/features/league/domain/entities/notification.dart'
+import 'package:fantavacanze_official/core/entities/notification/entity/notification.dart'
     as app_notification;
 import 'package:fantavacanze_official/features/league/presentation/bloc/daily_challenges_bloc/daily_challenges_bloc.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/daily_challenges_bloc/daily_challenges_event.dart';

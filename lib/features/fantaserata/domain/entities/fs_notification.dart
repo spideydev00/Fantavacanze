@@ -1,13 +1,10 @@
 import 'package:fantavacanze_official/core/entities/notification/entity/notification.dart';
 
-class DailyChallengeNotification extends Notification {
-  final String userId;
-  final String challengeId;
-  final String challengeName;
+class FsEventNotification extends Notification {
+  final String userName;
   final double challengePoints;
-  final List<String> targetUserIds;
 
-  const DailyChallengeNotification({
+  const FsEventNotification({
     required super.id,
     required super.title,
     required super.message,
@@ -15,15 +12,12 @@ class DailyChallengeNotification extends Notification {
     required super.isRead,
     required super.type,
     required super.leagueId,
-    required this.userId,
-    required this.challengeId,
-    required this.challengeName,
-    required this.challengePoints,
-    required this.targetUserIds,
+    required this.userName,
+    required this.challengePoints, // Based on this value (negative or positive) the notification will differ
   });
 
   @override
-  DailyChallengeNotification copyWith({
+  FsEventNotification copyWith({
     String? id,
     String? title,
     String? message,
@@ -31,13 +25,10 @@ class DailyChallengeNotification extends Notification {
     bool? isRead,
     String? type,
     String? leagueId,
-    String? userId,
-    String? challengeId,
-    String? challengeName,
+    String? userName,
     double? challengePoints,
-    List<String>? targetUserIds,
   }) {
-    return DailyChallengeNotification(
+    return FsEventNotification(
       id: id ?? this.id,
       title: title ?? this.title,
       message: message ?? this.message,
@@ -45,11 +36,8 @@ class DailyChallengeNotification extends Notification {
       isRead: isRead ?? this.isRead,
       type: type ?? this.type,
       leagueId: leagueId ?? this.leagueId,
-      userId: userId ?? this.userId,
-      challengeId: challengeId ?? this.challengeId,
-      challengeName: challengeName ?? this.challengeName,
+      userName: userName ?? this.userName,
       challengePoints: challengePoints ?? this.challengePoints,
-      targetUserIds: targetUserIds ?? this.targetUserIds,
     );
   }
 }

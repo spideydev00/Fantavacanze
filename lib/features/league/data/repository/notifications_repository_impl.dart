@@ -3,7 +3,7 @@ import 'package:fantavacanze_official/core/errors/failure.dart';
 import 'package:fantavacanze_official/core/network/connection_checker.dart';
 import 'package:fantavacanze_official/features/league/data/datasources/local/local_data_source.dart';
 import 'package:fantavacanze_official/features/league/data/datasources/remote/notification_remote_data_source.dart';
-import 'package:fantavacanze_official/features/league/data/models/notification_model/notification/notification_model.dart';
+import 'package:fantavacanze_official/core/entities/notification/model/notification_model.dart';
 import 'package:fantavacanze_official/features/league/domain/repository/notifications_repository.dart';
 import 'package:fpdart/fpdart.dart';
 

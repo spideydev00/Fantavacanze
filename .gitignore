@@ -52,5 +52,5 @@ app.*.map.json
 /lib/core/database_table_examples/
 
 # Other
-useful-terminal-commands.md
-notify-app-update.txt
+terminal-commands.md
+project-structure.md

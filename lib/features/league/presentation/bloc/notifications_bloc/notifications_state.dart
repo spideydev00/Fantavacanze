@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import 'package:fantavacanze_official/features/league/domain/entities/notification.dart';
+import 'package:fantavacanze_official/core/entities/notification/entity/notification.dart';
 
 abstract class NotificationsState extends Equatable {
   const NotificationsState();
