@@ -28,6 +28,7 @@ import 'package:fantavacanze_official/core/cubits/app_navigation/app_navigation_
 import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/dashboard/sections/bottom_navigation_bar.dart';
 import 'package:get_it/get_it.dart';
+import 'package:fantavacanze_official/core/cubits/app_fs_league/app_fs_league_cubit.dart';
 
 class DashboardScreen extends StatefulWidget {
   static const String routeName = '/dashboard';
@@ -81,6 +82,9 @@ class _DashboardScreenState extends State<DashboardScreen>
     context.read<NotificationsBloc>().add(GetNotificationsEvent());
     // Listen for new notifications
     context.read<NotificationsBloc>().add(ListenToNotificationEvent());
+
+    // Check for Fantaserata league
+    context.read<AppFsLeagueCubit>().checkFsLeague();
   }
 
   @override
@@ -151,7 +155,6 @@ class _DashboardScreenState extends State<DashboardScreen>
     final double menuWidth = Constants.getWidth(context) * 0.70;
 
     final leagueBloc = context.read<LeagueBloc>();
-    final appLeagueCubit = context.read<AppLeagueCubit>();
 
     return BlocListener<NotificationsBloc, NotificationsState>(
       listener: (context, state) {
@@ -164,12 +167,9 @@ class _DashboardScreenState extends State<DashboardScreen>
             ),
           );
         }
-        // Always ensure the notification count is updated whenever notifications state changes
+        // Update notification count whenever notifications state changes
         if (state is NotificationsLoaded) {
-          // The NotificationsBloc already updates the count internally,
-          // but we can force a refresh here if needed
-          final notificationCount =
-              state.notifications.where((n) => !n.isRead).length;
+          final notificationCount = state.notifications.length;
           context.read<NotificationCountCubit>().setCount(notificationCount);
         }
       },
@@ -224,15 +224,25 @@ class _DashboardScreenState extends State<DashboardScreen>
                                 isActive: isSideMenuOpen,
                               ),
                               actions: [
-                                appLeagueCubit.state is AppLeagueExists &&
-                                        leagueBloc.isAdmin()
-                                    ? BlocBuilder<NotificationCountCubit, int>(
+                                // Show notifications for league admins - with proper state management
+                                BlocBuilder<AppLeagueCubit, AppLeagueState>(
+                                  builder: (context, leagueState) {
+                                    final bool shouldShowNotifications =
+                                        leagueState is AppLeagueExists &&
+                                            leagueBloc.isAdmin();
+
+                                    if (shouldShowNotifications) {
+                                      return BlocBuilder<NotificationCountCubit,
+                                          int>(
                                         builder: (_, count) => GestureDetector(
                                           onTap: () => Navigator.push(
-                                              context, NotificationsPage.route),
+                                            context,
+                                            NotificationsPage.route,
+                                          ),
                                           child: Padding(
                                             padding: const EdgeInsets.only(
-                                                right: ThemeSizes.md),
+                                              right: ThemeSizes.md,
+                                            ),
                                             child: NotificationBadge(
                                               count: count,
                                               child: Icon(
@@ -243,8 +253,30 @@ class _DashboardScreenState extends State<DashboardScreen>
                                             ),
                                           ),
                                         ),
-                                      )
-                                    : SizedBox.shrink(),
+                                      );
+                                    }
+                                    return const SizedBox.shrink();
+                                  },
+                                ),
+
+                                // Example: Show FS indicator if user has Fantaserata league
+                                BlocBuilder<AppFsLeagueCubit, AppFsLeagueState>(
+                                  builder: (_, fsState) {
+                                    if (fsState is AppFsLeagueExists) {
+                                      return Padding(
+                                        padding: const EdgeInsets.only(
+                                            right: ThemeSizes.sm),
+                                        child: Icon(
+                                          Icons.flash_on,
+                                          size: 20,
+                                          color: Colors.orange,
+                                        ),
+                                      );
+                                    }
+                                    return SizedBox.shrink();
+                                  },
+                                ),
+
                                 GestureDetector(
                                   onTap: () => Navigator.push(
                                       context, SettingsPage.route),

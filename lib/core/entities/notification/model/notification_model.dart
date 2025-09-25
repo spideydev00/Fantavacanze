@@ -23,14 +23,6 @@ class NotificationModel extends Notification {
 
   @HiveField(4)
   @override
-  bool get isRead => super.isRead;
-
-  @HiveField(5)
-  @override
-  String get type => super.type;
-
-  @HiveField(6)
-  @override
   String get leagueId => super.leagueId;
 
   const NotificationModel({
@@ -38,8 +30,6 @@ class NotificationModel extends Notification {
     required super.title,
     required super.message,
     required super.createdAt,
-    required super.isRead,
-    required super.type,
     required super.leagueId,
   });
 
@@ -49,8 +39,6 @@ class NotificationModel extends Notification {
       title: json['title'],
       message: json['message'],
       createdAt: DateTime.parse(json['created_at']),
-      isRead: json['is_read'] ?? false,
-      type: json['type'],
       leagueId: json['league_id'],
     );
   }
@@ -61,8 +49,6 @@ class NotificationModel extends Notification {
       'title': title,
       'message': message,
       'created_at': createdAt.toIso8601String(),
-      'is_read': isRead,
-      'type': type,
       'league_id': leagueId,
     };
   }

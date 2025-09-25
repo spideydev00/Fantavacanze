@@ -14,8 +14,6 @@ abstract class NotificationRemoteDataSource {
 
   Future<List<NotificationModel>> getNotifications();
 
-  Future<void> markAsRead(String notificationId);
-
   Future<void> deleteNotification(String notificationId);
 }
 
@@ -106,11 +104,7 @@ class NotificationRemoteDataSourceImpl implements NotificationRemoteDataSource {
       final notifications = notificationsWithDate.map((item) {
         final json = item['notification'];
 
-        if (json['type'] == 'daily_challenge') {
-          return DailyChallengeNotificationModel.fromJson(json);
-        } else {
-          return NotificationModel.fromJson(json);
-        }
+        return DailyChallengeNotificationModel.fromJson(json);
       }).toList();
 
       return notifications;
@@ -118,25 +112,9 @@ class NotificationRemoteDataSourceImpl implements NotificationRemoteDataSource {
   }
 
   @override
-  Future<void> markAsRead(String notificationId) async {
-    return _tryDatabaseOperation(() async {
-      await supabaseClient.rpc(
-        'mark_notification_as_read',
-        params: {'p_notification_id': notificationId},
-      );
-    });
-  }
-
-  @override
   Future<void> deleteNotification(String notificationId) async {
     return _tryDatabaseOperation(
       () async {
-        // Delete from standard notifications table
-        await supabaseClient
-            .from('notifications')
-            .delete()
-            .eq('id', notificationId);
-
         // Delete from daily challenge notifications table
         await supabaseClient
             .from('daily_challenges_notifications')
@@ -168,13 +146,11 @@ class NotificationRemoteDataSourceImpl implements NotificationRemoteDataSource {
       final id = data['id'] ?? uuid.v4();
       final title = data['title'] ?? notification.title ?? 'Nuova notifica';
       final messageText = data['message'] ?? notification.body ?? '';
-      final type = data['type'] ?? 'generic';
       final userId = data['user_id'] ?? _getCurrentUserId() ?? '';
       final leagueId = data['league_id'] ?? '';
       final createdAt = data['created_at'] != null
           ? DateTime.parse(data['created_at'])
           : DateTime.now();
-      final isRead = data['is_read'] == 'true';
 
       // Parsing di target_user_ids
       List<String> targetUserIds = [];
@@ -183,35 +159,19 @@ class NotificationRemoteDataSourceImpl implements NotificationRemoteDataSource {
         targetUserIds = rawIds.split(',').where((id) => id.isNotEmpty).toList();
       }
 
-      // Crea il modello appropriato in base al tipo
-      if (type == 'daily_challenge') {
-        return DailyChallengeNotificationModel(
-          id: id,
-          title: title,
-          message: messageText,
-          createdAt: createdAt,
-          isRead: isRead,
-          type: type,
-          userId: userId,
-          leagueId: leagueId,
-          challengeId: data['challenge_id'] ?? '',
-          challengeName: data['challenge_name'] ?? '',
-          challengePoints:
-              double.tryParse(data['challenge_points'] ?? '0') ?? 0.0,
-          targetUserIds: targetUserIds,
-        );
-      } else {
-        // Notifica generica
-        return NotificationModel(
-          id: id,
-          title: title,
-          message: messageText,
-          createdAt: createdAt,
-          isRead: isRead,
-          type: type,
-          leagueId: leagueId,
-        );
-      }
+      return DailyChallengeNotificationModel(
+        id: id,
+        title: title,
+        message: messageText,
+        createdAt: createdAt,
+        userId: userId,
+        leagueId: leagueId,
+        challengeId: data['challenge_id'] ?? '',
+        challengeName: data['challenge_name'] ?? '',
+        challengePoints:
+            double.tryParse(data['challenge_points'] ?? '0') ?? 0.0,
+        targetUserIds: targetUserIds,
+      );
     } catch (e) {
       debugPrint("⚠️ Errore nella conversione della notifica: $e");
       return null;

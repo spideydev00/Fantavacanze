@@ -81,5 +81,5 @@ abstract interface class FsRepository {
     required String type,
   });
 
-  Future<Either<Failure, List<FsLeague>>> getFsLeagues();
+  Future<Either<Failure, FsLeague?>> getFsLeague();
 }

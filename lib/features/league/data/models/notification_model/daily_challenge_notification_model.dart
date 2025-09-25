@@ -25,33 +25,25 @@ class DailyChallengeNotificationModel extends DailyChallengeNotification
 
   @HiveField(4)
   @override
-  bool get isRead => super.isRead;
+  String get userId => super.userId;
 
   @HiveField(5)
   @override
-  String get type => super.type;
+  String get leagueId => super.leagueId;
 
   @HiveField(6)
   @override
-  String get userId => super.userId;
+  String get challengeId => super.challengeId;
 
   @HiveField(7)
   @override
-  String get leagueId => super.leagueId;
+  String get challengeName => super.challengeName;
 
   @HiveField(8)
   @override
-  String get challengeId => super.challengeId;
-
-  @HiveField(9)
-  @override
-  String get challengeName => super.challengeName;
-
-  @HiveField(10)
-  @override
   double get challengePoints => super.challengePoints;
 
-  @HiveField(11)
+  @HiveField(9)
   @override
   List<String> get targetUserIds => super.targetUserIds;
 
@@ -60,8 +52,6 @@ class DailyChallengeNotificationModel extends DailyChallengeNotification
     required super.title,
     required super.message,
     required super.createdAt,
-    required super.isRead,
-    required super.type,
     required super.userId,
     required super.leagueId,
     required super.challengeId,
@@ -76,8 +66,6 @@ class DailyChallengeNotificationModel extends DailyChallengeNotification
       title: json['title'],
       message: json['message'],
       createdAt: DateTime.parse(json['created_at']),
-      isRead: json['is_read'] ?? false,
-      type: json['type'],
       userId: json['user_id'],
       leagueId: json['league_id'],
       challengeId: json['challenge_id'],
@@ -96,8 +84,6 @@ class DailyChallengeNotificationModel extends DailyChallengeNotification
       'title': title,
       'message': message,
       'created_at': createdAt.toIso8601String(),
-      'is_read': isRead,
-      'type': type,
       'user_id': userId,
       'league_id': leagueId,
       'challenge_id': challengeId,

@@ -12,11 +12,13 @@ final class FantaserataFailure extends FantaserataState {
   FantaserataFailure(this.message);
 }
 
-final class FsLeaguesLoaded extends FantaserataState {
-  final List<FsLeague> leagues;
+final class FsLeagueLoaded extends FantaserataState {
+  final FsLeague league;
 
-  FsLeaguesLoaded(this.leagues);
+  FsLeagueLoaded(this.league);
 }
+
+final class FsLeagueNotExists extends FantaserataState {}
 
 final class FsLeagueCreated extends FantaserataState {
   final FsLeague league;

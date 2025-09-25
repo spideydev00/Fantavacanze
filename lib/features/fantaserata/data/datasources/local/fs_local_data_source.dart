@@ -3,9 +3,9 @@ import 'package:fantavacanze_official/core/errors/exceptions.dart';
 import 'package:fantavacanze_official/features/fantaserata/data/models/league/fs_league_model.dart';
 
 abstract interface class FsLocalDataSource {
-  Future<List<FsLeagueModel>> getCachedFsLeagues();
-  Future<void> cacheFsLeagues(List<FsLeagueModel> leagues);
-  Future<void> clearFsLeaguesCache();
+  Future<FsLeagueModel?> getCachedFsLeague();
+  Future<void> cacheFsLeague(FsLeagueModel? league);
+  Future<void> clearFsLeagueCache();
 }
 
 class FsLocalDataSourceImpl implements FsLocalDataSource {
@@ -14,20 +14,21 @@ class FsLocalDataSourceImpl implements FsLocalDataSource {
   const FsLocalDataSourceImpl(this.fsLeaguesBox);
 
   @override
-  Future<List<FsLeagueModel>> getCachedFsLeagues() async {
+  Future<FsLeagueModel?> getCachedFsLeague() async {
     try {
-      return fsLeaguesBox.values.toList();
+      final values = fsLeaguesBox.values.toList();
+      return values.isNotEmpty ? values.first : null;
     } catch (e) {
       throw CacheException(e.toString());
     }
   }
 
   @override
-  Future<void> cacheFsLeagues(List<FsLeagueModel> leagues) async {
+  Future<void> cacheFsLeague(FsLeagueModel? league) async {
     try {
       await fsLeaguesBox.clear();
-      for (int i = 0; i < leagues.length; i++) {
-        await fsLeaguesBox.put(leagues[i].id, leagues[i]);
+      if (league != null) {
+        await fsLeaguesBox.put(league.id, league);
       }
     } catch (e) {
       throw CacheException(e.toString());
@@ -35,7 +36,7 @@ class FsLocalDataSourceImpl implements FsLocalDataSource {
   }
 
   @override
-  Future<void> clearFsLeaguesCache() async {
+  Future<void> clearFsLeagueCache() async {
     try {
       await fsLeaguesBox.clear();
     } catch (e) {

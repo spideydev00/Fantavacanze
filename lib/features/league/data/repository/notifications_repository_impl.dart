@@ -48,28 +48,6 @@ class NotificationsRepositoryImpl implements NotificationsRepository {
   }
 
   @override
-  Future<Either<Failure, void>> markAsRead(String notificationId) async {
-    try {
-      if (!await connectionChecker.isConnected) {
-        return Left(Failure(
-            'Nessuna connessione ad internet, riprova appena sarai connesso.'));
-      }
-
-      // Update on the server
-      await remoteDataSource.markAsRead(notificationId);
-
-      // Update in cache
-      await localDataSource.markNotificationAsRead(notificationId);
-
-      return const Right(null);
-    } on ServerException catch (e) {
-      return Left(Failure(e.message));
-    } on CacheException catch (e) {
-      return Left(Failure('Errore nella cache: ${e.message}'));
-    }
-  }
-
-  @override
   Future<Either<Failure, void>> deleteNotification(
       String notificationId) async {
     try {

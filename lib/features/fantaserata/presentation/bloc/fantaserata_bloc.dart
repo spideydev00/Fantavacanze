@@ -1,11 +1,12 @@
 import 'dart:async';
+import 'package:fantavacanze_official/core/cubits/app_fs_league/app_fs_league_cubit.dart';
+import 'package:fantavacanze_official/features/fantaserata/domain/use_cases/get_fs_league.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fantavacanze_official/core/use-case/usecase.dart';
 import 'package:fantavacanze_official/features/fantaserata/domain/entities/fs_league.dart';
 import 'package:fantavacanze_official/features/fantaserata/domain/entities/fs_memory.dart';
 import 'package:fantavacanze_official/features/fantaserata/domain/use_cases/create_fs_league.dart';
 import 'package:fantavacanze_official/features/fantaserata/domain/use_cases/join_fs_league.dart';
-import 'package:fantavacanze_official/features/fantaserata/domain/use_cases/get_fs_leagues.dart';
 import 'package:fantavacanze_official/features/fantaserata/domain/use_cases/set_rule_as_completed.dart';
 import 'package:fantavacanze_official/features/fantaserata/domain/use_cases/add_fs_memory.dart';
 import 'package:fantavacanze_official/features/fantaserata/domain/use_cases/delete_fs_memory.dart';
@@ -20,7 +21,7 @@ part 'fantaserata_state.dart';
 class FantaserataBloc extends Bloc<FantaserataEvent, FantaserataState> {
   final CreateFsLeague _createFsLeague;
   final JoinFsLeague _joinFsLeague;
-  final GetFsLeagues _getFsLeagues;
+  final GetFsLeague _getFsLeague;
   final SetRuleAsCompleted _setRuleAsCompleted;
   final AddFsMemory _addFsMemory;
   final DeleteFsMemory _deleteFsMemory;
@@ -28,11 +29,12 @@ class FantaserataBloc extends Bloc<FantaserataEvent, FantaserataState> {
   final DeleteFsLeague _deleteFsLeague;
   final RefreshFsRule _refreshFsRule;
   final UnlockFsRule _unlockFsRule;
+  final AppFsLeagueCubit _appFsLeagueCubit;
 
   FantaserataBloc({
     required CreateFsLeague createFsLeague,
     required JoinFsLeague joinFsLeague,
-    required GetFsLeagues getFsLeagues,
+    required GetFsLeague getFsLeague,
     required SetRuleAsCompleted setRuleAsCompleted,
     required AddFsMemory addFsMemory,
     required DeleteFsMemory deleteFsMemory,
@@ -40,9 +42,10 @@ class FantaserataBloc extends Bloc<FantaserataEvent, FantaserataState> {
     required DeleteFsLeague deleteFsLeague,
     required RefreshFsRule refreshFsRule,
     required UnlockFsRule unlockFsRule,
+    required AppFsLeagueCubit appFsLeagueCubit,
   })  : _createFsLeague = createFsLeague,
         _joinFsLeague = joinFsLeague,
-        _getFsLeagues = getFsLeagues,
+        _getFsLeague = getFsLeague,
         _setRuleAsCompleted = setRuleAsCompleted,
         _addFsMemory = addFsMemory,
         _deleteFsMemory = deleteFsMemory,
@@ -50,9 +53,10 @@ class FantaserataBloc extends Bloc<FantaserataEvent, FantaserataState> {
         _deleteFsLeague = deleteFsLeague,
         _refreshFsRule = refreshFsRule,
         _unlockFsRule = unlockFsRule,
+        _appFsLeagueCubit = appFsLeagueCubit,
         super(FantaserataInitial()) {
     on<FantaserataEvent>((event, emit) => emit(FantaserataLoading()));
-    on<GetFsLeaguesEvent>(_onGetFsLeagues);
+    on<GetFsLeagueEvent>(_onGetFsLeague);
     on<CreateFsLeagueEvent>(_onCreateFsLeague);
     on<JoinFsLeagueEvent>(_onJoinFsLeague);
     on<AddFsMemoryEvent>(_onAddFsMemory);
@@ -64,15 +68,23 @@ class FantaserataBloc extends Bloc<FantaserataEvent, FantaserataState> {
     on<SetRuleAsCompletedEvent>(_onSetRuleAsCompleted);
   }
 
-  FutureOr<void> _onGetFsLeagues(
-    GetFsLeaguesEvent event,
+  FutureOr<void> _onGetFsLeague(
+    GetFsLeagueEvent event,
     Emitter<FantaserataState> emit,
   ) async {
-    final result = await _getFsLeagues(NoParams());
+    final result = await _getFsLeague(NoParams());
 
     result.fold(
       (failure) => emit(FantaserataFailure(failure.message)),
-      (leagues) => emit(FsLeaguesLoaded(leagues)),
+      (league) {
+        if (league != null) {
+          _appFsLeagueCubit.setFsLeagueExists(league);
+          emit(FsLeagueLoaded(league));
+        } else {
+          _appFsLeagueCubit.setFsLeagueNotExists();
+          emit(FsLeagueNotExists());
+        }
+      },
     );
   }
 
@@ -89,7 +101,10 @@ class FantaserataBloc extends Bloc<FantaserataEvent, FantaserataState> {
 
     result.fold(
       (failure) => emit(FantaserataFailure(failure.message)),
-      (league) => emit(FsLeagueCreated(league)),
+      (league) {
+        _appFsLeagueCubit.setFsLeagueExists(league);
+        emit(FsLeagueCreated(league));
+      },
     );
   }
 
@@ -105,7 +120,10 @@ class FantaserataBloc extends Bloc<FantaserataEvent, FantaserataState> {
 
     result.fold(
       (failure) => emit(FantaserataFailure(failure.message)),
-      (league) => emit(FsLeagueJoined(league)),
+      (league) {
+        _appFsLeagueCubit.setFsLeagueExists(league);
+        emit(FsLeagueJoined(league));
+      },
     );
   }
 
@@ -155,7 +173,10 @@ class FantaserataBloc extends Bloc<FantaserataEvent, FantaserataState> {
 
     result.fold(
       (failure) => emit(FantaserataFailure(failure.message)),
-      (_) => emit(FsLeagueExited()),
+      (_) {
+        _appFsLeagueCubit.setFsLeagueNotExists();
+        emit(FsLeagueExited());
+      },
     );
   }
 
@@ -169,7 +190,10 @@ class FantaserataBloc extends Bloc<FantaserataEvent, FantaserataState> {
 
     result.fold(
       (failure) => emit(FantaserataFailure(failure.message)),
-      (_) => emit(FsLeagueDeleted()),
+      (_) {
+        _appFsLeagueCubit.setFsLeagueNotExists();
+        emit(FsLeagueDeleted());
+      },
     );
   }
 

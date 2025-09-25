@@ -97,15 +97,21 @@ Future<void> initDependencies() async {
           clearLocalCache: serviceLocator<ClearLocalCache>(),
         ),
       )
-      //5. notification count cubit
+      //5. fs league cubit
+      ..registerLazySingleton(
+        () => AppFsLeagueCubit(
+          getFsLeague: serviceLocator(),
+        ),
+      )
+      //6. notification count cubit
       ..registerLazySingleton(
         () => NotificationCountCubit(),
       )
-      //6. floating button animation cubit
+      //7. floating button animation cubit
       ..registerLazySingleton(
         () => FloatingButtonAnimationCubit(),
       )
-      //7. connection checker
+      //8. connection checker
       ..registerFactory<ConnectionChecker>(
         () => ConnectionCheckerImpl(
           serviceLocator(),
@@ -672,14 +678,10 @@ Future<void> _initNotifications() async {
     ..registerFactory(
       () => GetNotifications(notificationsRepository: serviceLocator()),
     )
-    ..registerFactory(
-      () => MarkNotificationAsRead(notificationsRepository: serviceLocator()),
-    )
     // notifications bloc
     ..registerFactory(
       () => NotificationsBloc(
         getNotifications: serviceLocator(),
-        markNotificationAsRead: serviceLocator(),
         deleteNotification: serviceLocator(),
         listenToNotification: serviceLocator(),
         notificationCountCubit: serviceLocator(),
@@ -690,7 +692,6 @@ Future<void> _initNotifications() async {
   serviceLocator.registerFactory(
     () => NotificationsBloc(
       getNotifications: serviceLocator(),
-      markNotificationAsRead: serviceLocator(),
       deleteNotification: serviceLocator(),
       listenToNotification: serviceLocator(),
       notificationCountCubit: serviceLocator(),
@@ -809,7 +810,7 @@ void _initFantaserata() {
   );
 
   serviceLocator.registerFactory(
-    () => GetFsLeagues(serviceLocator()),
+    () => GetFsLeague(serviceLocator()),
   );
 
   serviceLocator.registerFactory(
@@ -845,7 +846,7 @@ void _initFantaserata() {
     () => FantaserataBloc(
       createFsLeague: serviceLocator(),
       joinFsLeague: serviceLocator(),
-      getFsLeagues: serviceLocator(),
+      getFsLeague: serviceLocator(),
       setRuleAsCompleted: serviceLocator(),
       addFsMemory: serviceLocator(),
       deleteFsMemory: serviceLocator(),
@@ -853,6 +854,7 @@ void _initFantaserata() {
       deleteFsLeague: serviceLocator(),
       refreshFsRule: serviceLocator(),
       unlockFsRule: serviceLocator(),
+      appFsLeagueCubit: serviceLocator(),
     ),
   );
 }

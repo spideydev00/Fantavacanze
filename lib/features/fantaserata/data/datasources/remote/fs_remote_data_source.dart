@@ -83,7 +83,7 @@ abstract interface class FsRemoteDataSource {
     required String type,
   });
 
-  Future<List<FsLeagueModel>> getFsLeagues();
+  Future<FsLeagueModel?> getFsLeague();
 }
 
 class FsRemoteDataSourceImpl implements FsRemoteDataSource {
@@ -516,17 +516,19 @@ class FsRemoteDataSourceImpl implements FsRemoteDataSource {
   }
 
   @override
-  Future<List<FsLeagueModel>> getFsLeagues() async {
+  Future<FsLeagueModel?> getFsLeague() async {
     try {
       final response = await supabaseClient
           .from('fs_leagues')
           .select()
-          .order('created_at', ascending: false);
+          .order('created_at', ascending: false)
+          .limit(1);
 
-      return (response as List<dynamic>)
-          .map((league) =>
-              FsLeagueModel.fromJson(league as Map<String, dynamic>))
-          .toList();
+      if (response.isEmpty) {
+        return null;
+      }
+
+      return FsLeagueModel.fromJson(response.first);
     } catch (e) {
       throw ServerException(e.toString());
     }

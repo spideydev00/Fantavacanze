@@ -385,21 +385,7 @@ class LocalDataSourceImpl implements LocalDataSource {
 
       // Elimina solo se è una notifica di tipo daily_challenge
       if (notification != null) {
-        if (notification.type == 'daily_challenge') {
-          await notificationsBox.delete(notificationId);
-        } else {
-          // Per altre notifiche, lasciamo nella cache ma aggiorniamo isRead
-          final updatedNotification = NotificationModel(
-            id: notification.id,
-            title: notification.title,
-            message: notification.message,
-            createdAt: notification.createdAt,
-            isRead: true,
-            type: notification.type,
-            leagueId: notification.leagueId,
-          );
-          await notificationsBox.put(notificationId, updatedNotification);
-        }
+        await notificationsBox.delete(notificationId);
       }
     } catch (e) {
       throw CacheException('Errore nell\'eliminare la notifica: $e');

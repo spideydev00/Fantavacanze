@@ -22,21 +22,19 @@ class DailyChallengeNotificationModelAdapter
       title: fields[1] as String,
       message: fields[2] as String,
       createdAt: fields[3] as DateTime,
-      isRead: fields[4] as bool,
-      type: fields[5] as String,
-      userId: fields[6] as String,
-      leagueId: fields[7] as String,
-      challengeId: fields[8] as String,
-      challengeName: fields[9] as String,
-      challengePoints: fields[10] as double,
-      targetUserIds: (fields[11] as List).cast<String>(),
+      userId: fields[4] as String,
+      leagueId: fields[5] as String,
+      challengeId: fields[6] as String,
+      challengeName: fields[7] as String,
+      challengePoints: fields[8] as double,
+      targetUserIds: (fields[9] as List).cast<String>(),
     );
   }
 
   @override
   void write(BinaryWriter writer, DailyChallengeNotificationModel obj) {
     writer
-      ..writeByte(12)
+      ..writeByte(10)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -46,20 +44,16 @@ class DailyChallengeNotificationModelAdapter
       ..writeByte(3)
       ..write(obj.createdAt)
       ..writeByte(4)
-      ..write(obj.isRead)
-      ..writeByte(5)
-      ..write(obj.type)
-      ..writeByte(6)
       ..write(obj.userId)
-      ..writeByte(7)
+      ..writeByte(5)
       ..write(obj.leagueId)
-      ..writeByte(8)
+      ..writeByte(6)
       ..write(obj.challengeId)
-      ..writeByte(9)
+      ..writeByte(7)
       ..write(obj.challengeName)
-      ..writeByte(10)
+      ..writeByte(8)
       ..write(obj.challengePoints)
-      ..writeByte(11)
+      ..writeByte(9)
       ..write(obj.targetUserIds);
   }
 

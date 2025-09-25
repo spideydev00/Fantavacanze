@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'package:fantavacanze_official/core/cubits/app_fs_league/app_fs_league_cubit.dart';
+import 'package:fantavacanze_official/features/fantaserata/presentation/bloc/fantaserata_bloc.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/notifications_bloc/notifications_bloc.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/subscription_bloc/subscription_bloc.dart';
 import 'package:flutter/material.dart';
@@ -52,8 +54,10 @@ void main() async {
           BlocProvider(create: (_) => serviceLocator<DailyChallengesBloc>()),
           BlocProvider(create: (_) => serviceLocator<NotificationsBloc>()),
           BlocProvider(create: (_) => serviceLocator<SubscriptionBloc>()),
+          BlocProvider(create: (_) => serviceLocator<FantaserataBloc>()),
           BlocProvider(create: (_) => serviceLocator<AppUserCubit>()),
           BlocProvider(create: (_) => serviceLocator<AppLeagueCubit>()),
+          BlocProvider(create: (_) => serviceLocator<AppFsLeagueCubit>()),
           BlocProvider(create: (_) => serviceLocator<AppNavigationCubit>()),
           BlocProvider(create: (_) => serviceLocator<NotificationCountCubit>()),
           BlocProvider.value(value: themeCubit),

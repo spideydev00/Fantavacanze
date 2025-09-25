@@ -40,6 +40,7 @@ class AppLeagueCubit extends Cubit<AppLeagueState> {
     if (userState is! AppUserIsLoggedIn) {
       // User is not logged in or is in onboarding
       // Silently maintain the initial state without showing error
+      emit(AppLeagueInitial());
       return;
     }
 

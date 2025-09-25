@@ -2,7 +2,7 @@ part of 'fantaserata_bloc.dart';
 
 sealed class FantaserataEvent {}
 
-final class GetFsLeaguesEvent extends FantaserataEvent {}
+final class GetFsLeagueEvent extends FantaserataEvent {}
 
 final class CreateFsLeagueEvent extends FantaserataEvent {
   final String name;

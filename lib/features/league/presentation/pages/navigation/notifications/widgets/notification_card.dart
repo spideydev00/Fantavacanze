@@ -10,7 +10,7 @@ import 'package:fantavacanze_official/features/league/presentation/pages/navigat
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-class NotificationCard extends StatelessWidget {
+class DailyChallengeNotificationCard extends StatelessWidget {
   static final _dateFormat = DateFormat('dd/MM/yyyy HH:mm');
 
   final app_notification.Notification notification;
@@ -19,7 +19,7 @@ class NotificationCard extends StatelessWidget {
   final VoidCallback? onApprove;
   final VoidCallback? onReject;
 
-  const NotificationCard({
+  const DailyChallengeNotificationCard({
     super.key,
     required this.notification,
     this.isAdmin = false,
@@ -32,11 +32,9 @@ class NotificationCard extends StatelessWidget {
   Widget build(BuildContext context) {
     // Define colors based on notification type and read status
     final bool isChallenge = notification is DailyChallengeNotification;
-    final bool isRead = notification.isRead;
 
     // Choose colors based on notification type and read status
     Color primaryColor = isChallenge ? ColorPalette.warning : ColorPalette.info;
-    if (isRead) primaryColor = primaryColor.withValues(alpha: 0.7);
 
     final Color startColor = context.secondaryBgColor;
     final Color endColor = context.secondaryBgColor.withValues(alpha: 0.9);
@@ -51,7 +49,7 @@ class NotificationCard extends StatelessWidget {
       endColor: endColor,
       overlayColor: overlayColor,
       onTap: onTap,
-      elevation: isRead ? 1 : 3,
+      elevation: 3,
       child: Padding(
         padding: const EdgeInsets.all(ThemeSizes.md),
         child: Stack(
@@ -83,9 +81,7 @@ class NotificationCard extends StatelessWidget {
                             notification.title,
                             style: context.textTheme.bodyMedium!.copyWith(
                               fontWeight: FontWeight.bold,
-                              color: isRead
-                                  ? context.textSecondaryColor
-                                  : primaryColor,
+                              color: primaryColor,
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
@@ -112,17 +108,6 @@ class NotificationCard extends StatelessWidget {
                         ],
                       ),
                     ),
-
-                    // Unread indicator
-                    if (!isRead)
-                      Container(
-                        width: 10,
-                        height: 10,
-                        decoration: BoxDecoration(
-                          color: primaryColor,
-                          shape: BoxShape.circle,
-                        ),
-                      ),
                   ],
                 ),
 
@@ -132,9 +117,7 @@ class NotificationCard extends StatelessWidget {
                   child: Text(
                     notification.message,
                     style: context.textTheme.bodySmall?.copyWith(
-                      color: isRead
-                          ? context.textSecondaryColor.withValues(alpha: 0.8)
-                          : context.textSecondaryColor,
+                      color: context.textSecondaryColor,
                     ),
                     maxLines: 5,
                     overflow: TextOverflow.ellipsis,

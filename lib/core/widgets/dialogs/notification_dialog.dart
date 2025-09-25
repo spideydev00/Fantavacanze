@@ -9,7 +9,6 @@ import 'package:flutter_svg/svg.dart';
 class NotificationDialog extends StatelessWidget {
   final String title;
   final String message;
-  final String notificationType;
   final String? notificationId;
   final Map<String, dynamic>? data;
 
@@ -17,7 +16,6 @@ class NotificationDialog extends StatelessWidget {
     super.key,
     required this.title,
     required this.message,
-    required this.notificationType,
     this.notificationId,
     this.data,
   });
@@ -28,7 +26,6 @@ class NotificationDialog extends StatelessWidget {
     return NotificationDialog(
       title: notification.title,
       message: notification.message,
-      notificationType: notification.type,
       notificationId: notification.id,
     );
   }
@@ -46,7 +43,6 @@ class NotificationDialog extends StatelessWidget {
   }
 
   Widget _buildDialogContent(BuildContext context) {
-    // Configure colors based on notification type
     final iconPath = 'assets/images/icons/other/notification-icon.svg';
 
     return Container(
@@ -151,7 +147,7 @@ class NotificationDialog extends StatelessWidget {
 
                 const SizedBox(height: 24),
 
-                // Single close button, regardless of notification type
+                // Single close button
                 Center(
                   child: ElevatedButton(
                     onPressed: () {

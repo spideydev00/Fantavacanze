@@ -168,8 +168,6 @@ class DailyChallengesRemoteDataSourceImpl
         'title': 'Nuova sfida completata',
         'message': '$userName ha completato la sfida "${challenge.name}"',
         'created_at': now.toIso8601String(),
-        'is_read': false,
-        'type': 'daily_challenge',
         'user_id': userId,
         'league_id': league.id,
         'challenge_id': challenge.id,

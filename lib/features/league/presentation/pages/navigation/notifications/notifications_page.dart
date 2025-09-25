@@ -106,17 +106,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
           final notification = notifications[index];
           final isAdmin = _isUserAdmin();
 
-          // Segna come lette le notifiche “normali” quando appaiono
-          if (!notification.isRead &&
-              notification is! DailyChallengeNotification) {
-            context.read<NotificationsBloc>().add(
-                  MarkNotificationAsReadEvent(
-                    notificationId: notification.id,
-                  ),
-                );
-          }
-
-          return NotificationCard(
+          return DailyChallengeNotificationCard(
             notification: notification,
             isAdmin: isAdmin,
             onApprove: notification is DailyChallengeNotification && isAdmin

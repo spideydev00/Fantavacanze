@@ -4,9 +4,6 @@ import 'package:fpdart/fpdart.dart';
 
 abstract class NotificationsRepository {
   Future<Either<Failure, List<Notification>>> getNotifications();
-
-  Future<Either<Failure, void>> markAsRead(String notificationId);
-
   Future<Either<Failure, void>> deleteNotification(String notificationId);
   Either<Failure, Stream<Notification>> listenToNotification();
 }

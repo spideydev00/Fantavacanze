@@ -41,9 +41,7 @@ class FsRepositoryImpl implements FsRepository {
 
       // Update cache
       try {
-        final cachedLeagues = await localDataSource.getCachedFsLeagues();
-        final updatedLeagues = [league, ...cachedLeagues];
-        await localDataSource.cacheFsLeagues(updatedLeagues);
+        await localDataSource.cacheFsLeague(league);
       } catch (e) {
         // Cache update failure shouldn't fail the operation
       }
@@ -71,15 +69,7 @@ class FsRepositoryImpl implements FsRepository {
 
       // Update cache
       try {
-        final cachedLeagues = await localDataSource.getCachedFsLeagues();
-        final updatedLeagues =
-            cachedLeagues.map((l) => l.id == league.id ? league : l).toList();
-
-        if (!updatedLeagues.any((l) => l.id == league.id)) {
-          updatedLeagues.insert(0, league);
-        }
-
-        await localDataSource.cacheFsLeagues(updatedLeagues);
+        await localDataSource.cacheFsLeague(league);
       } catch (e) {
         // Cache update failure shouldn't fail the operation
       }
@@ -214,12 +204,9 @@ class FsRepositoryImpl implements FsRepository {
         userId: userId,
       );
 
-      // Update cache
+      // Clear cache since user exited
       try {
-        final cachedLeagues = await localDataSource.getCachedFsLeagues();
-        final updatedLeagues =
-            cachedLeagues.where((l) => l.id != leagueId).toList();
-        await localDataSource.cacheFsLeagues(updatedLeagues);
+        await localDataSource.clearFsLeagueCache();
       } catch (e) {
         // Cache update failure shouldn't fail the operation
       }
@@ -239,12 +226,9 @@ class FsRepositoryImpl implements FsRepository {
 
       await remoteDataSource.deleteLeague(leagueId: leagueId);
 
-      // Update cache
+      // Clear cache since league is deleted
       try {
-        final cachedLeagues = await localDataSource.getCachedFsLeagues();
-        final updatedLeagues =
-            cachedLeagues.where((l) => l.id != leagueId).toList();
-        await localDataSource.cacheFsLeagues(updatedLeagues);
+        await localDataSource.clearFsLeagueCache();
       } catch (e) {
         // Cache update failure shouldn't fail the operation
       }
@@ -323,32 +307,35 @@ class FsRepositoryImpl implements FsRepository {
   }
 
   @override
-  Future<Either<Failure, List<FsLeague>>> getFsLeagues() async {
+  Future<Either<Failure, FsLeague?>> getFsLeague() async {
     return _tryDatabaseOperation(() async {
       try {
         // Try cache first
-        final cachedLeagues = await localDataSource.getCachedFsLeagues();
+        final cachedLeague = await localDataSource.getCachedFsLeague();
 
         // If connected, fetch fresh data
         if (await connectionChecker.isConnected) {
           try {
-            final remoteLeagues = await remoteDataSource.getFsLeagues();
-            await localDataSource.cacheFsLeagues(remoteLeagues);
-            return right(remoteLeagues.cast<FsLeague>());
+            final remoteLeague = await remoteDataSource.getFsLeague();
+            if (remoteLeague != null) {
+              await localDataSource.cacheFsLeague(remoteLeague);
+              return right(remoteLeague);
+            } else {
+              // No remote league, clear cache and return null
+              await localDataSource.clearFsLeagueCache();
+              return right(null);
+            }
           } catch (e) {
             // If remote fails but we have cache, return cache
-            if (cachedLeagues.isNotEmpty) {
-              return right(cachedLeagues.cast<FsLeague>());
-            }
-            rethrow;
+            return right(cachedLeague);
           }
         }
 
         // Return cached data
-        return right(cachedLeagues.cast<FsLeague>());
+        return right(cachedLeague);
       } catch (e) {
-        // If everything fails, try returning empty list
-        return right(<FsLeague>[]);
+        // If everything fails, return null
+        return right(null);
       }
     });
   }
