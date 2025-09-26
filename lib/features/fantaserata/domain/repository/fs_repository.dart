@@ -1,8 +1,6 @@
 import 'package:fpdart/fpdart.dart';
 import 'package:fantavacanze_official/core/errors/failure.dart';
 import 'package:fantavacanze_official/features/fantaserata/domain/entities/fs_league.dart';
-import 'package:fantavacanze_official/features/fantaserata/domain/entities/fs_event.dart';
-import 'package:fantavacanze_official/features/fantaserata/domain/entities/fs_memory.dart';
 
 abstract interface class FsRepository {
   Future<Either<Failure, FsLeague>> createLeague({
@@ -18,7 +16,7 @@ abstract interface class FsRepository {
     required String userName,
   });
 
-  Future<Either<Failure, FsEvent>> addEvent({
+  Future<Either<Failure, FsLeague>> addEvent({
     required String leagueId,
     required String name,
     required double points,
@@ -26,12 +24,12 @@ abstract interface class FsRepository {
     required String type,
   });
 
-  Future<Either<Failure, void>> removeEvent({
+  Future<Either<Failure, FsLeague>> removeEvent({
     required String leagueId,
     required String eventId,
   });
 
-  Future<Either<Failure, FsMemory>> addMemory({
+  Future<Either<Failure, FsLeague>> addMemory({
     required String leagueId,
     required String imageUrl,
     required String description,
@@ -41,12 +39,12 @@ abstract interface class FsRepository {
     String? eventName,
   });
 
-  Future<Either<Failure, void>> deleteMemory({
+  Future<Either<Failure, FsLeague>> deleteMemory({
     required String leagueId,
     required String memoryId,
   });
 
-  Future<Either<Failure, void>> removeParticipant({
+  Future<Either<Failure, FsLeague>> removeParticipant({
     required String leagueId,
     required String participantId,
   });
@@ -58,27 +56,6 @@ abstract interface class FsRepository {
 
   Future<Either<Failure, void>> deleteLeague({
     required String leagueId,
-  });
-
-  Future<Either<Failure, void>> refreshRule({
-    required String userId,
-    required String leagueId,
-    required String challengeId,
-  });
-
-  Future<Either<Failure, void>> unlockRule({
-    required String userId,
-    required String leagueId,
-    required String challengeId,
-  });
-
-  Future<Either<Failure, void>> setRuleAsCompleted({
-    required String userId,
-    required String leagueId,
-    required String challengeId,
-    required String ruleName,
-    required double points,
-    required String type,
   });
 
   Future<Either<Failure, FsLeague?>> getFsLeague();

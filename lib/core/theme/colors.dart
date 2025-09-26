@@ -265,21 +265,37 @@ class ColorPalette {
 
   // ===== DAILY CHALLENGE GRADIENTS =====
 
-  /// Gradient collection for daily challenge cards
+  /// Gradient collection for daily challenge cards (autumn vibes 🍂)
   static List<List<Color>> challengeGradients = [
     [
-      const Color(0xFF134E5E),
-      const Color(0xFF71B280),
+      const Color(0xFFEF6C00), // arancio bruciato
+      const Color(0xFFD84315), // arancio scuro tendente al rame
     ],
     [
-      const Color(0xFFFF8008),
-      const Color.fromARGB(255, 231, 180, 51),
+      const Color(0xFF8E3200), // marrone caldo / terra bruciata
+      const Color(0xFF5D1F00), // marrone profondo
     ],
     [
-      const Color(0xFF614385),
-      const Color(0xFFD76D77),
+      const Color(0xFF4E342E), // marrone intenso
+      const Color(0xFF260E04), // quasi nero con riflessi bruno
     ],
   ];
+
+  /// Differnet Gradient collection for daily challenge cards
+  // static List<List<Color>> challengeGradients = [
+  //   [
+  //     const Color(0xFF134E5E),
+  //     const Color(0xFF71B280),
+  //   ],
+  //   [
+  //     const Color(0xFFFF8008),
+  //     const Color.fromARGB(255, 231, 180, 51),
+  //   ],
+  //   [
+  //     const Color(0xFF614385),
+  //     const Color(0xFFD76D77),
+  //   ],
+  // ];
 
   // ===== GRADIENT UTILITY METHODS =====
 

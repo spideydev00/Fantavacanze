@@ -1,5 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:fantavacanze_official/features/fantaserata/domain/use_cases/get_fs_league.dart';
+import 'package:fantavacanze_official/features/fantaserata/domain/use_cases/fs_league/get_fs_league.dart';
 import 'package:fantavacanze_official/core/use-case/usecase.dart';
 import 'package:fantavacanze_official/features/fantaserata/domain/entities/fs_league.dart';
 

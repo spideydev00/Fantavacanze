@@ -2,12 +2,13 @@ import 'package:fantavacanze_official/core/extensions/context_extension.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:fantavacanze_official/core/utils/show-snackbar-or-paywall/show_page_specific_snackbar.dart';
+import 'package:fantavacanze_official/core/widgets/buttons/modern_icon_button.dart';
 import 'package:fantavacanze_official/features/fantaserata/domain/entities/fs_league.dart';
+import 'package:fantavacanze_official/features/fantaserata/presentation/pages/fs_dashboard_page.dart';
 import 'package:fantavacanze_official/features/fantaserata/presentation/widgets/fs_invite_code_card.dart';
-import 'package:fantavacanze_official/features/fantaserata/presentation/widgets/fs_league_created/fs_success_animation.dart';
+// import 'package:fantavacanze_official/features/fantaserata/presentation/widgets/fs_league_created/fs_success_animation.dart';
 import 'package:fantavacanze_official/features/fantaserata/presentation/widgets/fs_league_created/fs_success_header.dart';
 import 'package:fantavacanze_official/features/fantaserata/presentation/widgets/fs_league_created/fs_info_section.dart';
-import 'package:fantavacanze_official/features/fantaserata/presentation/widgets/fs_league_created/fs_navigation_buttons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
@@ -32,7 +33,7 @@ class FsLeagueCreatedPage extends StatefulWidget {
 class _FsLeagueCreatedPageState extends State<FsLeagueCreatedPage>
     with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
-  late Animation<double> _scaleAnimation;
+  // late Animation<double> _scaleAnimation;
   late Animation<double> _opacityAnimation;
 
   @override
@@ -45,12 +46,12 @@ class _FsLeagueCreatedPageState extends State<FsLeagueCreatedPage>
       duration: const Duration(milliseconds: 1200),
     );
 
-    _scaleAnimation = Tween<double>(begin: 0.3, end: 1.0).animate(
-      CurvedAnimation(
-        parent: _animationController,
-        curve: Curves.elasticOut,
-      ),
-    );
+    // _scaleAnimation = Tween<double>(begin: 0.3, end: 1.0).animate(
+    //   CurvedAnimation(
+    //     parent: _animationController,
+    //     curve: Curves.elasticOut,
+    //   ),
+    // );
 
     _opacityAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(
@@ -73,8 +74,8 @@ class _FsLeagueCreatedPageState extends State<FsLeagueCreatedPage>
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Lega Creata!',
-          style: context.textTheme.titleLarge?.copyWith(
+          'Lega Creata',
+          style: context.textTheme.titleMedium?.copyWith(
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -96,13 +97,8 @@ class _FsLeagueCreatedPageState extends State<FsLeagueCreatedPage>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                const SizedBox(height: ThemeSizes.md),
-
                 // Success animation
-                FsSuccessAnimation(scale: _scaleAnimation.value),
-
-                const SizedBox(height: ThemeSizes.xl),
-
+                // FsSuccessAnimation(scale: _scaleAnimation.value),
                 // Header text
                 FsSuccessHeader(leagueName: widget.league.name),
 
@@ -139,7 +135,16 @@ class _FsLeagueCreatedPageState extends State<FsLeagueCreatedPage>
                 const SizedBox(height: ThemeSizes.xl),
 
                 // Navigation buttons
-                const FsNavigationButtons(),
+                ModernIconButton(
+                  icon: Icons.keyboard_double_arrow_right_rounded,
+                  iconSize: 40,
+                  onTap: () {
+                    Navigator.of(context).pushAndRemoveUntil(
+                      FsDashboardPage.route,
+                      (route) => false,
+                    );
+                  },
+                ),
 
                 const SizedBox(height: ThemeSizes.xl),
               ],

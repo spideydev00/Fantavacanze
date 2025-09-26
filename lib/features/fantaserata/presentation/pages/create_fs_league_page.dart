@@ -3,8 +3,7 @@ import 'package:fantavacanze_official/core/extensions/context_extension.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:fantavacanze_official/core/utils/show-snackbar-or-paywall/show_page_specific_snackbar.dart';
-import 'package:fantavacanze_official/core/widgets/loader.dart';
-import 'package:fantavacanze_official/features/fantaserata/presentation/bloc/fantaserata_bloc.dart';
+import 'package:fantavacanze_official/features/fantaserata/presentation/bloc/fs_league_bloc/fs_bloc.dart';
 import 'package:fantavacanze_official/features/fantaserata/presentation/pages/fs_league_created_page.dart';
 import 'package:fantavacanze_official/features/fantaserata/presentation/widgets/create_fs_league/fs_create_button.dart';
 import 'package:fantavacanze_official/features/fantaserata/presentation/widgets/create_fs_league/fs_create_hero_section.dart';
@@ -51,7 +50,7 @@ class _CreateFsLeaguePageState extends State<CreateFsLeaguePage> {
         backgroundColor: Colors.transparent,
         elevation: 0,
       ),
-      body: BlocListener<FantaserataBloc, FantaserataState>(
+      body: BlocListener<FsBloc, FsState>(
         listener: (context, state) {
           if (state is FsLeagueCreated) {
             Navigator.of(context).pushReplacement(
@@ -65,45 +64,47 @@ class _CreateFsLeaguePageState extends State<CreateFsLeaguePage> {
             );
           }
         },
-        child: BlocBuilder<FantaserataBloc, FantaserataState>(
-          builder: (context, state) {
-            if (state is FantaserataLoading) {
-              return Loader(color: ColorPalette.fsGradients.first);
-            }
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(ThemeSizes.lg),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // Hero section
+                const FsCreateHeroSection(),
 
-            return SingleChildScrollView(
-              padding: const EdgeInsets.all(ThemeSizes.lg),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    // Hero section
-                    const FsCreateHeroSection(),
+                const SizedBox(height: ThemeSizes.xl),
 
-                    const SizedBox(height: ThemeSizes.xl),
+                // Form fields
+                FsFormFields(
+                  nameController: _nameController,
+                  descriptionController: _descriptionController,
+                ),
 
-                    // Form fields
-                    FsFormFields(
-                      nameController: _nameController,
-                      descriptionController: _descriptionController,
-                    ),
+                const SizedBox(height: ThemeSizes.xl),
 
-                    const SizedBox(height: ThemeSizes.xl),
-
-                    // Create button
-                    FsCreateButton(
+                // Create button
+                BlocBuilder<FsBloc, FsState>(
+                  builder: (context, state) {
+                    if (state is FantaserataLoading) {
+                      return FsCreateButton(
+                        onPressed: () {},
+                        isLoading: true,
+                      );
+                    }
+                    return FsCreateButton(
                       onPressed: () {
                         if (_formKey.currentState?.validate() ?? false) {
                           _createLeague();
                         }
                       },
-                    ),
-                  ],
+                    );
+                  },
                 ),
-              ),
-            );
-          },
+              ],
+            ),
+          ),
         ),
       ),
     );
@@ -121,7 +122,7 @@ class _CreateFsLeaguePageState extends State<CreateFsLeaguePage> {
       return;
     }
 
-    context.read<FantaserataBloc>().add(
+    context.read<FsBloc>().add(
           CreateFsLeagueEvent(
             name: _nameController.text.trim(),
             description: _descriptionController.text.trim().isEmpty

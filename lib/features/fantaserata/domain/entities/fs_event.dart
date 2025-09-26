@@ -1,5 +1,5 @@
 import 'package:fantavacanze_official/features/fantaserata/domain/entities/fs_participant.dart';
-import 'package:fantavacanze_official/features/fantaserata/domain/entities/fs_rule.dart';
+import 'package:fantavacanze_official/features/fantaserata/domain/entities/fs_rule/fs_rule.dart';
 
 class FsEvent {
   final String id;

@@ -1,5 +1,5 @@
 import 'package:fantavacanze_official/features/fantaserata/domain/entities/fs_event.dart';
-import 'package:fantavacanze_official/features/fantaserata/domain/entities/fs_rule.dart';
+import 'package:fantavacanze_official/features/fantaserata/domain/entities/fs_rule/fs_rule.dart';
 import 'package:fantavacanze_official/features/fantaserata/data/models/participant/fs_participant_model.dart';
 import 'package:hive/hive.dart';
 

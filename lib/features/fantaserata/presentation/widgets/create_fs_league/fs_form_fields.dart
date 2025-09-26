@@ -34,7 +34,7 @@ class FsFormFields extends StatelessWidget {
           decoration: InputDecoration(
             labelText: 'Nome della Lega *',
             labelStyle: TextStyle(color: context.textSecondaryColor),
-            hintText: 'es. Serata Epica 2024',
+            hintText: 'es. FantaSerata al Line',
             prefixIcon: Icon(
               Icons.drive_file_rename_outline_rounded,
               color: context.primaryColor,
@@ -85,6 +85,7 @@ class FsFormFields extends StatelessWidget {
           maxLines: 2,
           maxLength: 100,
           textCapitalization: TextCapitalization.sentences,
+          keyboardType: TextInputType.text,
         ),
       ],
     );

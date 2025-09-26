@@ -1,16 +1,19 @@
+import 'package:fantavacanze_official/features/fantaserata/domain/entities/fs_rule/fs_rule.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:fantavacanze_official/core/errors/failure.dart';
 import 'package:fantavacanze_official/core/use-case/usecase.dart';
-import 'package:fantavacanze_official/features/fantaserata/domain/repository/fs_repository.dart';
+import 'package:fantavacanze_official/features/fantaserata/domain/repository/fs_dynamic_rules_repository.dart';
 
-class SetRuleAsCompleted implements Usecase<void, SetRuleAsCompletedParams> {
-  final FsRepository fsRepository;
+class SetFsDynamicRuleAsCompleted
+    implements Usecase<FsRule, SetFsDynamicRuleAsCompletedParams> {
+  final FsDynamicRulesRepository repository;
 
-  const SetRuleAsCompleted(this.fsRepository);
+  SetFsDynamicRuleAsCompleted(this.repository);
 
   @override
-  Future<Either<Failure, void>> call(SetRuleAsCompletedParams params) async {
-    return await fsRepository.setRuleAsCompleted(
+  Future<Either<Failure, FsRule>> call(
+      SetFsDynamicRuleAsCompletedParams params) async {
+    return await repository.setRuleAsCompleted(
       userId: params.userId,
       leagueId: params.leagueId,
       challengeId: params.challengeId,
@@ -21,7 +24,7 @@ class SetRuleAsCompleted implements Usecase<void, SetRuleAsCompletedParams> {
   }
 }
 
-class SetRuleAsCompletedParams {
+class SetFsDynamicRuleAsCompletedParams {
   final String userId;
   final String leagueId;
   final String challengeId;
@@ -29,7 +32,7 @@ class SetRuleAsCompletedParams {
   final double points;
   final String type;
 
-  const SetRuleAsCompletedParams({
+  SetFsDynamicRuleAsCompletedParams({
     required this.userId,
     required this.leagueId,
     required this.challengeId,

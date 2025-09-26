@@ -103,15 +103,19 @@ Future<void> initDependencies() async {
           getFsLeague: serviceLocator(),
         ),
       )
-      //6. notification count cubit
+      //6. fs navigation cubit
+      ..registerLazySingleton(
+        () => FsNavigationCubit(),
+      )
+      //7. notification count cubit
       ..registerLazySingleton(
         () => NotificationCountCubit(),
       )
-      //7. floating button animation cubit
+      //8. floating button animation cubit
       ..registerLazySingleton(
         () => FloatingButtonAnimationCubit(),
       )
-      //8. connection checker
+      //9. connection checker
       ..registerFactory<ConnectionChecker>(
         () => ConnectionCheckerImpl(
           serviceLocator(),
@@ -245,7 +249,7 @@ void _registerHiveAdapters() {
 
   // Fantaserata adapters
   Hive.registerAdapter(FsRuleModelAdapter());
-  Hive.registerAdapter(FsRuleTypeHiveAdapter());
+  Hive.registerAdapter(FsRuleTypeAdapter());
   Hive.registerAdapter(FsParticipantModelAdapter());
   Hive.registerAdapter(FsEventModelAdapter());
   Hive.registerAdapter(FsMemoryModelAdapter());
@@ -277,6 +281,13 @@ Future<void> _openHiveBoxes() async {
     // Fantaserata box
     final fsLeaguesBox = await Hive.openBox<FsLeagueModel>('fs_leagues_box');
 
+    // Fantaserata dynamic rules box
+    final fsDynamicRulesBox =
+        await Hive.openBox<FsRuleModel>('fs_dynamic_rules_box');
+
+    // Clear dynamic rules on each app start
+    await fsDynamicRulesBox.clear();
+
     // Register boxes in GetIt
     serviceLocator
       ..registerLazySingleton(() => leaguesBox)
@@ -284,7 +295,8 @@ Future<void> _openHiveBoxes() async {
       ..registerLazySingleton(() => notesBox)
       ..registerLazySingleton(() => challengesBox)
       ..registerLazySingleton(() => notificationsBox)
-      ..registerLazySingleton(() => fsLeaguesBox);
+      ..registerLazySingleton(() => fsLeaguesBox)
+      ..registerLazySingleton(() => fsDynamicRulesBox);
 
     debugPrint("📦 Tutti i box di Hive aperti correttamente");
   } catch (e) {
@@ -784,23 +796,44 @@ void _initFantaserata() {
     () => FsRemoteDataSourceImpl(
       supabaseClient: serviceLocator(),
       uuid: serviceLocator(),
+      appUserCubit: serviceLocator(),
     ),
   );
 
   serviceLocator.registerFactory<FsLocalDataSource>(
-    () => FsLocalDataSourceImpl(serviceLocator()),
+    () => FsLocalDataSourceImpl(fsLeaguesBox: serviceLocator()),
   );
 
-  // Repository
-  serviceLocator.registerFactory<FsRepository>(
-    () => FsRepositoryImpl(
-      serviceLocator(),
-      serviceLocator(),
-      serviceLocator(),
+  // Dynamic Rules Data Sources
+  serviceLocator.registerFactory<FsDynamicRulesRemoteDataSource>(
+    () => FsDynamicRulesRemoteDataSourceImpl(
+      supabaseClient: serviceLocator(),
     ),
   );
 
-  // Use Cases
+  serviceLocator.registerFactory<FsDynamicRulesLocalDataSource>(
+    () =>
+        FsDynamicRulesLocalDataSourceImpl(fsDynamicRulesBox: serviceLocator()),
+  );
+
+  // Repositories
+  serviceLocator.registerFactory<FsDynamicRulesRepository>(
+    () => FsDynamicRulesRepositoryImpl(
+      remoteDataSource: serviceLocator(),
+      localDataSource: serviceLocator(),
+      connectionChecker: serviceLocator(),
+    ),
+  );
+
+  serviceLocator.registerFactory<FsRepository>(
+    () => FsRepositoryImpl(
+      remoteDataSource: serviceLocator(),
+      localDataSource: serviceLocator(),
+      connectionChecker: serviceLocator(),
+    ),
+  );
+
+  // Use Cases - Keep existing ones and add dynamic rules ones
   serviceLocator.registerFactory(
     () => CreateFsLeague(serviceLocator()),
   );
@@ -814,15 +847,15 @@ void _initFantaserata() {
   );
 
   serviceLocator.registerFactory(
-    () => SetRuleAsCompleted(serviceLocator()),
-  );
-
-  serviceLocator.registerFactory(
     () => AddFsMemory(serviceLocator()),
   );
 
   serviceLocator.registerFactory(
     () => DeleteFsMemory(serviceLocator()),
+  );
+
+  serviceLocator.registerFactory(
+    () => AddFsEvent(serviceLocator()),
   );
 
   serviceLocator.registerFactory(
@@ -832,29 +865,49 @@ void _initFantaserata() {
   serviceLocator.registerFactory(
     () => DeleteFsLeague(serviceLocator()),
   );
-
+  // Dynamic Rules Use Cases
   serviceLocator.registerFactory(
-    () => RefreshFsRule(serviceLocator()),
+    () => GetUserDynamicRules(serviceLocator()),
   );
 
   serviceLocator.registerFactory(
-    () => UnlockFsRule(serviceLocator()),
+    () => RefreshFsDynamicRule(serviceLocator()),
   );
 
-  // BLoC
   serviceLocator.registerFactory(
-    () => FantaserataBloc(
+    () => UnlockFsDynamicRule(serviceLocator()),
+  );
+
+  serviceLocator.registerFactory(
+    () => SetFsDynamicRuleAsCompleted(serviceLocator()),
+  );
+
+  // BLoCs - Update to use dynamic rules repository
+  serviceLocator.registerFactory(
+    () => FsBloc(
       createFsLeague: serviceLocator(),
       joinFsLeague: serviceLocator(),
       getFsLeague: serviceLocator(),
-      setRuleAsCompleted: serviceLocator(),
       addFsMemory: serviceLocator(),
       deleteFsMemory: serviceLocator(),
       exitFsLeague: serviceLocator(),
       deleteFsLeague: serviceLocator(),
-      refreshFsRule: serviceLocator(),
-      unlockFsRule: serviceLocator(),
+      addFsEvent: serviceLocator(),
       appFsLeagueCubit: serviceLocator(),
     ),
+  );
+
+  // Dynamic Rules BLoC
+  serviceLocator.registerFactory(
+    () => FsDynamicRulesBloc(
+      getUserDynamicRules: serviceLocator(),
+      refreshFsDynamicRule: serviceLocator(),
+      unlockFsDynamicRule: serviceLocator(),
+      setFsDynamicRuleAsCompleted: serviceLocator(),
+    ),
+  );
+
+  serviceLocator.registerFactory(
+    () => FsFixedRulesBloc(),
   );
 }

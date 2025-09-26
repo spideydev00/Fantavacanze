@@ -118,6 +118,10 @@ flutter:
     - assets/images/logos/fantavacanze-esteso.png
     - assets/images/fantaserata/logo/Logo-Fs-Dark.png
     - assets/images/fantaserata/logo/Logo-Fs.png
+    - assets/images/logos/logo-fall.png
+    - assets/images/logos/logo-fall-no-neon.png
+    - assets/images/logos/logo-winter.png
+    - assets/images/logos/logo-halloween.png
 
     # ===== FANTASERATA =====
     - assets/images/fantaserata/images/onboarding/1.png

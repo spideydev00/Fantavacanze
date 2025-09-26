@@ -1,10 +1,10 @@
-part of 'fantaserata_bloc.dart';
+part of 'fs_bloc.dart';
 
-sealed class FantaserataEvent {}
+sealed class FsEvent {}
 
-final class GetFsLeagueEvent extends FantaserataEvent {}
+final class GetFsLeagueEvent extends FsEvent {}
 
-final class CreateFsLeagueEvent extends FantaserataEvent {
+final class CreateFsLeagueEvent extends FsEvent {
   final String name;
   final String? description;
   final String creatorId;
@@ -18,7 +18,7 @@ final class CreateFsLeagueEvent extends FantaserataEvent {
   });
 }
 
-final class JoinFsLeagueEvent extends FantaserataEvent {
+final class JoinFsLeagueEvent extends FsEvent {
   final String inviteCode;
   final String userId;
   final String userName;
@@ -30,7 +30,7 @@ final class JoinFsLeagueEvent extends FantaserataEvent {
   });
 }
 
-final class AddFsMemoryEvent extends FantaserataEvent {
+final class AddFsMemoryEvent extends FsEvent {
   final String leagueId;
   final String imageUrl;
   final String description;
@@ -50,7 +50,7 @@ final class AddFsMemoryEvent extends FantaserataEvent {
   });
 }
 
-final class DeleteFsMemoryEvent extends FantaserataEvent {
+final class DeleteFsMemoryEvent extends FsEvent {
   final String leagueId;
   final String memoryId;
 
@@ -60,7 +60,7 @@ final class DeleteFsMemoryEvent extends FantaserataEvent {
   });
 }
 
-final class ExitFsLeagueEvent extends FantaserataEvent {
+final class ExitFsLeagueEvent extends FsEvent {
   final String leagueId;
   final String userId;
 
@@ -70,50 +70,24 @@ final class ExitFsLeagueEvent extends FantaserataEvent {
   });
 }
 
-final class DeleteFsLeagueEvent extends FantaserataEvent {
+final class DeleteFsLeagueEvent extends FsEvent {
   final String leagueId;
 
   DeleteFsLeagueEvent({required this.leagueId});
 }
 
-final class RefreshFsRuleEvent extends FantaserataEvent {
-  final String userId;
+final class AddFsEventEvent extends FsEvent {
   final String leagueId;
-  final String challengeId;
-
-  RefreshFsRuleEvent({
-    required this.userId,
-    required this.leagueId,
-    required this.challengeId,
-  });
-}
-
-final class UnlockFsRuleEvent extends FantaserataEvent {
-  final String userId;
-  final String leagueId;
-  final String challengeId;
-
-  UnlockFsRuleEvent({
-    required this.userId,
-    required this.leagueId,
-    required this.challengeId,
-  });
-}
-
-final class SetRuleAsCompletedEvent extends FantaserataEvent {
-  final String userId;
-  final String leagueId;
-  final String challengeId;
-  final String ruleName;
+  final String name;
   final double points;
+  final String targetParticipantId;
   final String type;
 
-  SetRuleAsCompletedEvent({
-    required this.userId,
+  AddFsEventEvent({
     required this.leagueId,
-    required this.challengeId,
-    required this.ruleName,
+    required this.name,
     required this.points,
+    required this.targetParticipantId,
     required this.type,
   });
 }

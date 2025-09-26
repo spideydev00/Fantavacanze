@@ -17,31 +17,46 @@ class FsRuleModelAdapter extends TypeAdapter<FsRuleModel> {
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
     return FsRuleModel(
-      name: fields[0] as String,
-      points: fields[1] as double,
-      type: fields[2] as FsRuleType,
-      isUnlocked: fields[3] as bool,
-      isCompleted: fields[4] as bool,
-      isRefreshed: fields[5] as bool,
+      id: fields[0] as String,
+      userId: fields[1] as String,
+      leagueId: fields[2] as String,
+      challengeId: fields[3] as String,
+      name: fields[4] as String,
+      points: fields[5] as double,
+      type: fields[6] as FsRuleType,
+      position: fields[7] as double,
+      isCompleted: fields[8] as bool,
+      isRefreshed: fields[9] as bool,
+      isUnlocked: fields[10] as bool,
     );
   }
 
   @override
   void write(BinaryWriter writer, FsRuleModel obj) {
     writer
-      ..writeByte(6)
+      ..writeByte(11)
       ..writeByte(0)
-      ..write(obj.name)
+      ..write(obj.id)
       ..writeByte(1)
-      ..write(obj.points)
+      ..write(obj.userId)
       ..writeByte(2)
-      ..write(obj.type)
+      ..write(obj.leagueId)
       ..writeByte(3)
-      ..write(obj.isUnlocked)
+      ..write(obj.challengeId)
       ..writeByte(4)
-      ..write(obj.isCompleted)
+      ..write(obj.name)
       ..writeByte(5)
-      ..write(obj.isRefreshed);
+      ..write(obj.points)
+      ..writeByte(6)
+      ..write(obj.type)
+      ..writeByte(7)
+      ..write(obj.position)
+      ..writeByte(8)
+      ..write(obj.isCompleted)
+      ..writeByte(9)
+      ..write(obj.isRefreshed)
+      ..writeByte(10)
+      ..write(obj.isUnlocked);
   }
 
   @override
@@ -51,45 +66,6 @@ class FsRuleModelAdapter extends TypeAdapter<FsRuleModel> {
   bool operator ==(Object other) =>
       identical(this, other) ||
       other is FsRuleModelAdapter &&
-          runtimeType == other.runtimeType &&
-          typeId == other.typeId;
-}
-
-class FsRuleTypeHiveAdapter extends TypeAdapter<FsRuleTypeHive> {
-  @override
-  final int typeId = 14;
-
-  @override
-  FsRuleTypeHive read(BinaryReader reader) {
-    switch (reader.readByte()) {
-      case 0:
-        return FsRuleTypeHive.bonus;
-      case 1:
-        return FsRuleTypeHive.malus;
-      default:
-        return FsRuleTypeHive.bonus;
-    }
-  }
-
-  @override
-  void write(BinaryWriter writer, FsRuleTypeHive obj) {
-    switch (obj) {
-      case FsRuleTypeHive.bonus:
-        writer.writeByte(0);
-        break;
-      case FsRuleTypeHive.malus:
-        writer.writeByte(1);
-        break;
-    }
-  }
-
-  @override
-  int get hashCode => typeId.hashCode;
-
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is FsRuleTypeHiveAdapter &&
           runtimeType == other.runtimeType &&
           typeId == other.typeId;
 }

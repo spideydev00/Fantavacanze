@@ -1,6 +1,9 @@
 import 'dart:async';
 import 'package:fantavacanze_official/core/cubits/app_fs_league/app_fs_league_cubit.dart';
-import 'package:fantavacanze_official/features/fantaserata/presentation/bloc/fantaserata_bloc.dart';
+import 'package:fantavacanze_official/core/cubits/fs_navigation/fs_navigation_cubit.dart';
+import 'package:fantavacanze_official/features/fantaserata/presentation/bloc/fs_dynamic_rules_bloc/fs_dynamic_rules_bloc.dart';
+import 'package:fantavacanze_official/features/fantaserata/presentation/bloc/fs_fixed_rules_bloc/fs_fixed_rules_bloc.dart';
+import 'package:fantavacanze_official/features/fantaserata/presentation/bloc/fs_league_bloc/fs_bloc.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/notifications_bloc/notifications_bloc.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/subscription_bloc/subscription_bloc.dart';
 import 'package:flutter/material.dart';
@@ -49,18 +52,32 @@ void main() async {
     runApp(
       MultiBlocProvider(
         providers: [
+          // Auth
           BlocProvider(create: (_) => serviceLocator<AuthBloc>()),
+          BlocProvider(create: (_) => serviceLocator<AppUserCubit>()),
+
+          // League
           BlocProvider(create: (_) => serviceLocator<LeagueBloc>()),
+          BlocProvider(create: (_) => serviceLocator<AppLeagueCubit>()),
           BlocProvider(create: (_) => serviceLocator<DailyChallengesBloc>()),
           BlocProvider(create: (_) => serviceLocator<NotificationsBloc>()),
           BlocProvider(create: (_) => serviceLocator<SubscriptionBloc>()),
-          BlocProvider(create: (_) => serviceLocator<FantaserataBloc>()),
-          BlocProvider(create: (_) => serviceLocator<AppUserCubit>()),
-          BlocProvider(create: (_) => serviceLocator<AppLeagueCubit>()),
-          BlocProvider(create: (_) => serviceLocator<AppFsLeagueCubit>()),
-          BlocProvider(create: (_) => serviceLocator<AppNavigationCubit>()),
           BlocProvider(create: (_) => serviceLocator<NotificationCountCubit>()),
+
+          // Fantaserata
+          BlocProvider(create: (_) => serviceLocator<FsBloc>()),
+          BlocProvider(create: (_) => serviceLocator<FsDynamicRulesBloc>()),
+          BlocProvider(create: (_) => serviceLocator<FsFixedRulesBloc>()),
+          BlocProvider(create: (_) => serviceLocator<AppFsLeagueCubit>()),
+
+          // Navigation
+          BlocProvider(create: (_) => serviceLocator<AppNavigationCubit>()),
+          BlocProvider(create: (_) => serviceLocator<FsNavigationCubit>()),
+
+          // Theme
           BlocProvider.value(value: themeCubit),
+
+          // Games
           BlocProvider(create: (_) => serviceLocator<LobbyBloc>()),
           BlocProvider(create: (_) => serviceLocator<WordBombBloc>()),
           BlocProvider(create: (_) => serviceLocator<TruthOrDareBloc>()),
@@ -95,8 +112,13 @@ class _MyAppState extends State<MyApp> {
       // If user is logged in, then load their specific data and check subscription
       if (mounted && context.read<AppUserCubit>().state is AppUserIsLoggedIn) {
         await _checkSubscriptionOnStartup();
+
         if (mounted) {
-          await context.read<AppLeagueCubit>().getUserLeagues();
+          await context.read<AppFsLeagueCubit>().checkFsLeague();
+
+          if (mounted) {
+            await context.read<AppLeagueCubit>().getUserLeagues();
+          }
         }
       }
     } catch (e) {

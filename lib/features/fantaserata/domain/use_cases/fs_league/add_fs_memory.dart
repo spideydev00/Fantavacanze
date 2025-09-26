@@ -1,16 +1,16 @@
+import 'package:fantavacanze_official/features/fantaserata/domain/entities/fs_league.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:fantavacanze_official/core/errors/failure.dart';
 import 'package:fantavacanze_official/core/use-case/usecase.dart';
 import 'package:fantavacanze_official/features/fantaserata/domain/repository/fs_repository.dart';
-import 'package:fantavacanze_official/features/fantaserata/domain/entities/fs_memory.dart';
 
-class AddFsMemory implements Usecase<FsMemory, AddFsMemoryParams> {
+class AddFsMemory implements Usecase<FsLeague, AddFsMemoryParams> {
   final FsRepository fsRepository;
 
   const AddFsMemory(this.fsRepository);
 
   @override
-  Future<Either<Failure, FsMemory>> call(AddFsMemoryParams params) async {
+  Future<Either<Failure, FsLeague>> call(AddFsMemoryParams params) async {
     return await fsRepository.addMemory(
       leagueId: params.leagueId,
       imageUrl: params.imageUrl,

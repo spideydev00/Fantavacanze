@@ -119,7 +119,7 @@ class _FsOnboardingScreenState extends State<FsOnboardingScreen> {
               FsOnboardingPageContent(
                 title: "Gli obiettivi \"fissi\".",
                 subtitle:
-                    "Ogni partecipante avrà, in base al sesso e alla situazione sentimentale (single o meno) 3 obiettivi FISSI tarati per ogni singola situazione!",
+                    "Ogni partecipante avrà, in base al genere e alla situazione sentimentale (single o meno) 3 obiettivi FISSI tarati per ogni singola situazione!",
                 alignment: MainAxisAlignment.start,
                 ySpace: Constants.getHeight(context) * 0.25,
               ),

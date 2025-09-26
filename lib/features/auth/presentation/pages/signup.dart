@@ -181,7 +181,7 @@ class _SignUpPageState extends State<SignUpPage> {
                         isExpanded: true,
                         value: _selectedGender,
                         hint: Text(
-                          "Sesso",
+                          "Genere",
                           style: TextStyle(
                             color: ColorPalette.darkerGrey,
                             fontSize: 13,

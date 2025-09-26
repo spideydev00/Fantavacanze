@@ -16,7 +16,7 @@ class FsSuccessHeader extends StatelessWidget {
     return Column(
       children: [
         Text(
-          'Fantastico!',
+          'Ci Siamo!',
           style: context.textTheme.headlineMedium?.copyWith(
             fontWeight: FontWeight.bold,
             color: context.primaryColor,
@@ -33,10 +33,9 @@ class FsSuccessHeader extends StatelessWidget {
             children: [
               const TextSpan(text: 'La tua lega '),
               TextSpan(
-                text: '"$leagueName"',
+                text: leagueName,
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
-                  color: context.primaryColor,
                 ),
               ),
               const TextSpan(text: ' è stata creata con successo!'),

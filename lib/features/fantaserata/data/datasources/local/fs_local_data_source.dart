@@ -11,7 +11,7 @@ abstract interface class FsLocalDataSource {
 class FsLocalDataSourceImpl implements FsLocalDataSource {
   final Box<FsLeagueModel> fsLeaguesBox;
 
-  const FsLocalDataSourceImpl(this.fsLeaguesBox);
+  const FsLocalDataSourceImpl({required this.fsLeaguesBox});
 
   @override
   Future<FsLeagueModel?> getCachedFsLeague() async {

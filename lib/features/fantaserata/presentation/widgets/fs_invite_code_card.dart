@@ -30,10 +30,6 @@ class FsInviteCodeCard extends StatelessWidget {
               .toList(),
         ),
         borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusLg),
-        border: Border.all(
-          color: context.borderColor.withValues(alpha: 0.5),
-          width: 2,
-        ),
       ),
       child: Column(
         children: [
