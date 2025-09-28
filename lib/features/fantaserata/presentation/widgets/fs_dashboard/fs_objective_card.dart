@@ -41,7 +41,9 @@ class FsObjectiveCard extends StatelessWidget {
 
   Color _getMainColor(bool isBonus) {
     if (isBonus) {
-      return isDynamic ? ColorPalette.infoDarker : ColorPalette.success;
+      return isDynamic
+          ? ColorPalette.fsCardDarkGreen
+          : ColorPalette.fsCardlightGreen;
     } else {
       return ColorPalette.error;
     }
@@ -131,6 +133,25 @@ class FsObjectiveCard extends StatelessWidget {
                             ),
                           ),
                         ],
+                      ),
+                    ),
+                    Spacer(),
+                    Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.2),
+                        shape: BoxShape.rectangle,
+                        borderRadius: BorderRadius.circular(
+                          ThemeSizes.borderRadiusSm,
+                        ),
+                      ),
+                      child: Text(
+                        isDynamic ? "Speciale" : "Standard",
+                        style: context.textTheme.labelLarge!.copyWith(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontFamily: "Falcon Sport One",
+                        ),
                       ),
                     ),
                   ],

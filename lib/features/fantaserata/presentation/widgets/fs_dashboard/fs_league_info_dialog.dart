@@ -7,7 +7,7 @@ import 'package:fantavacanze_official/features/fantaserata/domain/entities/fs_le
 import 'package:fantavacanze_official/core/widgets/buttons/danger_action_button.dart';
 import 'package:fantavacanze_official/core/widgets/dialogs/confirmation_dialog.dart';
 import 'package:fantavacanze_official/features/fantaserata/presentation/bloc/fs_league_bloc/fs_bloc.dart';
-import 'package:fantavacanze_official/features/fantaserata/presentation/pages/fs_main_page.dart';
+import 'package:fantavacanze_official/features/league/presentation/pages/dashboard/sections/dashboard.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -27,10 +27,12 @@ class FsLeagueInfoDialog extends StatelessWidget {
         if (state is FsLeagueDeleted) {
           // Close dialog and navigate to main page
           Navigator.of(context).pop(); // Close dialog
+
           Navigator.of(context).pushAndRemoveUntil(
-            FsMainPage.route,
+            DashboardScreen.route,
             (route) => route.isFirst,
           );
+
           showSpecificSnackBar(
             context,
             'Lega eliminata con successo',
@@ -45,7 +47,7 @@ class FsLeagueInfoDialog extends StatelessWidget {
         }
       },
       child: Dialog(
-        backgroundColor: context.secondaryBgColor,
+        backgroundColor: context.bgColor,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusLg),
         ),
@@ -61,8 +63,9 @@ class FsLeagueInfoDialog extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.all(ThemeSizes.sm),
                       decoration: BoxDecoration(
-                        gradient:
-                            LinearGradient(colors: ColorPalette.fsGradients),
+                        gradient: LinearGradient(
+                          colors: ColorPalette.fsGradients,
+                        ),
                         shape: BoxShape.circle,
                       ),
                       child: Icon(
@@ -113,7 +116,7 @@ class FsLeagueInfoDialog extends StatelessWidget {
 
                 _InfoRow(
                   icon: Icons.vpn_key_rounded,
-                  label: 'Codice Invito',
+                  label: 'Codice',
                   value: league.inviteCode,
                   copyable: true,
                   onCopy: () {
@@ -125,14 +128,6 @@ class FsLeagueInfoDialog extends StatelessWidget {
                       color: ColorPalette.success,
                     );
                   },
-                ),
-
-                const SizedBox(height: ThemeSizes.md),
-
-                _InfoRow(
-                  icon: Icons.calendar_today_rounded,
-                  label: 'Creata il',
-                  value: _formatDate(league.createdAt),
                 ),
 
                 const SizedBox(height: ThemeSizes.md),
@@ -180,10 +175,6 @@ class FsLeagueInfoDialog extends StatelessWidget {
       ),
     );
   }
-
-  String _formatDate(DateTime date) {
-    return '${date.day}/${date.month}/${date.year} alle ${date.hour}:${date.minute.toString().padLeft(2, '0')}';
-  }
 }
 
 class _InfoRow extends StatelessWidget {
@@ -206,10 +197,10 @@ class _InfoRow extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(ThemeSizes.md),
       decoration: BoxDecoration(
-        color: context.bgColor.withValues(alpha: 0.5),
+        color: context.secondaryBgColor.withValues(alpha: 0.5),
         borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusMd),
         border: Border.all(
-          color: context.borderColor.withValues(alpha: 0.3),
+          color: context.borderColor.withValues(alpha: 0.05),
         ),
       ),
       child: Row(
@@ -233,6 +224,8 @@ class _InfoRow extends StatelessWidget {
               style: context.textTheme.bodyMedium?.copyWith(
                 color: context.textSecondaryColor,
               ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
               textAlign: TextAlign.end,
             ),
           ),

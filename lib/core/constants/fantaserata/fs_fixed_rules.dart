@@ -23,6 +23,18 @@ class FsFixedRules {
       points: 2.0,
     ),
     DefaultFsRule(
+      id: 9,
+      name: 'Regola Bonus 4',
+      type: FsRuleType.bonus,
+      points: 1.5,
+    ),
+    DefaultFsRule(
+      id: 10,
+      name: 'Regola Bonus 5',
+      type: FsRuleType.bonus,
+      points: 1.0,
+    ),
+    DefaultFsRule(
       id: 4,
       name: 'Regola Malus 1',
       type: FsRuleType.malus,
@@ -73,6 +85,18 @@ class FsFixedRules {
       name: 'Regola Bonus 3',
       type: FsRuleType.bonus,
       points: 2.0,
+    ),
+    DefaultFsRule(
+      id: 9,
+      name: 'Regola Bonus 4',
+      type: FsRuleType.bonus,
+      points: 1.5,
+    ),
+    DefaultFsRule(
+      id: 10,
+      name: 'Regola Bonus 5',
+      type: FsRuleType.bonus,
+      points: 1.0,
     ),
     DefaultFsRule(
       id: 4,
@@ -127,6 +151,18 @@ class FsFixedRules {
       points: 2.0,
     ),
     DefaultFsRule(
+      id: 9,
+      name: 'Regola Bonus 4',
+      type: FsRuleType.bonus,
+      points: 1.5,
+    ),
+    DefaultFsRule(
+      id: 10,
+      name: 'Regola Bonus 5',
+      type: FsRuleType.bonus,
+      points: 1.0,
+    ),
+    DefaultFsRule(
       id: 4,
       name: 'Regola Malus 1',
       type: FsRuleType.malus,
@@ -177,6 +213,18 @@ class FsFixedRules {
       name: 'Regola Bonus 3',
       type: FsRuleType.bonus,
       points: 2.0,
+    ),
+    DefaultFsRule(
+      id: 9,
+      name: 'Regola Bonus 4',
+      type: FsRuleType.bonus,
+      points: 1.5,
+    ),
+    DefaultFsRule(
+      id: 10,
+      name: 'Regola Bonus 5',
+      type: FsRuleType.bonus,
+      points: 1.0,
     ),
     DefaultFsRule(
       id: 4,
@@ -231,6 +279,18 @@ class FsFixedRules {
       points: 2.0,
     ),
     DefaultFsRule(
+      id: 9,
+      name: 'Regola Bonus 4',
+      type: FsRuleType.bonus,
+      points: 1.5,
+    ),
+    DefaultFsRule(
+      id: 10,
+      name: 'Regola Bonus 5',
+      type: FsRuleType.bonus,
+      points: 1.0,
+    ),
+    DefaultFsRule(
       id: 4,
       name: 'Regola Malus 1',
       type: FsRuleType.malus,
@@ -281,6 +341,18 @@ class FsFixedRules {
       name: 'Regola Bonus 3',
       type: FsRuleType.bonus,
       points: 2.0,
+    ),
+    DefaultFsRule(
+      id: 9,
+      name: 'Regola Bonus 4',
+      type: FsRuleType.bonus,
+      points: 1.5,
+    ),
+    DefaultFsRule(
+      id: 10,
+      name: 'Regola Bonus 5',
+      type: FsRuleType.bonus,
+      points: 1.0,
     ),
     DefaultFsRule(
       id: 4,

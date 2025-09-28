@@ -5,11 +5,13 @@ import 'package:fantavacanze_official/core/cubits/fs_navigation/fs_navigation_cu
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/extensions/context_extension.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
+import 'package:fantavacanze_official/core/widgets/divider.dart';
 import 'package:fantavacanze_official/features/fantaserata/presentation/bloc/fs_dynamic_rules_bloc/fs_dynamic_rules_bloc.dart';
-import 'package:fantavacanze_official/features/fantaserata/presentation/widgets/fs_dashboard/fs_dashboard_header.dart';
+import 'package:fantavacanze_official/features/fantaserata/presentation/widgets/fs_dashboard/fs_league_info_dialog.dart';
 import 'package:fantavacanze_official/features/fantaserata/presentation/widgets/fs_dashboard/fs_objectives_section.dart';
 import 'package:fantavacanze_official/features/fantaserata/presentation/widgets/fs_dashboard/fs_bottom_navigation.dart';
 import 'package:fantavacanze_official/features/fantaserata/presentation/pages/fs_main_page.dart';
+import 'package:fantavacanze_official/features/league/presentation/pages/dashboard/sections/dashboard.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -91,19 +93,58 @@ class _FsDashboardPageContentState extends State<_FsDashboardPageContent> {
     return Scaffold(
       backgroundColor: context.bgColor,
       appBar: AppBar(
-        toolbarHeight: 80,
+        toolbarHeight: 100,
         title: Image.asset(
-          'assets/images/fantaserata/logo/Logo-Fs.png',
-          width: Constants.getWidth(context) * 0.20,
+          'assets/images/fantaserata/logo/FantaSerata-esteso-neon.png',
+          width: Constants.getWidth(context) * 0.7,
         ),
         centerTitle: true,
         backgroundColor: Colors.transparent,
         elevation: 0,
+        leading: Padding(
+          padding: const EdgeInsets.only(left: ThemeSizes.sm),
+          child: GestureDetector(
+            onTap: () {
+              showDialog(
+                context: context,
+                builder: (context) => FsLeagueInfoDialog(league: league),
+              );
+            },
+            child: Icon(
+              Icons.info_outline_rounded,
+              color: context.textPrimaryColor,
+              size: ThemeSizes.iconSm,
+            ),
+          ),
+        ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.exit_to_app_rounded),
+            iconSize: ThemeSizes.iconMd,
+            onPressed: () {
+              Navigator.of(context).pushAndRemoveUntil(
+                DashboardScreen.route,
+                (route) => false,
+              );
+            },
+          ),
+          SizedBox(width: ThemeSizes.sm),
+        ],
       ),
       body: Column(
         children: [
           // Header with league info
-          FsDashboardHeader(league: league),
+          // FsDashboardHeader(league: league),
+          CustomDivider(
+            text: "Obiettivi Della Serata",
+            hasDropdown: true,
+            dropdownText:
+                "Ogni partecipante ha 3 bonus di base e 2 obiettivi speciali diversi ogni volta. Per assegnare un bonus o un malus, clicca semplicemente sulla card.",
+          ),
+
+          SizedBox(
+            height: ThemeSizes.md,
+          ),
 
           // Main content
           Expanded(

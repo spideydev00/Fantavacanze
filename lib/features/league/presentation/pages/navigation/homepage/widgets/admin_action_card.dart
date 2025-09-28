@@ -91,7 +91,8 @@ class AdminActionCard extends StatelessWidget {
                                   style:
                                       context.textTheme.headlineSmall?.copyWith(
                                     color: ColorPalette.textPrimary(
-                                        ThemeMode.dark),
+                                      ThemeMode.dark,
+                                    ),
                                   ),
                                   textAlign: TextAlign.center,
                                   maxLines: 2,

@@ -259,24 +259,6 @@ class _DashboardScreenState extends State<DashboardScreen>
                                   },
                                 ),
 
-                                // Example: Show FS indicator if user has Fantaserata league
-                                BlocBuilder<AppFsLeagueCubit, AppFsLeagueState>(
-                                  builder: (_, fsState) {
-                                    if (fsState is AppFsLeagueExists) {
-                                      return Padding(
-                                        padding: const EdgeInsets.only(
-                                            right: ThemeSizes.sm),
-                                        child: Icon(
-                                          Icons.flash_on,
-                                          size: 20,
-                                          color: Colors.orange,
-                                        ),
-                                      );
-                                    }
-                                    return SizedBox.shrink();
-                                  },
-                                ),
-
                                 GestureDetector(
                                   onTap: () => Navigator.push(
                                       context, SettingsPage.route),

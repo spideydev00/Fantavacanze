@@ -118,6 +118,7 @@ flutter:
     - assets/images/logos/fantavacanze-esteso.png
     - assets/images/fantaserata/logo/Logo-Fs-Dark.png
     - assets/images/fantaserata/logo/Logo-Fs.png
+    - assets/images/fantaserata/logo/FantaSerata-esteso-neon.png
     - assets/images/logos/logo-fall.png
     - assets/images/logos/logo-fall-no-neon.png
     - assets/images/logos/logo-winter.png
@@ -142,6 +143,7 @@ flutter:
     - assets/images/add-event-bg.jpg
     - assets/images/tutorial.jpg
     - assets/images/about-us.jpg
+    - assets/images/add-event-bg-fall-winter.png
     
     # ===== AUTHENTICATION ICONS =====
     - assets/images/otp-verification-icon.png

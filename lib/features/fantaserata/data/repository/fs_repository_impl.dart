@@ -236,12 +236,7 @@ class FsRepositoryImpl implements FsRepository {
 
       await remoteDataSource.deleteLeague(leagueId: leagueId);
 
-      // Clear cache since league is deleted
-      try {
-        await localDataSource.clearFsLeagueCache();
-      } catch (e) {
-        // Cache update failure shouldn't fail the operation
-      }
+      await localDataSource.clearFsLeagueCache();
 
       return right(null);
     } on ServerException catch (e) {

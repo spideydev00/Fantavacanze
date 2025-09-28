@@ -1,8 +1,10 @@
+import 'package:fantavacanze_official/core/cubits/app_fs_league/app_fs_league_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/floating_button_animation/floating_button_animation_cubit.dart';
 import 'package:fantavacanze_official/core/extensions/context_extension.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/init_dependencies/init_dependencies.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class AnimatedFloatingActionButton extends StatefulWidget {
   final VoidCallback? onPressed;
@@ -228,76 +230,86 @@ class _AnimatedFloatingActionButtonState
                   ),
                 ],
               ),
-              child: Center(
-                child: SizedBox(
-                  width: _widthAnimation.value - 16,
-                  child: Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      // Testo "FantaSerata" - visibile all'inizio
-                      if (_isExpanded || _textOpacityAnimation.value > 0)
-                        Opacity(
-                          opacity: _textOpacityAnimation.value,
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(
-                                "Gioca ora al",
-                                style: context.textTheme.labelSmall!.copyWith(
-                                  fontSize: 10,
-                                ),
-                              ),
-                              Text(
-                                "Fanta Serata",
-                                style: const TextStyle(
-                                  fontFamily: "Falcon Sport One",
-                                  fontSize: 18,
-                                  color: Colors.white,
-                                ),
-                                textAlign: TextAlign.center,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ],
-                          ),
-                        ),
-
-                      // Layout "FS" + "Prova Ora!" - visibile alla fine
-                      Opacity(
-                        opacity: _iconOpacityAnimation.value,
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            // Testo "FS"
-                            Text(
-                              "FS",
-                              style: const TextStyle(
-                                fontFamily: "Falcon Sport One",
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
-
+              child: BlocBuilder<AppFsLeagueCubit, AppFsLeagueState>(
+                builder: (context, state) {
+                  return Center(
+                    child: SizedBox(
+                      width: _widthAnimation.value - 16,
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          // Testo "FantaSerata" - visibile all'inizio
+                          if (_isExpanded || _textOpacityAnimation.value > 0)
                             Opacity(
-                              opacity: _inviteOpacityAnimation.value,
-                              child: Text(
-                                "Prova Ora!",
-                                style: context.textTheme.labelSmall!.copyWith(
-                                  fontSize: 9,
-                                  color: Colors.white,
-                                ),
-                                textAlign: TextAlign.center,
+                              opacity: _textOpacityAnimation.value,
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    state is AppFsLeagueExists
+                                        ? "Entra nella tua"
+                                        : "Gioca ora al",
+                                    style:
+                                        context.textTheme.labelSmall!.copyWith(
+                                      fontSize: 10,
+                                    ),
+                                  ),
+                                  Text(
+                                    "Fanta Serata",
+                                    style: const TextStyle(
+                                      fontFamily: "Falcon Sport One",
+                                      fontSize: 18,
+                                      color: Colors.white,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ],
                               ),
                             ),
-                          ],
-                        ),
+
+                          // Layout "FS" + "Prova Ora!" - visibile alla fine
+                          Opacity(
+                            opacity: _iconOpacityAnimation.value,
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                // Testo "FS"
+                                Text(
+                                  "FS",
+                                  style: const TextStyle(
+                                    fontFamily: "Falcon Sport One",
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+
+                                Opacity(
+                                  opacity: _inviteOpacityAnimation.value,
+                                  child: Text(
+                                    state is AppFsLeagueExists
+                                        ? "Entra!"
+                                        : "Prova Ora!",
+                                    style:
+                                        context.textTheme.labelSmall!.copyWith(
+                                      fontSize: 9,
+                                      color: Colors.white,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
-                ),
+                    ),
+                  );
+                },
               ),
             ),
           ),

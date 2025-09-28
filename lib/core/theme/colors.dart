@@ -139,9 +139,13 @@ class ColorPalette {
   static const Color white = Color(0xFFFFFFFF);
 
   // ===== SPECIAL FEATURE COLORS =====
+  static const Color darkerGreen = Color.fromARGB(255, 26, 67, 54);
 
   /// Dark green for specific features
-  static const Color darkerGreen = Color.fromARGB(255, 28, 60, 49);
+  static const Color fsCardDarkGreen = Color.fromARGB(255, 38, 95, 49);
+
+  /// Lighter variant of dark green
+  static const Color fsCardlightGreen = Color.fromARGB(255, 90, 170, 96);
 
   /// Premium user indicator color
   static const Color premiumUser = Color.fromARGB(255, 197, 127, 6);

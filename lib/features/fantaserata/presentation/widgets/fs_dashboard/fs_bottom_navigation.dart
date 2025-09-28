@@ -17,7 +17,7 @@ class FsBottomNavigation extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: context.secondaryBgColor,
+      color: context.bgColor,
       padding: const EdgeInsets.only(
         left: ThemeSizes.sm,
         right: ThemeSizes.sm,
@@ -125,7 +125,7 @@ class _FsNavItem extends StatelessWidget {
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         height: isSelected ? 5 : 2,
-        width: 24,
+        width: 16,
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: ColorPalette.fsGradients,
@@ -133,7 +133,7 @@ class _FsNavItem extends StatelessWidget {
           borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusSm),
           boxShadow: [
             BoxShadow(
-              color: context.primaryColor.withValues(alpha: 0.6),
+              color: context.primaryColor.withValues(alpha: 0.2),
               blurRadius: 8,
               spreadRadius: 2,
             ),

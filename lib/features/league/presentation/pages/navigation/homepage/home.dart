@@ -4,7 +4,7 @@ import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:fantavacanze_official/core/widgets/divider.dart';
 import 'package:fantavacanze_official/core/widgets/events/events_list_widget.dart';
 import 'package:fantavacanze_official/features/blog/presentation/widgets/article_page.dart';
-import 'package:fantavacanze_official/features/fantaserata/presentation/pages/fs_onboarding_screen.dart';
+import 'package:fantavacanze_official/features/fantaserata/presentation/pages/fs_router_page.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/league.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc/league_bloc.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc/league_event.dart';
@@ -25,7 +25,6 @@ class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final currentUser = context.read<AppUserCubit>().state;
-
     final currentUserId =
         currentUser is AppUserIsLoggedIn ? currentUser.user.id : null;
 
@@ -64,13 +63,7 @@ class HomePage extends StatelessWidget {
         ),
       ),
       floatingActionButton: AnimatedFloatingActionButton(
-        onPressed: () {
-          // Naviga alla pagina di creazione lega quando premuto
-          Navigator.push(
-            context,
-            FsOnboardingScreen.route,
-          );
-        },
+        onPressed: () => _handleFantaSerataNavigation(context),
         onRegisterShowCallback: (showCallback) {
           // Register the callback to show the button
           showFloatingButton = showCallback;
@@ -78,6 +71,11 @@ class HomePage extends StatelessWidget {
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
+  }
+
+  Future<void> _handleFantaSerataNavigation(BuildContext context) async {
+    // Naviga direttamente alla pagina router
+    Navigator.of(context).pushReplacement(FsRouterPage.route);
   }
 
   Widget _buildNonParticipantContent(BuildContext context) {
@@ -163,7 +161,7 @@ class HomePage extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: ThemeSizes.xl),
       child: AdminActionCard(
         title: 'Aggiungi un nuovo evento',
-        imagePath: 'assets/images/add-event-bg.jpg',
+        imagePath: 'assets/images/add-event-bg-fall-winter.png',
         iconData: Icons.add,
         onTap: () => _navigateToAddEvent(context),
       ),

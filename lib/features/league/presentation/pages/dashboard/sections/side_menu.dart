@@ -7,7 +7,7 @@ import 'package:fantavacanze_official/core/cubits/app_theme/app_theme_cubit.dart
 import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit.dart';
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/widgets/become_premium_button.dart';
-// import 'package:fantavacanze_official/core/widgets/become_premium_button.dart';
+import 'package:fantavacanze_official/features/fantaserata/presentation/pages/fs_router_page.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc/league_bloc.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/dashboard/widgets/side_menu/league_dropdown.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/settings/privacy_policy.dart';
@@ -254,11 +254,24 @@ class _SideMenuState extends State<SideMenu> {
       return;
     }
 
+    // Gestione specifica per FantaSerata
+    if (item.title == "FantaSerata" || item.title == "Fanta Serata") {
+      _handleFantaSerataNavigation(context);
+      widget.closeMenuCallback?.call();
+      return;
+    }
+
     // Per gli item di navigazione standard, usa l'indice originale passato
     context.read<AppNavigationCubit>().setIndex(originalItemIndex);
 
     // Call the callback to close the menu
     widget.closeMenuCallback?.call();
+  }
+
+  // Nuova funzione per gestire la navigazione FantaSerata
+  Future<void> _handleFantaSerataNavigation(BuildContext context) async {
+    // Naviga direttamente alla pagina router
+    Navigator.of(context).pushReplacement(FsRouterPage.route);
   }
 
   // Footer fisso in basso
