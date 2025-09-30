@@ -17,13 +17,7 @@ class GdprConsentDialog extends StatefulWidget {
   static Future<void> show(BuildContext context) {
     return showDialog(
       context: context,
-      builder: (_) => MultiBlocProvider(
-        providers: [
-          BlocProvider.value(value: BlocProvider.of<AppUserCubit>(context)),
-          BlocProvider.value(value: BlocProvider.of<AppLeagueCubit>(context)),
-        ],
-        child: const GdprConsentDialog(),
-      ),
+      builder: (_) => const GdprConsentDialog(),
     );
   }
 

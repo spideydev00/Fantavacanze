@@ -7,7 +7,7 @@ import 'package:fantavacanze_official/features/auth/presentation/pages/gender_an
 import 'package:fantavacanze_official/features/auth/presentation/pages/onboarding.dart';
 import 'package:fantavacanze_official/features/auth/presentation/pages/social_login.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/dashboard/sections/dashboard.dart';
-import 'package:fantavacanze_official/features/fantaserata/presentation/pages/fs_dashboard_page.dart';
+import 'package:fantavacanze_official/features/fantaserata/presentation/pages/navigation/fs_dashboard/fs_dashboard_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
@@ -42,10 +42,8 @@ class _InitialPageState extends State<InitialPage> {
           return BlocBuilder<AppFsLeagueCubit, AppFsLeagueState>(
             builder: (context, fsState) {
               if (fsState is AppFsLeagueExists) {
-                // User has FS league, navigate to FS dashboard
                 return const FsDashboardPage();
               } else {
-                // No FS league, navigate to normal dashboard
                 return const DashboardScreen();
               }
             },

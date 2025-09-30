@@ -85,6 +85,7 @@ dependencies:
   wakelock_plus: ^1.3.2
   awesome_video_player: ^1.0.5
   path: ^1.9.1
+  image: ^4.5.4
 
 dev_dependencies:
   flutter_test:
@@ -119,6 +120,7 @@ flutter:
     - assets/images/fantaserata/logo/Logo-Fs-Dark.png
     - assets/images/fantaserata/logo/Logo-Fs.png
     - assets/images/fantaserata/logo/FantaSerata-esteso-neon.png
+    - assets/images/fantaserata/logo/fantaserata-no-neon-logo.png
     - assets/images/logos/logo-fall.png
     - assets/images/logos/logo-fall-no-neon.png
     - assets/images/logos/logo-winter.png
@@ -131,6 +133,7 @@ flutter:
     - assets/images/fantaserata/images/onboarding/4.png
     - assets/images/fantaserata/images/onboarding/5.png
     - assets/images/fantaserata/images/onboarding/6.png
+    - assets/images/fantaserata/logo/winner-text.png
 
     
     # ===== BACKGROUNDS & GENERAL IMAGES =====

@@ -2,14 +2,14 @@ part of 'fs_bloc.dart';
 
 sealed class FsState {}
 
-final class FantaserataInitial extends FsState {}
+final class FsInitial extends FsState {}
 
-final class FantaserataLoading extends FsState {}
+final class FsLoading extends FsState {}
 
-final class FantaserataFailure extends FsState {
+final class FsFailure extends FsState {
   final String message;
 
-  FantaserataFailure(this.message);
+  FsFailure(this.message);
 }
 
 final class FsLeagueLoaded extends FsState {
@@ -30,24 +30,14 @@ final class FsLeagueJoined extends FsState {
   FsLeagueJoined(this.league);
 }
 
-final class FsMemoryAdded extends FsState {
-  final FsLeague league;
-
-  FsMemoryAdded(this.league);
-}
-
-final class FsMemoryDeleted extends FsState {
-  final FsLeague league;
-
-  FsMemoryDeleted(this.league);
-}
-
 final class FsLeagueExited extends FsState {}
 
 final class FsLeagueDeleted extends FsState {}
 
-final class FsEventAdded extends FsState {
-  final FsLeague league;
+final class WinnerPhotoUploaded extends FsState {
+  final String photoUrl;
 
-  FsEventAdded(this.league);
+  WinnerPhotoUploaded(this.photoUrl);
 }
+
+final class WinnerPhotoDeleted extends FsState {}

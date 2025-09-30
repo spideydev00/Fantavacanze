@@ -1,7 +1,5 @@
 import 'package:fantavacanze_official/features/fantaserata/domain/entities/fs_league.dart';
 import 'package:fantavacanze_official/features/fantaserata/data/models/participant/fs_participant_model.dart';
-import 'package:fantavacanze_official/features/fantaserata/data/models/event/fs_event_model.dart';
-import 'package:fantavacanze_official/features/fantaserata/data/models/memory/fs_memory_model.dart';
 import 'package:hive/hive.dart';
 
 part 'fs_league_model.g.dart';
@@ -35,11 +33,7 @@ class FsLeagueModel extends FsLeague {
 
   @HiveField(6)
   @override
-  List<FsEventModel> get events => super.events.cast<FsEventModel>();
-
-  @HiveField(7)
-  @override
-  List<FsMemoryModel> get memories => super.memories.cast<FsMemoryModel>();
+  String? get winnerPhotoUrl => super.winnerPhotoUrl;
 
   FsLeagueModel({
     required super.id,
@@ -48,8 +42,7 @@ class FsLeagueModel extends FsLeague {
     required super.createdAt,
     required super.inviteCode,
     required List<FsParticipantModel> super.participants,
-    required List<FsEventModel> super.events,
-    required List<FsMemoryModel> super.memories,
+    super.winnerPhotoUrl,
   });
 
   factory FsLeagueModel.fromJson(Map<String, dynamic> json) {
@@ -62,12 +55,7 @@ class FsLeagueModel extends FsLeague {
       participants: (json['participants'] as List<dynamic>)
           .map((p) => FsParticipantModel.fromJson(p as Map<String, dynamic>))
           .toList(),
-      events: (json['events'] as List<dynamic>)
-          .map((e) => FsEventModel.fromJson(e as Map<String, dynamic>))
-          .toList(),
-      memories: (json['memories'] as List<dynamic>)
-          .map((m) => FsMemoryModel.fromJson(m as Map<String, dynamic>))
-          .toList(),
+      winnerPhotoUrl: json['winner_photo_url'] as String?,
     );
   }
 
@@ -79,8 +67,7 @@ class FsLeagueModel extends FsLeague {
       'created_at': createdAt.toIso8601String(),
       'invite_code': inviteCode,
       'participants': participants.map((p) => p.toJson()).toList(),
-      'events': events.map((e) => e.toJson()).toList(),
-      'memories': memories.map((m) => m.toJson()).toList(),
+      'winner_photo_url': winnerPhotoUrl,
     };
   }
 
@@ -95,12 +82,7 @@ class FsLeagueModel extends FsLeague {
           .map((p) =>
               p is FsParticipantModel ? p : FsParticipantModel.fromEntity(p))
           .toList(),
-      events: league.events
-          .map((e) => e is FsEventModel ? e : FsEventModel.fromEntity(e))
-          .toList(),
-      memories: league.memories
-          .map((m) => m is FsMemoryModel ? m : FsMemoryModel.fromEntity(m))
-          .toList(),
+      winnerPhotoUrl: league.winnerPhotoUrl,
     );
   }
 }

@@ -19,6 +19,7 @@ class FsRuleModelAdapter extends TypeAdapter<FsRuleModel> {
     return FsRuleModel(
       id: fields[0] as String,
       userId: fields[1] as String,
+      userName: fields[14] as String?,
       leagueId: fields[2] as String,
       challengeId: fields[3] as String,
       name: fields[4] as String,
@@ -28,13 +29,16 @@ class FsRuleModelAdapter extends TypeAdapter<FsRuleModel> {
       isCompleted: fields[8] as bool,
       isRefreshed: fields[9] as bool,
       isUnlocked: fields[10] as bool,
+      createdAt: fields[11] as DateTime,
+      completedAt: fields[12] as DateTime?,
+      refreshedAt: fields[13] as DateTime?,
     );
   }
 
   @override
   void write(BinaryWriter writer, FsRuleModel obj) {
     writer
-      ..writeByte(11)
+      ..writeByte(15)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -56,7 +60,15 @@ class FsRuleModelAdapter extends TypeAdapter<FsRuleModel> {
       ..writeByte(9)
       ..write(obj.isRefreshed)
       ..writeByte(10)
-      ..write(obj.isUnlocked);
+      ..write(obj.isUnlocked)
+      ..writeByte(11)
+      ..write(obj.createdAt)
+      ..writeByte(12)
+      ..write(obj.completedAt)
+      ..writeByte(13)
+      ..write(obj.refreshedAt)
+      ..writeByte(14)
+      ..write(obj.userName);
   }
 
   @override

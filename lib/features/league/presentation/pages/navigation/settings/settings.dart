@@ -1,4 +1,5 @@
 import 'package:fantavacanze_official/core/cubits/app_league/app_league_cubit.dart';
+import 'package:fantavacanze_official/core/cubits/app_fs_league/app_fs_league_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/app_theme/app_theme_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit.dart';
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
@@ -125,6 +126,10 @@ class SettingsPage extends StatelessWidget {
 
           if (context.mounted) {
             await context.read<AppLeagueCubit>().clearCache();
+
+            if (context.mounted) {
+              await context.read<AppFsLeagueCubit>().clearCache();
+            }
           }
 
           // Azzero tutto lo stack e mostro solo SocialLoginPage

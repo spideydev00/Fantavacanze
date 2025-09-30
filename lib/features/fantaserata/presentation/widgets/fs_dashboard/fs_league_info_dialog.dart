@@ -38,7 +38,7 @@ class FsLeagueInfoDialog extends StatelessWidget {
             'Lega eliminata con successo',
             color: ColorPalette.success,
           );
-        } else if (state is FantaserataFailure) {
+        } else if (state is FsFailure) {
           showSpecificSnackBar(
             context,
             state.message,
@@ -77,7 +77,7 @@ class FsLeagueInfoDialog extends StatelessWidget {
                     const SizedBox(width: ThemeSizes.md),
                     Expanded(
                       child: Text(
-                        'Info Lega',
+                        'Info Serata',
                         style: context.textTheme.titleLarge?.copyWith(
                           fontWeight: FontWeight.bold,
                         ),

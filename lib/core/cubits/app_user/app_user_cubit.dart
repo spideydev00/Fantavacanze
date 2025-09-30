@@ -6,6 +6,7 @@ import 'package:fantavacanze_official/features/auth/domain/use-cases/become_prem
 import 'package:fantavacanze_official/features/auth/domain/use-cases/get_current_user.dart';
 import 'package:fantavacanze_official/features/auth/domain/use-cases/remove_premium.dart';
 import 'package:fantavacanze_official/features/auth/domain/use-cases/set_has_left_review.dart';
+import 'package:fantavacanze_official/features/auth/domain/use-cases/set_has_played_fs.dart';
 import 'package:fantavacanze_official/features/auth/domain/use-cases/sign_out.dart';
 import 'package:fantavacanze_official/features/auth/domain/use-cases/update_display_name.dart';
 import 'package:fantavacanze_official/features/auth/domain/use-cases/update_gender.dart';
@@ -30,6 +31,7 @@ class AppUserCubit extends Cubit<AppUserState> {
   final BecomePremium _becomePremium;
   final RemovePremium _removePremium;
   final SetHasLeftReview _setHasLeftReview;
+  final SetHasPlayedFs _setHasPlayedFs;
 
   AppUserCubit({
     required GetCurrentUser getCurrentUser,
@@ -43,6 +45,7 @@ class AppUserCubit extends Cubit<AppUserState> {
     required BecomePremium becomePremium,
     required RemovePremium removePremium,
     required SetHasLeftReview setHasLeftReview,
+    required SetHasPlayedFs setHasPlayedFs,
   })  : _getCurrentUser = getCurrentUser,
         _signOut = signOut,
         _updateDisplayName = updateDisplayName,
@@ -54,6 +57,7 @@ class AppUserCubit extends Cubit<AppUserState> {
         _becomePremium = becomePremium,
         _removePremium = removePremium,
         _setHasLeftReview = setHasLeftReview,
+        _setHasPlayedFs = setHasPlayedFs,
         super(AppUserInitial());
 
   // Gets current user when app starts
@@ -117,8 +121,6 @@ class AppUserCubit extends Cubit<AppUserState> {
           emit(currentState);
         },
         (_) async {
-          // await _appLeagueCubit.clearCache();
-          // Clear the user state and emit initial state
           emit(AppUserInitial());
         },
       );
@@ -274,6 +276,27 @@ class AppUserCubit extends Cubit<AppUserState> {
         },
       );
     }
+  }
+
+  // Set user's Fantaserata played status
+  Future<void> setHasPlayedFs(bool hasPlayedFs) async {
+    final currentState = state;
+
+    if (currentState is! AppUserIsLoggedIn) return;
+
+    final res = await _setHasPlayedFs.call(
+      SetHasPlayedFsParams(hasPlayedFs: hasPlayedFs),
+    );
+
+    res.fold(
+      (failure) => emit(AppUserIsLoggedIn(
+        user: currentState.user,
+        errorMessage: failure.message,
+      )),
+      (user) {
+        emit(AppUserIsLoggedIn(user: user));
+      },
+    );
   }
 
   // Update sentimental status

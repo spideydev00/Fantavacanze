@@ -18,6 +18,7 @@ Future<bool> showPremiumPaywall(BuildContext context) async {
         "Abbonamento Premium attivato con successo!",
         color: ColorPalette.success,
       );
+
       return true;
     } else if (result == PaywallResult.restored && context.mounted) {
       await context.read<AppUserCubit>().becomePremium();

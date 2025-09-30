@@ -12,6 +12,7 @@ class GradientOptionButton extends StatelessWidget {
   final Color secondaryColor;
   final double iconSize;
   final double labelFontSize;
+  final String? fontFamily;
   final double descriptionFontSize;
 
   const GradientOptionButton({
@@ -25,6 +26,7 @@ class GradientOptionButton extends StatelessWidget {
     this.description,
     this.iconSize = 32,
     this.labelFontSize = 13,
+    this.fontFamily,
     this.descriptionFontSize = 12,
   });
 
@@ -87,6 +89,7 @@ class GradientOptionButton extends StatelessWidget {
               label,
               textAlign: TextAlign.center,
               style: TextStyle(
+                fontFamily: fontFamily,
                 fontWeight: FontWeight.bold,
                 fontSize: labelFontSize,
                 color: isSelected ? Colors.white : context.textPrimaryColor,

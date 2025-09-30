@@ -24,7 +24,7 @@ class FsBottomNavigation extends StatelessWidget {
         bottom: ThemeSizes.xl,
       ),
       child: _buildFixedWidthNavbarRow(
-        2,
+        4,
         (index) {
           return _FsNavItem(
             icon: _getIconForIndex(index),
@@ -43,10 +43,11 @@ class FsBottomNavigation extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.end,
       children: List.generate(elements, (index) {
-        return Container(
-          width: 85,
-          margin: const EdgeInsets.symmetric(horizontal: ThemeSizes.sm),
-          child: generator(index),
+        return Expanded(
+          child: Container(
+            margin: const EdgeInsets.symmetric(horizontal: ThemeSizes.sm),
+            child: generator(index),
+          ),
         );
       }),
     );
@@ -58,6 +59,10 @@ class FsBottomNavigation extends StatelessWidget {
         return Icons.flag_rounded;
       case 1:
         return Icons.leaderboard_rounded;
+      case 2:
+        return Icons.library_books_rounded;
+      case 3:
+        return Icons.construction_sharp;
       default:
         return Icons.flag_rounded;
     }
@@ -69,6 +74,10 @@ class FsBottomNavigation extends StatelessWidget {
         return 'Obiettivi';
       case 1:
         return 'Classifica';
+      case 2:
+        return 'Eventi';
+      case 3:
+        return 'Lega';
       default:
         return 'Obiettivi';
     }

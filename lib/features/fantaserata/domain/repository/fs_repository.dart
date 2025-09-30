@@ -1,4 +1,5 @@
 import 'package:fpdart/fpdart.dart';
+import 'package:flutter/foundation.dart';
 import 'package:fantavacanze_official/core/errors/failure.dart';
 import 'package:fantavacanze_official/features/fantaserata/domain/entities/fs_league.dart';
 
@@ -16,34 +17,6 @@ abstract interface class FsRepository {
     required String userName,
   });
 
-  Future<Either<Failure, FsLeague>> addEvent({
-    required String leagueId,
-    required String name,
-    required double points,
-    required String targetParticipantId,
-    required String type,
-  });
-
-  Future<Either<Failure, FsLeague>> removeEvent({
-    required String leagueId,
-    required String eventId,
-  });
-
-  Future<Either<Failure, FsLeague>> addMemory({
-    required String leagueId,
-    required String imageUrl,
-    required String description,
-    required String userId,
-    required String participantName,
-    String? relatedEventId,
-    String? eventName,
-  });
-
-  Future<Either<Failure, FsLeague>> deleteMemory({
-    required String leagueId,
-    required String memoryId,
-  });
-
   Future<Either<Failure, FsLeague>> removeParticipant({
     required String leagueId,
     required String participantId,
@@ -59,4 +32,15 @@ abstract interface class FsRepository {
   });
 
   Future<Either<Failure, FsLeague?>> getFsLeague();
+
+  Future<Either<Failure, FsLeague>> uploadWinnerPhoto({
+    required String leagueId,
+    required Uint8List imageBytes,
+  });
+
+  Future<Either<Failure, FsLeague>> deleteWinnerPhoto({
+    required String leagueId,
+  });
+
+  Future<Either<Failure, void>> clearFsLeagueCache();
 }

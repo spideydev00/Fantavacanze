@@ -1,14 +1,17 @@
 import 'package:fantavacanze_official/core/constants/constants.dart';
+import 'package:fantavacanze_official/core/cubits/app_theme/app_theme_cubit.dart';
+import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit.dart';
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
-import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
-import 'package:fantavacanze_official/core/utils/show-snackbar-or-paywall/show_page_specific_snackbar.dart';
 import 'package:fantavacanze_official/core/widgets/divider.dart';
-import 'package:fantavacanze_official/features/fantaserata/presentation/pages/create_fs_league_page.dart';
+import 'package:fantavacanze_official/features/fantaserata/presentation/bloc/fs_league_bloc/fs_bloc.dart';
+import 'package:fantavacanze_official/features/fantaserata/presentation/pages/navigation/create_fs_league/create_fs_league_page.dart';
 import 'package:fantavacanze_official/features/fantaserata/presentation/widgets/fs_hero_card.dart';
 import 'package:fantavacanze_official/features/fantaserata/presentation/widgets/fs_search_card.dart';
 import 'package:fantavacanze_official/features/fantaserata/presentation/widgets/fs_info_banner.dart';
+import 'package:fantavacanze_official/features/league/presentation/pages/dashboard/sections/dashboard.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class FsMainPage extends StatefulWidget {
   static const String routeName = '/fs-main';
@@ -35,16 +38,43 @@ class _FsMainPageState extends State<FsMainPage> {
 
   @override
   Widget build(BuildContext context) {
+    final AppUserCubit appUserCubit = context.read<AppUserCubit>();
+
+    final String userId = appUserCubit.state is AppUserIsLoggedIn
+        ? (appUserCubit.state as AppUserIsLoggedIn).user.id
+        : '';
+
+    final String userName = appUserCubit.state is AppUserIsLoggedIn
+        ? (appUserCubit.state as AppUserIsLoggedIn).user.name
+        : '';
+
     return Scaffold(
       appBar: AppBar(
         toolbarHeight: 120,
-        title: Image.asset(
-          'assets/images/fantaserata/logo/Logo-Fs.png',
-          width: Constants.getWidth(context) * 0.30,
+        title: BlocBuilder<AppThemeCubit, AppThemeState>(
+          builder: (context, state) {
+            if (state.themeMode == ThemeMode.dark) {
+              return Image.asset(
+                'assets/images/fantaserata/logo/FantaSerata-esteso-neon.png',
+                width: Constants.getWidth(context) * 0.65,
+              );
+            }
+            return Image.asset(
+              'assets/images/fantaserata/logo/fantaserata-no-neon-logo.png',
+              width: Constants.getWidth(context) * 0.65,
+            );
+          },
         ),
         centerTitle: true,
         backgroundColor: Colors.transparent,
         elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new_rounded),
+          onPressed: () => Navigator.of(context).pushAndRemoveUntil(
+            DashboardScreen.route,
+            (route) => false,
+          ),
+        ),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(ThemeSizes.lg),
@@ -78,12 +108,13 @@ class _FsMainPageState extends State<FsMainPage> {
               hintText: 'Inserisci il codice qui',
               controller: _inviteCodeController,
               onSearch: () {
-                // TODO: Implement join league logic via BLoC
-                showSpecificSnackBar(
-                  context,
-                  'Ricerca lega in corso...',
-                  color: ColorPalette.info,
-                );
+                context.read<FsBloc>().add(
+                      JoinFsLeagueEvent(
+                        inviteCode: _inviteCodeController.text,
+                        userId: userId,
+                        userName: userName,
+                      ),
+                    );
               },
             ),
 

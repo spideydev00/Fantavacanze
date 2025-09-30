@@ -1,5 +1,5 @@
 import 'dart:ui';
-import 'package:fantavacanze_official/core/constants/fantaserata/default_fs_rule.dart';
+import 'package:fantavacanze_official/core/constants/fantaserata/simple_fs_rule.dart';
 import 'package:fantavacanze_official/core/extensions/context_extension.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
@@ -8,7 +8,7 @@ import 'package:fantavacanze_official/features/fantaserata/domain/entities/fs_ru
 import 'package:flutter/material.dart';
 
 class FsObjectiveCard extends StatelessWidget {
-  final DefaultFsRule rule;
+  final SimpleFsRule rule;
   final bool isCompleted;
   final bool isLocked;
   final bool canRefresh;
@@ -126,7 +126,7 @@ class FsObjectiveCard extends StatelessWidget {
                           ),
                           const SizedBox(width: 4),
                           Text(
-                            '${isBonus ? '+' : ''}${rule.points.toStringAsFixed(rule.points == rule.points.toInt() ? 0 : 1)}',
+                            '${isBonus ? '+' : '-'}${rule.points.toStringAsFixed(rule.points == rule.points.toInt() ? 0 : 1)}',
                             style: context.textTheme.bodySmall?.copyWith(
                               color: Colors.white,
                               fontWeight: FontWeight.bold,
@@ -184,9 +184,9 @@ class FsObjectiveCard extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            ColorPalette.success,
-            ColorPalette.success.withValues(alpha: 0.9),
-            ColorPalette.success.withValues(alpha: 0.8),
+            ColorPalette.darkGrey.withValues(alpha: 0.5),
+            ColorPalette.darkGrey.withValues(alpha: 0.7),
+            ColorPalette.darkGrey,
           ],
           stops: const [0.0, 0.5, 1.0],
         ),

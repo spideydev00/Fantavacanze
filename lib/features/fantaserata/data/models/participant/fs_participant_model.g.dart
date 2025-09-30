@@ -19,9 +19,9 @@ class FsParticipantModelAdapter extends TypeAdapter<FsParticipantModel> {
     return FsParticipantModel(
       userId: fields[0] as String,
       name: fields[1] as String,
-      points: fields[2] as String,
-      malusTotal: fields[3] as String,
-      bonusTotal: fields[4] as String,
+      points: fields[2] as double,
+      malusTotal: fields[3] as double,
+      bonusTotal: fields[4] as double,
     );
   }
 

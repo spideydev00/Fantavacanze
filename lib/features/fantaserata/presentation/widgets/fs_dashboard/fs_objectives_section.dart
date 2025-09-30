@@ -1,28 +1,30 @@
-import 'package:fantavacanze_official/core/constants/fantaserata/default_fs_rule.dart';
+import 'package:fantavacanze_official/core/constants/fantaserata/simple_fs_rule.dart';
 import 'package:fantavacanze_official/core/cubits/app_theme/app_theme_cubit.dart';
+import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:fantavacanze_official/core/extensions/context_extension.dart';
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
+import 'package:fantavacanze_official/core/utils/show-snackbar-or-paywall/show_snackbar.dart';
+import 'package:fantavacanze_official/core/widgets/divider.dart';
+import 'package:fantavacanze_official/core/widgets/empty_state.dart';
+import 'package:fantavacanze_official/core/widgets/info_banner.dart';
 import 'package:fantavacanze_official/core/widgets/loader.dart';
-import 'package:fantavacanze_official/features/auth/domain/entities/user.dart';
 import 'package:fantavacanze_official/features/fantaserata/domain/entities/fs_league.dart';
 import 'package:fantavacanze_official/features/fantaserata/domain/entities/fs_rule/fs_rule.dart';
 import 'package:fantavacanze_official/features/fantaserata/presentation/widgets/fs_dashboard/fs_objective_card.dart';
-import 'package:fantavacanze_official/features/fantaserata/presentation/bloc/fs_fixed_rules_bloc/fs_fixed_rules_bloc.dart';
-import 'package:fantavacanze_official/features/fantaserata/presentation/bloc/fs_dynamic_rules_bloc/fs_dynamic_rules_bloc.dart';
+import 'package:fantavacanze_official/features/fantaserata/presentation/bloc/fs_rules_bloc/fs_rules_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:fantavacanze_official/core/widgets/dialogs/confirmation_dialog.dart';
 
 enum SectionView { bonus, malus }
 
 class FsObjectivesSection extends StatefulWidget {
-  final User user;
   final FsLeague league;
 
   const FsObjectivesSection({
     super.key,
-    required this.user,
     required this.league,
   });
 
@@ -78,15 +80,6 @@ class _FsObjectivesSectionState extends State<FsObjectivesSection>
       CurvedAnimation(parent: _iconController, curve: Curves.easeInOut),
     );
 
-    // Initialize fixed rules
-    context.read<FsFixedRulesBloc>().add(
-          GetFixedRulesEvent(
-            userId: widget.user.id,
-            gender: widget.user.gender ?? 'mixed',
-            sentimentalStatus: widget.user.sentimentalStatus ?? 'single',
-          ),
-        );
-
     // Start animations
     _fadeAnimationController.forward();
     _expandAnimationController.forward();
@@ -126,18 +119,33 @@ class _FsObjectivesSectionState extends State<FsObjectivesSection>
         padding: const EdgeInsets.symmetric(horizontal: ThemeSizes.lg),
         child: Column(
           children: [
+            InfoBanner(
+              message:
+                  "Clicca su una card per assegnare bonus/malus. Per vedere i malus, usa il pulsante a lato.",
+              color: ColorPalette.info,
+            ),
+            // Contenuto principale con leggero padding a destra
+            CustomDivider(
+              text: "Obiettivi Della Serata",
+              hasDropdown: true,
+              dropdownText:
+                  "Ogni partecipante ha 5 bonus fissi e 3 obiettivi speciali diversi ogni volta. I malus sono 5, fissi per ogni serata. \n\nPuoi aggiungere obiettivi personalizzati nella tab \"Lega\". Siete tutti amministratori, anarchia.",
+            ),
+
+            SizedBox(
+              height: ThemeSizes.md,
+            ),
+
             Expanded(
               child: AnimatedBuilder(
                 animation: _expandAnimation,
                 builder: (context, child) {
-                  const double buttonWidth = 48; // dimensione fissa
+                  const double buttonWidth = 48;
 
                   return Stack(
-                    clipBehavior: Clip.none, // permette metà bottone fuori
+                    clipBehavior: Clip.none,
                     children: [
-                      // Contenuto principale con leggero padding a destra
                       Padding(
-                        // spazio per non far coprire il contenuto dal bottone
                         padding: EdgeInsets.only(right: buttonWidth / 3),
                         child: _buildCurrentSection(),
                       ),
@@ -283,79 +291,91 @@ class _FsObjectivesSectionState extends State<FsObjectivesSection>
   }
 
   Widget _buildBonusSection() {
-    return BlocBuilder<FsDynamicRulesBloc, FsDynamicRulesState>(
-      builder: (context, dynamicState) {
-        return BlocBuilder<FsFixedRulesBloc, FsFixedRulesState>(
-          builder: (context, fixedState) {
-            if (dynamicState is FsDynamicRulesLoading ||
-                fixedState is FsFixedRulesLoading) {
-              return _buildLoadingState();
-            }
+    return BlocConsumer<FsRulesBloc, FsRulesState>(
+      listener: (context, state) {
+        if (state is FsRulesFailure) {
+          showSnackBar(
+            state.message,
+            color: ColorPalette.error,
+          );
+        }
+      },
+      builder: (context, state) {
+        if (state is FsRulesLoading) {
+          return _buildLoadingState();
+        }
 
-            final List<Widget> bonusCards = [];
+        final List<Widget> bonusCards = [];
 
-            if (dynamicState is FsDynamicRulesLoaded) {
-              final dynamicBonus = dynamicState.rules
-                  .where((rule) => rule.type == FsRuleType.bonus)
-                  .toList();
-              bonusCards.addAll(
-                  dynamicBonus.map((rule) => _buildDynamicRuleCard(rule)));
-            }
+        if (state is FsRulesLoaded) {
+          // Get current user ID
+          final currentUserId = _getCurrentUserId();
 
-            if (fixedState is FsFixedRulesLoaded) {
-              final fixedBonus = fixedState.rules
-                  .where((rule) => rule.type == FsRuleType.bonus)
-                  .toList();
-              bonusCards
-                  .addAll(fixedBonus.map((rule) => _buildFixedRuleCard(rule)));
-            }
+          if (currentUserId == null) {
+            return _buildEmptyState('Utente non autenticato');
+          }
 
-            if (bonusCards.isEmpty) {
-              return _buildEmptyState('Nessun bonus disponibile');
-            }
+          // Filter rules for current user only
+          final userRules = state.rules
+              .where((rule) => rule.userId == currentUserId)
+              .toList();
 
-            return _buildAnimatedList(bonusCards);
-          },
-        );
+          final bonusRules = userRules
+              .where((rule) => rule.type == FsRuleType.bonus)
+              .toList()
+            ..sort((a, b) => a.position.compareTo(b.position));
+
+          bonusCards.addAll(bonusRules.map((rule) => _buildRuleCard(rule)));
+        }
+
+        if (bonusCards.isEmpty) {
+          return _buildEmptyState('Nessun bonus disponibile');
+        }
+
+        return _buildAnimatedList(bonusCards);
       },
     );
   }
 
   Widget _buildMalusSection() {
-    return BlocBuilder<FsDynamicRulesBloc, FsDynamicRulesState>(
-      builder: (context, dynamicState) {
-        return BlocBuilder<FsFixedRulesBloc, FsFixedRulesState>(
-          builder: (context, fixedState) {
-            if (dynamicState is FsDynamicRulesLoading ||
-                fixedState is FsFixedRulesLoading) {
-              return _buildLoadingState();
-            }
+    return BlocConsumer<FsRulesBloc, FsRulesState>(
+      listener: (context, state) {
+        if (state is FsRulesFailure) {
+          showSnackBar(
+            state.message,
+            color: ColorPalette.error,
+          );
+        }
+      },
+      builder: (context, state) {
+        if (state is FsRulesLoading) {
+          return _buildLoadingState();
+        }
 
-            final List<Widget> malusCards = [];
+        final List<Widget> malusCards = [];
 
-            if (dynamicState is FsDynamicRulesLoaded) {
-              final dynamicMalus = dynamicState.rules
-                  .where((rule) => rule.type == FsRuleType.malus)
-                  .toList();
-              malusCards.addAll(
-                  dynamicMalus.map((rule) => _buildDynamicRuleCard(rule)));
-            }
+        if (state is FsRulesLoaded) {
+          // Get current user ID
+          final currentUserId = _getCurrentUserId();
 
-            if (fixedState is FsFixedRulesLoaded) {
-              final fixedMalus = fixedState.rules
-                  .where((rule) => rule.type == FsRuleType.malus)
-                  .toList();
-              malusCards
-                  .addAll(fixedMalus.map((rule) => _buildFixedRuleCard(rule)));
-            }
+          // Filter rules for current user only
+          final userRules = state.rules
+              .where((rule) => rule.userId == currentUserId)
+              .toList();
 
-            if (malusCards.isEmpty) {
-              return _buildEmptyState('Nessun malus disponibile');
-            }
+          final malusRules = userRules
+              .where((rule) => rule.type == FsRuleType.malus)
+              .toList()
+            ..sort((a, b) => a.position.compareTo(b.position));
 
-            return _buildAnimatedList(malusCards);
-          },
-        );
+          malusCards.addAll(malusRules.map((rule) => _buildRuleCard(rule)));
+        }
+
+        if (malusCards.isEmpty) {
+          return _buildEmptyState('Nessun malus disponibile');
+        }
+
+        return _buildAnimatedList(malusCards);
       },
     );
   }
@@ -390,10 +410,13 @@ class _FsObjectivesSectionState extends State<FsObjectivesSection>
     );
   }
 
-  Widget _buildDynamicRuleCard(FsRule rule) {
+  Widget _buildRuleCard(FsRule rule) {
+    final isDynamic =
+        rule.position == 1 || rule.position == 2 || rule.position == 3;
+
     return FsObjectiveCard(
-      rule: DefaultFsRule(
-        id: int.tryParse(rule.challengeId) ?? 0,
+      rule: SimpleFsRule(
+        id: rule.challengeId,
         name: rule.name,
         type: rule.type,
         points: rule.points,
@@ -402,12 +425,11 @@ class _FsObjectivesSectionState extends State<FsObjectivesSection>
       isCompleted: rule.isCompleted,
       isLocked: !rule.isUnlocked,
       canRefresh: !rule.isRefreshed && !rule.isCompleted && rule.isUnlocked,
-      isDynamic: true,
+      isDynamic: isDynamic,
       onRefresh: (!rule.isRefreshed && !rule.isCompleted && rule.isUnlocked)
           ? () {
-              context.read<FsDynamicRulesBloc>().add(
-                    RefreshDynamicRuleEvent(
-                      userId: widget.user.id,
+              context.read<FsRulesBloc>().add(
+                    RefreshRuleEvent(
                       leagueId: widget.league.id,
                       challengeId: rule.challengeId,
                     ),
@@ -415,24 +437,18 @@ class _FsObjectivesSectionState extends State<FsObjectivesSection>
             }
           : null,
       onComplete: !rule.isCompleted && rule.isUnlocked
-          ? () {
-              context.read<FsDynamicRulesBloc>().add(
-                    SetDynamicRuleAsCompletedEvent(
-                      userId: widget.user.id,
-                      leagueId: widget.league.id,
-                      challengeId: rule.challengeId,
-                      ruleName: rule.name,
-                      points: rule.points,
-                      type: rule.type == FsRuleType.bonus ? 'bonus' : 'malus',
-                    ),
-                  );
-            }
+          ? () => _showSetRuleAsCompletedDialog(
+                rule.name,
+                rule.points,
+                rule.challengeId,
+                rule.type == FsRuleType.bonus,
+                isDynamic: isDynamic,
+              )
           : null,
       onUnlock: !rule.isUnlocked
           ? () {
-              context.read<FsDynamicRulesBloc>().add(
-                    UnlockDynamicRuleEvent(
-                      userId: widget.user.id,
+              context.read<FsRulesBloc>().add(
+                    UnlockRuleEvent(
                       leagueId: widget.league.id,
                       challengeId: rule.challengeId,
                     ),
@@ -442,23 +458,32 @@ class _FsObjectivesSectionState extends State<FsObjectivesSection>
     );
   }
 
-  Widget _buildFixedRuleCard(DefaultFsRule rule) {
-    return FsObjectiveCard(
-      rule: rule,
-      isCompleted: rule.isCompleted,
-      isLocked: false,
-      canRefresh: false,
-      isDynamic: false,
-      onComplete: !rule.isCompleted
-          ? () {
-              context.read<FsFixedRulesBloc>().add(
-                    ToggleFixedRuleCompletionEvent(
-                      ruleId: rule.id,
-                      isCompleted: true,
-                    ),
-                  );
-            }
-          : null,
+  /// Mostra il dialog di conferma per l'aggiunta di un evento
+  void _showSetRuleAsCompletedDialog(
+    String ruleName,
+    double points,
+    String challengeId,
+    bool isBonus, {
+    bool isDynamic = false,
+  }) {
+    showDialog(
+      context: context,
+      builder: (context) => ConfirmationDialog.setFsRuleCompleted(
+        ruleName: ruleName,
+        points: points,
+        isBonus: isBonus,
+        onConfirm: () {
+          context.read<FsRulesBloc>().add(
+                SetRuleAsCompletedEvent(
+                  leagueId: widget.league.id,
+                  challengeId: challengeId,
+                  ruleName: ruleName,
+                  points: points,
+                  type: isBonus ? 'bonus' : 'malus',
+                ),
+              );
+        },
+      ),
     );
   }
 
@@ -484,36 +509,19 @@ class _FsObjectivesSectionState extends State<FsObjectivesSection>
   }
 
   Widget _buildEmptyState(String message) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(ThemeSizes.xl),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.inbox_outlined,
-              size: 64,
-              color: context.textSecondaryColor.withValues(alpha: 0.5),
-            ),
-            const SizedBox(height: ThemeSizes.lg),
-            Text(
-              'Nessun obiettivo',
-              style: context.textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.bold,
-                color: context.textSecondaryColor,
-              ),
-            ),
-            const SizedBox(height: ThemeSizes.sm),
-            Text(
-              message,
-              style: context.textTheme.bodyMedium?.copyWith(
-                color: context.textSecondaryColor,
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
-      ),
+    return EmptyState(
+      icon: Icons.info_outline_rounded,
+      title: 'Nessun Obiettivo',
+      subtitle: message,
     );
+  }
+
+  /// Helper method to get current user ID
+  String? _getCurrentUserId() {
+    final userState = context.read<AppUserCubit>().state;
+    if (userState is AppUserIsLoggedIn) {
+      return userState.user.id;
+    }
+    return null;
   }
 }

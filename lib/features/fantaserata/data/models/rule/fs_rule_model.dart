@@ -49,9 +49,26 @@ class FsRuleModel extends FsRule {
   @override
   bool get isUnlocked => super.isUnlocked;
 
+  @HiveField(11)
+  @override
+  DateTime get createdAt => super.createdAt;
+
+  @HiveField(12)
+  @override
+  DateTime? get completedAt => super.completedAt;
+
+  @HiveField(13)
+  @override
+  DateTime? get refreshedAt => super.refreshedAt;
+
+  @HiveField(14)
+  @override
+  String? get userName => super.userName;
+
   FsRuleModel({
     required super.id,
     required super.userId,
+    super.userName,
     required super.leagueId,
     required super.challengeId,
     required super.name,
@@ -61,12 +78,18 @@ class FsRuleModel extends FsRule {
     required super.isCompleted,
     required super.isRefreshed,
     required super.isUnlocked,
+    required super.createdAt,
+    super.completedAt,
+    super.refreshedAt,
   });
 
   factory FsRuleModel.fromJson(Map<String, dynamic> json) {
+    final userProfile = json['user_profile'] as Map<String, dynamic>?;
+
     return FsRuleModel(
       id: json['id'] as String,
       userId: json['user_id'] as String,
+      userName: userProfile?['name'] as String?,
       leagueId: json['league_id'] as String,
       challengeId: json['challenge_id'] as String,
       name: json['name'] as String,
@@ -76,6 +99,13 @@ class FsRuleModel extends FsRule {
       isCompleted: json['is_completed'] as bool? ?? false,
       isRefreshed: json['is_refreshed'] as bool? ?? false,
       isUnlocked: json['is_unlocked'] as bool? ?? false,
+      createdAt: DateTime.parse(json['created_at'] as String),
+      completedAt: json['completed_at'] != null
+          ? DateTime.parse(json['completed_at'] as String)
+          : null,
+      refreshedAt: json['refreshed_at'] != null
+          ? DateTime.parse(json['refreshed_at'] as String)
+          : null,
     );
   }
 
@@ -95,6 +125,7 @@ class FsRuleModel extends FsRule {
     return {
       'id': id,
       'user_id': userId,
+      'user_name': userName,
       'league_id': leagueId,
       'challenge_id': challengeId,
       'name': name,
@@ -104,6 +135,9 @@ class FsRuleModel extends FsRule {
       'is_completed': isCompleted,
       'is_refreshed': isRefreshed,
       'is_unlocked': isUnlocked,
+      'created_at': createdAt.toIso8601String(),
+      'completed_at': completedAt?.toIso8601String(),
+      'refreshed_at': refreshedAt?.toIso8601String(),
     };
   }
 
@@ -111,6 +145,7 @@ class FsRuleModel extends FsRule {
     return FsRuleModel(
       id: rule.id,
       userId: rule.userId,
+      userName: rule.userName,
       leagueId: rule.leagueId,
       challengeId: rule.challengeId,
       name: rule.name,
@@ -120,6 +155,45 @@ class FsRuleModel extends FsRule {
       isCompleted: rule.isCompleted,
       isRefreshed: rule.isRefreshed,
       isUnlocked: rule.isUnlocked,
+      createdAt: rule.createdAt,
+      completedAt: rule.completedAt,
+      refreshedAt: rule.refreshedAt,
+    );
+  }
+
+  FsRuleModel copyWith({
+    String? id,
+    String? userId,
+    String? userName,
+    String? leagueId,
+    String? challengeId,
+    String? name,
+    double? points,
+    FsRuleType? type,
+    double? position,
+    bool? isCompleted,
+    bool? isRefreshed,
+    bool? isUnlocked,
+    DateTime? createdAt,
+    DateTime? completedAt,
+    DateTime? refreshedAt,
+  }) {
+    return FsRuleModel(
+      id: id ?? this.id,
+      userId: userId ?? this.userId,
+      userName: userName ?? this.userName,
+      leagueId: leagueId ?? this.leagueId,
+      challengeId: challengeId ?? this.challengeId,
+      name: name ?? this.name,
+      points: points ?? this.points,
+      type: type ?? this.type,
+      position: position ?? this.position,
+      isCompleted: isCompleted ?? this.isCompleted,
+      isRefreshed: isRefreshed ?? this.isRefreshed,
+      isUnlocked: isUnlocked ?? this.isUnlocked,
+      createdAt: createdAt ?? this.createdAt,
+      completedAt: completedAt ?? this.completedAt,
+      refreshedAt: refreshedAt ?? this.refreshedAt,
     );
   }
 }

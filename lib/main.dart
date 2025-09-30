@@ -1,8 +1,7 @@
 import 'dart:async';
 import 'package:fantavacanze_official/core/cubits/app_fs_league/app_fs_league_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/fs_navigation/fs_navigation_cubit.dart';
-import 'package:fantavacanze_official/features/fantaserata/presentation/bloc/fs_dynamic_rules_bloc/fs_dynamic_rules_bloc.dart';
-import 'package:fantavacanze_official/features/fantaserata/presentation/bloc/fs_fixed_rules_bloc/fs_fixed_rules_bloc.dart';
+import 'package:fantavacanze_official/features/fantaserata/presentation/bloc/fs_rules_bloc/fs_rules_bloc.dart';
 import 'package:fantavacanze_official/features/fantaserata/presentation/bloc/fs_league_bloc/fs_bloc.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/notifications_bloc/notifications_bloc.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/subscription_bloc/subscription_bloc.dart';
@@ -66,8 +65,7 @@ void main() async {
 
           // Fantaserata
           BlocProvider(create: (_) => serviceLocator<FsBloc>()),
-          BlocProvider(create: (_) => serviceLocator<FsDynamicRulesBloc>()),
-          BlocProvider(create: (_) => serviceLocator<FsFixedRulesBloc>()),
+          BlocProvider(create: (_) => serviceLocator<FsRulesBloc>()),
           BlocProvider(create: (_) => serviceLocator<AppFsLeagueCubit>()),
 
           // Navigation

@@ -1,9 +1,9 @@
 import 'package:fantavacanze_official/core/cubits/app_fs_league/app_fs_league_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit.dart';
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
-import 'package:fantavacanze_official/features/fantaserata/presentation/pages/fs_dashboard_page.dart';
+import 'package:fantavacanze_official/features/fantaserata/presentation/pages/navigation/fs_dashboard/fs_dashboard_page.dart';
 import 'package:fantavacanze_official/features/fantaserata/presentation/pages/fs_main_page.dart';
-import 'package:fantavacanze_official/features/fantaserata/presentation/pages/fs_onboarding_screen.dart';
+import 'package:fantavacanze_official/features/fantaserata/presentation/pages/navigation/fs_onboarding/fs_onboarding_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 

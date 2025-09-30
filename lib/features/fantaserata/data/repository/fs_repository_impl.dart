@@ -1,4 +1,5 @@
 import 'package:fpdart/fpdart.dart';
+import 'package:flutter/foundation.dart';
 import 'package:fantavacanze_official/core/errors/exceptions.dart';
 import 'package:fantavacanze_official/core/errors/failure.dart';
 import 'package:fantavacanze_official/core/network/connection_checker.dart';
@@ -60,115 +61,6 @@ class FsRepositoryImpl implements FsRepository {
         inviteCode: inviteCode,
         userId: userId,
         userName: userName,
-      );
-
-      await localDataSource.cacheFsLeague(league);
-
-      return right(league);
-    } on ServerException catch (e) {
-      return left(Failure(e.message));
-    }
-  }
-
-  @override
-  Future<Either<Failure, FsLeague>> addEvent({
-    required String leagueId,
-    required String name,
-    required double points,
-    required String targetParticipantId,
-    required String type,
-  }) async {
-    try {
-      if (!await connectionChecker.isConnected) {
-        return left(const Failure('Nessuna connessione internet'));
-      }
-
-      final league = await remoteDataSource.addEvent(
-        leagueId: leagueId,
-        name: name,
-        points: points,
-        targetParticipantId: targetParticipantId,
-        type: type,
-      );
-
-      await localDataSource.cacheFsLeague(league);
-
-      return right(league);
-    } on ServerException catch (e) {
-      return left(Failure(e.message));
-    }
-  }
-
-  @override
-  Future<Either<Failure, FsLeague>> removeEvent({
-    required String leagueId,
-    required String eventId,
-  }) async {
-    try {
-      if (!await connectionChecker.isConnected) {
-        return left(const Failure('Nessuna connessione internet'));
-      }
-
-      final league = await remoteDataSource.removeEvent(
-        leagueId: leagueId,
-        eventId: eventId,
-      );
-
-      // Update cache with new league data
-      await localDataSource.cacheFsLeague(league);
-
-      return right(league);
-    } on ServerException catch (e) {
-      return left(Failure(e.message));
-    }
-  }
-
-  @override
-  Future<Either<Failure, FsLeague>> addMemory({
-    required String leagueId,
-    required String imageUrl,
-    required String description,
-    required String userId,
-    required String participantName,
-    String? relatedEventId,
-    String? eventName,
-  }) async {
-    try {
-      if (!await connectionChecker.isConnected) {
-        return left(const Failure('Nessuna connessione internet'));
-      }
-
-      final league = await remoteDataSource.addMemory(
-        leagueId: leagueId,
-        imageUrl: imageUrl,
-        description: description,
-        userId: userId,
-        participantName: participantName,
-        relatedEventId: relatedEventId,
-        eventName: eventName,
-      );
-
-      await localDataSource.cacheFsLeague(league);
-
-      return right(league);
-    } on ServerException catch (e) {
-      return left(Failure(e.message));
-    }
-  }
-
-  @override
-  Future<Either<Failure, FsLeague>> deleteMemory({
-    required String leagueId,
-    required String memoryId,
-  }) async {
-    try {
-      if (!await connectionChecker.isConnected) {
-        return left(const Failure('Nessuna connessione internet'));
-      }
-
-      final league = await remoteDataSource.deleteMemory(
-        leagueId: leagueId,
-        memoryId: memoryId,
       );
 
       await localDataSource.cacheFsLeague(league);
@@ -269,6 +161,60 @@ class FsRepositoryImpl implements FsRepository {
         return right(null);
       }
     } on ServerException catch (e) {
+      return left(Failure(e.message));
+    }
+  }
+
+  @override
+  Future<Either<Failure, FsLeague>> uploadWinnerPhoto({
+    required String leagueId,
+    required Uint8List imageBytes,
+  }) async {
+    try {
+      if (!await connectionChecker.isConnected) {
+        return left(const Failure('Nessuna connessione internet'));
+      }
+
+      final league = await remoteDataSource.uploadWinnerPhoto(
+        leagueId: leagueId,
+        imageBytes: imageBytes,
+      );
+
+      await localDataSource.cacheFsLeague(league);
+
+      return right(league);
+    } on ServerException catch (e) {
+      return left(Failure(e.message));
+    }
+  }
+
+  @override
+  Future<Either<Failure, FsLeague>> deleteWinnerPhoto({
+    required String leagueId,
+  }) async {
+    try {
+      if (!await connectionChecker.isConnected) {
+        return left(const Failure('Nessuna connessione internet'));
+      }
+
+      final league =
+          await remoteDataSource.deleteWinnerPhoto(leagueId: leagueId);
+
+      await localDataSource.cacheFsLeague(league);
+
+      return right(league);
+    } on ServerException catch (e) {
+      return left(Failure(e.message));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> clearFsLeagueCache() async {
+    try {
+      await localDataSource.clearFsLeagueCache();
+
+      return right(null);
+    } on CacheException catch (e) {
       return left(Failure(e.message));
     }
   }

@@ -1,9 +1,9 @@
 class FsParticipant {
   final String userId;
   final String name;
-  final String points;
-  final String malusTotal;
-  final String bonusTotal;
+  final double points;
+  final double malusTotal;
+  final double bonusTotal;
 
   FsParticipant({
     required this.userId,

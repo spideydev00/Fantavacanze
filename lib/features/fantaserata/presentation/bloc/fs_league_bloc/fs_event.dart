@@ -30,36 +30,6 @@ final class JoinFsLeagueEvent extends FsEvent {
   });
 }
 
-final class AddFsMemoryEvent extends FsEvent {
-  final String leagueId;
-  final String imageUrl;
-  final String description;
-  final String userId;
-  final String participantName;
-  final String? relatedEventId;
-  final String? eventName;
-
-  AddFsMemoryEvent({
-    required this.leagueId,
-    required this.imageUrl,
-    required this.description,
-    required this.userId,
-    required this.participantName,
-    this.relatedEventId,
-    this.eventName,
-  });
-}
-
-final class DeleteFsMemoryEvent extends FsEvent {
-  final String leagueId;
-  final String memoryId;
-
-  DeleteFsMemoryEvent({
-    required this.leagueId,
-    required this.memoryId,
-  });
-}
-
 final class ExitFsLeagueEvent extends FsEvent {
   final String leagueId;
   final String userId;
@@ -73,21 +43,25 @@ final class ExitFsLeagueEvent extends FsEvent {
 final class DeleteFsLeagueEvent extends FsEvent {
   final String leagueId;
 
-  DeleteFsLeagueEvent({required this.leagueId});
+  DeleteFsLeagueEvent({
+    required this.leagueId,
+  });
 }
 
-final class AddFsEventEvent extends FsEvent {
+final class UploadWinnerPhotoEvent extends FsEvent {
   final String leagueId;
-  final String name;
-  final double points;
-  final String targetParticipantId;
-  final String type;
+  final Uint8List imageBytes;
 
-  AddFsEventEvent({
+  UploadWinnerPhotoEvent({
     required this.leagueId,
-    required this.name,
-    required this.points,
-    required this.targetParticipantId,
-    required this.type,
+    required this.imageBytes,
+  });
+}
+
+final class DeleteWinnerPhotoEvent extends FsEvent {
+  final String leagueId;
+
+  DeleteWinnerPhotoEvent({
+    required this.leagueId,
   });
 }

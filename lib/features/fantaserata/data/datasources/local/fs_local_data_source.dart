@@ -17,6 +17,7 @@ class FsLocalDataSourceImpl implements FsLocalDataSource {
   Future<FsLeagueModel?> getCachedFsLeague() async {
     try {
       final values = fsLeaguesBox.values.toList();
+
       return values.isNotEmpty ? values.first : null;
     } catch (e) {
       throw CacheException(e.toString());
@@ -27,6 +28,7 @@ class FsLocalDataSourceImpl implements FsLocalDataSource {
   Future<void> cacheFsLeague(FsLeagueModel? league) async {
     try {
       await fsLeaguesBox.clear();
+
       if (league != null) {
         await fsLeaguesBox.put(league.id, league);
       }

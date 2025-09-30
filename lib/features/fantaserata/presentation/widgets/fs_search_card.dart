@@ -3,7 +3,10 @@ import 'package:fantavacanze_official/core/extensions/context_extension.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:fantavacanze_official/core/utils/show-snackbar-or-paywall/show_page_specific_snackbar.dart';
+import 'package:fantavacanze_official/core/widgets/loader.dart';
+import 'package:fantavacanze_official/features/fantaserata/presentation/bloc/fs_league_bloc/fs_bloc.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class FsSearchCard extends StatelessWidget {
   final String title;
@@ -75,10 +78,19 @@ class FsSearchCard extends StatelessWidget {
                     }
                     onSearch();
                   },
-                  icon: Icon(
-                    Icons.arrow_forward_rounded,
-                    color: Colors.white,
-                    size: 24,
+                  icon: BlocBuilder<FsBloc, FsState>(
+                    builder: (context, state) {
+                      if (state is FsLoading) {
+                        return const Loader(
+                          color: Colors.white,
+                        );
+                      }
+                      return Icon(
+                        Icons.arrow_forward_rounded,
+                        color: Colors.white,
+                        size: 24,
+                      );
+                    },
                   ),
                 ),
               ),

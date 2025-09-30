@@ -15,15 +15,15 @@ class FsParticipantModel extends FsParticipant {
 
   @HiveField(2)
   @override
-  String get points => super.points;
+  double get points => super.points;
 
   @HiveField(3)
   @override
-  String get malusTotal => super.malusTotal;
+  double get malusTotal => super.malusTotal;
 
   @HiveField(4)
   @override
-  String get bonusTotal => super.bonusTotal;
+  double get bonusTotal => super.bonusTotal;
 
   FsParticipantModel({
     required super.userId,
@@ -37,9 +37,9 @@ class FsParticipantModel extends FsParticipant {
     return FsParticipantModel(
       userId: json['userId'] as String,
       name: json['name'] as String,
-      points: json['points'] as String,
-      malusTotal: json['malusTotal'] as String,
-      bonusTotal: json['bonusTotal'] as String,
+      points: (json['points'] as num).toDouble(),
+      malusTotal: (json['malusTotal'] as num).toDouble(),
+      bonusTotal: (json['bonusTotal'] as num).toDouble(),
     );
   }
 

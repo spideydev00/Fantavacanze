@@ -23,15 +23,14 @@ class FsLeagueModelAdapter extends TypeAdapter<FsLeagueModel> {
       createdAt: fields[3] as DateTime,
       inviteCode: fields[4] as String,
       participants: (fields[5] as List).cast<FsParticipantModel>(),
-      events: (fields[6] as List).cast<FsEventModel>(),
-      memories: (fields[7] as List).cast<FsMemoryModel>(),
+      winnerPhotoUrl: fields[6] as String?,
     );
   }
 
   @override
   void write(BinaryWriter writer, FsLeagueModel obj) {
     writer
-      ..writeByte(8)
+      ..writeByte(7)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -45,9 +44,7 @@ class FsLeagueModelAdapter extends TypeAdapter<FsLeagueModel> {
       ..writeByte(5)
       ..write(obj.participants)
       ..writeByte(6)
-      ..write(obj.events)
-      ..writeByte(7)
-      ..write(obj.memories);
+      ..write(obj.winnerPhotoUrl);
   }
 
   @override

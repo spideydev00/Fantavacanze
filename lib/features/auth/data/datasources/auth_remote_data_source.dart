@@ -78,6 +78,8 @@ abstract interface class AuthRemoteDataSource {
 
   Future<UserModel> setHasLeftReview({required bool hasLeftReview});
 
+  Future<UserModel> setHasPlayedFs({required bool setHasPlayedFs});
+
   Session? get currentSession;
 }
 
@@ -664,6 +666,27 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       await supabaseClient
           .from('profiles')
           .update({'has_left_review': hasLeftReview}).eq('id', userId);
+
+      // Get the updated user data
+      final user = await getCurrentUserData();
+
+      return user!;
+    } catch (e) {
+      throw ServerException(_extractErrorMessage(e));
+    }
+  }
+
+  @override
+  Future<UserModel> setHasPlayedFs({required bool setHasPlayedFs}) async {
+    try {
+      final userId = currentSession?.user.id;
+
+      if (userId == null) throw ServerException('Utente non autenticato');
+
+      // Update the has_left_review field in the profiles table
+      await supabaseClient
+          .from('profiles')
+          .update({'has_played_fs': setHasPlayedFs}).eq('id', userId);
 
       // Get the updated user data
       final user = await getCurrentUserData();

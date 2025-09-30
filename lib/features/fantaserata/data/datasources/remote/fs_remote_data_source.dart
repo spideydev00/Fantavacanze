@@ -1,13 +1,9 @@
-import 'package:fantavacanze_official/features/fantaserata/data/models/participant/fs_participant_model.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter/foundation.dart';
 import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit.dart';
 
 import 'package:fantavacanze_official/core/errors/exceptions.dart';
 import 'package:fantavacanze_official/features/fantaserata/data/models/league/fs_league_model.dart';
-import 'package:fantavacanze_official/features/fantaserata/data/models/event/fs_event_model.dart';
-import 'package:fantavacanze_official/features/fantaserata/data/models/memory/fs_memory_model.dart';
-import 'package:fantavacanze_official/features/fantaserata/domain/entities/fs_rule/fs_rule.dart';
 import 'package:uuid/uuid.dart';
 
 abstract interface class FsRemoteDataSource {
@@ -22,34 +18,6 @@ abstract interface class FsRemoteDataSource {
     required String inviteCode,
     required String userId,
     required String userName,
-  });
-
-  Future<FsLeagueModel> addEvent({
-    required String leagueId,
-    required String name,
-    required double points,
-    required String targetParticipantId,
-    required String type,
-  });
-
-  Future<FsLeagueModel> removeEvent({
-    required String leagueId,
-    required String eventId,
-  });
-
-  Future<FsLeagueModel> addMemory({
-    required String leagueId,
-    required String imageUrl,
-    required String description,
-    required String userId,
-    required String participantName,
-    String? relatedEventId,
-    String? eventName,
-  });
-
-  Future<FsLeagueModel> deleteMemory({
-    required String leagueId,
-    required String memoryId,
   });
 
   Future<FsLeagueModel> removeParticipant({
@@ -67,6 +35,23 @@ abstract interface class FsRemoteDataSource {
   });
 
   Future<FsLeagueModel?> getFsLeague();
+
+  Future<void> updateParticipantPoints({
+    required String leagueId,
+    required String userId,
+    required double pointsToAdd,
+    required double bonusToAdd,
+    required double malusToAdd,
+  });
+
+  Future<FsLeagueModel> uploadWinnerPhoto({
+    required String leagueId,
+    required Uint8List imageBytes,
+  });
+
+  Future<FsLeagueModel> deleteWinnerPhoto({
+    required String leagueId,
+  });
 }
 
 class FsRemoteDataSourceImpl implements FsRemoteDataSource {
@@ -119,45 +104,6 @@ class FsRemoteDataSourceImpl implements FsRemoteDataSource {
     }
   }
 
-  /// Creates memory data
-  FsMemoryModel _createMemoryData({
-    required String imageUrl,
-    required String description,
-    required String userId,
-    required String participantName,
-    String? relatedEventId,
-    String? eventName,
-  }) {
-    final memoryId = uuid.v4();
-    return FsMemoryModel(
-      id: memoryId,
-      imageUrl: imageUrl,
-      description: description,
-      createdAt: DateTime.now(),
-      userId: userId,
-      participantName: participantName,
-      relatedEventId: relatedEventId,
-      eventName: eventName,
-    );
-  }
-
-  /// Creates event data
-  FsEventModel _createEventData({
-    required String name,
-    required double points,
-    required FsParticipantModel targetParticipant,
-    required FsRuleType type,
-  }) {
-    return FsEventModel(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
-      name: name,
-      points: points,
-      targetParticipant: targetParticipant,
-      createdAt: DateTime.now(),
-      type: type,
-    );
-  }
-
   // =====================================================================
   // EXISTING METHODS WITH _tryDatabaseOperation
   // =====================================================================
@@ -182,13 +128,11 @@ class FsRemoteDataSourceImpl implements FsRemoteDataSource {
               {
                 'userId': creatorId,
                 'name': creatorName,
-                'points': '0',
-                'malusTotal': '0',
-                'bonusTotal': '0',
+                'points': 0,
+                'malusTotal': 0,
+                'bonusTotal': 0,
               }
             ],
-            'events': [],
-            'memories': [],
           })
           .select()
           .single();
@@ -241,9 +185,9 @@ class FsRemoteDataSourceImpl implements FsRemoteDataSource {
         {
           'userId': userId,
           'name': userName,
-          'points': '0',
-          'malusTotal': '0',
-          'bonusTotal': '0',
+          'points': 0,
+          'malusTotal': 0,
+          'bonusTotal': 0,
         }
       ];
 
@@ -263,222 +207,6 @@ class FsRemoteDataSourceImpl implements FsRemoteDataSource {
       );
 
       return updatedLeague;
-    });
-  }
-
-  @override
-  Future<FsLeagueModel> addEvent({
-    required String leagueId,
-    required String name,
-    required double points,
-    required String targetParticipantId,
-    required String type,
-  }) async {
-    return _tryDatabaseOperation(() async {
-      final leagueResponse = await supabaseClient
-          .from('fs_leagues')
-          .select()
-          .eq('id', leagueId)
-          .single();
-
-      final league = FsLeagueModel.fromJson(leagueResponse);
-      final targetParticipant = league.participants
-          .firstWhere((p) => p.userId == targetParticipantId);
-
-      final newEvent = _createEventData(
-        name: name,
-        points: points,
-        targetParticipant: targetParticipant,
-        type: type == 'bonus' ? FsRuleType.bonus : FsRuleType.malus,
-      );
-
-      final updatedEvents = [
-        ...league.events.map((e) => FsEventModel.fromEntity(e).toJson()),
-        newEvent.toJson(),
-      ];
-
-      // Update participant points
-      final updatedParticipants = league.participants.map((p) {
-        if (p.userId == targetParticipantId) {
-          final currentPoints = double.parse(p.points);
-          final newPoints = currentPoints + points;
-
-          final currentBonus = double.parse(p.bonusTotal);
-          final currentMalus = double.parse(p.malusTotal);
-
-          return {
-            'userId': p.userId,
-            'name': p.name,
-            'points': newPoints.toString(),
-            'malusTotal': type == 'malus'
-                ? (currentMalus + points.abs()).toString()
-                : p.malusTotal,
-            'bonusTotal': type == 'bonus'
-                ? (currentBonus + points).toString()
-                : p.bonusTotal,
-          };
-        }
-        return {
-          'userId': p.userId,
-          'name': p.name,
-          'points': p.points,
-          'malusTotal': p.malusTotal,
-          'bonusTotal': p.bonusTotal,
-        };
-      }).toList();
-
-      final response = await supabaseClient
-          .from('fs_leagues')
-          .update({
-            'events': updatedEvents,
-            'participants': updatedParticipants,
-          })
-          .eq('id', leagueId)
-          .select()
-          .single();
-
-      return FsLeagueModel.fromJson(response);
-    });
-  }
-
-  @override
-  Future<FsLeagueModel> removeEvent({
-    required String leagueId,
-    required String eventId,
-  }) async {
-    return _tryDatabaseOperation(() async {
-      final leagueResponse = await supabaseClient
-          .from('fs_leagues')
-          .select()
-          .eq('id', leagueId)
-          .single();
-
-      final league = FsLeagueModel.fromJson(leagueResponse);
-      final eventToRemove = league.events.firstWhere((e) => e.id == eventId);
-
-      final updatedEvents = league.events
-          .where((e) => e.id != eventId)
-          .map((e) => FsEventModel.fromEntity(e).toJson())
-          .toList();
-
-      // Update participant points
-      final updatedParticipants = league.participants.map((p) {
-        if (p.userId == eventToRemove.targetParticipant.userId) {
-          final currentPoints = double.parse(p.points);
-          final newPoints = currentPoints - eventToRemove.points;
-
-          final currentBonus = double.parse(p.bonusTotal);
-          final currentMalus = double.parse(p.malusTotal);
-
-          return {
-            'userId': p.userId,
-            'name': p.name,
-            'points': newPoints.toString(),
-            'malusTotal': eventToRemove.type == FsRuleType.malus
-                ? (currentMalus - eventToRemove.points.abs()).toString()
-                : p.malusTotal,
-            'bonusTotal': eventToRemove.type == FsRuleType.bonus
-                ? (currentBonus - eventToRemove.points).toString()
-                : p.bonusTotal,
-          };
-        }
-        return {
-          'userId': p.userId,
-          'name': p.name,
-          'points': p.points,
-          'malusTotal': p.malusTotal,
-          'bonusTotal': p.bonusTotal,
-        };
-      }).toList();
-
-      final response = await supabaseClient
-          .from('fs_leagues')
-          .update({
-            'events': updatedEvents,
-            'participants': updatedParticipants,
-          })
-          .eq('id', leagueId)
-          .select()
-          .single();
-
-      return FsLeagueModel.fromJson(response);
-    });
-  }
-
-  @override
-  Future<FsLeagueModel> addMemory({
-    required String leagueId,
-    required String imageUrl,
-    required String description,
-    required String userId,
-    required String participantName,
-    String? relatedEventId,
-    String? eventName,
-  }) async {
-    return _tryDatabaseOperation(() async {
-      final leagueResponse = await supabaseClient
-          .from('fs_leagues')
-          .select()
-          .eq('id', leagueId)
-          .single();
-
-      final league = FsLeagueModel.fromJson(leagueResponse);
-
-      // Get participant name
-      final resolvedParticipantName = participantName;
-
-      final newMemory = _createMemoryData(
-        imageUrl: imageUrl,
-        description: description,
-        userId: userId,
-        participantName: resolvedParticipantName,
-        relatedEventId: relatedEventId,
-        eventName: eventName,
-      );
-
-      final updatedMemories = [
-        ...league.memories.map((m) => FsMemoryModel.fromEntity(m).toJson()),
-        newMemory.toJson(),
-      ];
-
-      final response = await supabaseClient
-          .from('fs_leagues')
-          .update({'memories': updatedMemories})
-          .eq('id', leagueId)
-          .select()
-          .single();
-
-      return FsLeagueModel.fromJson(response);
-    });
-  }
-
-  @override
-  Future<FsLeagueModel> deleteMemory({
-    required String leagueId,
-    required String memoryId,
-  }) async {
-    return _tryDatabaseOperation(() async {
-      final leagueResponse = await supabaseClient
-          .from('fs_leagues')
-          .select()
-          .eq('id', leagueId)
-          .single();
-
-      final league = FsLeagueModel.fromJson(leagueResponse);
-
-      final updatedMemories = league.memories
-          .where((m) => m.id != memoryId)
-          .map((m) => FsMemoryModel.fromEntity(m).toJson())
-          .toList();
-
-      final response = await supabaseClient
-          .from('fs_leagues')
-          .update({'memories': updatedMemories})
-          .eq('id', leagueId)
-          .select()
-          .single();
-
-      return FsLeagueModel.fromJson(response);
     });
   }
 
@@ -574,11 +302,17 @@ class FsRemoteDataSourceImpl implements FsRemoteDataSource {
         'user_id': currentUserId,
       });
 
-      if (response.isNotEmpty) {
+      // Controlla se la response è null o una lista vuota
+      if (response == null || (response is List && response.isEmpty)) {
+        return null;
+      }
+
+      // Se response è una lista, prendi il primo elemento
+      if (response is List) {
         return FsLeagueModel.fromJson(response.first);
       }
 
-      return null;
+      return FsLeagueModel.fromJson(response);
     });
   }
 
@@ -591,6 +325,127 @@ class FsRemoteDataSourceImpl implements FsRemoteDataSource {
     await supabaseClient.rpc('assign_fs_dynamic_rules_to_user', params: {
       'p_user_id': userId,
       'p_league_id': leagueId,
+    });
+  }
+
+  @override
+  Future<void> updateParticipantPoints({
+    required String leagueId,
+    required String userId,
+    required double pointsToAdd,
+    required double bonusToAdd,
+    required double malusToAdd,
+  }) async {
+    return _tryDatabaseOperation(() async {
+      // Get current league
+      final leagueResponse = await supabaseClient
+          .from('fs_leagues')
+          .select()
+          .eq('id', leagueId)
+          .single();
+
+      final league = FsLeagueModel.fromJson(leagueResponse);
+
+      // Find and update the participant
+      final updatedParticipants = league.participants.map((participant) {
+        if (participant.userId == userId) {
+          // Calculate new totals
+          final newPoints = participant.points + pointsToAdd;
+          final newBonusTotal = participant.bonusTotal + bonusToAdd;
+          final newMalusTotal = participant.malusTotal + malusToAdd;
+
+          return {
+            'userId': participant.userId,
+            'name': participant.name,
+            'points': newPoints,
+            'bonusTotal': newBonusTotal,
+            'malusTotal': newMalusTotal,
+          };
+        }
+        return {
+          'userId': participant.userId,
+          'name': participant.name,
+          'points': participant.points,
+          'bonusTotal': participant.bonusTotal,
+          'malusTotal': participant.malusTotal,
+        };
+      }).toList();
+
+      // Update the league with new participant data
+      await supabaseClient
+          .from('fs_leagues')
+          .update({'participants': updatedParticipants}).eq('id', leagueId);
+    });
+  }
+
+  @override
+  Future<FsLeagueModel> uploadWinnerPhoto({
+    required String leagueId,
+    required Uint8List imageBytes,
+  }) async {
+    return _tryDatabaseOperation(() async {
+      final String timestamp = DateTime.now().millisecondsSinceEpoch.toString();
+      final String path = '$leagueId/winner_$timestamp.jpg';
+
+      // Upload image to Supabase storage
+      await supabaseClient.storage.from('fs-memories').uploadBinary(
+            path,
+            imageBytes,
+            fileOptions: const FileOptions(
+              contentType: 'image/jpeg',
+            ),
+          );
+
+      // Create a signed URL
+      final signedUrl =
+          await supabaseClient.storage.from('fs-memories').createSignedUrl(
+                path,
+                60 * 60 * 24 * 365,
+              );
+
+      // Update the league's winner_photo_url
+      final response = await supabaseClient
+          .from('fs_leagues')
+          .update({'winner_photo_url': signedUrl})
+          .eq('id', leagueId)
+          .select()
+          .maybeSingle();
+
+      return FsLeagueModel.fromJson(response!);
+    });
+  }
+
+  @override
+  Future<FsLeagueModel> deleteWinnerPhoto({
+    required String leagueId,
+  }) async {
+    return _tryDatabaseOperation(() async {
+      // Update the league's winner_photo_url
+      final response = await supabaseClient
+          .from('fs_leagues')
+          .update({'winner_photo_url': null})
+          .eq('id', leagueId)
+          .select()
+          .maybeSingle();
+
+      try {
+        // List all files in the league folder
+        final List<FileObject> files = await supabaseClient.storage
+            .from('fs-memories')
+            .list(path: leagueId);
+
+        if (files.isNotEmpty) {
+          // Extract file paths and delete them
+          final List<String> filePaths =
+              files.map((file) => '$leagueId/${file.name}').toList();
+
+          await supabaseClient.storage.from('fs-memories').remove(filePaths);
+        }
+      } catch (e) {
+        debugPrint('❌ Error deleting files from storage: $e');
+      }
+
+      return FsLeagueModel.fromJson(response!);
     });
   }
 }

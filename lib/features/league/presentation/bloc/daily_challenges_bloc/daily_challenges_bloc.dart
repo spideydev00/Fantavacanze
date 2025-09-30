@@ -355,6 +355,7 @@ class DailyChallengesBloc
   ) async {
     // Verifica che lo stato corrente sia loaded
     final currentState = state;
+
     if (currentState is! DailyChallengesLoaded) {
       // Se non abbiamo già caricato le sfide, dobbiamo farlo
       await _onGetDailyChallenges(

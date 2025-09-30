@@ -37,6 +37,7 @@ class AppLeagueCubit extends Cubit<AppLeagueState> {
   Future<void> getUserLeagues() async {
     // Check authentication state before trying to fetch leagues
     final userState = _appUserCubit.state;
+
     if (userState is! AppUserIsLoggedIn) {
       // User is not logged in or is in onboarding
       // Silently maintain the initial state without showing error
