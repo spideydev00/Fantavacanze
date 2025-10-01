@@ -86,6 +86,8 @@ dependencies:
   awesome_video_player: ^1.0.5
   path: ^1.9.1
   image: ^4.5.4
+  dio: ^5.9.0
+  gallery_saver_plus: ^3.2.9
 
 dev_dependencies:
   flutter_test:

@@ -4,6 +4,7 @@ import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit.dart';
 import 'package:fantavacanze_official/core/errors/exceptions.dart';
 import 'package:fantavacanze_official/features/league/data/models/notification_model/daily_challenge_notification_model.dart';
 import 'package:fantavacanze_official/core/entities/notification/model/notification_model.dart';
+import 'package:fantavacanze_official/core/entities/notification/enums/notification_type.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -30,13 +31,25 @@ class NotificationRemoteDataSourceImpl implements NotificationRemoteDataSource {
 
   void initNotificationListener() {
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      if (message.notification != null) {
-        // Converti direttamente in NotificationModel
+      debugPrint('📨 FCM received in FOREGROUND: ${message.data}');
+
+      final type = NotificationType.fromString(message.data['type']);
+
+      if (type != null && type.isEphemeral) {
+        debugPrint('🔄 Processing ephemeral notification: ${type.value}');
+        return;
+      }
+
+      // For persistent notifications (daily_challenge_request),
+      // only process if we have both notification payload and valid type
+      if (message.notification != null &&
+          type == NotificationType.dailyChallengeRequest) {
         convertRemoteNotificationToModel(message.notification!, message)
             .then((notificationModel) {
           if (notificationModel != null) {
             _notificationModelController.add(notificationModel);
-            debugPrint('📨 Notifica convertita: ${notificationModel.title}');
+            debugPrint(
+                '📨 Daily challenge notification processed: ${notificationModel.title}');
           }
         });
       }
@@ -141,6 +154,14 @@ class NotificationRemoteDataSourceImpl implements NotificationRemoteDataSource {
     try {
       final data = message.data;
       if (data.isEmpty) return null;
+
+      // Filter: Only process daily_challenge_request notifications
+      final type = NotificationType.fromString(data['type']);
+      if (type != NotificationType.dailyChallengeRequest) {
+        debugPrint(
+            '🚫 Filtering out non-daily-challenge notification: ${type?.value}');
+        return null;
+      }
 
       // Ottieni i dati dal payload FCM o usa valori di default
       final id = data['id'] ?? uuid.v4();

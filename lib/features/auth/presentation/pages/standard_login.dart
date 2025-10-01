@@ -1,4 +1,3 @@
-import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/extensions/context_extension.dart';
 import 'package:fantavacanze_official/core/utils/show-snackbar-or-paywall/show_snackbar.dart';
 import 'package:fantavacanze_official/core/widgets/loader.dart';
@@ -141,8 +140,9 @@ class _StandardLoginPageState extends State<StandardLoginPage> {
                     child: Text(
                       "Hai dimenticato la password?",
                       style: context.textTheme.labelMedium!.copyWith(
-                        color: context.secondaryColor,
+                        color: Colors.white,
                         fontWeight: FontWeight.w600,
+                        fontStyle: FontStyle.italic,
                       ),
                     ),
                   ),

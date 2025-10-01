@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:fantavacanze_official/core/constants/constants.dart';
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:flutter/material.dart';
@@ -63,7 +65,9 @@ class _EmptyBrandedPageState extends State<EmptyBrandedPage> {
                       children: [
                         SizedBox(height: widget.logoTopMargin),
                         Padding(
-                          padding: EdgeInsets.symmetric(vertical: 40),
+                          padding: Platform.isIOS
+                              ? EdgeInsets.symmetric(vertical: 30)
+                              : EdgeInsets.symmetric(vertical: 10),
                           child: Image.asset(
                             widget.logoImagePath,
                             width: Constants.getWidth(context) * 0.40,

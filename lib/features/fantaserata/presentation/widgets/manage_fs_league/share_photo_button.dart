@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:fantavacanze_official/core/extensions/context_extension.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
@@ -60,10 +62,15 @@ class SharePhotoButton extends StatelessWidget {
                     children: [
                       Text(
                         "Share",
-                        style: context.textTheme.bodyLarge!.copyWith(
-                          color: ColorPalette.info,
-                          fontWeight: FontWeight.w600,
-                        ),
+                        style: Platform.isIOS
+                            ? context.textTheme.bodyLarge!.copyWith(
+                                color: ColorPalette.info,
+                                fontWeight: FontWeight.w600,
+                              )
+                            : context.textTheme.bodySmall!.copyWith(
+                                color: ColorPalette.info,
+                                fontWeight: FontWeight.w600,
+                              ),
                       ),
                       Text(
                         "Hai fino alle 7!",

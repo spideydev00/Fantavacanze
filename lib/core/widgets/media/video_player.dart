@@ -122,32 +122,13 @@ class _BetterVideoPlayerState extends State<BetterVideoPlayer>
   }
 
   BetterPlayerConfiguration _buildPlayerConfiguration() {
-    // Get screen dimensions with proper validation
-    final screenSize = MediaQuery.sizeOf(context);
-    final screenWidth = screenSize.width;
-    final screenHeight = screenSize.height;
-
-    // Validate screen dimensions and provide fallbacks
-    final safeWidth =
-        (screenWidth.isFinite && screenWidth > 0) ? screenWidth : 390.0;
-
-    final safeHeight =
-        (screenHeight.isFinite && screenHeight > 0) ? screenHeight : 844.0;
-
-    double safeScreenRatio = safeWidth / safeHeight;
-
-    // Additional validation for the calculated ratio
-    if (!safeScreenRatio.isFinite || safeScreenRatio <= 0) {
-      safeScreenRatio = 9.0 / 16.0;
-    }
-
-    // Clamp to reasonable bounds
-    safeScreenRatio = safeScreenRatio.clamp(0.1, 10.0);
+    // Use safe fallback values to prevent NaN issues
+    const double defaultAspectRatio = 9.0 / 16.0;
 
     switch (widget.mode) {
       case VideoPlayerMode.memories:
         return BetterPlayerConfiguration(
-          aspectRatio: 9.0 / 16.0,
+          aspectRatio: defaultAspectRatio,
           fit: widget.fit,
           looping: false,
           fullScreenByDefault: false,
@@ -181,9 +162,12 @@ class _BetterVideoPlayerState extends State<BetterVideoPlayer>
         );
 
       case VideoPlayerMode.tutorials:
+        // Calculate safe aspect ratio for tutorials with extensive validation
+        double safeAspectRatio = _calculateSafeAspectRatio();
+
         return BetterPlayerConfiguration(
-          aspectRatio: safeScreenRatio,
-          fullScreenAspectRatio: safeScreenRatio,
+          aspectRatio: safeAspectRatio,
+          fullScreenAspectRatio: safeAspectRatio,
           fit: widget.fit,
           allowedScreenSleep: false,
           deviceOrientationsOnFullScreen: [
@@ -218,6 +202,49 @@ class _BetterVideoPlayerState extends State<BetterVideoPlayer>
           placeholder: _buildPlaceholder(),
           errorBuilder: _buildErrorWidget,
         );
+    }
+  }
+
+  /// Calculate a safe aspect ratio with extensive validation to prevent NaN values
+  double _calculateSafeAspectRatio() {
+    const double fallbackRatio = 9.0 / 16.0;
+
+    try {
+      // Check if context is mounted and MediaQuery is available
+      if (!mounted) return fallbackRatio;
+
+      final mediaQuery = MediaQuery.maybeOf(context);
+      if (mediaQuery == null) return fallbackRatio;
+
+      final screenSize = mediaQuery.size;
+      final screenWidth = screenSize.width;
+      final screenHeight = screenSize.height;
+
+      // Extensive validation to prevent any NaN values
+      if (!screenWidth.isFinite ||
+          !screenHeight.isFinite ||
+          screenWidth <= 0 ||
+          screenHeight <= 0 ||
+          screenWidth.isNaN ||
+          screenHeight.isNaN) {
+        return fallbackRatio;
+      }
+
+      final calculatedRatio = screenWidth / screenHeight;
+
+      // Final validation of the calculated ratio
+      if (!calculatedRatio.isFinite ||
+          calculatedRatio <= 0 ||
+          calculatedRatio.isNaN) {
+        return fallbackRatio;
+      }
+
+      // Clamp to reasonable bounds to prevent extreme values
+      return calculatedRatio.clamp(0.1, 10.0);
+    } catch (e) {
+      // If any error occurs, return safe fallback
+      debugPrint('Error calculating aspect ratio: $e');
+      return fallbackRatio;
     }
   }
 
@@ -372,19 +399,11 @@ class _BetterVideoPlayerState extends State<BetterVideoPlayer>
     }
 
     // Calculate safe aspect ratio for the widget wrapper
-    double aspectRatio = 9.0 / 16.0; // Default for memories
+    double aspectRatio = 9.0 / 16.0; // Safe default for memories
 
     if (widget.mode == VideoPlayerMode.tutorials) {
-      final screenSize = MediaQuery.sizeOf(context);
-      final screenWidth = screenSize.width;
-      final screenHeight = screenSize.height;
-
-      if (screenWidth.isFinite &&
-          screenHeight.isFinite &&
-          screenWidth > 0 &&
-          screenHeight > 0) {
-        aspectRatio = (screenWidth / screenHeight).clamp(0.1, 10.0);
-      }
+      // Use the same safe calculation method
+      aspectRatio = _calculateSafeAspectRatio();
     }
 
     return AspectRatio(

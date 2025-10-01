@@ -11,7 +11,7 @@ class FsEventNotification extends Notification {
     required super.createdAt,
     required super.leagueId,
     required this.userName,
-    required this.challengePoints, // Based on this value (negative or positive) the notification will differ
+    required this.challengePoints,
   });
 
   @override

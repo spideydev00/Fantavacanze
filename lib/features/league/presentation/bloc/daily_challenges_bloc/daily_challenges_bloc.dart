@@ -402,19 +402,16 @@ class DailyChallengesBloc
     LockPremiumChallengesEvent event,
     Emitter<DailyChallengesState> emit,
   ) async {
-    // Verifica che lo stato corrente sia loaded
-    final currentState = state;
-    if (currentState is! DailyChallengesLoaded) {
-      // Se non abbiamo già caricato le sfide, dobbiamo farlo
-      await _onGetDailyChallenges(
+    if (state is! DailyChallengesLoaded) {
+      add(
         GetDailyChallengesEvent(
-          userId: event.userId,
-          leagueId: event.leagueId,
+          userId: (_appUserCubit as AppUserIsLoggedIn).user.id,
+          leagueId: (_appLeagueCubit as AppLeagueExists).selectedLeague.id,
         ),
-        emit,
       );
-      return;
     }
+
+    final currentState = state as DailyChallengesLoaded;
 
     // Aggiorna lo stato bloccando le sfide premium e ads
     final updatedChallenges = currentState.challenges.map((challenge) {

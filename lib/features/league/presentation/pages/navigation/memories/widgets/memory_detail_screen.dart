@@ -3,15 +3,18 @@ import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:fantavacanze_official/core/widgets/dialogs/confirmation_dialog.dart';
+import 'package:fantavacanze_official/core/widgets/loader.dart';
 import 'package:fantavacanze_official/core/widgets/media/video_player.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/memory.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/league.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/rule/rule.dart';
 import 'package:fantavacanze_official/core/utils/in-game/find_event_from_memory.dart';
+import 'package:fantavacanze_official/core/utils/media/downloader.dart';
+import 'package:fantavacanze_official/core/utils/show-snackbar-or-paywall/show_snackbar.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-class MemoryDetailScreen extends StatelessWidget {
+class MemoryDetailScreen extends StatefulWidget {
   final Memory memory;
   final VoidCallback? onDelete;
   final bool isCurrentUserAuthor;
@@ -26,12 +29,94 @@ class MemoryDetailScreen extends StatelessWidget {
   });
 
   @override
+  State<MemoryDetailScreen> createState() => _MemoryDetailScreenState();
+}
+
+class _MemoryDetailScreenState extends State<MemoryDetailScreen> {
+  bool _isDownloading = false;
+  double _downloadProgress = 0.0;
+  final Downloader _downloader = Downloader();
+
+  @override
+  void dispose() {
+    _downloader.cancelDownloads();
+    super.dispose();
+  }
+
+  /// Handle download action for both images and videos
+  Future<void> _handleDownload() async {
+    if (_isDownloading) return;
+
+    setState(() {
+      _isDownloading = true;
+      _downloadProgress = 0.0;
+    });
+
+    final String? downloadedPath;
+    if (widget.memory.isVideo) {
+      downloadedPath = await _downloader.downloadVideo(
+        widget.memory.mediaUrl,
+        onProgress: (progress) {
+          setState(() {
+            _downloadProgress = progress;
+          });
+        },
+        onComplete: () {
+          setState(() {
+            _isDownloading = false;
+          });
+          showSnackBar(
+            'Video salvato nella galleria!',
+            color: ColorPalette.success,
+          );
+        },
+        onError: (error) {
+          setState(() {
+            _isDownloading = false;
+          });
+          showSnackBar(error);
+        },
+      );
+    } else {
+      downloadedPath = await _downloader.downloadImage(
+        widget.memory.mediaUrl,
+        onProgress: (progress) {
+          setState(() {
+            _downloadProgress = progress;
+          });
+        },
+        onComplete: () {
+          setState(() {
+            _isDownloading = false;
+          });
+          showSnackBar(
+            'Immagine salvata nella galleria!',
+            color: ColorPalette.success,
+          );
+        },
+        onError: (error) {
+          setState(() {
+            _isDownloading = false;
+          });
+          showSnackBar(error);
+        },
+      );
+    }
+
+    if (downloadedPath == null) {
+      setState(() {
+        _isDownloading = false;
+      });
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     final dateFormat = DateFormat('d MMMM yyyy, HH:mm');
-    final formattedDate = dateFormat.format(memory.createdAt);
+    final formattedDate = dateFormat.format(widget.memory.createdAt);
 
-    final relatedEvent = league != null
-        ? FindEventFromMemory.findRelatedEvent(memory, league!)
+    final relatedEvent = widget.league != null
+        ? FindEventFromMemory.findRelatedEvent(widget.memory, widget.league!)
         : null;
 
     return Scaffold(
@@ -53,7 +138,7 @@ class MemoryDetailScreen extends StatelessWidget {
           ),
         ),
         actions: [
-          if (memory.isVideo)
+          if (widget.memory.isVideo)
             Padding(
               padding: const EdgeInsets.only(right: ThemeSizes.sm),
               child: Container(
@@ -80,7 +165,31 @@ class MemoryDetailScreen extends StatelessWidget {
                 ),
               ),
             ),
-          if (isCurrentUserAuthor && onDelete != null)
+
+          // Download button
+          _isDownloading
+              ? Container(
+                  width: 40,
+                  height: 40,
+                  padding: const EdgeInsets.all(8),
+                  child: CircularProgressIndicator(
+                    value: _downloadProgress,
+                    strokeWidth: 2,
+                    valueColor:
+                        const AlwaysStoppedAnimation<Color>(Colors.white),
+                    backgroundColor: Colors.white.withValues(alpha: 0.3),
+                  ),
+                )
+              : IconButton(
+                  icon: const Icon(Icons.download_rounded, size: 25),
+                  color: Colors.white,
+                  onPressed: _handleDownload,
+                  tooltip: widget.memory.isVideo
+                      ? 'Scarica video'
+                      : 'Scarica immagine',
+                ),
+
+          if (widget.isCurrentUserAuthor && widget.onDelete != null)
             Padding(
               padding: const EdgeInsets.all(ThemeSizes.xs),
               child: IconButton(
@@ -92,7 +201,7 @@ class MemoryDetailScreen extends StatelessWidget {
                     builder: (ctx) => ConfirmationDialog.deleteMemory(
                       onDelete: () {
                         Navigator.pop(ctx);
-                        onDelete!();
+                        widget.onDelete!();
                       },
                     ),
                   );
@@ -108,21 +217,21 @@ class MemoryDetailScreen extends StatelessWidget {
             flex: 3,
             child: Center(
               child: Hero(
-                tag: 'memory_image_${memory.id}',
+                tag: 'memory_image_${widget.memory.id}',
 
                 // 👉 sostituisce il player in volo con un placeholder statico
                 flightShuttleBuilder: (flightContext, animation, direction,
                     fromContext, toContext) {
-                  if (memory.isVideo) {
+                  if (widget.memory.isVideo) {
                     return _buildVideoThumbnailForHero(context);
                   }
                   return CachedNetworkImage(
-                    imageUrl: memory.mediaUrl,
+                    imageUrl: widget.memory.mediaUrl,
                     fit: BoxFit.cover,
                   );
                 },
 
-                child: memory.isVideo
+                child: widget.memory.isVideo
                     ? _buildVideoPlayer(context)
                     : _buildImageViewer(context),
               ),
@@ -169,12 +278,12 @@ class MemoryDetailScreen extends StatelessWidget {
                           ),
                           child: CircleAvatar(
                             radius: 24,
-                            backgroundColor:
-                                ColorPalette.getGradientFromId(memory.userId)
-                                    .colors
-                                    .first,
+                            backgroundColor: ColorPalette.getGradientFromId(
+                                    widget.memory.userId)
+                                .colors
+                                .first,
                             child: Text(
-                              memory.participantName[0].toUpperCase(),
+                              widget.memory.participantName[0].toUpperCase(),
                               style: const TextStyle(
                                   color: Colors.white,
                                   fontWeight: FontWeight.bold,
@@ -188,7 +297,7 @@ class MemoryDetailScreen extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                memory.participantName,
+                                widget.memory.participantName,
                                 style: TextStyle(
                                   fontWeight: FontWeight.bold,
                                   fontSize: 18,
@@ -228,7 +337,7 @@ class MemoryDetailScreen extends StatelessWidget {
                     ),
 
                     // ---------- EVENT ----------
-                    if (memory.eventName != null)
+                    if (widget.memory.eventName != null)
                       Padding(
                         padding: const EdgeInsets.only(bottom: ThemeSizes.md),
                         child: Container(
@@ -252,7 +361,7 @@ class MemoryDetailScreen extends StatelessWidget {
                               const SizedBox(width: ThemeSizes.sm),
                               Expanded(
                                 child: Text(
-                                  memory.eventName!,
+                                  widget.memory.eventName!,
                                   style: TextStyle(
                                     fontSize: 14,
                                     color: _getEventColor(relatedEvent?.type),
@@ -267,11 +376,11 @@ class MemoryDetailScreen extends StatelessWidget {
                       ),
 
                     // ---------- DESCRIPTION ----------
-                    if (memory.text.isNotEmpty)
+                    if (widget.memory.text.isNotEmpty)
                       Padding(
                         padding: const EdgeInsets.only(bottom: ThemeSizes.md),
                         child: Text(
-                          memory.text,
+                          widget.memory.text,
                           style: TextStyle(
                             fontSize: 16,
                             color: context.textPrimaryColor,
@@ -295,7 +404,7 @@ class MemoryDetailScreen extends StatelessWidget {
   Widget _buildVideoPlayer(BuildContext context) {
     return SizedBox.expand(
       child: BetterVideoPlayer(
-        videoSource: memory.mediaUrl,
+        videoSource: widget.memory.mediaUrl,
         fit: BoxFit.cover,
       ),
     );
@@ -306,12 +415,10 @@ class MemoryDetailScreen extends StatelessWidget {
       minScale: .5,
       maxScale: 3.0,
       child: CachedNetworkImage(
-        imageUrl: memory.mediaUrl,
+        imageUrl: widget.memory.mediaUrl,
         fit: BoxFit.contain,
-        placeholder: (_, __) => Center(
-          child: CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation<Color>(context.primaryColor),
-          ),
+        placeholder: (_, __) => Loader(
+          color: ColorPalette.info,
         ),
         errorWidget: (_, __, ___) => const Center(
           child: Icon(Icons.broken_image_rounded, color: Colors.red, size: 60),

@@ -114,6 +114,10 @@ class SettingsPage extends StatelessWidget {
   }
 
   void _handleLogout(BuildContext context) {
+    final appUserCubit = context.read<AppUserCubit>();
+    final appLeagueCubit = context.read<AppLeagueCubit>();
+    final appFsLeagueCubit = context.read<AppFsLeagueCubit>();
+
     showDialog(
       context: context,
       useRootNavigator: true,
@@ -122,15 +126,9 @@ class SettingsPage extends StatelessWidget {
           // Chiudo il dialog
           navigatorKey.currentState!.pop();
 
-          await context.read<AppUserCubit>().signOut();
-
-          if (context.mounted) {
-            await context.read<AppLeagueCubit>().clearCache();
-
-            if (context.mounted) {
-              await context.read<AppFsLeagueCubit>().clearCache();
-            }
-          }
+          await appUserCubit.signOut();
+          await appLeagueCubit.clearCache();
+          await appFsLeagueCubit.clearCache();
 
           // Azzero tutto lo stack e mostro solo SocialLoginPage
           navigatorKey.currentState!.pushAndRemoveUntil(

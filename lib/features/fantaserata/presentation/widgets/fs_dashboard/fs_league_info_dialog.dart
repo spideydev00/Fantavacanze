@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/extensions/context_extension.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
@@ -213,17 +215,25 @@ class _InfoRow extends StatelessWidget {
           const SizedBox(width: ThemeSizes.md),
           Text(
             '$label:',
-            style: context.textTheme.bodyMedium?.copyWith(
-              fontWeight: FontWeight.w500,
-            ),
+            style: Platform.isIOS
+                ? context.textTheme.bodyMedium!.copyWith(
+                    fontWeight: FontWeight.w500,
+                  )
+                : context.textTheme.bodySmall!.copyWith(
+                    fontWeight: FontWeight.w500,
+                  ),
           ),
           const SizedBox(width: ThemeSizes.sm),
           Expanded(
             child: Text(
               value,
-              style: context.textTheme.bodyMedium?.copyWith(
-                color: context.textSecondaryColor,
-              ),
+              style: Platform.isIOS
+                  ? context.textTheme.bodyMedium!.copyWith(
+                      fontWeight: FontWeight.w600,
+                    )
+                  : context.textTheme.bodySmall!.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
               textAlign: TextAlign.end,

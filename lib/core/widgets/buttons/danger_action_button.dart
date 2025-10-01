@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/extensions/context_extension.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
@@ -84,10 +86,15 @@ class DangerActionButton extends StatelessWidget {
                     children: [
                       Text(
                         title,
-                        style: context.textTheme.bodyLarge!.copyWith(
-                          color: dangerColor,
-                          fontWeight: FontWeight.w600,
-                        ),
+                        style: Platform.isIOS
+                            ? context.textTheme.bodyLarge!.copyWith(
+                                color: dangerColor,
+                                fontWeight: FontWeight.w600,
+                              )
+                            : context.textTheme.bodySmall!.copyWith(
+                                color: dangerColor,
+                                fontWeight: FontWeight.w600,
+                              ),
                       ),
                       Text(
                         description,

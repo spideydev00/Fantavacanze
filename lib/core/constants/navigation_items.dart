@@ -11,7 +11,6 @@ import 'package:fantavacanze_official/features/league/presentation/pages/navigat
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/notes/notes_page.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/rules/rules_page.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/team_info/team_info_page.dart';
-import 'package:fantavacanze_official/features/league/presentation/pages/navigation/tutorial/tutorial_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 
@@ -27,14 +26,6 @@ List<NavigationItem> nonParticipantNavbarItems = [
     darkSvgIcon: 'assets/images/icons/homepage_icons/home-icon.svg',
     lightSvgIcon: 'assets/images/icons/homepage_icons/home-icon-dark.svg',
     screen: const HomePage(),
-    subsection: "Naviga",
-  ),
-  NavigationItem(
-    title: "Tutorial",
-    darkSvgIcon: 'assets/images/icons/homepage_icons/question-mark-icon.svg',
-    lightSvgIcon:
-        'assets/images/icons/homepage_icons/question-mark-icon-dark.svg',
-    screen: const TutorialPage(),
     subsection: "Naviga",
   ),
   NavigationItem(
@@ -132,14 +123,6 @@ List<NavigationItem> participantNavbarItems = [
     darkSvgIcon: 'assets/images/icons/homepage_icons/notes-icon.svg',
     lightSvgIcon: 'assets/images/icons/homepage_icons/notes-icon-dark.svg',
     screen: const NotesPage(),
-    subsection: "Naviga",
-  ),
-  NavigationItem(
-    title: "Tutorial",
-    darkSvgIcon: 'assets/images/icons/homepage_icons/question-mark-icon.svg',
-    lightSvgIcon:
-        'assets/images/icons/homepage_icons/question-mark-icon-dark.svg',
-    screen: const TutorialPage(),
     subsection: "Naviga",
   ),
   NavigationItem(

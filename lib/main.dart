@@ -102,22 +102,19 @@ class _MyAppState extends State<MyApp> {
   }
 
   Future<void> _initializeApp() async {
+    final appUserCubit = context.read<AppUserCubit>();
+    final appLeagueCubit = context.read<AppLeagueCubit>();
+    final appFsLeagueCubit = context.read<AppFsLeagueCubit>();
     try {
-      if (mounted) {
-        await context.read<AppUserCubit>().getCurrentUser();
-      }
+      await appUserCubit.getCurrentUser();
 
       // If user is logged in, then load their specific data and check subscription
-      if (mounted && context.read<AppUserCubit>().state is AppUserIsLoggedIn) {
+      if (appUserCubit.state is AppUserIsLoggedIn) {
         await _checkSubscriptionOnStartup();
 
-        if (mounted) {
-          await context.read<AppFsLeagueCubit>().checkFsLeague();
+        await appFsLeagueCubit.checkFsLeague();
 
-          if (mounted) {
-            await context.read<AppLeagueCubit>().getUserLeagues();
-          }
-        }
+        await appLeagueCubit.getUserLeagues();
       }
     } catch (e) {
       debugPrint("Errore di inizializzazione nel main: $e");

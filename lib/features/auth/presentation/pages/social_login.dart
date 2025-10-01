@@ -129,7 +129,7 @@ class _SocialLoginPageState extends State<SocialLoginPage> {
             ),
           ],
           newColumnWidgets: [
-            const PromoText(text: "Diventa il re della festa."),
+            const PromoText(text: "Diventa l'anima della festa."),
             Padding(
               padding: const EdgeInsets.symmetric(vertical: ThemeSizes.xl),
               child: CustomRichText(
