@@ -425,6 +425,7 @@ class _FsObjectivesSectionState extends State<FsObjectivesSection>
       isCompleted: rule.isCompleted,
       isLocked: !rule.isUnlocked,
       canRefresh: !rule.isRefreshed && !rule.isCompleted && rule.isUnlocked,
+      position: rule.position.toInt(),
       isDynamic: isDynamic,
       onRefresh: (!rule.isRefreshed && !rule.isCompleted && rule.isUnlocked)
           ? () {
@@ -445,15 +446,13 @@ class _FsObjectivesSectionState extends State<FsObjectivesSection>
                 isDynamic: isDynamic,
               )
           : null,
-      onUnlock: !rule.isUnlocked
-          ? () {
-              context.read<FsRulesBloc>().add(
-                    UnlockRuleEvent(
-                      leagueId: widget.league.id,
-                      challengeId: rule.challengeId,
-                    ),
-                  );
-            }
+      // Callback specifico per ads unlock (position 2)
+      onAdUnlock: !rule.isUnlocked && rule.position.toInt() == 2
+          ? () => _unlockRuleWithAds(rule)
+          : null,
+      // Callback specifico per premium unlock (position 3 e altri)
+      onPremiumUnlock: !rule.isUnlocked && rule.position.toInt() != 2
+          ? () => _unlockRuleWithPremium(rule)
           : null,
     );
   }
@@ -523,5 +522,25 @@ class _FsObjectivesSectionState extends State<FsObjectivesSection>
       return userState.user.id;
     }
     return null;
+  }
+
+  /// Sblocca una regola tramite ads (position 2)
+  void _unlockRuleWithAds(FsRule rule) {
+    context.read<FsRulesBloc>().add(
+          UnlockRuleEvent(
+            leagueId: widget.league.id,
+            challengeId: rule.challengeId,
+          ),
+        );
+  }
+
+  /// Sblocca una regola tramite premium (position 3 e altri)
+  void _unlockRuleWithPremium(FsRule rule) {
+    context.read<FsRulesBloc>().add(
+          UnlockRuleEvent(
+            leagueId: widget.league.id,
+            challengeId: rule.challengeId,
+          ),
+        );
   }
 }

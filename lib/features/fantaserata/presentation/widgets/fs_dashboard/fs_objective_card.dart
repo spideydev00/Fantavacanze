@@ -1,6 +1,7 @@
 import 'dart:ui';
 import 'package:fantavacanze_official/core/constants/fantaserata/simple_fs_rule.dart';
 import 'package:fantavacanze_official/core/extensions/context_extension.dart';
+import 'package:fantavacanze_official/core/services/ad_helper.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:fantavacanze_official/core/widgets/dialogs/premium_access_dialog.dart';
@@ -13,9 +14,11 @@ class FsObjectiveCard extends StatelessWidget {
   final bool isLocked;
   final bool canRefresh;
   final bool isDynamic;
+  final int position;
   final VoidCallback? onRefresh;
   final VoidCallback? onComplete;
-  final VoidCallback? onUnlock;
+  final VoidCallback? onAdUnlock;
+  final VoidCallback? onPremiumUnlock;
 
   const FsObjectiveCard({
     super.key,
@@ -24,9 +27,11 @@ class FsObjectiveCard extends StatelessWidget {
     this.isLocked = false,
     this.canRefresh = false,
     this.isDynamic = false,
+    required this.position,
     this.onRefresh,
     this.onComplete,
-    this.onUnlock,
+    this.onAdUnlock, // Nuovo callback per ads
+    this.onPremiumUnlock, // Nuovo callback per premium
   });
 
   @override
@@ -273,7 +278,7 @@ class FsObjectiveCard extends StatelessWidget {
 
   Widget _buildLockedCard(BuildContext context, Color mainColor) {
     return GestureDetector(
-      onTap: () => _showPremiumDialog(context),
+      onTap: () => _handleLockedTap(context),
       child: Container(
         margin: const EdgeInsets.only(bottom: ThemeSizes.sm),
         child: ClipRRect(
@@ -333,7 +338,9 @@ class FsObjectiveCard extends StatelessWidget {
                             vertical: 4,
                           ),
                           decoration: BoxDecoration(
-                            color: ColorPalette.premiumUser,
+                            color: position == 2
+                                ? ColorPalette.warning // Colore diverso per ads
+                                : ColorPalette.premiumUser,
                             borderRadius: BorderRadius.circular(
                               ThemeSizes.borderRadiusSm,
                             ),
@@ -341,14 +348,16 @@ class FsObjectiveCard extends StatelessWidget {
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              const Icon(
-                                Icons.diamond_outlined,
+                              Icon(
+                                position == 2
+                                    ? Icons.play_circle_outline // Icona ads
+                                    : Icons.diamond_outlined, // Icona premium
                                 color: Colors.white,
                                 size: 14,
                               ),
                               const SizedBox(width: 4),
                               Text(
-                                'PREMIUM',
+                                position == 2 ? 'ADS' : 'PREMIUM',
                                 style: context.textTheme.labelSmall?.copyWith(
                                   color: Colors.white,
                                   fontWeight: FontWeight.bold,
@@ -361,7 +370,7 @@ class FsObjectiveCard extends StatelessWidget {
                     ),
                     const SizedBox(height: ThemeSizes.md),
                     Text(
-                      'Obiettivo speciale disponibile solo per utenti premium.',
+                      _getLockedCardText(),
                       style: context.textTheme.bodyMedium?.copyWith(
                         color: Colors.white,
                         fontWeight: FontWeight.bold,
@@ -378,20 +387,47 @@ class FsObjectiveCard extends StatelessWidget {
     );
   }
 
-  void _showPremiumDialog(BuildContext context) {
-    showDialog(
+  void _handleLockedTap(BuildContext context) {
+    // Position 2 = ads unlock, Position 3 = premium only
+    final isAdsUnlock = position == 2;
+    final isPremiumOnly = position == 3;
+
+    showDialog<bool>(
       context: context,
-      builder: (context) => PremiumAccessDialog(
-        premiumOnly: true,
+      barrierDismissible: true,
+      builder: (_) => PremiumAccessDialog(
+        premiumOnly: isPremiumOnly,
         title: 'Obiettivo Bloccato',
-        description: 'Sblocca questo obiettivo per guadagnare punti extra!',
-        onAdsBtnTapped: () async {
-          await Future.delayed(const Duration(seconds: 2));
-          return true;
-        },
+        description: isPremiumOnly
+            ? 'Questo obiettivo è disponibile solo per utenti premium!'
+            : isAdsUnlock
+                ? 'Scegli come sbloccare questo obiettivo:'
+                : 'Sblocca questo obiettivo per guadagnare punti extra!',
+        onAdsBtnTapped:
+            isAdsUnlock ? () => AdHelper().showRewardedAd(context) : null,
       ),
-    ).then((result) {
-      if (result == true && onUnlock != null) onUnlock!();
+    ).then((granted) {
+      if (granted == true) {
+        // Se è una card sbloccabile da ads
+        if (isAdsUnlock && onAdUnlock != null) {
+          onAdUnlock!();
+        }
+        // Se è una card premium
+        else if (onPremiumUnlock != null) {
+          onPremiumUnlock!();
+        }
+      }
     });
+  }
+
+  String _getLockedCardText() {
+    switch (position) {
+      case 2:
+        return 'Obiettivo sbloccabile guardando una pubblicità o con premium.';
+      case 3:
+        return 'Obiettivo speciale disponibile solo per utenti premium.';
+      default:
+        return 'Obiettivo speciale disponibile per utenti premium.';
+    }
   }
 }

@@ -23,7 +23,7 @@ class NotificationCountCubit extends Cubit<int> {
     // Ensure count is never negative
     final newCount = count < 0 ? 0 : count;
     debugPrint(
-        '🔔 NotificationCountCubit: setting count from ${state} to $newCount');
+        '🔔 NotificationCountCubit: setting count from $state to $newCount');
 
     // Always emit, even if the count is the same, to ensure UI updates
     emit(newCount);

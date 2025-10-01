@@ -102,7 +102,7 @@ class ImagePickerUtil {
           toolbarWidgetColor: Colors.white,
           activeControlsWidgetColor: context.primaryColor,
           backgroundColor: isDarkMode ? ColorPalette.black : ColorPalette.white,
-          statusBarColor: context.primaryColor,
+          statusBarLight: true,
           cropStyle: isCircular ? CropStyle.circle : CropStyle.rectangle,
         ),
         IOSUiSettings(
