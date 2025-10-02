@@ -43,7 +43,7 @@ List<NavigationItem> nonParticipantNavbarItems = [
   //   subsection: "Games",
   // ),
   NavigationItem(
-    title: "FantaSerata",
+    title: "Fanta Serata",
     darkSvgIcon: 'assets/images/icons/homepage_icons/create-league-icon.svg',
     lightSvgIcon:
         'assets/images/icons/homepage_icons/create-league-icon-dark.svg',
