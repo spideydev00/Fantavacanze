@@ -223,12 +223,12 @@ class HomePage extends StatelessWidget {
     return ArticlesList(
       articles: [
         ArticleData(
-          imagePath: 'assets/images/tutorial.jpg',
-          title: 'Come funziona la FantaSerata?',
+          imagePath: 'assets/images/tutorial-1.png',
+          title: 'Come funziona il FantaSerata?',
           readingTime: '3 minuti',
           redirectPage: ArticlePage(
-            imagePath: 'assets/images/tutorial.jpg',
-            title: 'Come funziona la FantaSerata?',
+            imagePath: 'assets/images/tutorial-1.png',
+            title: 'Come funziona il FantaSerata?',
             author: 'Fantavacanze Team',
             publishDate: '2025-10-02',
             content: '''
