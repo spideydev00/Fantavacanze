@@ -275,7 +275,7 @@ In alcuni periodi, FantaSerata attiva regole speciali tematiche che sostituiscon
 
 - Carnevale\n
 
-- Après-Ski (da dicembre a fine gennaio)\n
+- Après-Ski (da dicembre a fine gennaio)
 
 8. Fair Play \n
 - Descrivi bene gli obiettivi extra (criteri chiari = meno discussioni).\n
@@ -362,7 +362,7 @@ Tutto è iniziato durante una semplice grigliata estiva. Eravamo lì, tra amici,
 Ed ecco l'illuminazione: un'app che trasforma la vacanza in un gioco, con sfide, punti e tanta competizione amichevole!
 
 2. Solo Noi Tre, Un Sogno Grande\n
-Da quel momento, siamo stati solo noi due: Alex, Luca ed Alessandro. Non una grande azienda, non un team di sviluppatori, non investitori alle spalle. Solo tre ragazzi con un'idea e tanta, tanta voglia di realizzarla.
+Da quel momento, siamo stati solo noi tre: Alex, Luca ed Alessandro. Non una grande azienda, non un team di sviluppatori, non investitori alle spalle. Solo tre ragazzi con un'idea e tanta, tanta voglia di realizzarla.
 
 Le notti in bianco a programmare dopo il lavoro, i weekend sacrificati, le innumerevoli pizze ordinate mentre cercavamo di capire come risolvere un bug particolarmente ostinato... è stato un viaggio intenso, a volte estenuante, ma sempre entusiasmante.
 
