@@ -109,7 +109,7 @@ class _FsMainPageState extends State<FsMainPage> {
                             title: "FantaSerata Classica",
                             subtitle: 'Chi la porterà a casa?!',
                             onTap: () => _navigateToCreateLeague(
-                              seasonalState.activeNightType,
+                              FsNightType.def,
                             ),
                             gradients: ColorPalette.fsGradients,
                             svgIconPath:
@@ -209,7 +209,7 @@ class _FsMainPageState extends State<FsMainPage> {
       case FsNightType.halloween:
         return 'Crea una Fanta Halloween!';
       case FsNightType.christmas:
-        return 'Crea un Fanta Natale!';
+        return 'Crea un Fanta Vigilia!';
       case FsNightType.carnival:
         return 'Crea un Fanta Carnevale!';
       case FsNightType.newYearsEve:

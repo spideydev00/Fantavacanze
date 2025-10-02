@@ -251,7 +251,7 @@ class _SideMenuState extends State<SideMenu> {
       case FsNightType.halloween:
         return "Fanta Halloween";
       case FsNightType.christmas:
-        return "Fanta Natale";
+        return "Fanta Vigilia";
       case FsNightType.carnival:
         return "Fanta Carnevale";
       case FsNightType.newYearsEve:

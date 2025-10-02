@@ -82,7 +82,7 @@ class _CreateFsLeaguePageState extends State<CreateFsLeaguePage> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 // Hero section
-                const FsCreateHeroSection(),
+                FsCreateHeroSection(nightType: widget.nightType),
 
                 const SizedBox(height: ThemeSizes.xl),
 
@@ -90,6 +90,7 @@ class _CreateFsLeaguePageState extends State<CreateFsLeaguePage> {
                 FsFormFields(
                   nameController: _nameController,
                   descriptionController: _descriptionController,
+                  nightType: widget.nightType,
                 ),
 
                 const SizedBox(height: ThemeSizes.xl),
@@ -101,6 +102,7 @@ class _CreateFsLeaguePageState extends State<CreateFsLeaguePage> {
                       return FsCreateButton(
                         onPressed: () {},
                         isLoading: true,
+                        nightType: widget.nightType,
                       );
                     }
                     return FsCreateButton(
@@ -109,6 +111,7 @@ class _CreateFsLeaguePageState extends State<CreateFsLeaguePage> {
                           _createLeague();
                         }
                       },
+                      nightType: widget.nightType,
                     );
                   },
                 ),
@@ -167,7 +170,7 @@ class _CreateFsLeaguePageState extends State<CreateFsLeaguePage> {
       case FsNightType.halloween:
         return 'Crea Fanta Halloween';
       case FsNightType.christmas:
-        return 'Crea Fanta Natale';
+        return 'Crea Fanta Vigilia';
       case FsNightType.carnival:
         return 'Crea Fanta Carnevale';
       case FsNightType.newYearsEve:

@@ -61,8 +61,7 @@ class HomePage extends StatelessWidget {
                             ? true
                             : false,
                         state.selectedLeague),
-                    // Add test form for seasonal events
-                    _buildSeasonalTestForm(context),
+                    // _buildSeasonalTestForm(context),
                   ],
                 ),
               );
@@ -73,8 +72,7 @@ class HomePage extends StatelessWidget {
               child: Column(
                 children: [
                   _buildNonParticipantContent(context),
-                  // Add test form for seasonal events
-                  _buildSeasonalTestForm(context),
+                  // _buildSeasonalTestForm(context),
                 ],
               ),
             );
@@ -325,6 +323,9 @@ Il (piccolo ma appassionato) Team di FantaVacanze
     );
   }
 
+  //====================================//
+  //SEASONAL TEST FORM//
+  //====================================//
   Widget _buildSeasonalTestForm(BuildContext context) {
     return Container(
       margin: const EdgeInsets.all(ThemeSizes.lg),

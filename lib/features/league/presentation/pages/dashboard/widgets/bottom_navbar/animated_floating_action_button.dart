@@ -391,7 +391,7 @@ class _AnimatedFloatingActionButtonState
           );
         case FsNightType.christmas:
           return (
-            title: "Fanta Natale",
+            title: "Fanta Vigilia",
             label: 'FN',
             subtitle: hasLeague ? "Entra nella tua" : "Gioca al",
             action: hasLeague ? "Entra!" : "Vigilia"

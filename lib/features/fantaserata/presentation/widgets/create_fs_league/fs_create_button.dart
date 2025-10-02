@@ -1,3 +1,4 @@
+import 'package:fantavacanze_official/core/entities/fs_league/fs_night_type.dart';
 import 'package:fantavacanze_official/core/extensions/context_extension.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
@@ -7,18 +8,21 @@ import 'package:flutter/material.dart';
 class FsCreateButton extends StatelessWidget {
   final VoidCallback onPressed;
   final bool isLoading;
+  final FsNightType nightType;
 
   const FsCreateButton({
     super.key,
     required this.onPressed,
     this.isLoading = false,
+    this.nightType = FsNightType.def,
   });
 
   @override
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        gradient: LinearGradient(colors: ColorPalette.fsGradients),
+        gradient:
+            LinearGradient(colors: ColorPalette.getSeasonalGradient(nightType)),
         borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusMd),
       ),
       child: ElevatedButton.icon(
