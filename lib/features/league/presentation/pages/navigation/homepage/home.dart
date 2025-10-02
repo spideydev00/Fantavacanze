@@ -223,11 +223,94 @@ class HomePage extends StatelessWidget {
     return ArticlesList(
       articles: [
         ArticleData(
-          imagePath: 'assets/images/tutorial.jpg',
+          imagePath: 'assets/images/tutorial-1.png',
+          title: 'Come funziona il FantaSerata?',
+          readingTime: '3 minuti',
+          redirectPage: ArticlePage(
+            imagePath: 'assets/images/tutorial-1.png',
+            title: 'Come funziona il FantaSerata?',
+            author: 'Fantavacanze Team',
+            publishDate: '2025-10-02',
+            content: '''
+Benvenuto in **FantaSerata**, la modalità lampo di Fantavacanze pensata per una sola notte. Si gioca forte, si ride tanto… e alle **7:00 del mattino la lega si autodistrugge**. Pronti a dare tutto entro l’alba?
+
+1. Leghe a Tempo: il brivido della mezzanotte\n
+FantaSerata funziona con **leghe temporanee** create al volo con gli amici.
+- **Durata**: dalla creazione fino alle **07:00** del giorno successivo. Poi *boom*: si chiude tutto, classifica compresa.
+- **Tutti sono Admin**: sì, proprio così. Ognuno può gestire regole, modificare obiettivi, approvare/eliminare eventi e invitare persone. Massima libertà = massima responsabilità.
+
+2. Il set base: Bonus, Malus e Obiettivi Speciali\n
+Ogni lega parte con tre blocchi già pronti:
+- **5 Bonus fissi** (es. “Arrivo puntuale”, “Giro drink condiviso”, “DJ improvvisato”, “Nuova conoscenza”, “Ballata epica”).
+- **5 Malus fissi** (es. “Ritardo da bradipo”, “Messaggi all’ex”, “Bicchiere rovesciato”, “Canzone stoppata”, “Selfie mosso”).
+- **3 Obiettivi Speciali**: più “particolari”, più difficili… **e valgono più punti**. Ognuno di questi **è refreshabile una sola volta** se non ti convince (ne arriva un altro al suo posto).
+
+3. Obiettivi Extra: la fantasia al potere\n
+Oltre al set base, **ogni utente può aggiungere obiettivi extra** validi per tutta la lega. Esempi:
+- “Foto con sconosciuti a tema”, “Portare il gruppo in un locale nuovo”, “Indovinare la canzone in 3 secondi”.
+Suggerimento: descrivi bene come si completa e quanti punti vale per evitare discussioni a fine notte.
+
+4. Come si fanno punti (e come si approvano gli eventi)\n
+- Quando completi un obiettivo, **crei un evento** dall’app.
+- Visto che **tutti sono Admin**, gli eventi possono essere **approvati o eliminati** da chiunque. Se vi fidate, approvate; se è un meme, via.
+- Ogni approvazione aggiorna **in tempo reale la classifica**.
+
+5. Classifica Live e Giornale Eventi\n
+- **Classifica aggiornata**: vedi chi è in fuga, chi recupera e chi sta “gestendo”.
+- **Giornale Eventi**: lo stream di tutto ciò che succede nella lega. Se qualcosa è stato segnato con troppa fantasia… **si può eliminare**.
+
+6. Il Trofeo dell’Alba: foto del vincitore e condivisione\n
+Alle **07:00** la lega si chiude e proclama il **vincitore**.
+- Il vincitore può **caricare una foto-trofeo** (la “foto dell’alba”) e **condividerla sui social** direttamente dall’app.
+- La foto resta come memoria della serata (prima della *auto-distruzione* dei dettagli operativi).
+
+7. Serate Speciali: regole “uniche” che cambiano il gioco\n
+In alcuni periodi, FantaSerata attiva **regole speciali** tematiche che sostituiscono/affiancano il set base. Ecco gli highlight:
+
+- **Serata di Halloween**\n
+    - Bonus: “Miglior costume”, “Urlo da cinema”, “Dolcetto & Scherzetto completato con sconosciuti”.\n
+    - Malus: “Maschera tolta prima di mezzanotte”, “Tema non rispettato”.\n
+    - Special: “Foto con personaggio ‘spaventoso’”, “Indizio risolto in una caccia horror”. Punti extra se la foto è *veramente* inquietante.
+
+- **Vigilia (24 dicembre)**\n
+    - Bonus: “Canzone natalizia cantata in coro”, “Brindisi con augurio creativo”, “Scambio di mini-regali”.\n
+    - Malus: “Interrompere un coro”, “Saltare il brindisi del minuto”.\n
+    - Special: “Foto con Babbo improvvisato”, “Panettone vs Pandoro: degustazione imparziale documentata”.
+
+- **Capodanno (31 dicembre)**\n
+    - Bonus: “Countdown guidato”, “Primo abbraccio dell’anno”, “Chiamata d’auguri a chilometri”.\n
+    - Malus: “Countdown sbagliato”, “Sparizione a mezzanotte senza saluti”.\n
+    - Special: “Video del ‘primo ballo dell’anno’”, “Obiettivo ‘Nuovo Anno, Nuovo Meme’ (creazione di meme live)”.
+
+- **Carnevale**\n
+    - Bonus: “Maschera di gruppo”, “Coreografia improvvisata in strada”, “Battaglia di coriandoli con sconosciuti”.\n
+    - Malus: “Costume incompleto”, “Coriandoli senza sorriso (documentato)”.\n
+    - Special: “Scambio maschera per 10 minuti”, “Foto con personaggi storici/fiabeschi”.
+
+- **Après-Ski (da dicembre a fine gennaio)**\n
+    - Bonus: “Brindisi in baita”, “Coro sul terrazzo”, “Occhiali da sole anche al tramonto (stile impeccabile)”.\n
+    - Malus: “Guanti smarriti”, “Hot chocolate rovesciata”.\n
+    - Special: “Selfie con impronta degli scarponi”, “‘Trenino’ documentato al rifugio”. Punti boost se compare la neve nella foto.
+
+8. Fair Play rapido (per evitare drammi alle 03:00)\n
+- **Descrivi bene** gli obiettivi extra (criteri chiari = meno discussioni).\n
+- In caso di dubbio, **il Giornale Eventi è la verità storica**: si guarda lì e si decide.\n
+- Ricorda: **tutti Admin** significa velocità, ma anche buon senso. L’obiettivo è divertirsi, non fare il VAR della movida.
+
+9. Pronti, via: crea la tua FantaSerata\n
+- Crea la lega, invita gli amici, scegliete il tema (se festivo, attivate le **regole speciali**), puntate gli obiettivi… e correte verso l’alba.\n
+- Alle **07:00** si chiude: **classifica finale**, **foto del vincitore**, condivisione… e appuntamento alla prossima!
+
+Che vinca la notte più epica! 🌙✨
+    ''',
+          ),
+        ),
+        ArticleData(
+          imagePath: 'assets/images/tutorial.png',
           title: 'Come funziona il FantaVacanze?',
           readingTime: '3 minuti',
           redirectPage: ArticlePage(
-            imagePath: 'assets/images/tutorial.jpg',
+            imagePath: 'assets/images/tutorial.png',
             title: 'Come funziona il FantaVacanze?',
             author: 'Fantavacanze Team',
             publishDate: '2025-06-01',
@@ -286,15 +369,15 @@ Crea la tua lega, invita i tuoi amici, completa obiettivi, supera le Daily Chall
             author: 'Fantavacanze Team',
             publishDate: '2025-06-01',
             content: '''
-Siamo Alex e Luca, due amici che hanno creato FantaVacanze con tanto entusiasmo e un pizzico di follia. Grazie per averci dedicato un momento del vostro tempo per conoscerci meglio!
+Siamo Alex, Luca e Alessandro, tre amici che hanno creato FantaVacanze con tanto entusiasmo e un pizzico di follia. Grazie per averci dedicato un momento del vostro tempo per conoscerci meglio!
 
 1. La Scintilla di un'Idea\n
 Tutto è iniziato durante una semplice grigliata estiva. Eravamo lì, tra amici, birre in mano e risate, quando ci siamo messi a ricordare le nostre vacanze passate. Tra aneddoti divertenti e storie assurde, è nata una domanda: "Non sarebbe fantastico avere un modo per rendere le vacanze ancora più divertenti e memorabili?"
 
 Ed ecco l'illuminazione: un'app che trasforma la vacanza in un gioco, con sfide, punti e tanta competizione amichevole!
 
-2. Solo Noi Due, Un Sogno Grande\n
-Da quel momento, siamo stati solo noi due: Alex e Luca. Non una grande azienda, non un team di sviluppatori, non investitori alle spalle. Solo due ragazzi con un'idea e tanta, tanta voglia di realizzarla.
+2. Solo Noi Tre, Un Sogno Grande\n
+Da quel momento, siamo stati solo noi due: Alex, Luca ed Alessandro. Non una grande azienda, non un team di sviluppatori, non investitori alle spalle. Solo tre ragazzi con un'idea e tanta, tanta voglia di realizzarla.
 
 Le notti in bianco a programmare dopo il lavoro, i weekend sacrificati, le innumerevoli pizze ordinate mentre cercavamo di capire come risolvere un bug particolarmente ostinato... è stato un viaggio intenso, a volte estenuante, ma sempre entusiasmante.
 
@@ -314,7 +397,7 @@ Abbiamo grandi progetti per il futuro, ma il nostro focus rimane lo stesso: il v
 Quindi... grazie. Grazie per credere in noi, grazie per usare la nostra app, grazie per essere parte di questa avventura.
 
 Con affetto e gratitudine,\n
-Alex e Luca
+Alex, Luca ed Alessandro
 Il (piccolo ma appassionato) Team di FantaVacanze
             ''',
           ),
