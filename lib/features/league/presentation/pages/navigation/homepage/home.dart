@@ -1,5 +1,12 @@
 import 'package:fantavacanze_official/core/cubits/app_league/app_league_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit.dart';
+import 'package:fantavacanze_official/core/cubits/seasonal_event/seasonal_event_cubit.dart';
+import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
+import 'package:fantavacanze_official/core/extensions/context_extension.dart';
+import 'package:fantavacanze_official/core/services/seasonal_event_service.dart';
+import 'package:fantavacanze_official/core/theme/colors.dart';
+import 'package:fantavacanze_official/core/utils/show-snackbar-or-paywall/show_snackbar.dart';
+import 'package:fantavacanze_official/init_dependencies/init_dependencies.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:fantavacanze_official/core/widgets/divider.dart';
 import 'package:fantavacanze_official/core/widgets/events/events_list_widget.dart';
@@ -46,18 +53,30 @@ class HomePage extends StatelessWidget {
             if (state is AppLeagueExists) {
               return SingleChildScrollView(
                 physics: const ClampingScrollPhysics(),
-                child: _buildParticipantContent(
-                    context,
-                    state.selectedLeague.admins.contains(currentUserId)
-                        ? true
-                        : false,
-                    state.selectedLeague),
+                child: Column(
+                  children: [
+                    _buildParticipantContent(
+                        context,
+                        state.selectedLeague.admins.contains(currentUserId)
+                            ? true
+                            : false,
+                        state.selectedLeague),
+                    // Add test form for seasonal events
+                    _buildSeasonalTestForm(context),
+                  ],
+                ),
               );
             }
 
             return SingleChildScrollView(
               physics: const ClampingScrollPhysics(),
-              child: _buildNonParticipantContent(context),
+              child: Column(
+                children: [
+                  _buildNonParticipantContent(context),
+                  // Add test form for seasonal events
+                  _buildSeasonalTestForm(context),
+                ],
+              ),
             );
           },
         ),
@@ -304,5 +323,237 @@ Il (piccolo ma appassionato) Team di FantaVacanze
         ),
       ],
     );
+  }
+
+  Widget _buildSeasonalTestForm(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.all(ThemeSizes.lg),
+      padding: const EdgeInsets.all(ThemeSizes.md),
+      decoration: BoxDecoration(
+        color: context.secondaryBgColor,
+        borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusLg),
+        border: Border.all(
+          color: context.primaryColor.withValues(alpha: 0.3),
+          width: 1,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                Icons.science_rounded,
+                color: context.primaryColor,
+                size: ThemeSizes.iconSm,
+              ),
+              const SizedBox(width: ThemeSizes.sm),
+              Text(
+                'Test Stagioni (Solo Sviluppo)',
+                style: context.textTheme.titleSmall?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: context.primaryColor,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: ThemeSizes.sm),
+          Text(
+            'Imposta una data manuale per testare le funzionalità stagionali',
+            style: context.textTheme.bodySmall?.copyWith(
+              color: context.textSecondaryColor,
+            ),
+          ),
+          const SizedBox(height: ThemeSizes.md),
+
+          // Current status
+          BlocBuilder<SeasonalEventCubit, SeasonalEventState>(
+            builder: (context, state) {
+              final seasonalService = serviceLocator<SeasonalEventService>();
+
+              return Container(
+                padding: const EdgeInsets.all(ThemeSizes.sm),
+                decoration: BoxDecoration(
+                  color: context.bgColor,
+                  borderRadius:
+                      BorderRadius.circular(ThemeSizes.borderRadiusMd),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Stato Attuale:',
+                      style: context.textTheme.labelSmall?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: ThemeSizes.xs),
+                    Text(
+                      'Modalità: ${seasonalService.isInTestMode ? "Test" : "Normale"}',
+                      style: context.textTheme.bodySmall,
+                    ),
+                    if (seasonalService.isInTestMode) ...[
+                      Text(
+                        'Data Test: ${_formatDate(seasonalService.currentTestDate!)}',
+                        style: context.textTheme.bodySmall,
+                      ),
+                    ],
+                    Text(
+                      'Stagione: ${state.displayName}',
+                      style: context.textTheme.bodySmall?.copyWith(
+                        color: context.primaryColor,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+
+          const SizedBox(height: ThemeSizes.md),
+
+          // Action buttons
+          Row(
+            children: [
+              Expanded(
+                child: ElevatedButton.icon(
+                  onPressed: () => _selectTestDate(context),
+                  icon: const Icon(Icons.calendar_today_rounded),
+                  label: const Text('Imposta'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: context.primaryColor,
+                    foregroundColor: Colors.white,
+                  ),
+                ),
+              ),
+              const SizedBox(width: ThemeSizes.sm),
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: () => _clearTestDate(context),
+                  icon: const Icon(Icons.refresh_rounded),
+                  label: const Text('Reset'),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: context.primaryColor,
+                    side: BorderSide(color: context.primaryColor),
+                  ),
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: ThemeSizes.sm),
+
+          // Quick date buttons
+          Wrap(
+            spacing: ThemeSizes.xs,
+            runSpacing: ThemeSizes.xs,
+            children: [
+              _buildQuickDateButton(
+                context,
+                'Halloween',
+                DateTime(2024, 10, 31),
+              ),
+              _buildQuickDateButton(
+                context,
+                'Natale',
+                DateTime(2024, 12, 24),
+              ),
+              _buildQuickDateButton(
+                context,
+                'Capodanno',
+                DateTime(2024, 12, 31),
+              ),
+              _buildQuickDateButton(
+                context,
+                'Carnevale',
+                DateTime(2025, 2, 14),
+              ),
+              _buildQuickDateButton(
+                context,
+                'Après Ski',
+                DateTime(2024, 12, 15),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildQuickDateButton(
+      BuildContext context, String label, DateTime date) {
+    return InkWell(
+      onTap: () => _setTestDate(context, date),
+      child: Container(
+        padding: const EdgeInsets.symmetric(
+          horizontal: ThemeSizes.sm,
+          vertical: ThemeSizes.xs,
+        ),
+        decoration: BoxDecoration(
+          color: context.primaryColor.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusSm),
+          border: Border.all(
+            color: context.primaryColor.withValues(alpha: 0.3),
+          ),
+        ),
+        child: Text(
+          label,
+          style: context.textTheme.labelSmall?.copyWith(
+            color: context.primaryColor,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _selectTestDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(2024, 1, 1),
+      lastDate: DateTime(2025, 12, 31),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: Theme.of(context).colorScheme.copyWith(
+                  primary: context.primaryColor,
+                ),
+          ),
+          child: child!,
+        );
+      },
+    );
+
+    if (picked != null && context.mounted) {
+      _setTestDate(context, picked);
+    }
+  }
+
+  void _setTestDate(BuildContext context, DateTime date) {
+    final seasonalService = serviceLocator<SeasonalEventService>();
+    seasonalService.setTestDate(date);
+
+    // Refresh the seasonal event cubit
+    context.read<SeasonalEventCubit>().refreshSeasonalEvent();
+
+    // Show confirmation
+    showSnackBar(
+      'Data di test impostata: ${_formatDate(date)}',
+      color: ColorPalette.warning,
+    );
+  }
+
+  void _clearTestDate(BuildContext context) {
+    final seasonalService = serviceLocator<SeasonalEventService>();
+    seasonalService.clearTestDate();
+
+    // Refresh the seasonal event cubit
+    context.read<SeasonalEventCubit>().refreshSeasonalEvent();
+  }
+
+  String _formatDate(DateTime date) {
+    return '${date.day}/${date.month}/${date.year}';
   }
 }

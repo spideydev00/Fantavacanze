@@ -122,10 +122,10 @@ packages:
     dependency: transitive
     description:
       name: bloc
-      sha256: "52c10575f4445c61dd9e0cafcc6356fdd827c4c64dd7945ef3c4105f6b6ac189"
+      sha256: e18b8e7825e9921d67a6d256dba0b6015ece8a577eb0a411845c46a352994d78
       url: "https://pub.dev"
     source: hosted
-    version: "9.0.0"
+    version: "9.0.1"
   boolean_selector:
     dependency: transitive
     description:
@@ -362,10 +362,10 @@ packages:
     dependency: transitive
     description:
       name: dlibphonenumber
-      sha256: "95d8e08c6f750e81c5303efd16085db4e7c696b4c306c99617548f81b1854f0c"
+      sha256: ae6ee5e852008986e31b50cf87619033cefd9257b0e42596a6779bd2d2ed7688
       url: "https://pub.dev"
     source: hosted
-    version: "1.1.47"
+    version: "1.1.48"
   dropdown_button2:
     dependency: "direct main"
     description:
@@ -742,10 +742,10 @@ packages:
     dependency: "direct main"
     description:
       name: google_fonts
-      sha256: ebc94ed30fd13cefd397cb1658b593f21571f014b7d1197eeb41fb95f05d899a
+      sha256: "517b20870220c48752eafa0ba1a797a092fb22df0d89535fd9991e86ee2cdd9c"
       url: "https://pub.dev"
     source: hosted
-    version: "6.3.1"
+    version: "6.3.2"
   google_identity_services_web:
     dependency: transitive
     description:
@@ -1030,10 +1030,10 @@ packages:
     dependency: "direct main"
     description:
       name: internet_connection_checker_plus
-      sha256: f0a1a9f336e9fb093f30e6cfd8915ad98243f171be5863824a19e658b13c1a9d
+      sha256: c05c34d3b9fac404c56139864545b11a643cfc16c88874878392a699cbbdb5c5
       url: "https://pub.dev"
     source: hosted
-    version: "2.8.0"
+    version: "2.9.0"
   intl:
     dependency: "direct main"
     description:
@@ -1326,10 +1326,10 @@ packages:
     dependency: transitive
     description:
       name: postgrest
-      sha256: "10b81a23b1c829ccadf68c626b4d66666453a1474d24c563f313f5ca7851d575"
+      sha256: "57637e331af3863fa1f555907ff24c30d69c3ad3ff127d89320e70e8d5e585f5"
       url: "https://pub.dev"
     source: hosted
-    version: "2.4.2"
+    version: "2.5.0"
   protobuf:
     dependency: transitive
     description:
@@ -1366,26 +1366,26 @@ packages:
     dependency: "direct main"
     description:
       name: purchases_flutter
-      sha256: "1342fc6d3114307bd565619b791288311fd8ff3726060f47ec079aaeed5400bd"
+      sha256: "8d34712aa3201f675eeccaacf45c0b7b025575fc9d0378b2619bb61246e76064"
       url: "https://pub.dev"
     source: hosted
-    version: "8.10.6"
+    version: "8.11.0"
   purchases_ui_flutter:
     dependency: "direct main"
     description:
       name: purchases_ui_flutter
-      sha256: "1ce5efeb2d469f4e5d51e0aaa85a92553fafacaafd1664c7acbe5466a54a3835"
+      sha256: "883caecc6065d3e079d2cf62c2b72c54b909668bd4c95ea51691f9708dea0dc6"
       url: "https://pub.dev"
     source: hosted
-    version: "8.10.6"
+    version: "8.11.0"
   realtime_client:
     dependency: transitive
     description:
       name: realtime_client
-      sha256: "025b7e690e8dcf27844f37d140cca47da5ab31d6fe8d78347fb16763f0a4beb6"
+      sha256: c0938faca85ff2bdcb8e97ebfca4ab1428661b441c1a414fb09c113e00cee2c6
       url: "https://pub.dev"
     source: hosted
-    version: "2.5.2"
+    version: "2.5.3"
   rename_app:
     dependency: "direct main"
     description:
@@ -1675,18 +1675,18 @@ packages:
     dependency: transitive
     description:
       name: supabase
-      sha256: "9c960828e1e92ce4a97c33b7b52d80ca643a11161d46c71deedf9def50797fc6"
+      sha256: b8991524ff1f4fcb50475847f100a399b96a7d347655bbbd1c7b51eea065f892
       url: "https://pub.dev"
     source: hosted
-    version: "2.9.1"
+    version: "2.9.2"
   supabase_flutter:
     dependency: "direct main"
     description:
       name: supabase_flutter
-      sha256: b45bf6dc109c65356022ceb81d0781c1ee2383cce2da17df3ed0deb77094088e
+      sha256: "389eeb18d2a0773da61a157df6f35761e1855567271df12665bb7ddeb2dda0f7"
       url: "https://pub.dev"
     source: hosted
-    version: "2.10.1"
+    version: "2.10.2"
   synchronized:
     dependency: transitive
     description:

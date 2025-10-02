@@ -1,3 +1,4 @@
+import 'package:fantavacanze_official/core/entities/fs_league/fs_night_type.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter/foundation.dart';
 import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit.dart';
@@ -14,7 +15,21 @@ abstract interface class FsRemoteDataSource {
     required String creatorName,
   });
 
+  Future<FsLeagueModel> createNightSpecificLeague({
+    required String name,
+    String? description,
+    required String creatorId,
+    required String creatorName,
+    required FsNightType nightType,
+  });
+
   Future<FsLeagueModel> joinLeague({
+    required String inviteCode,
+    required String userId,
+    required String userName,
+  });
+
+  Future<FsLeagueModel> joinNightSpecificLeague({
     required String inviteCode,
     required String userId,
     required String userName,
@@ -140,9 +155,53 @@ class FsRemoteDataSourceImpl implements FsRemoteDataSource {
       final league = FsLeagueModel.fromJson(response);
 
       // SYNC: Assign dynamic rules immediately after league creation
-      await _assignDynamicRulesToUser(
+      await _assignRulesToUser(
         userId: creatorId,
         leagueId: league.id,
+        nightType: FsNightType.def,
+      );
+
+      return league;
+    });
+  }
+
+  @override
+  Future<FsLeagueModel> createNightSpecificLeague({
+    required String name,
+    String? description,
+    required String creatorId,
+    required String creatorName,
+    required FsNightType nightType,
+  }) async {
+    return _tryDatabaseOperation(() async {
+      final String inviteCode = uuid.v4().substring(0, 10);
+
+      final response = await supabaseClient
+          .from('fs_leagues')
+          .insert({
+            'name': name,
+            'description': description,
+            'invite_code': inviteCode,
+            'participants': [
+              {
+                'userId': creatorId,
+                'name': creatorName,
+                'points': 0,
+                'malusTotal': 0,
+                'bonusTotal': 0,
+              }
+            ],
+            'night_type': nightType.value,
+          })
+          .select()
+          .single();
+
+      final league = FsLeagueModel.fromJson(response);
+
+      await _assignRulesToUser(
+        userId: creatorId,
+        leagueId: league.id,
+        nightType: nightType,
       );
 
       return league;
@@ -200,10 +259,73 @@ class FsRemoteDataSourceImpl implements FsRemoteDataSource {
 
       final updatedLeague = FsLeagueModel.fromJson(response);
 
-      // SYNC: Assign dynamic rules immediately after joining
-      await _assignDynamicRulesToUser(
+      // SYNC: Assign rules immediately after joining
+      await _assignRulesToUser(
         userId: userId,
         leagueId: updatedLeague.id,
+        nightType: league.nightType,
+      );
+
+      return updatedLeague;
+    });
+  }
+
+  @override
+  Future<FsLeagueModel> joinNightSpecificLeague({
+    required String inviteCode,
+    required String userId,
+    required String userName,
+  }) async {
+    return _tryDatabaseOperation(() async {
+      // First get the league
+      final leagueResponse = await supabaseClient
+          .from('fs_leagues')
+          .select()
+          .eq('invite_code', inviteCode)
+          .single();
+
+      final league = FsLeagueModel.fromJson(leagueResponse);
+
+      // Check if user already participant
+      final isAlreadyParticipant =
+          league.participants.any((p) => p.userId == userId);
+
+      if (isAlreadyParticipant) {
+        return league;
+      }
+
+      // Add participant
+      final updatedParticipants = [
+        ...league.participants.map((p) => {
+              'userId': p.userId,
+              'name': p.name,
+              'points': p.points,
+              'malusTotal': p.malusTotal,
+              'bonusTotal': p.bonusTotal,
+            }),
+        {
+          'userId': userId,
+          'name': userName,
+          'points': 0,
+          'malusTotal': 0,
+          'bonusTotal': 0,
+        }
+      ];
+
+      final response = await supabaseClient
+          .from('fs_leagues')
+          .update({'participants': updatedParticipants})
+          .eq('id', league.id)
+          .select()
+          .single();
+
+      final updatedLeague = FsLeagueModel.fromJson(response);
+
+      // SYNC: Assign rules immediately after joining
+      await _assignRulesToUser(
+        userId: userId,
+        leagueId: updatedLeague.id,
+        nightType: updatedLeague.nightType,
       );
 
       return updatedLeague;
@@ -316,15 +438,17 @@ class FsRemoteDataSourceImpl implements FsRemoteDataSource {
     });
   }
 
-  /// Private method to assign dynamic rules to a user
-  Future<void> _assignDynamicRulesToUser({
+  /// Private method to assign rules to a user
+  Future<void> _assignRulesToUser({
     required String userId,
     required String leagueId,
+    required FsNightType nightType,
   }) async {
     // Call the RPC to assign dynamic rules
-    await supabaseClient.rpc('assign_fs_dynamic_rules_to_user', params: {
+    await supabaseClient.rpc('assign_fs_rules_to_user', params: {
       'p_user_id': userId,
       'p_league_id': leagueId,
+      'p_night_type': nightType.value,
     });
   }
 

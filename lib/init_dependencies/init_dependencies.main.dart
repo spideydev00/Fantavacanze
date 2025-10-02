@@ -255,6 +255,7 @@ void _registerHiveAdapters() {
   Hive.registerAdapter(FsRuleTypeAdapter());
   Hive.registerAdapter(FsParticipantModelAdapter());
   Hive.registerAdapter(FsLeagueModelAdapter());
+  Hive.registerAdapter(FsNightTypeAdapter());
 
   debugPrint("🔌 Tutti gli adapter di Hive registrati correttamente");
 }
@@ -843,7 +844,13 @@ void _initFantaserata() {
       () => CreateFsLeague(serviceLocator()),
     )
     ..registerFactory(
+      () => CreateNightSpecificFsLeague(serviceLocator()),
+    )
+    ..registerFactory(
       () => JoinFsLeague(serviceLocator()),
+    )
+    ..registerFactory(
+      () => JoinNightSpecificFsLeague(serviceLocator()),
     )
     ..registerFactory(
       () => GetFsLeague(serviceLocator()),
@@ -892,7 +899,9 @@ void _initFantaserata() {
   serviceLocator.registerFactory(
     () => FsBloc(
       createFsLeague: serviceLocator(),
+      createNightSpecificFsLeague: serviceLocator(),
       joinFsLeague: serviceLocator(),
+      joinNightSpecificFsLeague: serviceLocator(),
       getFsLeague: serviceLocator(),
       exitFsLeague: serviceLocator(),
       deleteFsLeague: serviceLocator(),
@@ -915,5 +924,14 @@ void _initFantaserata() {
       lockFsRule: serviceLocator(),
       appUserCubit: serviceLocator(),
     ),
+  );
+  // ===== SERVICES =====
+  serviceLocator.registerLazySingleton<SeasonalEventService>(
+    () => SeasonalEventService(),
+  );
+
+  // ===== GLOBAL CUBITS =====
+  serviceLocator.registerLazySingleton<SeasonalEventCubit>(
+    () => SeasonalEventCubit(serviceLocator()),
   );
 }

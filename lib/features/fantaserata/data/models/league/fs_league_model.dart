@@ -1,10 +1,11 @@
+import 'package:fantavacanze_official/core/entities/fs_league/fs_night_type.dart';
 import 'package:fantavacanze_official/features/fantaserata/domain/entities/fs_league.dart';
 import 'package:fantavacanze_official/features/fantaserata/data/models/participant/fs_participant_model.dart';
 import 'package:hive/hive.dart';
 
 part 'fs_league_model.g.dart';
 
-@HiveType(typeId: 18)
+@HiveType(typeId: 16)
 class FsLeagueModel extends FsLeague {
   @HiveField(0)
   @override
@@ -35,6 +36,10 @@ class FsLeagueModel extends FsLeague {
   @override
   String? get winnerPhotoUrl => super.winnerPhotoUrl;
 
+  @HiveField(7)
+  @override
+  FsNightType get nightType => super.nightType;
+
   FsLeagueModel({
     required super.id,
     required super.name,
@@ -43,6 +48,7 @@ class FsLeagueModel extends FsLeague {
     required super.inviteCode,
     required List<FsParticipantModel> super.participants,
     super.winnerPhotoUrl,
+    required super.nightType,
   });
 
   factory FsLeagueModel.fromJson(Map<String, dynamic> json) {
@@ -56,6 +62,7 @@ class FsLeagueModel extends FsLeague {
           .map((p) => FsParticipantModel.fromJson(p as Map<String, dynamic>))
           .toList(),
       winnerPhotoUrl: json['winner_photo_url'] as String?,
+      nightType: FsNightType.fromString(json['night_type']),
     );
   }
 
@@ -68,6 +75,7 @@ class FsLeagueModel extends FsLeague {
       'invite_code': inviteCode,
       'participants': participants.map((p) => p.toJson()).toList(),
       'winner_photo_url': winnerPhotoUrl,
+      'night_type': nightType,
     };
   }
 
@@ -83,6 +91,7 @@ class FsLeagueModel extends FsLeague {
               p is FsParticipantModel ? p : FsParticipantModel.fromEntity(p))
           .toList(),
       winnerPhotoUrl: league.winnerPhotoUrl,
+      nightType: league.nightType,
     );
   }
 }

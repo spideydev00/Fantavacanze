@@ -1,3 +1,4 @@
+import 'package:fantavacanze_official/core/entities/fs_league/fs_night_type.dart';
 import 'package:fantavacanze_official/features/fantaserata/domain/entities/fs_participant.dart';
 
 class FsLeague {
@@ -8,6 +9,7 @@ class FsLeague {
   final String inviteCode;
   final List<FsParticipant> participants;
   final String? winnerPhotoUrl;
+  final FsNightType nightType;
 
   FsLeague({
     required this.id,
@@ -17,5 +19,6 @@ class FsLeague {
     required this.inviteCode,
     required this.participants,
     this.winnerPhotoUrl,
+    required this.nightType,
   });
 }

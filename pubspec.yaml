@@ -136,6 +136,13 @@ flutter:
     - assets/images/fantaserata/images/onboarding/5.png
     - assets/images/fantaserata/images/onboarding/6.png
     - assets/images/fantaserata/logo/winner-text.png
+    - assets/images/icons/fs_icons/fanta-carnival-emoji.svg
+    - assets/images/icons/fs_icons/fanta-christmas-emoji.svg
+    - assets/images/icons/fs_icons/fanta-halloween-emoji.svg
+    - assets/images/icons/fs_icons/fanta-halloween-emoji-2.svg
+    - assets/images/icons/fs_icons/fanta-newyear-emoji.svg
+    - assets/images/icons/fs_icons/fanta-ski-emoji.svg
+    - assets/images/icons/fs_icons/hugging-people.svg
 
     
     # ===== BACKGROUNDS & GENERAL IMAGES =====

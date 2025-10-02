@@ -1,3 +1,4 @@
+import 'package:fantavacanze_official/core/entities/fs_league/fs_night_type.dart';
 import 'package:flutter/material.dart';
 
 class ColorPalette {
@@ -188,6 +189,72 @@ class ColorPalette {
     Color(0xFF2FAD6E),
     Color(0xFF00CCBB),
   ];
+
+  // ===== SEASONAL COLORS =====
+
+  /// Halloween gradient colors (orange to black)
+  static const List<Color> halloweenGradient = [
+    Color(0xFFFF8C00), // Dark orange
+    Color(0xFFFF4500), // Orange red
+    Color(0xFF8B0000), // Dark red
+  ];
+
+  /// Christmas gradient colors (red, green, gold)
+  static const List<Color> christmasGradient = [
+    Color.fromARGB(255, 171, 68, 89), // Crimson
+    Color(0xFF228B22), // Forest green
+    Color(0xFFFFD700), // Gold
+  ];
+
+  /// Carnival gradient colors (purple, yellow, magenta)
+  static const List<Color> carnivalGradient = [
+    Color(0xFF9932CC), // Dark orchid
+    Color(0xFFFFD700), // Gold
+    Color(0xFFFF1493), // Deep pink
+  ];
+
+  /// New Year's Eve gradient colors (gold, silver, champagne)
+  static const List<Color> newYearGradient = [
+    Color.fromARGB(255, 210, 179, 0), // Gold
+    Color.fromARGB(255, 189, 195, 115), // Silver
+    Color.fromARGB(255, 183, 142, 77), // Champagne
+  ];
+
+  /// Winter/Après Ski gradient colors (blue, white, ice blue)
+  static const List<Color> winterGradient = [
+    Color(0xFF4169E1), // Royal blue
+    Color.fromARGB(255, 131, 182, 202), // Sky blue
+    Color.fromARGB(255, 178, 219, 255), // Alice blue
+  ];
+
+  // ===== SEASONAL GRADIENT UTILITY METHODS =====
+
+  /// Get seasonal gradient based on FsNightType
+  static List<Color> getSeasonalGradient(FsNightType nightType) {
+    switch (nightType) {
+      case FsNightType.halloween:
+        return halloweenGradient;
+      case FsNightType.christmas:
+        return christmasGradient;
+      case FsNightType.carnival:
+        return carnivalGradient;
+      case FsNightType.newYearsEve:
+        return newYearGradient;
+      case FsNightType.apresSki:
+        return winterGradient;
+      default:
+        return fsGradients;
+    }
+  }
+
+  /// Get seasonal gradient as LinearGradient
+  static LinearGradient getSeasonalLinearGradient(FsNightType nightType) {
+    return LinearGradient(
+      colors: getSeasonalGradient(nightType),
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+    );
+  }
 
   // ===== NOTE GRADIENTS =====
 

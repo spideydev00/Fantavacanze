@@ -1,3 +1,4 @@
+import 'package:fantavacanze_official/core/entities/fs_league/fs_night_type.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:flutter/foundation.dart';
 import 'package:fantavacanze_official/core/errors/failure.dart';
@@ -11,7 +12,21 @@ abstract interface class FsRepository {
     required String creatorName,
   });
 
+  Future<Either<Failure, FsLeague>> createNightSpecificLeague({
+    required String name,
+    String? description,
+    required String creatorId,
+    required String creatorName,
+    required FsNightType nightType,
+  });
+
   Future<Either<Failure, FsLeague>> joinLeague({
+    required String inviteCode,
+    required String userId,
+    required String userName,
+  });
+
+  Future<Either<Failure, FsLeague>> joinNightSpecificLeague({
     required String inviteCode,
     required String userId,
     required String userName,

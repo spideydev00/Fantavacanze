@@ -8,7 +8,7 @@ part of 'fs_league_model.dart';
 
 class FsLeagueModelAdapter extends TypeAdapter<FsLeagueModel> {
   @override
-  final int typeId = 18;
+  final int typeId = 16;
 
   @override
   FsLeagueModel read(BinaryReader reader) {
@@ -24,13 +24,14 @@ class FsLeagueModelAdapter extends TypeAdapter<FsLeagueModel> {
       inviteCode: fields[4] as String,
       participants: (fields[5] as List).cast<FsParticipantModel>(),
       winnerPhotoUrl: fields[6] as String?,
+      nightType: fields[7] as FsNightType,
     );
   }
 
   @override
   void write(BinaryWriter writer, FsLeagueModel obj) {
     writer
-      ..writeByte(7)
+      ..writeByte(8)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -44,7 +45,9 @@ class FsLeagueModelAdapter extends TypeAdapter<FsLeagueModel> {
       ..writeByte(5)
       ..write(obj.participants)
       ..writeByte(6)
-      ..write(obj.winnerPhotoUrl);
+      ..write(obj.winnerPhotoUrl)
+      ..writeByte(7)
+      ..write(obj.nightType);
   }
 
   @override

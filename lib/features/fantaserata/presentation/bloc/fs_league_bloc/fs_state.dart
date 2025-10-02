@@ -24,10 +24,22 @@ final class FsLeagueCreated extends FsState {
   FsLeagueCreated(this.league);
 }
 
+final class FsNightSpecificLeagueCreated extends FsState {
+  final FsLeague league;
+
+  FsNightSpecificLeagueCreated(this.league);
+}
+
 final class FsLeagueJoined extends FsState {
   final FsLeague league;
 
   FsLeagueJoined(this.league);
+}
+
+final class FsNightSpecificLeagueJoined extends FsState {
+  final FsLeague league;
+
+  FsNightSpecificLeagueJoined(this.league);
 }
 
 final class FsLeagueExited extends FsState {}
@@ -35,9 +47,9 @@ final class FsLeagueExited extends FsState {}
 final class FsLeagueDeleted extends FsState {}
 
 final class WinnerPhotoUploaded extends FsState {
-  final String photoUrl;
+  final String imageUrl;
 
-  WinnerPhotoUploaded(this.photoUrl);
+  WinnerPhotoUploaded(this.imageUrl);
 }
 
 final class WinnerPhotoDeleted extends FsState {}

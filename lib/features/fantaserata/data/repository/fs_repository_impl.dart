@@ -1,3 +1,4 @@
+import 'package:fantavacanze_official/core/entities/fs_league/fs_night_type.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:flutter/foundation.dart';
 import 'package:fantavacanze_official/core/errors/exceptions.dart';
@@ -47,6 +48,35 @@ class FsRepositoryImpl implements FsRepository {
   }
 
   @override
+  Future<Either<Failure, FsLeague>> createNightSpecificLeague({
+    required String name,
+    String? description,
+    required String creatorId,
+    required String creatorName,
+    required FsNightType nightType,
+  }) async {
+    try {
+      if (!await connectionChecker.isConnected) {
+        return left(const Failure('Nessuna connessione internet'));
+      }
+
+      final league = await remoteDataSource.createNightSpecificLeague(
+        name: name,
+        description: description,
+        creatorId: creatorId,
+        creatorName: creatorName,
+        nightType: nightType,
+      );
+
+      await localDataSource.cacheFsLeague(league);
+
+      return right(league);
+    } on ServerException catch (e) {
+      return left(Failure(e.message));
+    }
+  }
+
+  @override
   Future<Either<Failure, FsLeague>> joinLeague({
     required String inviteCode,
     required String userId,
@@ -58,6 +88,31 @@ class FsRepositoryImpl implements FsRepository {
       }
 
       final league = await remoteDataSource.joinLeague(
+        inviteCode: inviteCode,
+        userId: userId,
+        userName: userName,
+      );
+
+      await localDataSource.cacheFsLeague(league);
+
+      return right(league);
+    } on ServerException catch (e) {
+      return left(Failure(e.message));
+    }
+  }
+
+  @override
+  Future<Either<Failure, FsLeague>> joinNightSpecificLeague({
+    required String inviteCode,
+    required String userId,
+    required String userName,
+  }) async {
+    try {
+      if (!await connectionChecker.isConnected) {
+        return left(const Failure('Nessuna connessione internet'));
+      }
+
+      final league = await remoteDataSource.joinNightSpecificLeague(
         inviteCode: inviteCode,
         userId: userId,
         userName: userName,

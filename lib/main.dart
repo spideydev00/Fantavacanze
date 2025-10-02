@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:fantavacanze_official/core/cubits/app_fs_league/app_fs_league_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/fs_navigation/fs_navigation_cubit.dart';
+import 'package:fantavacanze_official/core/cubits/seasonal_event/seasonal_event_cubit.dart';
 import 'package:fantavacanze_official/features/fantaserata/presentation/bloc/fs_rules_bloc/fs_rules_bloc.dart';
 import 'package:fantavacanze_official/features/fantaserata/presentation/bloc/fs_league_bloc/fs_bloc.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/notifications_bloc/notifications_bloc.dart';
@@ -80,6 +81,9 @@ void main() async {
           BlocProvider(create: (_) => serviceLocator<WordBombBloc>()),
           BlocProvider(create: (_) => serviceLocator<TruthOrDareBloc>()),
           BlocProvider(create: (_) => serviceLocator<NeverHaveIEverBloc>()),
+
+          // Seasonal Events Cubit
+          BlocProvider(create: (_) => serviceLocator<SeasonalEventCubit>()),
         ],
         child: const MyApp(),
       ),

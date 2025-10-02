@@ -21,13 +21,13 @@ class FsCreateHeroSection extends StatelessWidget {
       child: Column(
         children: [
           Icon(
-            Icons.star_rounded,
+            Icons.emoji_events_rounded,
             size: 50,
             color: Colors.white,
           ),
           const SizedBox(height: ThemeSizes.md),
           Text(
-            'Diventa il Re/Regina della Serata!',
+            'Chi Vincerà La Serata?',
             style: context.textTheme.headlineSmall?.copyWith(
               color: Colors.white,
               fontWeight: FontWeight.bold,

@@ -10,6 +10,7 @@ import 'package:fantavacanze_official/core/widgets/become_premium_button.dart';
 import 'package:fantavacanze_official/features/fantaserata/presentation/pages/fs_router_page.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc/league_bloc.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/dashboard/widgets/side_menu/league_dropdown.dart';
+import 'package:fantavacanze_official/features/league/presentation/pages/dashboard/widgets/side_menu/side_menu_gradient_button.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/settings/privacy_policy.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -20,8 +21,9 @@ import 'package:fantavacanze_official/core/entities/navigation/navigation_item.d
 import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:fantavacanze_official/core/widgets/divider.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/dashboard/widgets/side_menu/side_menu_navigation_asset.dart';
-import 'package:fantavacanze_official/features/league/presentation/pages/dashboard/widgets/side_menu/side_menu_gradient_button.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:fantavacanze_official/core/cubits/seasonal_event/seasonal_event_cubit.dart';
+import 'package:fantavacanze_official/core/entities/fs_league/fs_night_type.dart';
 
 class SideMenu extends StatefulWidget {
   final VoidCallback? closeMenuCallback;
@@ -194,20 +196,25 @@ class _SideMenuState extends State<SideMenu> {
 
         if (item.title == "Fanta Serata") {
           menuWidgets.add(
-            SideMenuGradientButton(
-              title: item.title,
-              svgIcon: context.read<AppThemeCubit>().isDarkMode(context)
-                  ? item.darkSvgIcon
-                  : item.lightSvgIcon,
-              isActive: selectedIndex == originalIndex,
-              emojiPath:
-                  'assets/images/icons/homepage_icons/fanta-serata-emoji.svg', // Aggiungi emoji path
-              onTap: () {
-                _handleNavigation(
-                  context,
-                  item,
-                  originalIndex,
-                  hasLeagues,
+            BlocBuilder<SeasonalEventCubit, SeasonalEventState>(
+              builder: (context, seasonalState) {
+                return SideMenuGradientButton.seasonal(
+                  title: _getSeasonalTitle(seasonalState.activeNightType),
+                  svgIcon: context.read<AppThemeCubit>().isDarkMode(context)
+                      ? item.darkSvgIcon
+                      : item.lightSvgIcon,
+                  isActive: true,
+                  emojiPath:
+                      _getSeasonalEmojiPath(seasonalState.activeNightType),
+                  nightType: seasonalState.activeNightType,
+                  onTap: () {
+                    _handleNavigation(
+                      context,
+                      item,
+                      originalIndex,
+                      hasLeagues,
+                    );
+                  },
                 );
               },
             ),
@@ -236,6 +243,38 @@ class _SideMenuState extends State<SideMenu> {
     });
 
     return menuWidgets;
+  }
+
+  /// Get seasonal title based on night type
+  String _getSeasonalTitle(FsNightType nightType) {
+    switch (nightType) {
+      case FsNightType.halloween:
+        return "Fanta Halloween";
+      case FsNightType.christmas:
+        return "Fanta Natale";
+      case FsNightType.carnival:
+        return "Fanta Carnevale";
+      case FsNightType.newYearsEve:
+        return "Fanta Capodanno";
+      default:
+        return "Fanta Serata";
+    }
+  }
+
+  /// Get seasonal emoji path based on night type
+  String _getSeasonalEmojiPath(FsNightType nightType) {
+    switch (nightType) {
+      case FsNightType.halloween:
+        return 'assets/images/icons/fs_icons/fanta-halloween-emoji.svg';
+      case FsNightType.christmas:
+        return 'assets/images/icons/fs_icons/fanta-christmas-emoji.svg';
+      case FsNightType.carnival:
+        return 'assets/images/icons/fs_icons/fanta-carnival-emoji.svg';
+      case FsNightType.newYearsEve:
+        return 'assets/images/icons/fs_icons/fanta-newyear-emoji.svg';
+      default:
+        return 'assets/images/icons/homepage_icons/fanta-serata-emoji.svg';
+    }
   }
 
   // Gestisce la logica di navigazione

@@ -31,8 +31,6 @@ class NotificationRemoteDataSourceImpl implements NotificationRemoteDataSource {
 
   void initNotificationListener() {
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      debugPrint('📨 FCM received in FOREGROUND: ${message.data}');
-
       final type = NotificationType.fromString(message.data['type']);
 
       if (type != null && type.isEphemeral) {

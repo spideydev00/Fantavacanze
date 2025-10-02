@@ -18,12 +18,40 @@ final class CreateFsLeagueEvent extends FsEvent {
   });
 }
 
+final class CreateNightSpecificFsLeagueEvent extends FsEvent {
+  final String name;
+  final String? description;
+  final String creatorId;
+  final String creatorName;
+  final FsNightType nightType;
+
+  CreateNightSpecificFsLeagueEvent({
+    required this.name,
+    this.description,
+    required this.creatorId,
+    required this.creatorName,
+    required this.nightType,
+  });
+}
+
 final class JoinFsLeagueEvent extends FsEvent {
   final String inviteCode;
   final String userId;
   final String userName;
 
   JoinFsLeagueEvent({
+    required this.inviteCode,
+    required this.userId,
+    required this.userName,
+  });
+}
+
+final class JoinNightSpecificFsLeagueEvent extends FsEvent {
+  final String inviteCode;
+  final String userId;
+  final String userName;
+
+  JoinNightSpecificFsLeagueEvent({
     required this.inviteCode,
     required this.userId,
     required this.userName,

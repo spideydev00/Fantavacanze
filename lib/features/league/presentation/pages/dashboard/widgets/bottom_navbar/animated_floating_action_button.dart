@@ -1,22 +1,66 @@
 import 'package:fantavacanze_official/core/cubits/app_fs_league/app_fs_league_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/floating_button_animation/floating_button_animation_cubit.dart';
 import 'package:fantavacanze_official/core/extensions/context_extension.dart';
+import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/init_dependencies/init_dependencies.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:fantavacanze_official/core/entities/fs_league/fs_night_type.dart';
 
 class AnimatedFloatingActionButton extends StatefulWidget {
   final VoidCallback? onPressed;
   final VoidCallback? onShow;
   final void Function(void Function())? onRegisterShowCallback;
+  final FsNightType? forcedNightType;
 
   const AnimatedFloatingActionButton({
     super.key,
     this.onPressed,
     this.onShow,
     this.onRegisterShowCallback,
+    this.forcedNightType,
   });
+
+  /// Halloween themed floating action button
+  const AnimatedFloatingActionButton.halloween({
+    super.key,
+    this.onPressed,
+    this.onShow,
+    this.onRegisterShowCallback,
+  }) : forcedNightType = FsNightType.halloween;
+
+  /// Christmas themed floating action button
+  const AnimatedFloatingActionButton.christmas({
+    super.key,
+    this.onPressed,
+    this.onShow,
+    this.onRegisterShowCallback,
+  }) : forcedNightType = FsNightType.christmas;
+
+  /// Carnival themed floating action button
+  const AnimatedFloatingActionButton.carnival({
+    super.key,
+    this.onPressed,
+    this.onShow,
+    this.onRegisterShowCallback,
+  }) : forcedNightType = FsNightType.carnival;
+
+  /// New Year themed floating action button
+  const AnimatedFloatingActionButton.newYear({
+    super.key,
+    this.onPressed,
+    this.onShow,
+    this.onRegisterShowCallback,
+  }) : forcedNightType = FsNightType.newYearsEve;
+
+  /// Winter/Après Ski themed floating action button
+  const AnimatedFloatingActionButton.winter({
+    super.key,
+    this.onPressed,
+    this.onShow,
+    this.onRegisterShowCallback,
+  }) : forcedNightType = FsNightType.apresSki;
 
   @override
   State<AnimatedFloatingActionButton> createState() =>
@@ -174,6 +218,9 @@ class _AnimatedFloatingActionButtonState
     return AnimatedBuilder(
       animation: Listenable.merge([_controller, _slideController]),
       builder: (context, child) {
+        // Get gradient colors (seasonal or default)
+        final gradientColors = _getGradientColors(context);
+
         return Transform.translate(
           offset: Offset(_slideAnimation.value, 0),
           child: GestureDetector(
@@ -211,7 +258,7 @@ class _AnimatedFloatingActionButtonState
               height: 56,
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: ColorPalette.fsGradients,
+                  colors: gradientColors,
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
@@ -219,12 +266,12 @@ class _AnimatedFloatingActionButtonState
                     BorderRadius.circular(_borderRadiusAnimation.value),
                 boxShadow: [
                   BoxShadow(
-                    color: ColorPalette.fsGradients[0].withValues(alpha: 0.3),
+                    color: gradientColors.first.withValues(alpha: 0.3),
                     blurRadius: 8.0,
                     offset: const Offset(0, 4),
                   ),
                   BoxShadow(
-                    color: ColorPalette.fsGradients[0].withValues(alpha: 0.1),
+                    color: gradientColors.first.withValues(alpha: 0.1),
                     blurRadius: 4.0,
                     offset: const Offset(0, 2),
                   ),
@@ -232,6 +279,8 @@ class _AnimatedFloatingActionButtonState
               ),
               child: BlocBuilder<AppFsLeagueCubit, AppFsLeagueState>(
                 builder: (context, state) {
+                  final seasonalText = _getSeasonalText(context, state);
+
                   return Center(
                     child: SizedBox(
                       width: _widthAnimation.value - 16,
@@ -247,16 +296,14 @@ class _AnimatedFloatingActionButtonState
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   Text(
-                                    state is AppFsLeagueExists
-                                        ? "Entra nella tua"
-                                        : "Gioca ora al",
+                                    seasonalText.subtitle,
                                     style:
                                         context.textTheme.labelSmall!.copyWith(
                                       fontSize: 10,
                                     ),
                                   ),
                                   Text(
-                                    "Fanta Serata",
+                                    seasonalText.title,
                                     style: const TextStyle(
                                       fontFamily: "Falcon Sport One",
                                       fontSize: 18,
@@ -276,9 +323,8 @@ class _AnimatedFloatingActionButtonState
                               mainAxisAlignment: MainAxisAlignment.center,
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                // Testo "FS"
                                 Text(
-                                  "FS",
+                                  seasonalText.label,
                                   style: const TextStyle(
                                     fontFamily: "Falcon Sport One",
                                     fontSize: 20,
@@ -287,13 +333,10 @@ class _AnimatedFloatingActionButtonState
                                   ),
                                   textAlign: TextAlign.center,
                                 ),
-
                                 Opacity(
                                   opacity: _inviteOpacityAnimation.value,
                                   child: Text(
-                                    state is AppFsLeagueExists
-                                        ? "Entra!"
-                                        : "Prova Ora!",
+                                    seasonalText.action,
                                     style:
                                         context.textTheme.labelSmall!.copyWith(
                                       fontSize: 9,
@@ -316,5 +359,74 @@ class _AnimatedFloatingActionButtonState
         );
       },
     );
+  }
+
+  /// Get gradient colors based on seasonal event or forced type
+  List<Color> _getGradientColors(BuildContext context) {
+    try {
+      final nightType = widget.forcedNightType ?? context.currentNightType;
+      return nightType != FsNightType.apresSki
+          ? ColorPalette.getSeasonalGradient(nightType)
+          : ColorPalette.fsGradients;
+    } catch (e) {
+      // Fallback to default gradient if seasonal cubit not available
+      return ColorPalette.fsGradients;
+    }
+  }
+
+  /// Get seasonal text based on current night type
+  ({String title, String label, String subtitle, String action})
+      _getSeasonalText(BuildContext context, AppFsLeagueState state) {
+    try {
+      final nightType = widget.forcedNightType ?? context.currentNightType;
+      final hasLeague = state is AppFsLeagueExists;
+
+      switch (nightType) {
+        case FsNightType.halloween:
+          return (
+            title: "Fanta Halloween",
+            label: 'FH',
+            subtitle: hasLeague ? "Entra nella tua" : "Gioca al",
+            action: hasLeague ? "Entra!" : "Halloween"
+          );
+        case FsNightType.christmas:
+          return (
+            title: "Fanta Natale",
+            label: 'FN',
+            subtitle: hasLeague ? "Entra nella tua" : "Gioca al",
+            action: hasLeague ? "Entra!" : "Vigilia"
+          );
+        case FsNightType.carnival:
+          return (
+            title: "Fanta Carnevale",
+            label: 'FC',
+            subtitle: hasLeague ? "Entra nella tua" : "Gioca al",
+            action: hasLeague ? "Entra!" : "Carnevale"
+          );
+        case FsNightType.newYearsEve:
+          return (
+            title: "Fanta Capodanno",
+            label: 'FC',
+            subtitle: hasLeague ? "Entra nella tua" : "Gioca al",
+            action: hasLeague ? "Entra!" : "Nuovo Anno!"
+          );
+        default:
+          return (
+            title: "Fanta Serata",
+            label: 'FS',
+            subtitle: hasLeague ? "Entra nella tua" : "Gioca ora al",
+            action: hasLeague ? "Entra!" : "Prova Ora!"
+          );
+      }
+    } catch (e) {
+      // Fallback to default text if seasonal cubit not available
+      final hasLeague = state is AppFsLeagueExists;
+      return (
+        title: "Fanta Serata",
+        label: 'FS',
+        subtitle: hasLeague ? "Entra nella tua" : "Gioca ora al",
+        action: hasLeague ? "Entra!" : "Prova Ora!"
+      );
+    }
   }
 }
