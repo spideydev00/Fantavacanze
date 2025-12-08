@@ -33,6 +33,8 @@ class NotificationRemoteDataSourceImpl implements NotificationRemoteDataSource {
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       final type = NotificationType.fromString(message.data['type']);
 
+      //TODO: Debug types returning null
+
       if (type != null && type.isEphemeral) {
         debugPrint('🔄 Processing ephemeral notification: ${type.value}');
         return;

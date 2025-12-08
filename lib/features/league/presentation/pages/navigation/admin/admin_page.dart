@@ -305,7 +305,7 @@ class _AdminPageState extends State<AdminPage> {
                       );
                     },
                     icon: const Icon(Icons.add),
-                    label: const Text('Crea Nuovo Evento'),
+                    label: const Text('Crea Bonus/Malus'),
                     style: ElevatedButton.styleFrom(
                       padding:
                           const EdgeInsets.symmetric(vertical: ThemeSizes.md),

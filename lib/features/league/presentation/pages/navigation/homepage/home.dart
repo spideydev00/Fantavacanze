@@ -126,7 +126,7 @@ class HomePage extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: ThemeSizes.xl),
             child: CustomDivider(
-              text: 'Nuovo Evento',
+              text: 'Aggiungi Bonus/Malus',
               hasDropdown: true,
               dropdownText: "Clicca qui per aggiungere un bonus o un malus",
             ),
@@ -177,8 +177,8 @@ class HomePage extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: ThemeSizes.xl),
       child: AdminActionCard(
-        title: 'Aggiungi un nuovo evento',
-        imagePath: 'assets/images/add-event-bg-fall-winter.png',
+        title: 'Aggiungi un bonus / malus',
+        imagePath: 'assets/images/add-event-winter.png',
         iconData: Icons.add,
         onTap: () => _navigateToAddEvent(context),
       ),

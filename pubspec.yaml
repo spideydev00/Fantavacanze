@@ -125,9 +125,11 @@ flutter:
     - assets/images/fantaserata/logo/fantaserata-no-neon-logo.png
     - assets/images/logos/logo-fall.png
     - assets/images/logos/logo-fall-no-neon.png
-    - assets/images/logos/logo-winter.png
     - assets/images/logos/logo-halloween.png
-
+    - assets/images/logos/logo-smash-or-pass.png
+    - assets/images/logos/logo-winter-neon.png
+    - assets/images/logos/logo-winter.png
+    
     # ===== FANTASERATA =====
     - assets/images/fantaserata/images/onboarding/1.png
     - assets/images/fantaserata/images/onboarding/2.png
@@ -157,6 +159,7 @@ flutter:
     - assets/images/tutorial-1.png
     - assets/images/about-us.jpg
     - assets/images/add-event-bg-fall-winter.png
+    - assets/images/add-event-winter.png
     
     # ===== AUTHENTICATION ICONS =====
     - assets/images/otp-verification-icon.png
@@ -210,6 +213,11 @@ flutter:
     - assets/images/icons/homepage_icons/question-mark-icon.svg
     - assets/images/icons/homepage_icons/question-mark-icon-dark.svg
     - assets/images/icons/homepage_icons/fanta-serata-emoji.svg
+    - assets/images/icons/homepage_icons/question-mark-icon-sp.svg
+    - assets/images/icons/homepage_icons/broken-heart.svg
+    - assets/images/icons/homepage_icons/pass-illustration.png
+    - assets/images/icons/homepage_icons/smash-illustration.png
+    - assets/images/icons/homepage_icons/love-key-icon.svg
     
     # ===== LEAGUE TYPE ICONS =====
     - assets/images/icons/homepage_icons/bro-code-icon.png

@@ -54,3 +54,9 @@ app.*.map.json
 # Other
 terminal-commands.md
 project-structure.md
+
+# Supabase
+/supabase
+
+# Instructions
+/custom-gpt

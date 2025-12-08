@@ -1,4 +1,5 @@
 enum NotificationType {
+  //TODO: add all ephemeral types
   dailyChallengeRequest('daily_challenge_request'),
   dailyChallengeApproved('daily_challenge_approved'),
   dailyChallengeReminder('daily_challenge_reminder'),

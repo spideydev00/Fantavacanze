@@ -201,30 +201,30 @@ class ColorPalette {
 
   /// Christmas gradient colors (red, green, gold)
   static const List<Color> christmasGradient = [
-    Color.fromARGB(255, 171, 68, 89), // Crimson
-    Color(0xFF228B22), // Forest green
-    Color(0xFFFFD700), // Gold
+    Color(0xFF37C0FF),
+    Color(0xFF21ABEA),
+    Color(0xFF0371AD),
   ];
 
   /// Carnival gradient colors (purple, yellow, magenta)
   static const List<Color> carnivalGradient = [
-    Color(0xFF9932CC), // Dark orchid
-    Color(0xFFFFD700), // Gold
-    Color(0xFFFF1493), // Deep pink
+    Color(0xFF9932CC),
+    Color(0xFFFFD700),
+    Color(0xFFFF1493),
   ];
 
   /// New Year's Eve gradient colors (gold, silver, champagne)
   static const List<Color> newYearGradient = [
-    Color.fromARGB(255, 210, 179, 0), // Gold
-    Color.fromARGB(255, 189, 195, 115), // Silver
-    Color.fromARGB(255, 183, 142, 77), // Champagne
+    Color.fromARGB(255, 210, 179, 0),
+    Color.fromARGB(255, 189, 195, 115),
+    Color.fromARGB(255, 183, 142, 77),
   ];
 
   /// Winter/Après Ski gradient colors (blue, white, ice blue)
   static const List<Color> winterGradient = [
-    Color(0xFF4169E1), // Royal blue
-    Color.fromARGB(255, 131, 182, 202), // Sky blue
-    Color.fromARGB(255, 178, 219, 255), // Alice blue
+    Color(0xFF37C0FF),
+    Color(0xFF21ABEA),
+    Color(0xFF0371AD),
   ];
 
   // ===== SEASONAL GRADIENT UTILITY METHODS =====
@@ -336,23 +336,39 @@ class ColorPalette {
 
   // ===== DAILY CHALLENGE GRADIENTS =====
 
-  /// Gradient collection for daily challenge cards (autumn vibes 🍂)
+  // /// Gradient collection for daily challenge cards (autumn vibes 🍂)
+  // static List<List<Color>> challengeGradients = [
+  //   [
+  //     const Color(0xFFEF6C00),
+  //     const Color(0xFFD84315),
+  //   ],
+  //   [
+  //     const Color(0xFF8E3200),
+  //     const Color(0xFF5D1F00),
+  //   ],
+  //   [
+  //     const Color(0xFF4E342E),
+  //     const Color(0xFF260E04),
+  //   ],
+  // ];
+
+  /// Gradient collection for daily challenge cards (winter vibes 🌨️)
   static List<List<Color>> challengeGradients = [
     [
-      const Color(0xFFEF6C00), // arancio bruciato
-      const Color(0xFFD84315), // arancio scuro tendente al rame
+      const Color(0xFF5CB3DB),
+      const Color(0xFF37C0FF),
     ],
     [
-      const Color(0xFF8E3200), // marrone caldo / terra bruciata
-      const Color(0xFF5D1F00), // marrone profondo
+      const Color(0xFF21ABEA),
+      const Color(0xFF0371AD),
     ],
     [
-      const Color(0xFF4E342E), // marrone intenso
-      const Color(0xFF260E04), // quasi nero con riflessi bruno
+      const Color(0xFF01579B),
+      const Color(0xFF0D47A1),
     ],
   ];
 
-  /// Differnet Gradient collection for daily challenge cards
+  /// Gradient collection for daily challenge cards (Standard)
   // static List<List<Color>> challengeGradients = [
   //   [
   //     const Color(0xFF134E5E),

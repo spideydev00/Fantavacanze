@@ -149,8 +149,8 @@ class _SideMenuGradientButtonState extends State<SideMenuGradientButton>
                     Container(
                       width: double.infinity,
                       padding: const EdgeInsets.symmetric(
-                        horizontal: ThemeSizes.sm,
-                        vertical: ThemeSizes.sm,
+                        horizontal: ThemeSizes.xs,
+                        vertical: ThemeSizes.xs,
                       ),
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
@@ -169,7 +169,7 @@ class _SideMenuGradientButtonState extends State<SideMenuGradientButton>
                             widget.title,
                             style: const TextStyle(
                                 fontFamily: "Falcon Sport One",
-                                fontSize: 20,
+                                fontSize: 18,
                                 fontWeight: FontWeight.bold,
                                 color: Colors.white,
                                 shadows: [
@@ -194,8 +194,8 @@ class _SideMenuGradientButtonState extends State<SideMenuGradientButton>
                           opacity: 0.4,
                           child: SvgPicture.asset(
                             widget.emojiPath!,
-                            height: 80,
-                            width: 80,
+                            height: 70,
+                            width: 70,
                             fit: BoxFit.cover,
                           ),
                         ),

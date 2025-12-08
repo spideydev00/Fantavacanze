@@ -10,6 +10,7 @@ import 'package:fantavacanze_official/features/league/presentation/pages/navigat
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/memories/memories_page.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/notes/notes_page.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/rules/rules_page.dart';
+import 'package:fantavacanze_official/features/league/presentation/pages/navigation/smash_or_pass/smash_or_pass.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/team_info/team_info_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
@@ -35,21 +36,6 @@ List<NavigationItem> nonParticipantNavbarItems = [
     screen: const DrinkGames(),
     subsection: "Games",
   ),
-  // NavigationItem(
-  //   title: "FV Bot",
-  //   darkSvgIcon: 'assets/images/icons/homepage_icons/robot-icon.svg',
-  //   lightSvgIcon: 'assets/images/icons/homepage_icons/robot-icon.svg',
-  //   screen: const FvBotPage(),
-  //   subsection: "Games",
-  // ),
-  NavigationItem(
-    title: "Fanta Serata",
-    darkSvgIcon: 'assets/images/icons/homepage_icons/create-league-icon.svg',
-    lightSvgIcon:
-        'assets/images/icons/homepage_icons/create-league-icon-dark.svg',
-    screen: const CreateLeaguePage(),
-    subsection: "Lega",
-  ),
   NavigationItem(
     title: "Crea Lega",
     darkSvgIcon: 'assets/images/icons/homepage_icons/create-league-icon.svg',
@@ -66,6 +52,29 @@ List<NavigationItem> nonParticipantNavbarItems = [
     screen: const SearchLeaguePage(),
     subsection: "Lega",
   ),
+  // NavigationItem(
+  //   title: "FV Bot",
+  //   darkSvgIcon: 'assets/images/icons/homepage_icons/robot-icon.svg',
+  //   lightSvgIcon: 'assets/images/icons/homepage_icons/robot-icon.svg',
+  //   screen: const FvBotPage(),
+  //   subsection: "Games",
+  // ),
+  NavigationItem(
+    title: "Fanta Serata",
+    darkSvgIcon: 'assets/images/icons/homepage_icons/create-league-icon.svg',
+    lightSvgIcon:
+        'assets/images/icons/homepage_icons/create-league-icon-dark.svg',
+    screen: const CreateLeaguePage(),
+    subsection: "Lega",
+  ),
+  NavigationItem(
+    title: "Smash Or Pass",
+    lightSvgIcon:
+        'assets/images/icons/homepage_icons/question-mark-icon-sp.svg',
+    darkSvgIcon: 'assets/images/icons/homepage_icons/question-mark-icon-sp.svg',
+    screen: SmashOrPass(),
+    subsection: "IRL",
+  )
 ];
 
 List<NavigationItem> participantNavbarItems = [
@@ -89,6 +98,22 @@ List<NavigationItem> participantNavbarItems = [
     lightSvgIcon: 'assets/images/icons/homepage_icons/rankings-icon-dark.svg',
     screen: LeaderboardPage(),
     subsection: "Naviga",
+  ),
+  NavigationItem(
+    title: "Nuovo Bonus o Malus",
+    darkSvgIcon: 'assets/images/icons/homepage_icons/event-icon.svg',
+    lightSvgIcon: 'assets/images/icons/homepage_icons/event-icon-dark.svg',
+    screen: const AddEventPage(),
+    subsection: "Gestione Lega",
+    isAdminOnly: true,
+  ),
+  NavigationItem(
+    title: "Admin",
+    darkSvgIcon: 'assets/images/icons/homepage_icons/admin-icon.svg',
+    lightSvgIcon: 'assets/images/icons/homepage_icons/admin-icon-dark.svg',
+    screen: const AdminPage(),
+    subsection: "Gestione Lega",
+    isAdminOnly: true,
   ),
   // NavigationItem(
   //   title: "FV Bot",
@@ -149,26 +174,18 @@ List<NavigationItem> participantNavbarItems = [
     screen: const SearchLeaguePage(),
     subsection: "Nuova Lega",
   ),
-  NavigationItem(
-    title: "Nuovo Evento",
-    darkSvgIcon: 'assets/images/icons/homepage_icons/event-icon.svg',
-    lightSvgIcon: 'assets/images/icons/homepage_icons/event-icon-dark.svg',
-    screen: const AddEventPage(),
-    subsection: "Gestione Lega",
-    isAdminOnly: true,
-  ),
-  NavigationItem(
-    title: "Admin",
-    darkSvgIcon: 'assets/images/icons/homepage_icons/admin-icon.svg',
-    lightSvgIcon: 'assets/images/icons/homepage_icons/admin-icon-dark.svg',
-    screen: const AdminPage(),
-    subsection: "Gestione Lega",
-    isAdminOnly: true,
-  )
   //   title: "Articoli",
   //   darkSvgIcon: 'assets/images/icons/homepage_icons/articles-icon.svg',
   //   lightSvgIcon: 'assets/images/icons/homepage_icons/articles-icon-dark.svg',
   //   screen: const ArticlesPage(),
   //   subsection: "Altro",
   // ),
+  NavigationItem(
+    title: "Smash Or Pass",
+    lightSvgIcon:
+        'assets/images/icons/homepage_icons/question-mark-icon-sp.svg',
+    darkSvgIcon: 'assets/images/icons/homepage_icons/question-mark-icon-sp.svg',
+    screen: SmashOrPass(),
+    subsection: "IRL",
+  )
 ];

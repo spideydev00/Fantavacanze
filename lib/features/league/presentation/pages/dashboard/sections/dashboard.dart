@@ -364,8 +364,8 @@ class _DashboardScreenState extends State<DashboardScreen>
 
     return Image.asset(
       context.read<AppThemeCubit>().isDarkMode(context)
-          ? 'assets/images/logos/logo-fall.png'
-          : 'assets/images/logos/logo-fall-no-neon.png',
+          ? 'assets/images/logos/logo-winter-neon.png'
+          : 'assets/images/logos/logo-winter.png',
       width: Constants.getWidth(context) * widthFactor,
     );
   }

@@ -319,10 +319,6 @@ class _AddEventPageState extends State<AddEventPage> {
       },
       child: Scaffold(
         backgroundColor: context.bgColor,
-        appBar: AppBar(
-          title: const Text('Nuovo Evento'),
-          elevation: 0,
-        ),
         body: !isAdmin
             ? _buildUnauthorizedView()
             : (league == null

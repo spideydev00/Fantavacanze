@@ -278,11 +278,15 @@ class _SideMenuState extends State<SideMenu> {
   }
 
   // Gestisce la logica di navigazione
-  void _handleNavigation(BuildContext context, NavigationItem item,
-      int originalItemIndex, bool hasLeagues) {
+  void _handleNavigation(
+    BuildContext context,
+    NavigationItem item,
+    int originalItemIndex,
+    bool hasLeagues,
+  ) {
     if (item.title == "Crea Lega" ||
         item.title == "Cerca Lega" ||
-        item.title == "Nuovo Evento" ||
+        item.title == "Aggiungi Bonus/Malus" ||
         item.title == "Admin") {
       Navigator.push(
         context,
