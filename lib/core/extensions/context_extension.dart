@@ -8,7 +8,7 @@ extension CustomContext on BuildContext {
       Theme.of(this).elevatedButtonTheme;
   OutlinedButtonThemeData get outlinedButtonThemeData =>
       Theme.of(this).outlinedButtonTheme;
-  InputDecorationTheme get inputDecorationTheme =>
+  InputDecorationThemeData get inputDecorationTheme =>
       Theme.of(this).inputDecorationTheme;
   BottomSheetThemeData get bottomSheetTheme => Theme.of(this).bottomSheetTheme;
 }
