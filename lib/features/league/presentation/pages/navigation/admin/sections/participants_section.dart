@@ -718,7 +718,7 @@ class ParticipantsSectionState extends State<ParticipantsSection> {
                       borderRadius: BorderRadius.circular(8),
                     ),
                   ),
-                  value: selectedNewCaptainId,
+                  initialValue: selectedNewCaptainId,
                   items: potentialCaptains
                       .map((member) => DropdownMenuItem<String>(
                             value: member.userId,

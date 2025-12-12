@@ -139,7 +139,7 @@ class _EditProfileDialogState extends State<EditProfileDialog> {
                 canvasColor: context.bgColor,
               ),
               child: DropdownButtonFormField<String>(
-                value: _selectedGender,
+                initialValue: _selectedGender,
                 decoration: InputDecoration(
                   labelText: 'Genere',
                   fillColor: context.bgColor,
@@ -163,7 +163,7 @@ class _EditProfileDialogState extends State<EditProfileDialog> {
                 canvasColor: context.bgColor,
               ),
               child: DropdownButtonFormField<String>(
-                value: _selectedSentimentalStatus,
+                initialValue: _selectedSentimentalStatus,
                 decoration: InputDecoration(
                   labelText: 'Stato Sentimentale',
                   fillColor: context.bgColor,

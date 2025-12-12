@@ -18,54 +18,62 @@ class RuleModeSelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: context.secondaryBgColor,
-        borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusLg),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 5),
-          ),
-        ],
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(ThemeSizes.md),
-        child: Column(
-          children: [
-            _getRuleModeTile(
-              GameMode.broCode,
-              'Bro-code',
-              'Regole tarate per gruppi di maschi',
-              ColorPalette.success,
-              "assets/images/icons/homepage_icons/bro-code-icon.png",
-            ),
-            const Divider(thickness: 0.2),
-            _getRuleModeTile(
-              GameMode.baddies,
-              'Baddies',
-              'Regole tarate per gruppi di ragazze',
-              ColorPalette.secondary(ThemeMode.light),
-              "assets/images/icons/homepage_icons/baddies-icon.png",
-            ),
-            const Divider(thickness: 0.2),
-            _getRuleModeTile(
-              GameMode.allTogether,
-              'All Together',
-              'Mix di regole per gruppi misti',
-              ColorPalette.info,
-              "assets/images/icons/homepage_icons/mixed-genders-icon.png",
-            ),
-            const Divider(thickness: 0.2),
-            _getRuleModeTile(
-              GameMode.custom,
-              'Completamente Personalizzata',
-              'Crea tutte le regole da zero',
-              ColorPalette.accent(ThemeMode.light),
-              "assets/images/icons/homepage_icons/custom-rules-icon.png",
+    return RadioGroup<GameMode>(
+      groupValue: selectedMode,
+      onChanged: (value) {
+        if (value != null && !isLoading) {
+          onModeChanged(value);
+        }
+      },
+      child: Container(
+        decoration: BoxDecoration(
+          color: context.secondaryBgColor,
+          borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusLg),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 5),
             ),
           ],
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(ThemeSizes.md),
+          child: Column(
+            children: [
+              _getRuleModeTile(
+                GameMode.broCode,
+                'Bro-code',
+                'Regole tarate per gruppi di maschi',
+                ColorPalette.success,
+                "assets/images/icons/homepage_icons/bro-code-icon.png",
+              ),
+              const Divider(thickness: 0.2),
+              _getRuleModeTile(
+                GameMode.baddies,
+                'Baddies',
+                'Regole tarate per gruppi di ragazze',
+                ColorPalette.secondary(ThemeMode.light),
+                "assets/images/icons/homepage_icons/baddies-icon.png",
+              ),
+              const Divider(thickness: 0.2),
+              _getRuleModeTile(
+                GameMode.allTogether,
+                'All Together',
+                'Mix di regole per gruppi misti',
+                ColorPalette.info,
+                "assets/images/icons/homepage_icons/mixed-genders-icon.png",
+              ),
+              const Divider(thickness: 0.2),
+              _getRuleModeTile(
+                GameMode.custom,
+                'Completamente Personalizzata',
+                'Crea tutte le regole da zero',
+                ColorPalette.accent(ThemeMode.light),
+                "assets/images/icons/homepage_icons/custom-rules-icon.png",
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -132,12 +140,7 @@ class RuleModeSelector extends StatelessWidget {
                     return ColorPalette.darkGrey;
                   }),
                   value: mode,
-                  groupValue: selectedMode,
-                  onChanged: isLoading
-                      ? null
-                      : (value) {
-                          if (value != null) onModeChanged(value);
-                        },
+                  enabled: !isLoading,
                 ),
                 shape: RoundedRectangleBorder(
                   borderRadius:

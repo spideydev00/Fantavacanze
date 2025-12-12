@@ -51,57 +51,61 @@ class TeamTypeStep extends StatelessWidget {
   }
 
   Widget _buildTeamTypeSelector(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: context.secondaryBgColor,
-        borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusLg),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 5),
-          ),
-        ],
-      ),
-      child: Theme(
-        data: Theme.of(context).copyWith(
-          radioTheme: RadioThemeData(
-            fillColor: WidgetStateProperty.resolveWith<Color>(
-              (states) {
-                if (states.contains(WidgetState.selected)) {
-                  return context.primaryColor;
-                }
-                return ColorPalette.darkGrey;
-              },
+    return RadioGroup<LeagueType>(
+      groupValue: leagueType,
+      onChanged: (value) {
+        if (value != null) onTeamTypeChanged(value);
+      },
+      child: Container(
+        decoration: BoxDecoration(
+          color: context.secondaryBgColor,
+          borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusLg),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 5),
+            ),
+          ],
+        ),
+        child: Theme(
+          data: Theme.of(context).copyWith(
+            radioTheme: RadioThemeData(
+              fillColor: WidgetStateProperty.resolveWith<Color>(
+                (states) {
+                  if (states.contains(WidgetState.selected)) {
+                    return context.primaryColor;
+                  }
+                  return ColorPalette.darkGrey;
+                },
+              ),
             ),
           ),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(ThemeSizes.md),
-          child: Column(
-            children: [
-              // Individual league option
-              _TeamTypeOption(
-                title: 'Lega Individuale',
-                description: 'Ogni partecipante gioca per sé',
-                isSelected: leagueType == LeagueType.individual,
-                value: LeagueType.individual,
-                groupValue: leagueType,
-                onChanged: onTeamTypeChanged,
-              ),
+          child: Padding(
+            padding: const EdgeInsets.all(ThemeSizes.md),
+            child: Column(
+              children: [
+                // Individual league option
+                _TeamTypeOption(
+                  title: 'Lega Individuale',
+                  description: 'Ogni partecipante gioca per sé',
+                  isSelected: leagueType == LeagueType.individual,
+                  value: LeagueType.individual,
+                  onChanged: onTeamTypeChanged,
+                ),
 
-              CustomDivider(text: 'Oppure'),
+                CustomDivider(text: 'Oppure'),
 
-              // Team league option
-              _TeamTypeOption(
-                title: 'Lega a Squadre',
-                description: 'I partecipanti competono in squadre',
-                isSelected: leagueType == LeagueType.team,
-                value: LeagueType.team,
-                groupValue: leagueType,
-                onChanged: onTeamTypeChanged,
-              ),
-            ],
+                // Team league option
+                _TeamTypeOption(
+                  title: 'Lega a Squadre',
+                  description: 'I partecipanti competono in squadre',
+                  isSelected: leagueType == LeagueType.team,
+                  value: LeagueType.team,
+                  onChanged: onTeamTypeChanged,
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -115,7 +119,6 @@ class _TeamTypeOption extends StatelessWidget {
   final String description;
   final bool isSelected;
   final LeagueType value;
-  final LeagueType groupValue;
   final ValueChanged<LeagueType> onChanged;
 
   const _TeamTypeOption({
@@ -123,7 +126,6 @@ class _TeamTypeOption extends StatelessWidget {
     required this.description,
     required this.isSelected,
     required this.value,
-    required this.groupValue,
     required this.onChanged,
   });
 
@@ -142,8 +144,6 @@ class _TeamTypeOption extends StatelessWidget {
           children: [
             Radio<LeagueType>(
               value: value,
-              groupValue: groupValue,
-              onChanged: (val) => onChanged(val!),
               activeColor: context.primaryColor,
             ),
             Expanded(

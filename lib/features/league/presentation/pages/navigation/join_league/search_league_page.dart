@@ -509,18 +509,16 @@ class _SearchLeaguePageState extends State<SearchLeaguePage> {
         onCancel: () => Navigator.of(dialogContext).pop(),
         onConfirm: () {
           Navigator.of(dialogContext).pop();
-          Future.microtask(() {
-            if (!mounted) return;
-            if (league.type == LeagueType.individual) {
-              _showJoinIndividualLeagueConfirmationWithAnimation(
-                context,
-                league,
-                inviteCode,
-              );
-            } else {
-              _navigateToChooseTeamPage(league, inviteCode);
-            }
-          });
+          if (!mounted) return;
+          if (league.type == LeagueType.individual) {
+            _showJoinIndividualLeagueConfirmationWithAnimation(
+              context,
+              league,
+              inviteCode,
+            );
+          } else {
+            _navigateToChooseTeamPage(league, inviteCode);
+          }
         },
       ),
     );

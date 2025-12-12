@@ -105,7 +105,7 @@ class _ConsentSettingsDialogState extends State<ConsentSettingsDialog> {
               ),
               value: _isAdult,
               onChanged: _updateIsAdult,
-              activeColor: context.primaryColor,
+              activeThumbColor: context.primaryColor,
               contentPadding:
                   const EdgeInsets.symmetric(horizontal: ThemeSizes.md),
               controlAffinity: ListTileControlAffinity.trailing,
