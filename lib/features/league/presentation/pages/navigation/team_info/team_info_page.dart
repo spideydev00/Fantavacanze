@@ -56,7 +56,7 @@ class TeamInfoPage extends StatelessWidget {
 
             late bool isCaptain = false;
 
-            if (league.isTeamBased) {
+            if (league.type == LeagueType.team) {
               // Find if user is a captain of any team
               for (final participant in league.participants) {
                 if (participant is TeamParticipant) {
@@ -71,7 +71,7 @@ class TeamInfoPage extends StatelessWidget {
             // Find user's participant entry
             Participant? userParticipant;
             for (final participant in league.participants) {
-              if (league.isTeamBased) {
+              if (league.type == LeagueType.team) {
                 if (participant is TeamParticipant &&
                     participant.members
                         .any((member) => member.userId == userId)) {
@@ -87,7 +87,7 @@ class TeamInfoPage extends StatelessWidget {
               }
             }
 
-            return league.isTeamBased
+            return league.type == LeagueType.team
                 ? _TeamBasedInfo(
                     league: league,
                     team: userParticipant as TeamParticipant,
@@ -541,7 +541,6 @@ class _TeamBasedInfoState extends State<_TeamBasedInfo>
                       onPressed: () => _showExitConfirmationDialog(
                         context,
                         widget.league,
-                        widget.userId,
                       ),
                     ),
                   ),
@@ -860,7 +859,6 @@ class _IndividualInfoState extends State<_IndividualInfo> {
                       onPressed: () => _showExitConfirmationDialog(
                         context,
                         widget.league,
-                        widget.userId,
                       ),
                     ),
                   ),
@@ -882,7 +880,6 @@ class _IndividualInfoState extends State<_IndividualInfo> {
 Future<void> _showExitConfirmationDialog(
   BuildContext context,
   League league,
-  String userId,
 ) async {
   return showDialog(
     context: context,
@@ -904,7 +901,6 @@ Future<void> _showExitConfirmationDialog(
                   leagueBloc.add(
                     ExitLeagueEvent(
                       league: league,
-                      userId: userId,
                     ),
                   );
                   // Chiude il dialog di loading

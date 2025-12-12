@@ -55,7 +55,7 @@ class LeagueModel extends League {
 
   @HiveField(10)
   @override
-  bool get isTeamBased => super.isTeamBased;
+  LeagueType get type => super.type;
 
   const LeagueModel({
     required super.id,
@@ -68,17 +68,32 @@ class LeagueModel extends League {
     required super.rules,
     required super.admins,
     required super.inviteCode,
-    required super.isTeamBased,
+    required super.type,
   });
 
   factory LeagueModel.fromJson(Map<String, dynamic> json) {
     // Gestisci entrambi i formati: camelCase e snake_case
     final String inviteCode =
         (json['inviteCode'] ?? json['invite_code']) as String;
-    final String createdAtStr =
-        (json['createdAt'] ?? json['created_at']) as String;
-    final bool isTeamBased =
-        (json['isTeamBased'] ?? json['is_team_based']) as bool;
+    final dynamic createdAtRaw = json['createdAt'] ?? json['created_at'];
+    final String createdAtStr = createdAtRaw is String
+        ? createdAtRaw
+        : (createdAtRaw as DateTime).toIso8601String();
+    final dynamic rawType =
+        json['type'] ?? json['leagueType'] ?? json['league_type'];
+    final dynamic rawIsTeamBased =
+        json['isTeamBased'] ?? json['is_team_based'];
+    LeagueType leagueType;
+    if (rawType is String) {
+      leagueType =
+          rawType.toLowerCase() == 'team' ? LeagueType.team : LeagueType.individual;
+    } else if (rawType is bool) {
+      leagueType = rawType ? LeagueType.team : LeagueType.individual;
+    } else if (rawIsTeamBased is bool) {
+      leagueType = rawIsTeamBased ? LeagueType.team : LeagueType.individual;
+    } else {
+      leagueType = LeagueType.individual;
+    }
 
     return LeagueModel(
       id: json['id'] as String,
@@ -98,7 +113,7 @@ class LeagueModel extends League {
       memories: (json['memories'] as List<dynamic>)
           .map((e) => MemoryModel.fromJson(e as Map<String, dynamic>))
           .toList(),
-      isTeamBased: isTeamBased,
+      type: leagueType,
       inviteCode: inviteCode,
     );
   }
@@ -117,7 +132,7 @@ class LeagueModel extends League {
       'events': events.map((event) => (event as EventModel).toJson()).toList(),
       'memories':
           memories.map((memory) => (memory as MemoryModel).toJson()).toList(),
-      'is_team_based': isTeamBased,
+      'type': type.name,
       'invite_code': inviteCode,
     };
   }
@@ -132,7 +147,7 @@ class LeagueModel extends League {
     List<Participant>? participants,
     List<Event>? events,
     List<Memory>? memories,
-    bool? isTeamBased,
+    LeagueType? type,
     String? inviteCode,
   }) {
     return LeagueModel(
@@ -145,7 +160,7 @@ class LeagueModel extends League {
       participants: participants ?? this.participants,
       events: events ?? this.events,
       memories: memories ?? this.memories,
-      isTeamBased: isTeamBased ?? this.isTeamBased,
+      type: type ?? this.type,
       inviteCode: inviteCode ?? this.inviteCode,
     );
   }

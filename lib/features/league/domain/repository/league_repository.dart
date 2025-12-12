@@ -10,7 +10,7 @@ abstract class LeagueRepository {
   Future<Either<Failure, League>> createLeague({
     required String name,
     String? description,
-    required bool isTeamBased,
+    required LeagueType type,
     required List<Rule> rules,
   });
 
@@ -39,20 +39,12 @@ abstract class LeagueRepository {
 
   Future<Either<Failure, void>> exitLeague({
     required League league,
-    required String userId,
   });
 
   Future<Either<Failure, League>> updateTeamName({
     required League league,
     required String userId,
     required String newName,
-  });
-
-  Future<Either<Failure, League>> removeTeamParticipants({
-    required League league,
-    required String teamName,
-    required List<String> userIdsToRemove,
-    required String requestingUserId,
   });
 
   // Event operations
@@ -63,7 +55,8 @@ abstract class LeagueRepository {
     required String creatorId,
     required String targetUser,
     required RuleType type,
-    required bool isTeamMember,
+    String? targetTeamName,
+    bool isTeamMember = false,
     String? description,
   });
 
@@ -137,6 +130,7 @@ abstract class LeagueRepository {
   Future<Either<Failure, League>> removeParticipants({
     required League league,
     required List<String> participantIds,
+    String? teamName,
     String? newCaptainId,
   });
 

@@ -9,7 +9,6 @@ class EventFinder {
   static Event? findLastEventForParticipant({
     required League league,
     required Participant participant,
-    required bool isTeamBased,
   }) {
     // If there are no events
     if (league.events.isEmpty) {
@@ -20,7 +19,7 @@ class EventFinder {
     final sortedEvents = List.from(league.events)
       ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
-    if (isTeamBased) {
+    if (league.type == LeagueType.team) {
       // For team-based leagues, we need to handle two cases:
       // 1. Events targeting the entire team (where targetUser is the team name)
       // 2. Events targeting specific team members (where targetUser is the member ID)
@@ -57,7 +56,6 @@ class EventFinder {
   static List<Event> getAllEventsForParticipant({
     required League league,
     required Participant participant,
-    required bool isTeamBased,
   }) {
     if (league.events.isEmpty) {
       return [];
@@ -65,7 +63,7 @@ class EventFinder {
 
     final List<Event> participantEvents = [];
 
-    if (isTeamBased) {
+    if (league.type == LeagueType.team) {
       // For team-based leagues, collect both direct team events and team member events
       for (final event in league.events) {
         // Direct team event

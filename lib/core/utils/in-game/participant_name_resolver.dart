@@ -20,7 +20,7 @@ class ParticipantNameResolver {
       }
     }
     // Handle team events (where targetUser is the team name)
-    else if (league.isTeamBased) {
+    else if (league.type == LeagueType.team) {
       // First check if it matches any team name directly
       for (final participant in league.participants) {
         if (participant.name == event.targetUser) {

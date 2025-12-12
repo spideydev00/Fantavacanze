@@ -1,18 +1,19 @@
 import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/widgets/divider.dart';
 import 'package:fantavacanze_official/core/widgets/info_container.dart';
+import 'package:fantavacanze_official/features/league/domain/entities/league.dart';
 import 'package:flutter/material.dart';
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/extensions/context_extension.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
 
 class TeamTypeStep extends StatelessWidget {
-  final bool isTeamBased;
-  final ValueChanged<bool> onTeamTypeChanged;
+  final LeagueType leagueType;
+  final ValueChanged<LeagueType> onTeamTypeChanged;
 
   const TeamTypeStep({
     super.key,
-    required this.isTeamBased,
+    required this.leagueType,
     required this.onTeamTypeChanged,
   });
 
@@ -30,7 +31,7 @@ class TeamTypeStep extends StatelessWidget {
         const SizedBox(height: ThemeSizes.md),
         _buildTeamTypeSelector(context),
         const SizedBox(height: ThemeSizes.lg),
-        isTeamBased
+        leagueType == LeagueType.team
             ? InfoContainer(
                 title: "A squadre",
                 message:
@@ -83,9 +84,9 @@ class TeamTypeStep extends StatelessWidget {
               _TeamTypeOption(
                 title: 'Lega Individuale',
                 description: 'Ogni partecipante gioca per sé',
-                isSelected: !isTeamBased,
-                value: false,
-                groupValue: isTeamBased,
+                isSelected: leagueType == LeagueType.individual,
+                value: LeagueType.individual,
+                groupValue: leagueType,
                 onChanged: onTeamTypeChanged,
               ),
 
@@ -95,9 +96,9 @@ class TeamTypeStep extends StatelessWidget {
               _TeamTypeOption(
                 title: 'Lega a Squadre',
                 description: 'I partecipanti competono in squadre',
-                isSelected: isTeamBased,
-                value: true,
-                groupValue: isTeamBased,
+                isSelected: leagueType == LeagueType.team,
+                value: LeagueType.team,
+                groupValue: leagueType,
                 onChanged: onTeamTypeChanged,
               ),
             ],
@@ -113,9 +114,9 @@ class _TeamTypeOption extends StatelessWidget {
   final String title;
   final String description;
   final bool isSelected;
-  final bool value;
-  final bool groupValue;
-  final ValueChanged<bool> onChanged;
+  final LeagueType value;
+  final LeagueType groupValue;
+  final ValueChanged<LeagueType> onChanged;
 
   const _TeamTypeOption({
     required this.title,
@@ -139,7 +140,7 @@ class _TeamTypeOption extends StatelessWidget {
         ),
         child: Row(
           children: [
-            Radio<bool>(
+            Radio<LeagueType>(
               value: value,
               groupValue: groupValue,
               onChanged: (val) => onChanged(val!),

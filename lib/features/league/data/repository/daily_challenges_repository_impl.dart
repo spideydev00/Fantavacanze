@@ -23,7 +23,6 @@ class DailyChallengesRepositoryImpl implements DailyChallengesRepository {
 
   @override
   Future<Either<Failure, List<DailyChallenge>>> getDailyChallenges({
-    required String userId,
     required String leagueId,
   }) async {
     try {
@@ -56,7 +55,6 @@ class DailyChallengesRepositoryImpl implements DailyChallengesRepository {
 
       // Get from remote and cache
       final challenges = await remoteDataSource.getDailyChallenges(
-        userId: userId,
         leagueId: leagueId,
       );
 

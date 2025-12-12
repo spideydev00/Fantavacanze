@@ -19,9 +19,6 @@ class LeaderboardItem extends StatefulWidget {
   /// The position/rank of the participant in the leaderboard
   final int position;
 
-  /// Whether the league is team-based or individual-based
-  final bool isTeamBased;
-
   /// The league which this participant belongs to, needed to find events
   final League league;
 
@@ -41,7 +38,6 @@ class LeaderboardItem extends StatefulWidget {
     super.key,
     required this.participant,
     required this.position,
-    required this.isTeamBased,
     required this.league,
     this.expandedContent,
     this.onToggleExpanded,
@@ -73,7 +69,6 @@ class _LeaderboardItemState extends State<LeaderboardItem> {
     final lastEvent = EventFinder.findLastEventForParticipant(
       league: widget.league,
       participant: widget.participant,
-      isTeamBased: widget.isTeamBased,
     );
 
     final points = NumberFormatter.formatPoints(

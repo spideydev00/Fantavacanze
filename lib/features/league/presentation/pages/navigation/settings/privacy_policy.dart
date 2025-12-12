@@ -59,6 +59,7 @@ class PrivacyPolicyPage extends StatelessWidget {
             Text(
               'La presente Privacy Policy descrive come raccogliamo, utilizziamo e condividiamo i tuoi dati personali quando utilizzi la nostra applicazione Fantavacanze.',
               style: context.textTheme.bodyMedium,
+              textAlign: TextAlign.center,
             ),
             const SizedBox(height: ThemeSizes.lg),
 
@@ -77,6 +78,7 @@ class PrivacyPolicyPage extends StatelessWidget {
               '• Dati di utilizzo: informazioni su come utilizzi l\'app, quali funzionalità utilizzi e quando.\n'
               '• Informazioni sul dispositivo: sistema operativo, versione dell\'app e identificatori univoci del dispositivo.',
               style: context.textTheme.bodyMedium,
+              textAlign: TextAlign.center,
             ),
             const SizedBox(height: ThemeSizes.lg),
 
@@ -95,6 +97,7 @@ class PrivacyPolicyPage extends StatelessWidget {
               '• Risolvere problemi tecnici e migliorare la sicurezza dell\'app.\n'
               '• Comunicare con te riguardo aggiornamenti o modifiche ai nostri servizi.',
               style: context.textTheme.bodyMedium,
+              textAlign: TextAlign.center,
             ),
             const SizedBox(height: ThemeSizes.lg),
 
@@ -111,6 +114,7 @@ class PrivacyPolicyPage extends StatelessWidget {
               '• Con fornitori di servizi che ci aiutano a gestire l\'app (come servizi di hosting, analisi e assistenza clienti).\n'
               '• Se richiesto dalla legge o per proteggere i nostri diritti.',
               style: context.textTheme.bodyMedium,
+              textAlign: TextAlign.center,
             ),
             const SizedBox(height: ThemeSizes.lg),
 
@@ -124,6 +128,7 @@ class PrivacyPolicyPage extends StatelessWidget {
             Text(
               'Adottiamo misure di sicurezza tecniche e organizzative per proteggere i tuoi dati personali. Tuttavia, nessun sistema è completamente sicuro, quindi non possiamo garantire la sicurezza assoluta dei tuoi dati.',
               style: context.textTheme.bodyMedium,
+              textAlign: TextAlign.center,
             ),
             const SizedBox(height: ThemeSizes.lg),
 
@@ -137,6 +142,7 @@ class PrivacyPolicyPage extends StatelessWidget {
             Text(
               'Conserviamo i tuoi dati personali solo per il tempo necessario a fornirti i nostri servizi o per soddisfare i requisiti legali. Puoi richiedere la cancellazione del tuo account in qualsiasi momento.',
               style: context.textTheme.bodyMedium,
+              textAlign: TextAlign.center,
             ),
             const SizedBox(height: ThemeSizes.lg),
 
@@ -156,6 +162,7 @@ class PrivacyPolicyPage extends StatelessWidget {
               '• Richiedere la portabilità dei dati.\n\n'
               'Per esercitare questi diritti, contattaci all\'indirizzo email: supporto@fantavacanze.it',
               style: context.textTheme.bodyMedium,
+              textAlign: TextAlign.center,
             ),
             const SizedBox(height: ThemeSizes.lg),
 
@@ -169,6 +176,7 @@ class PrivacyPolicyPage extends StatelessWidget {
             Text(
               'Possiamo aggiornare questa Privacy Policy periodicamente. Ti informeremo di eventuali modifiche sostanziali attraverso l\'app o via email.',
               style: context.textTheme.bodyMedium,
+              textAlign: TextAlign.center,
             ),
             const SizedBox(height: ThemeSizes.lg),
 
@@ -182,6 +190,7 @@ class PrivacyPolicyPage extends StatelessWidget {
             Text(
               'Per domande o dubbi sulla nostra Privacy Policy, contattaci all\'indirizzo email: supporto@fantavacanze.it',
               style: context.textTheme.bodyMedium,
+              textAlign: TextAlign.center,
             ),
             const SizedBox(height: ThemeSizes.xxl),
           ],

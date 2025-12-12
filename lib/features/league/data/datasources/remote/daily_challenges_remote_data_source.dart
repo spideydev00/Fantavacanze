@@ -6,14 +6,15 @@ import 'package:fantavacanze_official/features/league/data/datasources/remote/le
 import 'package:fantavacanze_official/features/league/data/datasources/remote/notification_remote_data_source.dart';
 import 'package:fantavacanze_official/features/league/data/models/daily_challenge_model/daily_challenge_model.dart';
 import 'package:fantavacanze_official/features/league/data/models/league_model/league_model.dart';
+import 'package:fantavacanze_official/features/league/domain/entities/league.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/rule/rule.dart';
+import 'package:fantavacanze_official/features/league/domain/entities/team_participant.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:uuid/uuid.dart';
 
 abstract class DailyChallengesRemoteDataSource {
   Future<List<DailyChallengeModel>> getDailyChallenges({
-    required String userId,
     required String leagueId,
   });
 
@@ -100,7 +101,6 @@ class DailyChallengesRemoteDataSourceImpl
 
   @override
   Future<List<DailyChallengeModel>> getDailyChallenges({
-    required String userId,
     required String leagueId,
   }) async {
     return _tryDatabaseOperation(() async {
@@ -108,7 +108,6 @@ class DailyChallengesRemoteDataSourceImpl
       final response = await supabaseClient.rpc(
         'get_user_daily_challenges',
         params: {
-          'p_user_id': userId,
           'p_league_id': leagueId,
         },
       );
@@ -202,7 +201,9 @@ class DailyChallengesRemoteDataSourceImpl
           creatorId: userId,
           targetUser: userId,
           type: RuleType.bonus,
-          isTeamMember: league.isTeamBased,
+          isTeamMember: league.type == LeagueType.team,
+          targetTeamName:
+              league.type == LeagueType.team ? _findTeamName(league, userId) : null,
         );
 
         // Also update the challenge record to mark it as completed
@@ -276,5 +277,15 @@ class DailyChallengesRemoteDataSourceImpl
             .select();
       },
     );
+  }
+
+  String? _findTeamName(LeagueModel league, String userId) {
+    for (final participant in league.participants) {
+      if (participant is TeamParticipant &&
+          participant.members.any((member) => member.userId == userId)) {
+        return participant.name;
+      }
+    }
+    return null;
   }
 }

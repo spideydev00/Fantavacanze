@@ -169,7 +169,10 @@ class RulesList extends StatelessWidget {
         onPrimaryAction: () {
           if (formKey.currentState!.validate()) {
             final name = nameController.text.trim();
-            final pointsValue = double.parse(pointsController.text.trim());
+            final rawPoints = double.parse(pointsController.text.trim());
+            final pointsValue = ruleType == RuleType.malus
+                ? -rawPoints.abs()
+                : rawPoints.abs();
 
             final rule = Rule(
               name: name,

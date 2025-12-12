@@ -47,37 +47,27 @@ class LockRuleEvent extends FsRulesEvent {
 }
 
 class SetRuleAsCompletedEvent extends FsRulesEvent {
-  final String leagueId;
-  final String challengeId;
-  final String ruleName;
-  final double points;
-  final String type;
+  final FsRule rule;
 
   const SetRuleAsCompletedEvent({
-    required this.leagueId,
-    required this.challengeId,
-    required this.ruleName,
-    required this.points,
-    required this.type,
+    required this.rule,
   });
 
   @override
-  List<Object> get props => [leagueId, challengeId, ruleName, points, type];
+  List<Object> get props => [rule];
 }
 
 class SetRuleAsUncompletedEvent extends FsRulesEvent {
-  final String leagueId;
-  final String userId;
-  final String challengeId;
+  final FsRule rule;
+  final String? completionId;
 
   const SetRuleAsUncompletedEvent({
-    required this.leagueId,
-    required this.userId,
-    required this.challengeId,
+    required this.rule,
+    this.completionId,
   });
 
   @override
-  List<Object> get props => [leagueId, userId, challengeId];
+  List<Object?> get props => [rule, completionId];
 }
 
 class InsertRulesForLeagueFromExistingEvent extends FsRulesEvent {

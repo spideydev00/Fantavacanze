@@ -28,7 +28,7 @@ class LeagueRepositoryImpl implements LeagueRepository {
   Future<Either<Failure, League>> createLeague({
     required String name,
     String? description,
-    required bool isTeamBased,
+    required LeagueType type,
     required List<Rule> rules,
   }) async {
     try {
@@ -52,7 +52,7 @@ class LeagueRepositoryImpl implements LeagueRepository {
       final league = await remoteDataSource.createLeague(
         name: name,
         description: description ?? "",
-        isTeamBased: isTeamBased,
+        type: type,
         rules: ruleModels,
       );
 
@@ -232,7 +232,6 @@ class LeagueRepositoryImpl implements LeagueRepository {
   @override
   Future<Either<Failure, void>> exitLeague({
     required League league,
-    required String userId,
   }) async {
     try {
       if (!await connectionChecker.isConnected) {
@@ -244,7 +243,6 @@ class LeagueRepositoryImpl implements LeagueRepository {
 
       await remoteDataSource.exitLeague(
         league: league as LeagueModel,
-        userId: userId,
       );
 
       await localDataSource.removeLeagueFromCache(league.id);
@@ -296,7 +294,8 @@ class LeagueRepositoryImpl implements LeagueRepository {
     required String creatorId,
     required String targetUser,
     required RuleType type,
-    required bool isTeamMember,
+    String? targetTeamName,
+    bool isTeamMember = false,
     String? description,
   }) async {
     try {
@@ -315,6 +314,7 @@ class LeagueRepositoryImpl implements LeagueRepository {
         targetUser: targetUser,
         type: type,
         description: description,
+        targetTeamName: targetTeamName,
         isTeamMember: isTeamMember,
       );
 
@@ -526,41 +526,6 @@ class LeagueRepositoryImpl implements LeagueRepository {
   }
 
   @override
-  Future<Either<Failure, League>> removeTeamParticipants({
-    required League league,
-    required String teamName,
-    required List<String> userIdsToRemove,
-    required String requestingUserId,
-  }) async {
-    try {
-      if (!await connectionChecker.isConnected) {
-        return Left(
-          Failure(
-              "Nessuna connessione ad internet, riprova appena sarai connesso."),
-        );
-      }
-
-      final leagueModel = await remoteDataSource.removeTeamParticipants(
-        league: league as LeagueModel,
-        teamName: teamName,
-        userIdsToRemove: userIdsToRemove,
-        requestingUserId: requestingUserId,
-      );
-
-      // Aggiorna la versione in cache
-      await localDataSource.cacheLeague(leagueModel);
-
-      return Right(leagueModel);
-    } on ServerException catch (e) {
-      return Left(Failure(e.message));
-    } on CacheException catch (e) {
-      return Left(Failure('Errore nella cache: ${e.message}'));
-    } catch (e) {
-      return Left(Failure(e.toString()));
-    }
-  }
-
-  @override
   Future<Either<Failure, void>> clearLocalCache() async {
     try {
       await localDataSource.clearCache();
@@ -755,6 +720,7 @@ class LeagueRepositoryImpl implements LeagueRepository {
   Future<Either<Failure, League>> removeParticipants({
     required League league,
     required List<String> participantIds,
+    String? teamName,
     String? newCaptainId,
   }) async {
     try {
@@ -766,6 +732,7 @@ class LeagueRepositoryImpl implements LeagueRepository {
       final updatedLeague = await remoteDataSource.removeParticipants(
         league: league as LeagueModel,
         participantIds: participantIds,
+        teamName: teamName,
         newCaptainId: newCaptainId,
       );
 

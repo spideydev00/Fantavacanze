@@ -49,6 +49,8 @@ class _DashboardScreenState extends State<DashboardScreen>
   bool isSideMenuOpen = false;
   AdHelper? _adHelper;
   final _reviewService = GetIt.instance<ReviewService>();
+  late final List<Widget> _participantScreens;
+  late final List<Widget> _nonParticipantScreens;
 
   late AnimationController _animationController;
   late Animation<double> animation;
@@ -74,6 +76,22 @@ class _DashboardScreenState extends State<DashboardScreen>
         curve: Curves.fastOutSlowIn,
       ),
     );
+    _participantScreens = participantNavbarItems
+        .map(
+          (item) => KeyedSubtree(
+            key: ValueKey('participant-${item.title}'),
+            child: item.screen,
+          ),
+        )
+        .toList();
+    _nonParticipantScreens = nonParticipantNavbarItems
+        .map(
+          (item) => KeyedSubtree(
+            key: ValueKey('non-participant-${item.title}'),
+            child: item.screen,
+          ),
+        )
+        .toList();
 
     _loadAds();
     _checkAndRequestReview();
@@ -279,38 +297,60 @@ class _DashboardScreenState extends State<DashboardScreen>
                               builder: (context, leagueState) {
                                 final hasLeagues =
                                     leagueState is AppLeagueExists;
+                                final screens = hasLeagues
+                                    ? _participantScreens
+                                    : _nonParticipantScreens;
+                                final navItems = hasLeagues
+                                    ? participantNavbarItems
+                                    : nonParticipantNavbarItems;
                                 return BlocBuilder<AppNavigationCubit, int>(
                                   builder: (context, selectedIndex) {
-                                    final navItems = hasLeagues
-                                        ? participantNavbarItems
-                                        : nonParticipantNavbarItems;
-                                    if (selectedIndex < 0 ||
-                                        selectedIndex >= navItems.length) {
-                                      return navItems[0].screen;
+                                    int safeIndex = selectedIndex;
+
+                                    if (safeIndex < 0 ||
+                                        safeIndex >= navItems.length) {
+                                      safeIndex = 0;
+                                      WidgetsBinding.instance
+                                          .addPostFrameCallback((_) {
+                                        if (mounted &&
+                                            context
+                                                    .read<AppNavigationCubit>()
+                                                    .state !=
+                                                0) {
+                                          context
+                                              .read<AppNavigationCubit>()
+                                              .setIndex(0);
+                                        }
+                                      });
                                     }
+
                                     final selectedItem =
-                                        navItems[selectedIndex];
+                                        navItems[safeIndex];
+
                                     if (selectedItem.title == 'Crea Lega' ||
                                         selectedItem.title == 'Cerca Lega') {
                                       WidgetsBinding.instance
-                                          .addPostFrameCallback(
-                                        (_) {
-                                          if (mounted) {
-                                            Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                builder: (_) =>
-                                                    selectedItem.screen,
-                                              ),
-                                            );
-                                            context
-                                                .read<AppNavigationCubit>()
-                                                .setIndex(0);
-                                          }
-                                        },
-                                      );
+                                          .addPostFrameCallback((_) {
+                                        if (!mounted) return;
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (_) => selectedItem.screen,
+                                          ),
+                                        );
+                                        context
+                                            .read<AppNavigationCubit>()
+                                            .setIndex(0);
+                                      });
+                                      safeIndex = 0;
                                     }
-                                    return selectedItem.screen;
+
+                                    return IndexedStack(
+                                      index: safeIndex,
+                                      children: screens
+                                          .take(navItems.length)
+                                          .toList(),
+                                    );
                                   },
                                 );
                               },

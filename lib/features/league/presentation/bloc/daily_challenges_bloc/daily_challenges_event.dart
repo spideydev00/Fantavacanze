@@ -9,16 +9,14 @@ abstract class DailyChallengesEvent extends Equatable {
 }
 
 class GetDailyChallengesEvent extends DailyChallengesEvent {
-  final String userId;
   final String leagueId;
 
   const GetDailyChallengesEvent({
-    required this.userId,
     required this.leagueId,
   });
 
   @override
-  List<Object?> get props => [userId, leagueId];
+  List<Object?> get props => [leagueId];
 }
 
 class MarkChallengeAsCompletedEvent extends DailyChallengesEvent {

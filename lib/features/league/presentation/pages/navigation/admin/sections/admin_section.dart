@@ -245,7 +245,7 @@ class _AdminSectionState extends State<AdminSection> {
   ) {
     List<Widget> items = [];
 
-    if (widget.league.isTeamBased) {
+    if (widget.league.type == LeagueType.team) {
       if (participant is TeamParticipant) {
         // For team-based leagues, add each team member
         for (final member in participant.members) {

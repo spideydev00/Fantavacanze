@@ -1,6 +1,7 @@
 import 'package:fantavacanze_official/core/cubits/app_league/app_league_cubit.dart';
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
+import 'package:fantavacanze_official/core/cubits/app_theme/app_theme_cubit.dart';
 import 'package:fantavacanze_official/core/widgets/custom_tab.dart';
 import 'package:fantavacanze_official/core/widgets/custom_tab_bar.dart';
 import 'package:fantavacanze_official/core/widgets/loader.dart';
@@ -45,107 +46,122 @@ class _RulesPageState extends State<RulesPage>
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<AppLeagueCubit, AppLeagueState>(
-      builder: (context, state) {
-        if (state is AppLeagueExists) {
-          final league = state.selectedLeague;
-          final isAdmin = context.read<LeagueBloc>().isAdmin();
+    // Listen to theme changes so the tab bar rebuilds correctly (icon/text colors)
+    return BlocBuilder<AppThemeCubit, AppThemeState>(
+      builder: (context, themeState) {
+        return BlocBuilder<AppLeagueCubit, AppLeagueState>(
+          builder: (context, state) {
+            if (state is AppLeagueExists) {
+              final league = state.selectedLeague;
+              final isAdmin = context.read<LeagueBloc>().isAdmin();
 
-          // Explicitly filter rules by their exact RuleType
-          final bonusRules = league.rules
-              .where((rule) => rule.type == RuleType.bonus)
-              .toList();
+              // Explicitly filter rules by their exact RuleType
+              final bonusRules = league.rules
+                  .where((rule) => rule.type == RuleType.bonus)
+                  .toList();
 
-          final malusRules = league.rules
-              .where((rule) => rule.type == RuleType.malus)
-              .toList();
+              final malusRules = league.rules
+                  .where((rule) => rule.type == RuleType.malus)
+                  .toList();
 
-          return Scaffold(
-            body: Column(
-              children: [
-                // Fixed header with tabs - using our new custom tab bar
-                CustomTabBar(
-                  controller: _tabController,
-                  indicatorColors: const [
-                    ColorPalette.success,
-                    ColorPalette.error
-                  ],
-                  tabs: const [
-                    CustomTab(
-                      label: "BONUS",
-                      icon: Icons.arrow_upward_rounded,
-                      color: ColorPalette.success,
+              return Scaffold(
+                body: Column(
+                  children: [
+                    // Fixed header with tabs - using our new custom tab bar
+                    CustomTabBar(
+                      controller: _tabController,
+                      indicatorColors: const [
+                        ColorPalette.success,
+                        ColorPalette.error
+                      ],
+                      labelColor: context.textPrimaryColor,
+                      unselectedLabelColor: context.textSecondaryColor,
+                      tabs: [
+                        CustomTab(
+                          label: "BONUS",
+                          icon: Icons.arrow_upward_rounded,
+                          color: ColorPalette.success,
+                          textStyle: TextStyle(
+                            color: context.textPrimaryColor,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        CustomTab(
+                          label: "MALUS",
+                          icon: Icons.arrow_downward_rounded,
+                          color: ColorPalette.error,
+                          textStyle: TextStyle(
+                            color: context.textPrimaryColor,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
                     ),
-                    CustomTab(
-                      label: "MALUS",
-                      icon: Icons.arrow_downward_rounded,
-                      color: ColorPalette.error,
+
+                    // Scrollable content area
+                    Expanded(
+                      child: TabBarView(
+                        controller: _tabController,
+                        children: [
+                          // Bonus rules tab
+                          RulesList(
+                            rules: bonusRules,
+                            emptyMessage: 'Nessuna regola bonus disponibile',
+                            isBonus: true,
+                            isAdmin: isAdmin,
+                            league: league,
+                            onAddPressed: _addRuleDirectly,
+                            onDeleteRule: _showDeleteRuleConfirmation,
+                          ),
+
+                          // Malus rules tab
+                          RulesList(
+                            rules: malusRules,
+                            emptyMessage: 'Nessuna regola malus disponibile',
+                            isBonus: false,
+                            isAdmin: isAdmin,
+                            league: league,
+                            onAddPressed: _addRuleDirectly,
+                            onDeleteRule: _showDeleteRuleConfirmation,
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),
-
-                // Scrollable content area
-                Expanded(
-                  child: TabBarView(
-                    controller: _tabController,
-                    children: [
-                      // Bonus rules tab
-                      RulesList(
-                        rules: bonusRules,
-                        emptyMessage: 'Nessuna regola bonus disponibile',
-                        isBonus: true,
-                        isAdmin: isAdmin,
-                        league: league,
-                        onAddPressed: _addRuleDirectly,
-                        onDeleteRule: _showDeleteRuleConfirmation,
-                      ),
-
-                      // Malus rules tab
-                      RulesList(
-                        rules: malusRules,
-                        emptyMessage: 'Nessuna regola malus disponibile',
-                        isBonus: false,
-                        isAdmin: isAdmin,
-                        league: league,
-                        onAddPressed: _addRuleDirectly,
-                        onDeleteRule: _showDeleteRuleConfirmation,
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            floatingActionButton: isAdmin
-                ? ValueListenableBuilder<double>(
-                    valueListenable: _fabAnimationValue,
-                    builder: (context, value, child) {
-                      return TweenAnimationBuilder<double>(
-                        tween: Tween<double>(begin: 0, end: value),
-                        duration: const Duration(milliseconds: 250),
-                        curve: Curves.easeInOut,
+                floatingActionButton: isAdmin
+                    ? ValueListenableBuilder<double>(
+                        valueListenable: _fabAnimationValue,
                         builder: (context, value, child) {
-                          final isBonus = value < 0.5;
+                          return TweenAnimationBuilder<double>(
+                            tween: Tween<double>(begin: 0, end: value),
+                            duration: const Duration(milliseconds: 250),
+                            curve: Curves.easeInOut,
+                            builder: (context, value, child) {
+                              final isBonus = value < 0.5;
 
-                          return FloatingActionButton(
-                            onPressed: () =>
-                                _addRuleDirectly(context, league, isBonus),
-                            backgroundColor: isBonus
-                                ? ColorPalette.success
-                                : ColorPalette.error,
-                            child: Icon(
-                              isBonus ? Icons.add : Icons.remove,
-                            ),
+                              return FloatingActionButton(
+                                onPressed: () =>
+                                    _addRuleDirectly(context, league, isBonus),
+                                backgroundColor: isBonus
+                                    ? ColorPalette.success
+                                    : ColorPalette.error,
+                                child: Icon(
+                                  isBonus ? Icons.add : Icons.remove,
+                                ),
+                              );
+                            },
                           );
                         },
-                      );
-                    },
-                  )
-                : null,
-          );
-        }
+                      )
+                    : null,
+              );
+            }
 
-        return Loader(
-          color: context.primaryColor,
+            return Loader(
+              color: context.primaryColor,
+            );
+          },
         );
       },
     );

@@ -70,10 +70,10 @@ class TeamMembersListState extends State<TeamMembersList> {
 
     if (leagueState is AppLeagueExists) {
       leagueBloc.add(
-        RemoveTeamParticipantsEvent(
+        RemoveParticipantsEvent(
           league: leagueState.selectedLeague,
           teamName: widget.team.name,
-          userIdsToRemove: _selectedMembersToRemove.toList(),
+          participantIds: _selectedMembersToRemove.toList(),
         ),
       );
 

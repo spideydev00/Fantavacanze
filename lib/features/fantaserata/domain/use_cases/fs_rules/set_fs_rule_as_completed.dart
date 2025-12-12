@@ -5,36 +5,23 @@ import 'package:fantavacanze_official/core/use-case/usecase.dart';
 import 'package:fantavacanze_official/features/fantaserata/domain/repository/fs_rules_repository.dart';
 
 class SetFsRuleAsCompleted
-    implements Usecase<FsRule, SetFsRuleAsCompletedParams> {
+    implements Usecase<Map<String, dynamic>, SetFsRuleAsCompletedParams> {
   final FsRulesRepository repository;
 
   SetFsRuleAsCompleted(this.repository);
 
   @override
-  Future<Either<Failure, FsRule>> call(
-      SetFsRuleAsCompletedParams params) async {
-    return await repository.setRuleAsCompleted(
-      leagueId: params.leagueId,
-      challengeId: params.challengeId,
-      ruleName: params.ruleName,
-      points: params.points,
-      type: params.type,
-    );
+  Future<Either<Failure, Map<String, dynamic>>> call(
+    SetFsRuleAsCompletedParams params,
+  ) async {
+    return await repository.setRuleAsCompleted(rule: params.rule);
   }
 }
 
 class SetFsRuleAsCompletedParams {
-  final String leagueId;
-  final String challengeId;
-  final String ruleName;
-  final double points;
-  final String type;
+  final FsRule rule;
 
   SetFsRuleAsCompletedParams({
-    required this.leagueId,
-    required this.challengeId,
-    required this.ruleName,
-    required this.points,
-    required this.type,
+    required this.rule,
   });
 }

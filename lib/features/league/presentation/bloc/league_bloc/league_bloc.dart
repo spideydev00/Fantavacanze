@@ -14,7 +14,6 @@ import 'package:fantavacanze_official/features/league/domain/use_cases/remote/le
 import 'package:fantavacanze_official/features/league/domain/use_cases/remote/notes/get_notes.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/remote/league/join_league.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/remote/memory/remove_memory.dart';
-import 'package:fantavacanze_official/features/league/domain/use_cases/remote/league/remove_team_participants.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/remote/notes/save_note.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/remote/league/search_league.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/remote/rules/update_rule.dart';
@@ -40,7 +39,6 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
   final RemoveEvent removeEvent;
   final AddMemory addMemory;
   final RemoveMemory removeMemory;
-  final RemoveTeamParticipants removeTeamParticipants;
   final UpdateRule updateRule;
   final DeleteRule deleteRule;
   final AddRule addRule;
@@ -71,7 +69,6 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
     required this.updateLeagueInfo,
     required this.updateTeamName,
     required this.addAdministrators,
-    required this.removeTeamParticipants,
     required this.removeParticipants,
     required this.addEvent,
     required this.removeEvent,
@@ -113,7 +110,6 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
     on<UpdateRuleEvent>(_onUpdateRule);
     on<DeleteRuleEvent>(_onDeleteRule);
     on<AddRuleEvent>(_onAddRule);
-    on<RemoveTeamParticipantsEvent>(_handleRemoveTeamParticipants);
     on<GetNotesEvent>(_onGetNotes);
     on<SaveNoteEvent>(_onSaveNote);
     on<DeleteNoteEvent>(_onDeleteNote);
@@ -144,7 +140,7 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
       CreateLeagueParams(
         name: event.name,
         description: event.description ?? "",
-        isTeamBased: event.isTeamBased,
+        type: event.type,
         rules: event.rules,
       ),
     );
@@ -240,17 +236,9 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
     try {
       emit(LeagueLoading());
 
-      late String userId;
-      final state = appUserCubit.state;
-
-      if (state is AppUserIsLoggedIn) {
-        userId = state.user.id;
-      }
-
       final result = await exitLeague(
         ExitLeagueParams(
           league: event.league,
-          userId: userId,
         ),
       );
 
@@ -312,10 +300,10 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
       (_) async {
         emit(DeleteLeagueSuccess());
 
-        // Remove selected league from shared preferences
-        appLeagueCubit.clearSelectedLeague();
+        // Aggiorna subito lo stato locale scegliendo la lega più recente disponibile
+        appLeagueCubit.removeLeagueById(event.leagueId);
 
-        // Refresh app league cubit after exiting
+        // Refresh app league cubit after exiting (server truth)
         await appLeagueCubit.getUserLeagues();
       },
     );
@@ -451,6 +439,7 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
         type: event.type,
         description: event.description,
         isTeamMember: event.isTeamMember,
+        targetTeamName: event.targetTeamName,
       ),
     );
 
@@ -534,44 +523,6 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
         (failure) => emit(LeagueError(message: failure.message)),
         (league) {
           emit(LeagueSuccess(league: league, operation: 'remove_memory'));
-
-          appLeagueCubit.selectLeague(league);
-        },
-      );
-    } catch (e) {
-      emit(LeagueError(message: e.toString()));
-    }
-  }
-
-  // R E M O V E   T E A M   P A R T I C I P A N T S
-  Future<void> _handleRemoveTeamParticipants(
-    RemoveTeamParticipantsEvent event,
-    Emitter<LeagueState> emit,
-  ) async {
-    try {
-      emit(LeagueLoading());
-
-      // Ottieni l'ID dell'utente corrente
-      late String requestingUserId;
-      final userState = appUserCubit.state;
-
-      if (userState is AppUserIsLoggedIn) {
-        requestingUserId = userState.user.id;
-      }
-
-      final result = await removeTeamParticipants(
-        RemoveTeamParticipantsParams(
-          league: event.league,
-          teamName: event.teamName,
-          userIdsToRemove: event.userIdsToRemove,
-          requestingUserId: requestingUserId,
-        ),
-      );
-
-      result.fold(
-        (failure) => emit(LeagueError(message: failure.message)),
-        (league) {
-          emit(TeammatesRemovedState(league: league));
 
           appLeagueCubit.selectLeague(league);
         },
@@ -794,6 +745,7 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
       RemoveParticipantsParams(
         league: event.league,
         participantIds: event.participantIds,
+        teamName: event.teamName,
         newCaptainId: event.newCaptainId,
       ),
     );

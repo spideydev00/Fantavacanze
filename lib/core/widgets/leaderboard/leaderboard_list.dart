@@ -40,6 +40,7 @@ class LeaderboardList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final bool isTeamLeague = league.type == LeagueType.team;
     // Sort participants (default is by points in descending order)
     final sortedParticipants = sortParticipants != null
         ? sortParticipants!(List<Participant>.from(league.participants))
@@ -66,7 +67,7 @@ class LeaderboardList extends StatelessWidget {
           if (index == 0) {
             // Header
             return customHeader ??
-                LeaderboardHeader(isTeamBased: league.isTeamBased);
+                LeaderboardHeader(isTeamBased: isTeamLeague);
           } else {
             // List items
             final participant = sortedParticipants[index - 1];
@@ -75,14 +76,13 @@ class LeaderboardList extends StatelessWidget {
             // Use custom item builder if provided
             if (itemBuilder != null) {
               return itemBuilder!(
-                  context, participant, position, league.isTeamBased, league);
+                  context, participant, position, isTeamLeague, league);
             }
 
             // Default item
             return LeaderboardItem(
               participant: participant,
               position: position,
-              isTeamBased: league.isTeamBased,
               league: league,
             );
           }

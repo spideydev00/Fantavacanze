@@ -1,12 +1,12 @@
 import 'package:fantavacanze_official/core/cubits/app_league/app_league_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit.dart';
-import 'package:fantavacanze_official/core/cubits/seasonal_event/seasonal_event_cubit.dart';
-import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
-import 'package:fantavacanze_official/core/extensions/context_extension.dart';
-import 'package:fantavacanze_official/core/services/seasonal_event_service.dart';
-import 'package:fantavacanze_official/core/theme/colors.dart';
-import 'package:fantavacanze_official/core/utils/show-snackbar-or-paywall/show_snackbar.dart';
-import 'package:fantavacanze_official/init_dependencies/init_dependencies.dart';
+// import 'package:fantavacanze_official/core/cubits/seasonal_event/seasonal_event_cubit.dart';
+// import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
+// import 'package:fantavacanze_official/core/extensions/context_extension.dart';
+// import 'package:fantavacanze_official/core/services/seasonal_event_service.dart';
+// import 'package:fantavacanze_official/core/theme/colors.dart';
+// import 'package:fantavacanze_official/core/utils/show-snackbar-or-paywall/show_snackbar.dart';
+// import 'package:fantavacanze_official/init_dependencies/init_dependencies.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:fantavacanze_official/core/widgets/divider.dart';
 import 'package:fantavacanze_official/core/widgets/events/events_list_widget.dart';
@@ -251,11 +251,13 @@ Oltre al set base, ogni utente può aggiungere obiettivi extra validi per tutta 
 Suggerimento: descrivi bene come si completa e quanti punti vale per evitare discussioni a fine notte.
 
 4. Come si fanno punti (e come si approvano gli eventi)\n
+Nello specifico:
 - Quando completi un obiettivo, crei un evento dall’app.
 - Visto che tutti sono Admin, gli eventi possono essere approvati o eliminati da chiunque. Se vi fidate, approvate; se è un meme, via.
 - Ogni approvazione aggiorna in tempo reale la classifica.
 
 5. Classifica Live e Giornale Eventi\n
+Nella sezione FantaSerata puoi consultare:
 - Classifica aggiornata: vedi chi è in fuga, chi recupera e chi sta “gestendo”.
 - Giornale Eventi: lo stream di tutto ciò che succede nella lega. Se qualcosa è stato segnato con troppa fantasia… si può eliminare.
 
@@ -265,25 +267,22 @@ Alle 07:00 la lega si chiude e proclama il vincitore.
 - La foto resta come memoria della serata (prima della *auto-distruzione* dei dettagli operativi).
 
 7. Serate Speciali: regole “uniche” che cambiano il gioco\n
-In alcuni periodi, FantaSerata attiva regole speciali tematiche che sostituiscono/affiancano il set base. Ecco gli highlight:
-
-- Serata di Halloween\n
-
-- Vigilia (24 dicembre)\n
-
-- Capodanno (31 dicembre)\n
-
-- Carnevale\n
-
+In alcuni periodi il FantaSerata attiva regole speciali a tema:
+- Serata di Halloween
+- Vigilia (24 dicembre)
+- Capodanno (31 dicembre)
+- Carnevale
 - Après-Ski (da dicembre a fine gennaio)
 
 8. Fair Play \n
-- Descrivi bene gli obiettivi extra (criteri chiari = meno discussioni).\n
-- In caso di dubbio, il Giornale Eventi è la verità storica: si guarda lì e si decide.\n
+L'onestà è tutto! Mi raccomando:
+- Descrivi bene gli obiettivi extra (criteri chiari = meno discussioni).
+- In caso di dubbio, il Giornale Eventi è la verità storica: si guarda lì e si decide.
 - Ricorda: tutti Admin significa velocità, ma anche buon senso. L’obiettivo è divertirsi, non fare il VAR della movida.
 
 9. Pronti, via: crea la tua FantaSerata\n
-- Crea la lega, invita gli amici, scegliete il tema (se festivo, attivate le regole speciali), puntate gli obiettivi… e correte verso l’alba.\n
+Che aspetti?
+- Crea la lega, invita gli amici, scegliete il tema (se festivo, attivate le regole speciali), puntate gli obiettivi… e correte verso l’alba.
 - Alle 07:00 si chiude: classifica finale, foto del vincitore, condivisione… e appuntamento alla prossima!
 
 Che vinca la notte più epica! 🌙✨
@@ -394,235 +393,235 @@ Il (piccolo ma appassionato) Team di FantaVacanze
   //====================================//
   //SEASONAL TEST FORM//
   //====================================//
-  Widget _buildSeasonalTestForm(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.all(ThemeSizes.lg),
-      padding: const EdgeInsets.all(ThemeSizes.md),
-      decoration: BoxDecoration(
-        color: context.secondaryBgColor,
-        borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusLg),
-        border: Border.all(
-          color: context.primaryColor.withValues(alpha: 0.3),
-          width: 1,
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(
-                Icons.science_rounded,
-                color: context.primaryColor,
-                size: ThemeSizes.iconSm,
-              ),
-              const SizedBox(width: ThemeSizes.sm),
-              Text(
-                'Test Stagioni (Solo Sviluppo)',
-                style: context.textTheme.titleSmall?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: context.primaryColor,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: ThemeSizes.sm),
-          Text(
-            'Imposta una data manuale per testare le funzionalità stagionali',
-            style: context.textTheme.bodySmall?.copyWith(
-              color: context.textSecondaryColor,
-            ),
-          ),
-          const SizedBox(height: ThemeSizes.md),
+//   Widget _buildSeasonalTestForm(BuildContext context) {
+//     return Container(
+//       margin: const EdgeInsets.all(ThemeSizes.lg),
+//       padding: const EdgeInsets.all(ThemeSizes.md),
+//       decoration: BoxDecoration(
+//         color: context.secondaryBgColor,
+//         borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusLg),
+//         border: Border.all(
+//           color: context.primaryColor.withValues(alpha: 0.3),
+//           width: 1,
+//         ),
+//       ),
+//       child: Column(
+//         crossAxisAlignment: CrossAxisAlignment.start,
+//         children: [
+//           Row(
+//             children: [
+//               Icon(
+//                 Icons.science_rounded,
+//                 color: context.primaryColor,
+//                 size: ThemeSizes.iconSm,
+//               ),
+//               const SizedBox(width: ThemeSizes.sm),
+//               Text(
+//                 'Test Stagioni (Solo Sviluppo)',
+//                 style: context.textTheme.titleSmall?.copyWith(
+//                   fontWeight: FontWeight.bold,
+//                   color: context.primaryColor,
+//                 ),
+//               ),
+//             ],
+//           ),
+//           const SizedBox(height: ThemeSizes.sm),
+//           Text(
+//             'Imposta una data manuale per testare le funzionalità stagionali',
+//             style: context.textTheme.bodySmall?.copyWith(
+//               color: context.textSecondaryColor,
+//             ),
+//           ),
+//           const SizedBox(height: ThemeSizes.md),
 
-          // Current status
-          BlocBuilder<SeasonalEventCubit, SeasonalEventState>(
-            builder: (context, state) {
-              final seasonalService = serviceLocator<SeasonalEventService>();
+//           // Current status
+//           BlocBuilder<SeasonalEventCubit, SeasonalEventState>(
+//             builder: (context, state) {
+//               final seasonalService = serviceLocator<SeasonalEventService>();
 
-              return Container(
-                padding: const EdgeInsets.all(ThemeSizes.sm),
-                decoration: BoxDecoration(
-                  color: context.bgColor,
-                  borderRadius:
-                      BorderRadius.circular(ThemeSizes.borderRadiusMd),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Stato Attuale:',
-                      style: context.textTheme.labelSmall?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: ThemeSizes.xs),
-                    Text(
-                      'Modalità: ${seasonalService.isInTestMode ? "Test" : "Normale"}',
-                      style: context.textTheme.bodySmall,
-                    ),
-                    if (seasonalService.isInTestMode) ...[
-                      Text(
-                        'Data Test: ${_formatDate(seasonalService.currentTestDate!)}',
-                        style: context.textTheme.bodySmall,
-                      ),
-                    ],
-                    Text(
-                      'Stagione: ${state.displayName}',
-                      style: context.textTheme.bodySmall?.copyWith(
-                        color: context.primaryColor,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            },
-          ),
+//               return Container(
+//                 padding: const EdgeInsets.all(ThemeSizes.sm),
+//                 decoration: BoxDecoration(
+//                   color: context.bgColor,
+//                   borderRadius:
+//                       BorderRadius.circular(ThemeSizes.borderRadiusMd),
+//                 ),
+//                 child: Column(
+//                   crossAxisAlignment: CrossAxisAlignment.start,
+//                   children: [
+//                     Text(
+//                       'Stato Attuale:',
+//                       style: context.textTheme.labelSmall?.copyWith(
+//                         fontWeight: FontWeight.bold,
+//                       ),
+//                     ),
+//                     const SizedBox(height: ThemeSizes.xs),
+//                     Text(
+//                       'Modalità: ${seasonalService.isInTestMode ? "Test" : "Normale"}',
+//                       style: context.textTheme.bodySmall,
+//                     ),
+//                     if (seasonalService.isInTestMode) ...[
+//                       Text(
+//                         'Data Test: ${_formatDate(seasonalService.currentTestDate!)}',
+//                         style: context.textTheme.bodySmall,
+//                       ),
+//                     ],
+//                     Text(
+//                       'Stagione: ${state.displayName}',
+//                       style: context.textTheme.bodySmall?.copyWith(
+//                         color: context.primaryColor,
+//                         fontWeight: FontWeight.bold,
+//                       ),
+//                     ),
+//                   ],
+//                 ),
+//               );
+//             },
+//           ),
 
-          const SizedBox(height: ThemeSizes.md),
+//           const SizedBox(height: ThemeSizes.md),
 
-          // Action buttons
-          Row(
-            children: [
-              Expanded(
-                child: ElevatedButton.icon(
-                  onPressed: () => _selectTestDate(context),
-                  icon: const Icon(Icons.calendar_today_rounded),
-                  label: const Text('Imposta'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: context.primaryColor,
-                    foregroundColor: Colors.white,
-                  ),
-                ),
-              ),
-              const SizedBox(width: ThemeSizes.sm),
-              Expanded(
-                child: OutlinedButton.icon(
-                  onPressed: () => _clearTestDate(context),
-                  icon: const Icon(Icons.refresh_rounded),
-                  label: const Text('Reset'),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: context.primaryColor,
-                    side: BorderSide(color: context.primaryColor),
-                  ),
-                ),
-              ),
-            ],
-          ),
+//           // Action buttons
+//           Row(
+//             children: [
+//               Expanded(
+//                 child: ElevatedButton.icon(
+//                   onPressed: () => _selectTestDate(context),
+//                   icon: const Icon(Icons.calendar_today_rounded),
+//                   label: const Text('Imposta'),
+//                   style: ElevatedButton.styleFrom(
+//                     backgroundColor: context.primaryColor,
+//                     foregroundColor: Colors.white,
+//                   ),
+//                 ),
+//               ),
+//               const SizedBox(width: ThemeSizes.sm),
+//               Expanded(
+//                 child: OutlinedButton.icon(
+//                   onPressed: () => _clearTestDate(context),
+//                   icon: const Icon(Icons.refresh_rounded),
+//                   label: const Text('Reset'),
+//                   style: OutlinedButton.styleFrom(
+//                     foregroundColor: context.primaryColor,
+//                     side: BorderSide(color: context.primaryColor),
+//                   ),
+//                 ),
+//               ),
+//             ],
+//           ),
 
-          const SizedBox(height: ThemeSizes.sm),
+//           const SizedBox(height: ThemeSizes.sm),
 
-          // Quick date buttons
-          Wrap(
-            spacing: ThemeSizes.xs,
-            runSpacing: ThemeSizes.xs,
-            children: [
-              _buildQuickDateButton(
-                context,
-                'Halloween',
-                DateTime(2024, 10, 31),
-              ),
-              _buildQuickDateButton(
-                context,
-                'Natale',
-                DateTime(2024, 12, 24),
-              ),
-              _buildQuickDateButton(
-                context,
-                'Capodanno',
-                DateTime(2024, 12, 31),
-              ),
-              _buildQuickDateButton(
-                context,
-                'Carnevale',
-                DateTime(2025, 2, 14),
-              ),
-              _buildQuickDateButton(
-                context,
-                'Après Ski',
-                DateTime(2024, 12, 15),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
+//           // Quick date buttons
+//           Wrap(
+//             spacing: ThemeSizes.xs,
+//             runSpacing: ThemeSizes.xs,
+//             children: [
+//               _buildQuickDateButton(
+//                 context,
+//                 'Halloween',
+//                 DateTime(2024, 10, 31),
+//               ),
+//               _buildQuickDateButton(
+//                 context,
+//                 'Natale',
+//                 DateTime(2024, 12, 24),
+//               ),
+//               _buildQuickDateButton(
+//                 context,
+//                 'Capodanno',
+//                 DateTime(2024, 12, 31),
+//               ),
+//               _buildQuickDateButton(
+//                 context,
+//                 'Carnevale',
+//                 DateTime(2025, 2, 14),
+//               ),
+//               _buildQuickDateButton(
+//                 context,
+//                 'Après Ski',
+//                 DateTime(2024, 12, 15),
+//               ),
+//             ],
+//           ),
+//         ],
+//       ),
+//     );
+//   }
 
-  Widget _buildQuickDateButton(
-      BuildContext context, String label, DateTime date) {
-    return InkWell(
-      onTap: () => _setTestDate(context, date),
-      child: Container(
-        padding: const EdgeInsets.symmetric(
-          horizontal: ThemeSizes.sm,
-          vertical: ThemeSizes.xs,
-        ),
-        decoration: BoxDecoration(
-          color: context.primaryColor.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusSm),
-          border: Border.all(
-            color: context.primaryColor.withValues(alpha: 0.3),
-          ),
-        ),
-        child: Text(
-          label,
-          style: context.textTheme.labelSmall?.copyWith(
-            color: context.primaryColor,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-      ),
-    );
-  }
+//   Widget _buildQuickDateButton(
+//       BuildContext context, String label, DateTime date) {
+//     return InkWell(
+//       onTap: () => _setTestDate(context, date),
+//       child: Container(
+//         padding: const EdgeInsets.symmetric(
+//           horizontal: ThemeSizes.sm,
+//           vertical: ThemeSizes.xs,
+//         ),
+//         decoration: BoxDecoration(
+//           color: context.primaryColor.withValues(alpha: 0.1),
+//           borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusSm),
+//           border: Border.all(
+//             color: context.primaryColor.withValues(alpha: 0.3),
+//           ),
+//         ),
+//         child: Text(
+//           label,
+//           style: context.textTheme.labelSmall?.copyWith(
+//             color: context.primaryColor,
+//             fontWeight: FontWeight.w500,
+//           ),
+//         ),
+//       ),
+//     );
+//   }
 
-  Future<void> _selectTestDate(BuildContext context) async {
-    final DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: DateTime.now(),
-      firstDate: DateTime(2024, 1, 1),
-      lastDate: DateTime(2025, 12, 31),
-      builder: (context, child) {
-        return Theme(
-          data: Theme.of(context).copyWith(
-            colorScheme: Theme.of(context).colorScheme.copyWith(
-                  primary: context.primaryColor,
-                ),
-          ),
-          child: child!,
-        );
-      },
-    );
+//   Future<void> _selectTestDate(BuildContext context) async {
+//     final DateTime? picked = await showDatePicker(
+//       context: context,
+//       initialDate: DateTime.now(),
+//       firstDate: DateTime(2024, 1, 1),
+//       lastDate: DateTime(2025, 12, 31),
+//       builder: (context, child) {
+//         return Theme(
+//           data: Theme.of(context).copyWith(
+//             colorScheme: Theme.of(context).colorScheme.copyWith(
+//                   primary: context.primaryColor,
+//                 ),
+//           ),
+//           child: child!,
+//         );
+//       },
+//     );
 
-    if (picked != null && context.mounted) {
-      _setTestDate(context, picked);
-    }
-  }
+//     if (picked != null && context.mounted) {
+//       _setTestDate(context, picked);
+//     }
+//   }
 
-  void _setTestDate(BuildContext context, DateTime date) {
-    final seasonalService = serviceLocator<SeasonalEventService>();
-    seasonalService.setTestDate(date);
+//   void _setTestDate(BuildContext context, DateTime date) {
+//     final seasonalService = serviceLocator<SeasonalEventService>();
+//     seasonalService.setTestDate(date);
 
-    // Refresh the seasonal event cubit
-    context.read<SeasonalEventCubit>().refreshSeasonalEvent();
+//     // Refresh the seasonal event cubit
+//     context.read<SeasonalEventCubit>().refreshSeasonalEvent();
 
-    // Show confirmation
-    showSnackBar(
-      'Data di test impostata: ${_formatDate(date)}',
-      color: ColorPalette.warning,
-    );
-  }
+//     // Show confirmation
+//     showSnackBar(
+//       'Data di test impostata: ${_formatDate(date)}',
+//       color: ColorPalette.warning,
+//     );
+//   }
 
-  void _clearTestDate(BuildContext context) {
-    final seasonalService = serviceLocator<SeasonalEventService>();
-    seasonalService.clearTestDate();
+//   void _clearTestDate(BuildContext context) {
+//     final seasonalService = serviceLocator<SeasonalEventService>();
+//     seasonalService.clearTestDate();
 
-    // Refresh the seasonal event cubit
-    context.read<SeasonalEventCubit>().refreshSeasonalEvent();
-  }
+//     // Refresh the seasonal event cubit
+//     context.read<SeasonalEventCubit>().refreshSeasonalEvent();
+//   }
 
-  String _formatDate(DateTime date) {
-    return '${date.day}/${date.month}/${date.year}';
-  }
+//   String _formatDate(DateTime date) {
+//     return '${date.day}/${date.month}/${date.year}';
+//   }
 }

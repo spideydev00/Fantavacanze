@@ -3,6 +3,7 @@ import 'package:fantavacanze_official/core/extensions/context_extension.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/utils/show-snackbar-or-paywall/show_snackbar.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/rule/rule.dart';
+import 'package:fantavacanze_official/features/league/domain/entities/league.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
@@ -38,7 +39,7 @@ class _CreateLeaguePageState extends State<CreateLeaguePage> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _descriptionController = TextEditingController();
-  bool _isTeamBased = false;
+  LeagueType _leagueType = LeagueType.individual;
   List<Rule> _rules = [];
   bool _isCreating = false;
   int _currentStep = 0;
@@ -343,7 +344,7 @@ class _CreateLeaguePageState extends State<CreateLeaguePage> {
               CreateLeagueEvent(
                 name: _nameController.text.trim(),
                 description: _descriptionController.text.trim(),
-                isTeamBased: _isTeamBased,
+                type: _leagueType,
                 rules: _rules,
               ),
             );
@@ -411,13 +412,28 @@ class _CreateLeaguePageState extends State<CreateLeaguePage> {
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<LeagueBloc, LeagueState>(
-      listener: (context, state) {
+      listenWhen: (_, state) {
         if (state is LeagueSuccess) {
+          return state.operation == 'create_league';
+        }
+        if (state is LeagueError) {
+          return _isCreating;
+        }
+        return false;
+      },
+      listener: (context, state) {
+        if (state is LeagueSuccess && state.operation == 'create_league') {
           // Clear cached rules after successful league creation
           _cachedRules['male'] = [];
           _cachedRules['female'] = [];
           _cachedRules['mixed'] = [];
           _cachedRules['custom'] = [];
+
+          setState(() {
+            _isCreating = false;
+          });
+
+          Navigator.of(context, rootNavigator: true).maybePop();
 
           //Go to the league created page
           Navigator.pushReplacement(
@@ -428,11 +444,12 @@ class _CreateLeaguePageState extends State<CreateLeaguePage> {
               ),
             ),
           );
-        } else if (state is LeagueError) {
+        } else if (state is LeagueError && _isCreating) {
           setState(() {
             _isCreating = false;
             _isLoadingRules = false;
           });
+          Navigator.of(context, rootNavigator: true).maybePop();
           showSnackBar(state.message);
         }
         // No longer need to handle RulesLoaded state since we're using local rules
@@ -512,16 +529,17 @@ class _CreateLeaguePageState extends State<CreateLeaguePage> {
                                 : StepState.indexed),
                       ),
                       Step(
-                        title:
-                            Text('Tipo', style: context.textTheme.labelLarge),
-                        content: TeamTypeStep(
-                          isTeamBased: _isTeamBased,
-                          onTeamTypeChanged: (value) {
-                            setState(() {
-                              _isTeamBased = value;
-                            });
-                          },
+                        title: Text(
+                          'Tipo',
+                          style: context.textTheme.labelLarge,
                         ),
+                        content: TeamTypeStep(
+                            leagueType: _leagueType,
+                            onTeamTypeChanged: (value) {
+                              setState(() {
+                                _leagueType = value;
+                              });
+                            }),
                         isActive: _currentStep >= 1,
                         state: _currentStep > 1
                             ? StepState.complete

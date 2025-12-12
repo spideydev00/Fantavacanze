@@ -127,11 +127,26 @@ class _LeagueCreatedPageState extends State<LeagueCreatedPage>
 
                 // Invite code card - Now using the extracted widget
                 if (_inviteCode != null)
-                  InviteCodeCard(inviteCode: _inviteCode!),
+                  InviteCodeCard(
+                    inviteCode: _inviteCode!,
+                    leagueName: widget.league.name,
+                  ),
 
                 const SizedBox(height: ThemeSizes.xl),
 
                 // "How to invite friends" - Using the extracted info container
+
+                // Home navigation icon button at the bottom
+                ModernIconButton(
+                  icon: Icons.home,
+                  text: 'Torna alla home',
+                  onTap: () {
+                    Navigator.of(context).popUntil((route) => route.isFirst);
+                  },
+                ),
+
+                const SizedBox(height: ThemeSizes.xl),
+
                 InfoContainer(
                   title: 'Come invitare amici',
                   message:
@@ -139,16 +154,6 @@ class _LeagueCreatedPageState extends State<LeagueCreatedPage>
                   icon: Icons.info_outline,
                   color: ColorPalette.warning,
                 ),
-
-                const SizedBox(height: ThemeSizes.xl),
-
-                // Home navigation icon button at the bottom
-                ModernIconButton(
-                  icon: Icons.home,
-                  onTap: () {
-                    Navigator.of(context).popUntil((route) => route.isFirst);
-                  },
-                )
               ],
             ),
           ),

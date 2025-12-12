@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:fantavacanze_official/core/cubits/app_fs_league/app_fs_league_cubit.dart';
+import 'package:fantavacanze_official/core/cubits/app_status/app_status_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/fs_navigation/fs_navigation_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/seasonal_event/seasonal_event_cubit.dart';
 import 'package:fantavacanze_official/features/fantaserata/presentation/bloc/fs_rules_bloc/fs_rules_bloc.dart';
@@ -52,6 +53,9 @@ void main() async {
     runApp(
       MultiBlocProvider(
         providers: [
+          // App Status
+          BlocProvider(create: (_) => serviceLocator<AppStatusCubit>()),
+
           // Auth
           BlocProvider(create: (_) => serviceLocator<AuthBloc>()),
           BlocProvider(create: (_) => serviceLocator<AppUserCubit>()),
@@ -109,7 +113,11 @@ class _MyAppState extends State<MyApp> {
     final appUserCubit = context.read<AppUserCubit>();
     final appLeagueCubit = context.read<AppLeagueCubit>();
     final appFsLeagueCubit = context.read<AppFsLeagueCubit>();
+    final appStatusCubit = context.read<AppStatusCubit>();
     try {
+      // Check availability flag stored on Supabase
+      await appStatusCubit.fetchStatus();
+
       await appUserCubit.getCurrentUser();
 
       // If user is logged in, then load their specific data and check subscription

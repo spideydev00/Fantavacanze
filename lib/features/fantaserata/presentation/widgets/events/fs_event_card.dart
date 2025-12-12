@@ -86,8 +86,8 @@ class _FsEventCardState extends State<FsEventCard>
           sizeFactor: _sizeAnimation,
           child: FadeTransition(
             opacity: _fadeAnimation,
-            child: Dismissible(
-              key: Key(widget.rule.id),
+          child: Dismissible(
+              key: Key(widget.rule.completionId ?? widget.rule.id),
               direction: DismissDirection.startToEnd,
               background: _buildReactivateBackground(),
               confirmDismiss: (direction) async {
@@ -290,9 +290,10 @@ class _FsEventCardState extends State<FsEventCard>
   void _reactivateEvent(BuildContext context) {
     context.read<FsRulesBloc>().add(
           SetRuleAsUncompletedEvent(
-            userId: widget.rule.userId,
-            leagueId: widget.league.id,
-            challengeId: widget.rule.challengeId,
+            rule: widget.rule,
+            completionId: widget.rule.completionId ??
+                widget
+                    .rule.id, // Use unique completion ID for targeted removal
           ),
         );
   }

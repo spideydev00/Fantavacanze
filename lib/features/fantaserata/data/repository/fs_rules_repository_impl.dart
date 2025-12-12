@@ -1,11 +1,14 @@
+import 'package:fantavacanze_official/features/fantaserata/data/models/rule/fs_rule_model.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:fantavacanze_official/core/errors/exceptions.dart';
 import 'package:fantavacanze_official/core/errors/failure.dart';
 import 'package:fantavacanze_official/core/network/connection_checker.dart';
 import 'package:fantavacanze_official/features/fantaserata/domain/repository/fs_rules_repository.dart';
 import 'package:fantavacanze_official/features/fantaserata/domain/entities/fs_rule/fs_rule.dart';
+import 'package:fantavacanze_official/features/fantaserata/domain/entities/fs_rule_completion.dart';
 import 'package:fantavacanze_official/features/fantaserata/data/datasources/remote/fs_rules_remote_data_source.dart';
 import 'package:fantavacanze_official/features/fantaserata/data/datasources/local/fs_rules_local_data_source.dart';
+import 'package:fantavacanze_official/features/fantaserata/data/models/rule_completion/fs_rule_completion_model.dart';
 
 class FsRulesRepositoryImpl implements FsRulesRepository {
   final FsRulesRemoteDataSource remoteDataSource;
@@ -88,30 +91,35 @@ class FsRulesRepositoryImpl implements FsRulesRepository {
   }
 
   @override
-  Future<Either<Failure, FsRule>> setRuleAsCompleted({
-    required String leagueId,
-    required String challengeId,
-    required String ruleName,
-    required double points,
-    required String type,
+  Future<Either<Failure, Map<String, dynamic>>> setRuleAsCompleted({
+    required FsRule rule,
   }) async {
     try {
       if (!await connectionChecker.isConnected) {
         return left(const Failure('Nessuna connessione internet'));
       }
 
+      final ruleModel =
+          rule is FsRuleModel ? rule : FsRuleModel.fromEntity(rule);
+
       // Mark rule as completed
-      final rule = await remoteDataSource.setRuleAsCompleted(
-        leagueId: leagueId,
-        challengeId: challengeId,
-        ruleName: ruleName,
-        points: points,
-        type: type,
+      final ruleAndCompletion = await remoteDataSource.setRuleAsCompleted(
+        rule: ruleModel,
       );
 
-      await localDataSource.updateSingleRule(leagueId, rule);
+      final fsRule = ruleAndCompletion['fsRule'] as FsRuleModel;
+      final completion =
+          ruleAndCompletion['completion'] as FsRuleCompletionModel;
 
-      return right(rule);
+      await localDataSource.updateSingleRule(
+        rule.leagueId,
+        fsRule,
+      );
+
+      return right({
+        'fsRule': fsRule,
+        'completion': completion,
+      });
     } on ServerException catch (e) {
       return left(Failure(e.message));
     }
@@ -119,25 +127,26 @@ class FsRulesRepositoryImpl implements FsRulesRepository {
 
   @override
   Future<Either<Failure, FsRule>> setRuleAsUncompleted({
-    required String leagueId,
-    required String userId,
-    required String challengeId,
+    required FsRule rule,
+    String? completionId,
   }) async {
     try {
       if (!await connectionChecker.isConnected) {
         return left(const Failure('Nessuna connessione internet'));
       }
 
+      final ruleModel =
+          rule is FsRuleModel ? rule : FsRuleModel.fromEntity(rule);
+
       // Mark rule as uncompleted
-      final rule = await remoteDataSource.setRuleAsUncompleted(
-        leagueId: leagueId,
-        userId: userId,
-        challengeId: challengeId,
+      final updatedRule = await remoteDataSource.setRuleAsUncompleted(
+        rule: ruleModel,
+        completionId: completionId,
       );
 
-      await localDataSource.updateSingleRule(leagueId, rule);
+      await localDataSource.updateSingleRule(updatedRule.leagueId, updatedRule);
 
-      return right(rule);
+      return right(updatedRule);
     } on ServerException catch (e) {
       return left(Failure(e.message));
     }
@@ -194,6 +203,24 @@ class FsRulesRepositoryImpl implements FsRulesRepository {
       await localDataSource.cacheRules(leagueId, rules);
 
       return right(rules);
+    } on ServerException catch (e) {
+      return left(Failure(e.message));
+    }
+  }
+
+  @override
+  Future<Either<Failure, List<FsRuleCompletion>>> getRuleCompletions({
+    required String leagueId,
+  }) async {
+    try {
+      if (!await connectionChecker.isConnected) {
+        return left(const Failure('Nessuna connessione internet'));
+      }
+
+      final completions =
+          await remoteDataSource.getRuleCompletions(leagueId: leagueId);
+
+      return right(completions);
     } on ServerException catch (e) {
       return left(Failure(e.message));
     }

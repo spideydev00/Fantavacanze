@@ -25,6 +25,10 @@ class CustomTabBar extends StatelessWidget {
   final TextStyle? labelStyle;
   final TextStyle? unselectedLabelStyle;
 
+  /// Optional label colors (fallback to context)
+  final Color? labelColor;
+  final Color? unselectedLabelColor;
+
   /// Optional background color (defaults to context.secondaryBgColor)
   final Color? backgroundColor;
 
@@ -37,6 +41,8 @@ class CustomTabBar extends StatelessWidget {
     this.indicatorSize = TabBarIndicatorSize.tab,
     this.labelStyle,
     this.unselectedLabelStyle,
+    this.labelColor,
+    this.unselectedLabelColor,
     this.backgroundColor,
   });
 
@@ -53,6 +59,9 @@ class CustomTabBar extends StatelessWidget {
         labelStyle: labelStyle ?? const TextStyle(fontWeight: FontWeight.bold),
         unselectedLabelStyle: unselectedLabelStyle ??
             const TextStyle(fontWeight: FontWeight.normal),
+        labelColor: labelColor ?? context.textPrimaryColor,
+        unselectedLabelColor:
+            unselectedLabelColor ?? context.textSecondaryColor,
         indicator: _CustomTabIndicator(
           controller: controller,
           colors: indicatorColors,

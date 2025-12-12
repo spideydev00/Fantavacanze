@@ -10,7 +10,9 @@ import 'package:fantavacanze_official/features/fantaserata/domain/use_cases/fs_r
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:fantavacanze_official/features/fantaserata/domain/entities/fs_rule/fs_rule.dart';
+import 'package:fantavacanze_official/features/fantaserata/domain/entities/fs_rule_completion.dart';
 import 'package:fantavacanze_official/features/fantaserata/domain/use_cases/fs_rules/get_league_rules.dart';
+import 'package:fantavacanze_official/features/fantaserata/domain/use_cases/fs_rules/get_fs_rule_completions.dart';
 
 part 'fs_rules_event.dart';
 part 'fs_rules_state.dart';
@@ -22,9 +24,11 @@ class FsRulesBloc extends Bloc<FsRulesEvent, FsRulesState> {
   final SetFsRuleAsCompleted _setFsRuleAsCompleted;
   final SetFsRuleAsUncompleted _setFsRuleAsUncompleted;
   final InsertRulesForLeagueFromExisting _insertRulesForLeagueFromExisting;
+  final GetFsRuleCompletions _getFsRuleCompletions;
   final AppFsLeagueCubit _appFsLeagueCubit;
   final LockFsRule _lockFsRule;
   final AppUserCubit _appUserCubit;
+  bool _isFetchingRules = false;
 
   StreamSubscription? _userSubscription;
 
@@ -35,6 +39,7 @@ class FsRulesBloc extends Bloc<FsRulesEvent, FsRulesState> {
     required SetFsRuleAsCompleted setFsRuleAsCompleted,
     required SetFsRuleAsUncompleted setFsRuleAsUncompleted,
     required InsertRulesForLeagueFromExisting insertRulesForLeagueFromExisting,
+    required GetFsRuleCompletions getFsRuleCompletions,
     required AppFsLeagueCubit appFsLeagueCubit,
     required LockFsRule lockFsRule,
     required AppUserCubit appUserCubit,
@@ -44,6 +49,7 @@ class FsRulesBloc extends Bloc<FsRulesEvent, FsRulesState> {
         _setFsRuleAsCompleted = setFsRuleAsCompleted,
         _setFsRuleAsUncompleted = setFsRuleAsUncompleted,
         _insertRulesForLeagueFromExisting = insertRulesForLeagueFromExisting,
+        _getFsRuleCompletions = getFsRuleCompletions,
         _appFsLeagueCubit = appFsLeagueCubit,
         _lockFsRule = lockFsRule,
         _appUserCubit = appUserCubit,
@@ -62,58 +68,116 @@ class FsRulesBloc extends Bloc<FsRulesEvent, FsRulesState> {
     _userSubscription = _appUserCubit.stream.listen(_onUserStateChanged);
   }
 
-  void _updateRuleInState({
-    required FsRulesState previousState,
-    required String oldChallengeId,
+  void _updateRuleState({
     required FsRule updatedRule,
     required String leagueId,
     required Emitter<FsRulesState> emit,
+    FsRuleCompletion? completionToAdd,
+    String? completionIdToRemove,
+    bool removeCompletionByChallenge = false,
   }) {
-    if (previousState is FsRulesLoaded) {
-      final updatedRules = List<FsRule>.from(previousState.rules);
+    final currentState = state;
 
-      // 1) trova ID della regola aggiornata
-      try {
-        int index = updatedRules.indexWhere((r) => r.id == updatedRule.id);
-
-        if (index != -1) {
-          updatedRules[index] = updatedRule;
-        }
-
-        emit(FsRulesLoaded(updatedRules));
-      } catch (e) {
-        emit(FsRulesFailure("Errore durante l'aggiornamento della regola."));
-      }
-    } else {
+    if (currentState is! FsRulesLoaded) {
       add(GetLeagueRulesEvent(leagueId: leagueId));
+      return;
     }
+
+    bool ruleUpdated = false;
+
+    final updatedRules = currentState.rules.map((rule) {
+      final matches =
+          rule.id == updatedRule.id || rule.challengeId == updatedRule.challengeId;
+      if (!matches) return rule;
+      ruleUpdated = true;
+      return _mergeRule(rule, updatedRule);
+    }).toList();
+
+    if (!ruleUpdated) {
+      updatedRules.add(updatedRule);
+    }
+
+    final updatedCompletions =
+        List<FsRuleCompletion>.from(currentState.completions);
+
+    if (completionIdToRemove != null) {
+      updatedCompletions.removeWhere((c) => c.id == completionIdToRemove);
+    } else if (removeCompletionByChallenge) {
+      updatedCompletions
+          .removeWhere((c) => c.challengeId == updatedRule.challengeId);
+    }
+
+    if (completionToAdd != null) {
+      if (completionToAdd.isDynamic) {
+        updatedCompletions
+            .removeWhere((c) => c.challengeId == completionToAdd.challengeId);
+      }
+      updatedCompletions.add(completionToAdd);
+    }
+
+    updatedCompletions
+        .sort((a, b) => b.completedAt.compareTo(a.completedAt));
+
+    emit(FsRulesLoaded(
+      updatedRules,
+      completions: updatedCompletions,
+    ));
+  }
+
+  FsRule _mergeRule(FsRule existing, FsRule updated) {
+    return FsRule(
+      id: existing.id,
+      userId: updated.userId,
+      userName: updated.userName ?? existing.userName,
+      completionId: updated.completionId ?? existing.completionId,
+      leagueId: updated.leagueId,
+      challengeId: updated.challengeId,
+      name: updated.name,
+      points: updated.points,
+      type: updated.type,
+      position: updated.position,
+      isUnlocked: updated.isUnlocked,
+      isCompleted: updated.isCompleted,
+      isRefreshed: updated.isRefreshed,
+      createdAt: updated.createdAt,
+      completedAt: updated.completedAt,
+      refreshedAt: updated.refreshedAt,
+    );
   }
 
   FutureOr<void> _onGetLeagueRules(
     GetLeagueRulesEvent event,
     Emitter<FsRulesState> emit,
   ) async {
+    if (_isFetchingRules) return;
+
+    _isFetchingRules = true;
+
     emit(FsRulesLoading());
 
-    final result = await _getLeagueRules(GetLeagueRulesParams(
-      leagueId: event.leagueId,
-    ));
+    try {
+      final result = await _getLeagueRules(GetLeagueRulesParams(
+        leagueId: event.leagueId,
+      ));
 
-    result.fold(
-      (failure) {
-        emit(FsRulesFailure(failure.message));
-      },
-      (rules) {
-        emit(FsRulesLoaded(rules));
-      },
-    );
+      await result.fold(
+        (failure) async {
+          emit(FsRulesFailure(failure.message));
+        },
+        (rules) async {
+          final completions = await _fetchCompletions(event.leagueId);
+          emit(FsRulesLoaded(rules, completions: completions));
+        },
+      );
+    } finally {
+      _isFetchingRules = false;
+    }
   }
 
   FutureOr<void> _onRefreshRule(
     RefreshRuleEvent event,
     Emitter<FsRulesState> emit,
   ) async {
-    final previousState = state;
     emit(FsRulesLoading());
 
     final result = await _refreshFsRule(RefreshFsRuleParams(
@@ -123,9 +187,7 @@ class FsRulesBloc extends Bloc<FsRulesEvent, FsRulesState> {
 
     result.fold(
       (failure) => emit(FsRulesFailure(failure.message)),
-      (rule) => _updateRuleInState(
-        previousState: previousState,
-        oldChallengeId: event.challengeId,
+      (rule) => _updateRuleState(
         updatedRule: rule,
         leagueId: event.leagueId,
         emit: emit,
@@ -137,9 +199,6 @@ class FsRulesBloc extends Bloc<FsRulesEvent, FsRulesState> {
     UnlockRuleEvent event,
     Emitter<FsRulesState> emit,
   ) async {
-    final previousState = state;
-    emit(FsRulesLoading());
-
     final result = await _unlockFsRule(UnlockFsRuleParams(
       leagueId: event.leagueId,
       challengeId: event.challengeId,
@@ -147,9 +206,7 @@ class FsRulesBloc extends Bloc<FsRulesEvent, FsRulesState> {
 
     result.fold(
       (failure) => emit(FsRulesFailure(failure.message)),
-      (rule) => _updateRuleInState(
-        previousState: previousState,
-        oldChallengeId: event.challengeId,
+      (rule) => _updateRuleState(
         updatedRule: rule,
         leagueId: event.leagueId,
         emit: emit,
@@ -161,25 +218,21 @@ class FsRulesBloc extends Bloc<FsRulesEvent, FsRulesState> {
     SetRuleAsCompletedEvent event,
     Emitter<FsRulesState> emit,
   ) async {
-    final previousState = state;
-
     final result = await _setFsRuleAsCompleted(SetFsRuleAsCompletedParams(
-      leagueId: event.leagueId,
-      challengeId: event.challengeId,
-      ruleName: event.ruleName,
-      points: event.points,
-      type: event.type,
+      rule: event.rule,
     ));
 
     result.fold(
       (failure) => emit(FsRulesFailure(failure.message)),
-      (rule) async {
-        _updateRuleInState(
-          previousState: previousState,
-          oldChallengeId: event.challengeId,
-          updatedRule: rule,
-          leagueId: event.leagueId,
+      (payload) async {
+        final fsRule = payload['fsRule'] as FsRule;
+        final completion = payload['completion'] as FsRuleCompletion;
+
+        _updateRuleState(
+          updatedRule: fsRule,
+          leagueId: fsRule.leagueId,
           emit: emit,
+          completionToAdd: completion,
         );
 
         await _appFsLeagueCubit.checkFsLeague();
@@ -191,23 +244,21 @@ class FsRulesBloc extends Bloc<FsRulesEvent, FsRulesState> {
     SetRuleAsUncompletedEvent event,
     Emitter<FsRulesState> emit,
   ) async {
-    final previousState = state;
-
     final result = await _setFsRuleAsUncompleted(SetFsRuleAsUncompletedParams(
-      leagueId: event.leagueId,
-      userId: event.userId,
-      challengeId: event.challengeId,
+      rule: event.rule,
+      completionId:
+          event.completionId, // Pass completion ID for targeted deletion
     ));
 
     result.fold(
       (failure) => emit(FsRulesFailure(failure.message)),
       (rule) async {
-        _updateRuleInState(
-          previousState: previousState,
-          oldChallengeId: event.challengeId,
+        _updateRuleState(
           updatedRule: rule,
-          leagueId: event.leagueId,
+          leagueId: event.rule.leagueId,
           emit: emit,
+          completionIdToRemove: event.completionId,
+          removeCompletionByChallenge: event.completionId == null,
         );
 
         await _appFsLeagueCubit.checkFsLeague();
@@ -230,21 +281,28 @@ class FsRulesBloc extends Bloc<FsRulesEvent, FsRulesState> {
       ),
     );
 
-    result.fold(
-      (failure) => emit(FsRulesFailure(failure.message)),
-      (rules) => emit(
-        FsRulesLoaded(rules),
-      ),
-    );
+    if (result.isLeft()) {
+      emit(
+        FsRulesFailure(
+          result.fold(
+            (l) => l.message,
+            (_) => '',
+          ),
+        ),
+      );
+    } else {
+      final rules = result.fold((_) => <FsRule>[], (r) => r);
+
+      final completions = await _fetchCompletions(event.leagueId);
+
+      emit(FsRulesLoaded(rules, completions: completions));
+    }
   }
 
   FutureOr<void> _onLockRule(
     LockRuleEvent event,
     Emitter<FsRulesState> emit,
   ) async {
-    final previousState = state;
-    emit(FsRulesLoading());
-
     final result = await _lockFsRule(LockFsRuleParams(
       leagueId: event.leagueId,
       challengeId: event.challengeId,
@@ -252,9 +310,7 @@ class FsRulesBloc extends Bloc<FsRulesEvent, FsRulesState> {
 
     result.fold(
       (failure) => emit(FsRulesFailure(failure.message)),
-      (rule) => _updateRuleInState(
-        previousState: previousState,
-        oldChallengeId: event.challengeId,
+      (rule) => _updateRuleState(
         updatedRule: rule,
         leagueId: event.leagueId,
         emit: emit,
@@ -290,6 +346,11 @@ class FsRulesBloc extends Bloc<FsRulesEvent, FsRulesState> {
     UpdateRulesLocallyEvent event,
     Emitter<FsRulesState> emit,
   ) async {
+    final currentState = state;
+    final completions = currentState is FsRulesLoaded
+        ? currentState.completions
+        : <FsRuleCompletion>[];
+
     if (event.isPremium) {
       // Sblocca tutte le regole localmente
       final updatedRules = event.rules.map((rule) {
@@ -297,6 +358,7 @@ class FsRulesBloc extends Bloc<FsRulesEvent, FsRulesState> {
           id: rule.id,
           userId: rule.userId,
           userName: rule.userName,
+          completionId: rule.completionId,
           leagueId: rule.leagueId,
           challengeId: rule.challengeId,
           name: rule.name,
@@ -312,7 +374,7 @@ class FsRulesBloc extends Bloc<FsRulesEvent, FsRulesState> {
         );
       }).toList();
 
-      emit(FsRulesLoaded(updatedRules));
+      emit(FsRulesLoaded(updatedRules, completions: completions));
     } else {
       // Blocca solo le regole premium localmente
       final updatedRules = event.rules.map((rule) {
@@ -321,6 +383,7 @@ class FsRulesBloc extends Bloc<FsRulesEvent, FsRulesState> {
             id: rule.id,
             userId: rule.userId,
             userName: rule.userName,
+            completionId: rule.completionId,
             leagueId: rule.leagueId,
             challengeId: rule.challengeId,
             name: rule.name,
@@ -338,7 +401,7 @@ class FsRulesBloc extends Bloc<FsRulesEvent, FsRulesState> {
         return rule;
       }).toList();
 
-      emit(FsRulesLoaded(updatedRules));
+      emit(FsRulesLoaded(updatedRules, completions: completions));
     }
   }
 
@@ -351,5 +414,16 @@ class FsRulesBloc extends Bloc<FsRulesEvent, FsRulesState> {
   Future<void> close() {
     _userSubscription?.cancel();
     return super.close();
+  }
+
+  Future<List<FsRuleCompletion>> _fetchCompletions(String leagueId) async {
+    final result = await _getFsRuleCompletions(
+      GetFsRuleCompletionsParams(leagueId: leagueId),
+    );
+
+    return result.fold(
+      (_) => <FsRuleCompletion>[],
+      (completions) => completions,
+    );
   }
 }

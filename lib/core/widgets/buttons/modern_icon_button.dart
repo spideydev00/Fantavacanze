@@ -1,4 +1,5 @@
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
+import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:flutter/material.dart';
 
 class ModernIconButton extends StatelessWidget {
@@ -8,6 +9,7 @@ class ModernIconButton extends StatelessWidget {
   final Color? iconColor;
   final Color? backgroundColor;
   final EdgeInsetsGeometry padding;
+  final String? text;
 
   const ModernIconButton({
     super.key,
@@ -17,6 +19,7 @@ class ModernIconButton extends StatelessWidget {
     this.iconColor,
     this.backgroundColor,
     this.padding = const EdgeInsets.all(20.0),
+    this.text,
   });
 
   @override
@@ -25,7 +28,46 @@ class ModernIconButton extends StatelessWidget {
     final Color effectiveBackgroundColor =
         backgroundColor ?? effectiveIconColor.withAlpha(20);
 
-    return GestureDetector(
+    if (text != null && text!.isNotEmpty) {
+      return Container(
+        decoration: BoxDecoration(
+          color: effectiveBackgroundColor,
+          borderRadius: BorderRadius.circular(50),
+        ),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: onTap,
+            borderRadius: BorderRadius.circular(50),
+            child: Padding(
+              padding: EdgeInsets.symmetric(
+                horizontal: ThemeSizes.lg,
+                vertical: ThemeSizes.lg,
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    icon,
+                    color: effectiveIconColor,
+                    size: iconSize,
+                  ),
+                  const SizedBox(width: 12),
+                  Text(
+                    text!,
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          color: effectiveIconColor,
+                        ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    final buttonWidget = GestureDetector(
       onTap: onTap,
       child: Container(
         alignment: Alignment.center,
@@ -52,5 +94,7 @@ class ModernIconButton extends StatelessWidget {
         ),
       ),
     );
+
+    return buttonWidget;
   }
 }

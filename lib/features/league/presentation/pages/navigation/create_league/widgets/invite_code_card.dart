@@ -5,13 +5,16 @@ import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/extensions/context_extension.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
+import 'package:share_plus/share_plus.dart';
 
 class InviteCodeCard extends StatefulWidget {
   final String inviteCode;
+  final String? leagueName;
 
   const InviteCodeCard({
     super.key,
     required this.inviteCode,
+    this.leagueName,
   });
 
   @override
@@ -40,6 +43,24 @@ class _InviteCodeCardState extends State<InviteCodeCard> {
         });
       }
     });
+  }
+
+  void _shareInviteCode() {
+    final title = widget.leagueName != null
+        ? 'Unisciti alla lega "${widget.leagueName}"!'
+        : 'Unisciti alla mia lega!';
+    final subject = widget.leagueName != null
+        ? 'Invito lega - ${widget.leagueName}'
+        : 'Invito lega';
+
+    SharePlus.instance.share(
+      ShareParams(
+        title: title,
+        text: '🔥 Codice invito: ${widget.inviteCode}\n\n'
+            'Invita i tuoi amici a partecipare su Fantavacanze.',
+        subject: subject,
+      ),
+    );
   }
 
   @override
@@ -114,43 +135,57 @@ class _InviteCodeCardState extends State<InviteCodeCard> {
               ],
             ),
           ),
-          Material(
-            color: Colors.transparent,
-            child: InkWell(
-              onTap: _copyInviteCode,
-              borderRadius: const BorderRadius.only(
-                bottomLeft: Radius.circular(ThemeSizes.borderRadiusLg),
-                bottomRight: Radius.circular(ThemeSizes.borderRadiusLg),
-              ),
-              child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(
-                  vertical: ThemeSizes.md,
-                ),
-                decoration: BoxDecoration(
-                  color: ColorPalette.success.withValues(alpha: 0.3),
-                  borderRadius: const BorderRadius.only(
-                    bottomLeft: Radius.circular(ThemeSizes.borderRadiusLg),
-                    bottomRight: Radius.circular(ThemeSizes.borderRadiusLg),
-                  ),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      _codeCopied ? Icons.check_circle : Icons.content_copy,
-                      size: 18,
+          Padding(
+            padding: const EdgeInsets.fromLTRB(
+              ThemeSizes.md,
+              ThemeSizes.sm,
+              ThemeSizes.md,
+              ThemeSizes.lg,
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: _copyInviteCode,
+                    icon: Icon(
+                      _codeCopied ? Icons.check_circle : Icons.copy_rounded,
                     ),
-                    const SizedBox(width: ThemeSizes.sm),
-                    Text(
-                      _codeCopied ? 'Copiato!' : 'Copia Codice',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
+                    label: Text(
+                      _codeCopied ? 'Copiato!' : 'Copia',
+                      style: const TextStyle(fontWeight: FontWeight.w600),
+                    ),
+                    style: OutlinedButton.styleFrom(
+                      side: BorderSide(
+                        color: context.textSecondaryColor,
+                        width: 1,
+                      ),
+                      foregroundColor: context.textSecondaryColor,
+                      padding: const EdgeInsets.symmetric(
+                        vertical: ThemeSizes.md,
                       ),
                     ),
-                  ],
+                  ),
                 ),
-              ),
+                const SizedBox(width: ThemeSizes.md),
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: _shareInviteCode,
+                    icon: const Icon(Icons.share_rounded),
+                    label: const Text(
+                      'Condividi',
+                      style: TextStyle(fontWeight: FontWeight.w600),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor:
+                          ColorPalette.success.withValues(alpha: 0.3),
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(
+                        vertical: ThemeSizes.md,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         ],

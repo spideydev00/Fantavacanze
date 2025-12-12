@@ -59,6 +59,7 @@ class AppTermsPage extends StatelessWidget {
             Text(
               'Benvenuti nell\'app Fantavacanze. Utilizzando la nostra applicazione, accetti i seguenti termini e condizioni che regolano l\'uso del nostro servizio.',
               style: context.textTheme.bodyMedium,
+              textAlign: TextAlign.center,
             ),
             const SizedBox(height: ThemeSizes.lg),
 
@@ -72,6 +73,7 @@ class AppTermsPage extends StatelessWidget {
             Text(
               'Fantavacanze è un\'app destinata esclusivamente a utenti che hanno almeno 18 anni di età. Accedendo e utilizzando questa app, dichiari e garantisci di avere almeno 18 anni. L\'app include contenuti e funzionalità appropriate solo per adulti.',
               style: context.textTheme.bodyMedium,
+              textAlign: TextAlign.center,
             ),
             const SizedBox(height: ThemeSizes.lg),
 
@@ -85,6 +87,7 @@ class AppTermsPage extends StatelessWidget {
             Text(
               'La nostra Informativa sulla Privacy descrive come raccogliamo, utilizziamo e condividiamo i tuoi dati personali. Utilizzando Fantavacanze, acconsenti alle pratiche descritte nella nostra Informativa sulla Privacy.',
               style: context.textTheme.bodyMedium,
+              textAlign: TextAlign.center,
             ),
             const SizedBox(height: ThemeSizes.lg),
 
@@ -98,6 +101,7 @@ class AppTermsPage extends StatelessWidget {
             Text(
               'Gli utenti sono tenuti a comportarsi in modo rispettoso verso gli altri partecipanti. Non è consentito l\'utilizzo di linguaggio offensivo, molesto o discriminatorio. Ci riserviamo il diritto di rimuovere utenti che violano il codice di condotta.',
               style: context.textTheme.bodyMedium,
+              textAlign: TextAlign.center,
             ),
             const SizedBox(height: ThemeSizes.lg),
 
@@ -111,6 +115,7 @@ class AppTermsPage extends StatelessWidget {
             Text(
               'Gli utenti possono caricare contenuti come foto e commenti. Caricando contenuti, garantisci di avere i diritti necessari su tali contenuti e concedi a Fantavacanze una licenza non esclusiva per utilizzarli in relazione ai servizi offerti. Ci riserviamo il diritto di rimuovere contenuti inappropriati o che violano questi termini.',
               style: context.textTheme.bodyMedium,
+              textAlign: TextAlign.center,
             ),
             const SizedBox(height: ThemeSizes.lg),
 
@@ -124,6 +129,7 @@ class AppTermsPage extends StatelessWidget {
             Text(
               'Tutti i diritti di proprietà intellettuale relativi all\'app e ai suoi contenuti (esclusi i contenuti generati dagli utenti) appartengono a Fantavacanze o ai suoi licenziatari. Non è consentito utilizzare, copiare o distribuire qualsiasi parte dell\'app senza autorizzazione.',
               style: context.textTheme.bodyMedium,
+              textAlign: TextAlign.center,
             ),
             const SizedBox(height: ThemeSizes.lg),
 
@@ -137,6 +143,7 @@ class AppTermsPage extends StatelessWidget {
             Text(
               'Fantavacanze non è responsabile per danni diretti, indiretti, incidentali, conseguenti o punitivi derivanti dall\'uso o dall\'impossibilità di utilizzare l\'app. L\'app è fornita "così com\'è" senza garanzie di alcun tipo.',
               style: context.textTheme.bodyMedium,
+              textAlign: TextAlign.center,
             ),
             const SizedBox(height: ThemeSizes.lg),
 
@@ -150,6 +157,7 @@ class AppTermsPage extends StatelessWidget {
             Text(
               'Ci riserviamo il diritto di modificare questi Termini in qualsiasi momento. Le modifiche saranno efficaci dopo la pubblicazione dei Termini aggiornati nell\'app. L\'uso continuato dell\'app dopo tali modifiche costituisce accettazione dei nuovi Termini.',
               style: context.textTheme.bodyMedium,
+              textAlign: TextAlign.center,
             ),
             const SizedBox(height: ThemeSizes.lg),
 
@@ -163,6 +171,7 @@ class AppTermsPage extends StatelessWidget {
             Text(
               'Questi Termini sono regolati e interpretati in conformità con le leggi italiane, senza riguardo ai principi di conflitto di leggi.',
               style: context.textTheme.bodyMedium,
+              textAlign: TextAlign.center,
             ),
             const SizedBox(height: ThemeSizes.lg),
 
@@ -176,6 +185,7 @@ class AppTermsPage extends StatelessWidget {
             Text(
               'Per domande o dubbi sui nostri Termini e Condizioni, contattaci all\'indirizzo email: supporto@fantavacanze.it',
               style: context.textTheme.bodyMedium,
+              textAlign: TextAlign.center,
             ),
             const SizedBox(height: ThemeSizes.xxl),
           ],

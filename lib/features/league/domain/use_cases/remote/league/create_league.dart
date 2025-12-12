@@ -16,7 +16,7 @@ class CreateLeague implements Usecase<League, CreateLeagueParams> {
     return leagueRepository.createLeague(
       name: params.name,
       description: params.description,
-      isTeamBased: params.isTeamBased,
+      type: params.type,
       rules: params.rules,
     );
   }
@@ -26,13 +26,13 @@ class CreateLeague implements Usecase<League, CreateLeagueParams> {
 class CreateLeagueParams {
   final String name;
   final String? description;
-  final bool isTeamBased;
+  final LeagueType type;
   final List<Rule> rules;
 
   const CreateLeagueParams({
     required this.name,
     this.description,
-    required this.isTeamBased,
+    required this.type,
     required this.rules,
   });
 }

@@ -6,7 +6,6 @@ import 'package:fpdart/fpdart.dart';
 abstract class DailyChallengesRepository {
   // Daily Challenges operations
   Future<Either<Failure, List<DailyChallenge>>> getDailyChallenges({
-    required String userId,
     required String leagueId,
   });
 

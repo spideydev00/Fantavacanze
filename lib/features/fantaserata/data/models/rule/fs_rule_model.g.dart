@@ -20,6 +20,7 @@ class FsRuleModelAdapter extends TypeAdapter<FsRuleModel> {
       id: fields[0] as String,
       userId: fields[1] as String,
       userName: fields[14] as String?,
+      completionId: fields[15] as String?,
       leagueId: fields[2] as String,
       challengeId: fields[3] as String,
       name: fields[4] as String,
@@ -38,7 +39,7 @@ class FsRuleModelAdapter extends TypeAdapter<FsRuleModel> {
   @override
   void write(BinaryWriter writer, FsRuleModel obj) {
     writer
-      ..writeByte(15)
+      ..writeByte(16)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -68,7 +69,9 @@ class FsRuleModelAdapter extends TypeAdapter<FsRuleModel> {
       ..writeByte(13)
       ..write(obj.refreshedAt)
       ..writeByte(14)
-      ..write(obj.userName);
+      ..write(obj.userName)
+      ..writeByte(15)
+      ..write(obj.completionId);
   }
 
   @override

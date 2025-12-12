@@ -5,11 +5,9 @@ import 'package:fantavacanze_official/features/league/domain/repository/daily_ch
 import 'package:fpdart/fpdart.dart';
 
 class GetDailyChallengesParams {
-  final String userId;
   final String leagueId;
 
   GetDailyChallengesParams({
-    required this.userId,
     required this.leagueId,
   });
 }
@@ -24,7 +22,6 @@ class GetDailyChallenges
   Future<Either<Failure, List<DailyChallenge>>> call(
       GetDailyChallengesParams params) async {
     return await dailyChallengesRepository.getDailyChallenges(
-      userId: params.userId,
       leagueId: params.leagueId,
     );
   }

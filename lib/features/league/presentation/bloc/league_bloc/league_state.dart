@@ -70,15 +70,6 @@ class MultiplePossibleLeagues extends LeagueState {
   List<Object?> get props => [possibleLeagues, inviteCode];
 }
 
-class TeammatesRemovedState extends LeagueState {
-  final League league;
-
-  const TeammatesRemovedState({required this.league});
-
-  @override
-  List<Object?> get props => [league];
-}
-
 // Replace the three note-specific states with a single success state
 class NoteSuccess extends LeagueState {
   final String operation; // "get", "save", or "delete"

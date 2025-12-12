@@ -103,10 +103,11 @@ class _AdminPageState extends State<AdminPage> {
                   color: ColorPalette.success);
             }
           } else if (state is DeleteLeagueSuccess) {
-            Navigator.pop(context);
-            // Navigate to home page
+            // Chiudi qualsiasi dialog e la pagina Admin tornando alla root (Dashboard)
+            Navigator.of(context).popUntil((route) => route.isFirst);
+            // Vai alla Home tab
             context.read<AppNavigationCubit>().setIndex(0);
-            // Show success message
+            // Mostra conferma
             showSnackBar(
               'Lega eliminata con successo',
               color: ColorPalette.success,

@@ -15,6 +15,7 @@ class FsRule {
   String id;
   String userId;
   String? userName;
+  String? completionId;
   String leagueId;
   String challengeId;
   String name;
@@ -32,6 +33,7 @@ class FsRule {
     required this.id,
     required this.userId,
     this.userName,
+    this.completionId,
     required this.leagueId,
     required this.challengeId,
     required this.name,

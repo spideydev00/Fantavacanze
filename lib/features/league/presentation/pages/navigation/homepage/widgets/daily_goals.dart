@@ -38,17 +38,24 @@ class _DailyGoalsState extends State<DailyGoals> {
 
   void _loadDailyChallenges() {
     if (_isLoading) return;
+
     final userState = context.read<AppUserCubit>().state;
     final leagueState = context.read<AppLeagueCubit>().state;
 
     if (userState is AppUserIsLoggedIn && leagueState is AppLeagueExists) {
+      final challengesState = context.read<DailyChallengesBloc>().state;
+
+      if (challengesState is DailyChallengesLoaded &&
+          challengesState.leagueId == leagueState.selectedLeague.id) {
+        return;
+      }
+
       setState(
         () => _isLoading = true,
       );
 
       context.read<DailyChallengesBloc>().add(
             GetDailyChallengesEvent(
-              userId: userState.user.id,
               leagueId: leagueState.selectedLeague.id,
             ),
           );

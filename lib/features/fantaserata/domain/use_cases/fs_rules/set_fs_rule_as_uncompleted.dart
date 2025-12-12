@@ -14,21 +14,18 @@ class SetFsRuleAsUncompleted
   Future<Either<Failure, FsRule>> call(
       SetFsRuleAsUncompletedParams params) async {
     return await repository.setRuleAsUncompleted(
-      leagueId: params.leagueId,
-      userId: params.userId,
-      challengeId: params.challengeId,
+      rule: params.rule,
+      completionId: params.completionId,
     );
   }
 }
 
 class SetFsRuleAsUncompletedParams {
-  final String leagueId;
-  final String userId;
-  final String challengeId;
+  final FsRule rule;
+  final String? completionId; // Unique completion ID for targeted deletion
 
   SetFsRuleAsUncompletedParams({
-    required this.leagueId,
-    required this.userId,
-    required this.challengeId,
+    required this.rule,
+    this.completionId,
   });
 }

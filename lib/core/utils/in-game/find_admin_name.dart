@@ -6,7 +6,7 @@ String findAdminName(League league, String adminId) {
   String adminName = '';
   // Search for admin in participants
   for (final participant in league.participants) {
-    if (league.isTeamBased) {
+    if (league.type == LeagueType.team) {
       // For team-based leagues
       if (participant is TeamParticipant) {
         for (final member in participant.members) {

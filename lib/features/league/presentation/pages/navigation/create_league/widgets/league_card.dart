@@ -58,16 +58,16 @@ class LeagueCard extends StatelessWidget {
                       vertical: 4,
                     ),
                     decoration: BoxDecoration(
-                      color: league.isTeamBased
+                      color: league.type == LeagueType.team
                           ? Colors.blue.withValues(alpha: 0.2)
                           : ColorPalette.success.withValues(alpha: 0.2),
                       borderRadius:
                           BorderRadius.circular(ThemeSizes.borderRadiusMd),
                     ),
                     child: Text(
-                      league.isTeamBased ? 'Squadre' : 'Individuale',
+                      league.type == LeagueType.team ? 'Squadre' : 'Individuale',
                       style: TextStyle(
-                        color: league.isTeamBased
+                        color: league.type == LeagueType.team
                             ? Colors.blue
                             : ColorPalette.success,
                         fontWeight: FontWeight.bold,

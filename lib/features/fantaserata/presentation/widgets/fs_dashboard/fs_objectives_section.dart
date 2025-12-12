@@ -44,6 +44,7 @@ class _FsObjectivesSectionState extends State<FsObjectivesSection>
 
   SectionView _currentView = SectionView.bonus;
   bool _isTransitioning = false;
+  String? _pendingCompletionChallengeId;
 
   @override
   void initState() {
@@ -121,7 +122,7 @@ class _FsObjectivesSectionState extends State<FsObjectivesSection>
           children: [
             InfoBanner(
               message:
-                  "Clicca su una card per assegnare bonus/malus. Per vedere i malus, usa il pulsante a lato.",
+                  "Clicca su una card per assegnare punti. Per vedere i malus, usa il pulsante a lato.\n\nClicca sul pulsante in alto a sinistra per vedere il codice o eliminare la lega.",
               color: ColorPalette.info,
             ),
             // Contenuto principale con leggero padding a destra
@@ -298,6 +299,9 @@ class _FsObjectivesSectionState extends State<FsObjectivesSection>
             state.message,
             color: ColorPalette.error,
           );
+          _pendingCompletionChallengeId = null;
+        } else {
+          _handlePossibleCompletionSuccess(state);
         }
       },
       builder: (context, state) {
@@ -345,6 +349,8 @@ class _FsObjectivesSectionState extends State<FsObjectivesSection>
             state.message,
             color: ColorPalette.error,
           );
+        } else {
+          _handlePossibleCompletionSuccess(state);
         }
       },
       builder: (context, state) {
@@ -434,17 +440,11 @@ class _FsObjectivesSectionState extends State<FsObjectivesSection>
                       leagueId: widget.league.id,
                       challengeId: rule.challengeId,
                     ),
-                  );
-            }
-          : null,
+          );
+        }
+      : null,
       onComplete: !rule.isCompleted && rule.isUnlocked
-          ? () => _showSetRuleAsCompletedDialog(
-                rule.name,
-                rule.points,
-                rule.challengeId,
-                rule.type == FsRuleType.bonus,
-                isDynamic: isDynamic,
-              )
+          ? () => _showSetRuleAsCompletedDialog(rule)
           : null,
       // Callback specifico per ads unlock (position 2)
       onAdUnlock: !rule.isUnlocked && rule.position.toInt() == 2
@@ -458,27 +458,18 @@ class _FsObjectivesSectionState extends State<FsObjectivesSection>
   }
 
   /// Mostra il dialog di conferma per l'aggiunta di un evento
-  void _showSetRuleAsCompletedDialog(
-    String ruleName,
-    double points,
-    String challengeId,
-    bool isBonus, {
-    bool isDynamic = false,
-  }) {
+  void _showSetRuleAsCompletedDialog(FsRule rule) {
     showDialog(
       context: context,
       builder: (context) => ConfirmationDialog.setFsRuleCompleted(
-        ruleName: ruleName,
-        points: points,
-        isBonus: isBonus,
+        ruleName: rule.name,
+        points: rule.points,
+        isBonus: rule.type == FsRuleType.bonus,
         onConfirm: () {
+          _pendingCompletionChallengeId = rule.challengeId;
           context.read<FsRulesBloc>().add(
                 SetRuleAsCompletedEvent(
-                  leagueId: widget.league.id,
-                  challengeId: challengeId,
-                  ruleName: ruleName,
-                  points: points,
-                  type: isBonus ? 'bonus' : 'malus',
+                  rule: rule,
                 ),
               );
         },
@@ -522,6 +513,21 @@ class _FsObjectivesSectionState extends State<FsObjectivesSection>
       return userState.user.id;
     }
     return null;
+  }
+
+  void _handlePossibleCompletionSuccess(FsRulesState state) {
+    if (_pendingCompletionChallengeId == null) return;
+    if (state is! FsRulesLoaded) return;
+
+    final hasRule =
+        state.rules.any((r) => r.challengeId == _pendingCompletionChallengeId);
+    if (hasRule) {
+      showSnackBar(
+        'Evento registrato con successo!',
+        color: ColorPalette.success,
+      );
+      _pendingCompletionChallengeId = null;
+    }
   }
 
   /// Sblocca una regola tramite ads (position 2)

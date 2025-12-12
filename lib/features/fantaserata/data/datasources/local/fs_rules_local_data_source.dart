@@ -56,11 +56,16 @@ class FsRulesLocalDataSourceImpl implements FsRulesLocalDataSource {
   ) async {
     try {
       final userId = _checkAuthentication();
-
       final cacheKey = _getCacheKey(userId, leagueId);
-      final rules = fsRulesBox.values
-          .where((rule) => rule.name.startsWith(cacheKey))
-          .toList();
+
+      // Filter by box keys (which contain the cacheKey prefix)
+      final rules = <FsRuleModel>[];
+      for (final key in fsRulesBox.keys) {
+        if (key.toString().startsWith(cacheKey)) {
+          final rule = fsRulesBox.get(key);
+          if (rule != null) rules.add(rule);
+        }
+      }
       return rules;
     } catch (e) {
       throw CacheException(e.toString());
@@ -110,10 +115,28 @@ class FsRulesLocalDataSourceImpl implements FsRulesLocalDataSource {
       // Get all existing rules for this user/league
       final existingRules = await getCachedRules(leagueId);
 
-      // Find and update the specific rule
+      // Find and update the specific rule - match by challengeId since id may be completion ID
       final updatedRules = existingRules.map((rule) {
-        if (rule.id == updatedRule.id) {
-          return updatedRule;
+        if (rule.challengeId == updatedRule.challengeId) {
+          // Keep original rule id but update other fields
+          return FsRuleModel(
+            id: rule.id,
+            userId: updatedRule.userId,
+            userName: updatedRule.userName,
+            completionId: updatedRule.completionId,
+            leagueId: updatedRule.leagueId,
+            challengeId: updatedRule.challengeId,
+            name: updatedRule.name,
+            points: updatedRule.points,
+            type: updatedRule.type,
+            position: updatedRule.position,
+            isUnlocked: updatedRule.isUnlocked,
+            isCompleted: updatedRule.isCompleted,
+            isRefreshed: updatedRule.isRefreshed,
+            createdAt: updatedRule.createdAt,
+            completedAt: updatedRule.completedAt,
+            refreshedAt: updatedRule.refreshedAt,
+          );
         }
         return rule;
       }).toList();

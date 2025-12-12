@@ -8,11 +8,13 @@ import 'package:fpdart/fpdart.dart';
 class RemoveParticipantsParams {
   final League league;
   final List<String> participantIds;
+  final String? teamName;
   final String? newCaptainId;
 
   RemoveParticipantsParams({
     required this.league,
     required this.participantIds,
+    this.teamName,
     this.newCaptainId,
   });
 }
@@ -31,6 +33,7 @@ class RemoveParticipants implements Usecase<League, RemoveParticipantsParams> {
     return leagueRepository.removeParticipants(
       league: params.league,
       participantIds: params.participantIds,
+      teamName: params.teamName,
       newCaptainId: params.newCaptainId,
     );
   }

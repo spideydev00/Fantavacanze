@@ -1,5 +1,6 @@
 import 'package:fantavacanze_official/core/constants/constants.dart';
 import 'package:fantavacanze_official/core/cubits/app_league/app_league_cubit.dart';
+import 'package:fantavacanze_official/core/cubits/app_navigation/app_navigation_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit.dart';
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/extensions/context_extension.dart';
@@ -30,7 +31,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 class AddEventPage extends StatefulWidget {
   static get route =>
       MaterialPageRoute(builder: (context) => const AddEventPage());
-  const AddEventPage({super.key});
+  const AddEventPage({super.key, this.showAppBar = true});
+
+  final bool showAppBar;
 
   @override
   State<AddEventPage> createState() => _AddEventPageState();
@@ -54,9 +57,9 @@ class _AddEventPageState extends State<AddEventPage> {
   RuleType _selectedType = RuleType.bonus;
 
   // Step 3: Assignment
-  String? _selectedParticipantId; // This can be team name or member userId
-  bool _isTeamMember = false; // Flag to indicate if selection is a team member
-  String? selectedTeamName; // For displaying team name when member is selected
+  String? _selectedParticipantId;
+  bool _isTeamMember = false;
+  String? selectedTeamName;
 
   // UI State
   bool _isSubmitting = false;
@@ -160,6 +163,7 @@ class _AddEventPageState extends State<AddEventPage> {
     }
 
     final currentUserState = context.read<AppUserCubit>().state;
+
     if (currentUserState is! AppUserIsLoggedIn) {
       showSnackBar(
         'Utente non autenticato',
@@ -178,6 +182,7 @@ class _AddEventPageState extends State<AddEventPage> {
 
     // The ID of the participant receiving the points
     final targetUser = _selectedParticipantId;
+
     if (targetUser == null) {
       setState(() {
         _isSubmitting = false;
@@ -230,6 +235,9 @@ class _AddEventPageState extends State<AddEventPage> {
             type: eventType,
             description: description,
             isTeamMember: _isTeamMember,
+            targetTeamName: league.type == LeagueType.team
+                ? (selectedTeamName ?? (_isTeamMember ? null : targetUser))
+                : null,
           ),
         );
   }
@@ -311,13 +319,24 @@ class _AddEventPageState extends State<AddEventPage> {
           if (state is LeagueSuccess && state.operation == 'add_event') {
             showSnackBar('Evento aggiunto con successo!',
                 color: ColorPalette.success);
-            Navigator.of(context).pop();
+            context.read<AppNavigationCubit>().setIndex(0);
+            Navigator.of(context).popUntil((route) => route.isFirst);
           } else if (state is LeagueError) {
             showSnackBar(state.message, color: ColorPalette.error);
           }
         }
       },
       child: Scaffold(
+        appBar: widget.showAppBar
+            ? AppBar(
+                title: Text(
+                  'Bonus o Malus',
+                  style: context.textTheme.titleMedium!
+                      .copyWith(fontWeight: FontWeight.bold),
+                ),
+                centerTitle: true,
+              )
+            : null,
         backgroundColor: context.bgColor,
         body: !isAdmin
             ? _buildUnauthorizedView()
@@ -588,9 +607,7 @@ class _AddEventPageState extends State<AddEventPage> {
 
           // Rules container - takes most of the available space
           Container(
-            height: _selectedRule != null
-                ? Constants.getHeight(context) * 0.33
-                : Constants.getHeight(context) * 0.47,
+            height: Constants.getHeight(context) * 0.24,
             decoration: BoxDecoration(
               color: context.secondaryBgColor,
               borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusMd),
@@ -855,20 +872,18 @@ class _AddEventPageState extends State<AddEventPage> {
         const SizedBox(height: ThemeSizes.md),
 
         // Only show toggle for team-based leagues
-        if (league.isTeamBased) _buildParticipantToggle(),
-
-        const SizedBox(height: ThemeSizes.md),
+        if (league.type == LeagueType.team) _buildParticipantToggle(),
 
         // Divider with appropriate text
         CustomDivider(
-            text: league.isTeamBased
+            text: league.type == LeagueType.team
                 ? (_showTeamMembers ? 'Seleziona Membro' : 'Seleziona Squadra')
                 : 'Seleziona Partecipante'),
 
         const SizedBox(height: ThemeSizes.md),
 
         // Show either teams or individual participants
-        if (league.isTeamBased)
+        if (league.type == LeagueType.team)
           (_showTeamMembers
               ? _buildTeamMembersGrid(league)
               : _buildTeamsGrid(league))

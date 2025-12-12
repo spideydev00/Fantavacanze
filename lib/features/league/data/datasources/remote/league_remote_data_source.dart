@@ -3,12 +3,15 @@ import 'dart:io';
 import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit.dart';
 import 'package:fantavacanze_official/core/errors/exceptions.dart';
 import 'package:fantavacanze_official/features/league/data/models/individual_participant_model/individual_participant_model.dart';
+import 'package:fantavacanze_official/features/league/data/models/event_model/event_model.dart';
 import 'package:fantavacanze_official/features/league/data/models/league_model/league_model.dart';
 import 'package:fantavacanze_official/features/league/data/models/memory_model/memory_model.dart';
 import 'package:fantavacanze_official/features/league/data/models/participant_model/participant_model.dart';
 import 'package:fantavacanze_official/features/league/data/models/rule_model/rule_model.dart';
 import 'package:fantavacanze_official/features/league/data/models/team_participant_model/team_participant_model.dart';
 import 'package:fantavacanze_official/features/league/data/models/simple_participant_model/simple_participant_model.dart';
+import 'package:fantavacanze_official/features/league/domain/entities/event.dart';
+import 'package:fantavacanze_official/features/league/domain/entities/league.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/rule/rule.dart';
 import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -21,20 +24,27 @@ abstract class LeagueRemoteDataSource {
   Future<LeagueModel> createLeague({
     required String name,
     required String? description,
-    required bool isTeamBased,
+    required LeagueType type,
     required List<RuleModel> rules,
   });
-  Future<LeagueModel> getLeague(String leagueId);
+  Future<LeagueModel> getLeague(
+    String leagueId, {
+    LeagueType? type,
+  });
 
   Future<List<LeagueModel>> getUserLeagues();
 
   Future<LeagueModel> updateLeagueNameOrDescription({
     required String leagueId,
+    LeagueType? type,
     String? name,
     String? description,
   });
 
-  Future<void> deleteLeague(String leagueId);
+  Future<void> deleteLeague(
+    String leagueId, {
+    LeagueType? type,
+  });
 
   Future<List<LeagueModel>> searchLeague({required String inviteCode});
 
@@ -56,14 +66,6 @@ abstract class LeagueRemoteDataSource {
 
   Future<void> exitLeague({
     required LeagueModel league,
-    required String userId,
-  });
-
-  Future<LeagueModel> removeTeamParticipants({
-    required LeagueModel league,
-    required String teamName,
-    required List<String> userIdsToRemove,
-    required String requestingUserId,
   });
 
   Future<LeagueModel> updateTeamName({
@@ -80,6 +82,7 @@ abstract class LeagueRemoteDataSource {
   Future<LeagueModel> removeParticipants({
     required LeagueModel league,
     required List<String> participantIds,
+    String? teamName,
     String? newCaptainId,
   });
 
@@ -93,8 +96,31 @@ abstract class LeagueRemoteDataSource {
     required String creatorId,
     required String targetUser,
     required RuleType type,
-    required bool isTeamMember,
+    String? targetTeamName,
+    bool isTeamMember = false,
     String? description,
+  });
+
+  Future<LeagueModel> addIndividualLeagueEvent({
+    required String leagueId,
+    required String name,
+    required double points,
+    required String creatorId,
+    required String targetUserId,
+    required RuleType type,
+    String? description,
+  });
+
+  Future<LeagueModel> addTeamLeagueEvent({
+    required String leagueId,
+    required String name,
+    required double points,
+    required String creatorId,
+    required String targetTeamName,
+    required RuleType type,
+    bool isTeamMember = false,
+    String? description,
+    String? targetMemberId,
   });
 
   Future<LeagueModel> removeEvent({
@@ -224,12 +250,14 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
   Future<LeagueModel> createLeague({
     required String name,
     required String? description,
-    required bool isTeamBased,
+    required LeagueType type,
     required List<RuleModel> rules,
   }) async {
     return _tryDatabaseOperation(() async {
       final String leagueId = uuid.v4();
       final String inviteCode = uuid.v4().substring(0, 10);
+
+      final table = _tableForType(type);
 
       // Get creator info
       final creatorId = _checkAuthentication();
@@ -237,10 +265,14 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
 
       // Create initial participant
       final initialParticipant = _createInitialParticipant(
-        isTeamBased: isTeamBased,
+        type: type,
         creatorId: creatorId,
         creatorName: creatorName,
       );
+
+      // Normalize rule points to ensure malus values are negative
+      final normalizedRules =
+          rules.map((rule) => _normalizeRulePoints(rule)).toList();
 
       // Create league data using models directly
       final leagueData = {
@@ -250,45 +282,46 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
         'name': name,
         'description': description,
         'created_at': DateTime.now().toIso8601String(),
-        'rules': rules.map((rule) => rule.toJson()).toList(),
+        'rules': normalizedRules.map((rule) => rule.toJson()).toList(),
         'participants': [initialParticipant.toJson()],
         'events': [],
         'memories': [],
-        'is_team_based': isTeamBased,
       };
 
-      await supabaseClient.from('leagues').insert(leagueData);
+      await supabaseClient.from(table).insert(leagueData);
 
       // Get the created league
-      final response = await supabaseClient
-          .from('leagues')
-          .select()
-          .eq('id', leagueId)
-          .single();
+      final response =
+          await supabaseClient.from(table).select().eq('id', leagueId).single();
 
-      return _convertResponseToModel(response);
+      return _convertResponseToModel(response, fallbackType: type);
     });
   }
 
   @override
-  Future<LeagueModel> getLeague(String leagueId) async {
-    return _getLeagueData(leagueId);
+  Future<LeagueModel> getLeague(
+    String leagueId, {
+    LeagueType? type,
+  }) async {
+    return _getLeagueData(leagueId, type: type);
   }
 
   @override
   Future<List<LeagueModel>> getUserLeagues() async {
     return _tryDatabaseOperation(() async {
-      final currentUserId = _checkAuthentication();
+      _checkAuthentication();
 
       // Use the RPC function to efficiently get all user leagues in a single call
       List<Map<String, dynamic>> leaguesResponse = await supabaseClient.rpc(
         'get_user_leagues',
-        params: {'p_user_id': currentUserId},
       );
 
       // Convert to models directly
       return leaguesResponse
-          .map((league) => _convertResponseToModel(league))
+          .map((league) => _convertResponseToModel(
+                league,
+                fallbackType: _inferLeagueTypeFromResponse(league),
+              ))
           .toList();
     });
   }
@@ -296,6 +329,7 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
   @override
   Future<LeagueModel> updateLeagueNameOrDescription({
     required String leagueId,
+    LeagueType? type,
     String? name,
     String? description,
   }) async {
@@ -309,17 +343,36 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
         return await _getLeagueData(leagueId);
       }
 
+      final leagueType = type ?? (await _getLeagueData(leagueId)).type;
+
       return await _updateLeagueInDb(
         leagueId: leagueId,
+        type: leagueType,
         updateData: updateData,
       );
     });
   }
 
   @override
-  Future<void> deleteLeague(String leagueId) async {
+  Future<void> deleteLeague(
+    String leagueId, {
+    LeagueType? type,
+  }) async {
     return _tryDatabaseOperation(() async {
-      await supabaseClient.from('leagues').delete().eq(
+      if (type != null) {
+        await supabaseClient.from(_tableForType(type)).delete().eq(
+              'id',
+              leagueId,
+            );
+        return;
+      }
+
+      // Attempt deletion on both tables to ensure cleanup
+      await supabaseClient.from('individual_leagues').delete().eq(
+            'id',
+            leagueId,
+          );
+      await supabaseClient.from('team_leagues').delete().eq(
             'id',
             leagueId,
           );
@@ -340,8 +393,12 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
 
       // Convert to models
       final leagues = leaguesJson
-          .map((json) =>
-              _convertResponseToModel(Map<String, dynamic>.from(json)))
+          .map((json) => _convertResponseToModel(
+                Map<String, dynamic>.from(json),
+                fallbackType: _inferLeagueTypeFromResponse(
+                  Map<String, dynamic>.from(json),
+                ),
+              ))
           .toList();
 
       // Check if user is already a participant in any found leagues
@@ -376,6 +433,7 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
       // Update in Supabase
       return await _updateLeagueInDb(
         leagueId: league.id,
+        type: league.type,
         updateData: updateData,
       );
     });
@@ -393,12 +451,11 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
     String? specificLeagueId,
   }) async {
     return _tryDatabaseOperation(() async {
-      final currentUserId = _checkAuthentication();
       final currentUserName = _getCurrentUserName();
 
       // Create a SimpleParticipantModel for the current user
       final currentUserParticipant = SimpleParticipantModel(
-        userId: currentUserId,
+        userId: _getCurrentUserId() ?? '',
         name: currentUserName,
         points: 0,
       );
@@ -407,9 +464,8 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
       final response = await supabaseClient.rpc(
         'join_league',
         params: {
-          'p_user_id': currentUserId,
           'p_user_name': currentUserName,
-          'p_invite_code': inviteCode,
+          'p_invite_code': specificLeagueId == null ? inviteCode : null,
           'p_team_name': teamName,
           'p_specific_league_id': specificLeagueId,
           'p_member_details': currentUserParticipant.toJson(),
@@ -421,7 +477,10 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
 
       if (status == 'joined') {
         final leagueData = result['league'] as Map<String, dynamic>;
-        return _convertResponseToModel(leagueData);
+        return _convertResponseToModel(
+          leagueData,
+          fallbackType: _inferLeagueTypeFromResponse(leagueData),
+        );
       } else {
         throw ServerException('Risposta inattesa dal server');
       }
@@ -431,38 +490,14 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
   @override
   Future<void> exitLeague({
     required LeagueModel league,
-    required String userId,
   }) async {
     return _tryDatabaseOperation(() async {
       await supabaseClient.rpc(
         'exit_league',
         params: {
-          'p_user_id': userId,
           'p_league_id': league.id,
         },
       );
-    });
-  }
-
-  @override
-  Future<LeagueModel> removeTeamParticipants({
-    required LeagueModel league,
-    required String teamName,
-    required List<String> userIdsToRemove,
-    required String requestingUserId,
-  }) async {
-    return _tryDatabaseOperation(() async {
-      final response = await supabaseClient.rpc(
-        'remove_team_participants',
-        params: {
-          'p_league_id': league.id,
-          'p_team_name': teamName,
-          'p_user_ids_to_remove': userIdsToRemove,
-          'p_requesting_user_id': requestingUserId,
-        },
-      );
-
-      return _convertResponseToModel(response);
     });
   }
 
@@ -473,7 +508,7 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
     required String newName,
   }) async {
     return _tryDatabaseOperation(() async {
-      if (!league.isTeamBased) {
+      if (league.type != LeagueType.team) {
         throw ServerException('Questa non è una lega basata su squadre');
       }
 
@@ -496,6 +531,7 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
       // Update in Supabase
       return await _updateLeagueInDb(
         leagueId: league.id,
+        type: league.type,
         updateData: {'participants': updatedParticipants},
       );
     });
@@ -515,6 +551,7 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
       // Update in Supabase
       return await _updateLeagueInDb(
         leagueId: league.id,
+        type: league.type,
         updateData: {'admins': uniqueAdmins.toList()},
       );
     });
@@ -524,6 +561,7 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
   Future<LeagueModel> removeParticipants({
     required LeagueModel league,
     required List<String> participantIds,
+    String? teamName,
     String? newCaptainId,
   }) async {
     return _tryDatabaseOperation(() async {
@@ -532,38 +570,66 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
       // Check if any participants to remove are admins
       _checkForAdminsInParticipants(league, participantIds);
 
-      // Process all participants in a single pass
-      List<dynamic> updatedParticipants = [];
+      // TEAM LEAGUE: delegate to RPC for atomic update
+      if (league.type == LeagueType.team) {
+        final inferredTeamName =
+            teamName ?? _inferTeamNameForRemoval(league, participantIds);
 
-      for (final participant in league.participants) {
-        if (participant is IndividualParticipantModel) {
-          // Keep individual participants not in the remove list
-          if (!participantIds.contains(participant.userId)) {
-            updatedParticipants.add(participant);
-          }
-        } else if (participant is TeamParticipantModel) {
-          // Process team participants
-          final updatedTeam = _processTeamParticipantRemoval(
-            team: participant,
-            participantIds: participantIds,
-            newCaptainId: newCaptainId,
-          );
-
-          if (updatedTeam != null) {
-            updatedParticipants.add(updatedTeam);
-          }
+        if (inferredTeamName == null || inferredTeamName.isEmpty) {
+          throw ServerException(
+              'Specificare un team valido per rimuovere i partecipanti');
         }
+
+        // Remove related events first to keep points in sync
+        final leagueWithoutEvents = await _removeEventsForUserIds(
+          league: league,
+          userIds: participantIds,
+        );
+
+        final response = await supabaseClient.rpc(
+          'remove_team_participants',
+          params: {
+            'p_league_id': leagueWithoutEvents.id,
+            'p_team_name': inferredTeamName,
+            'p_user_ids_to_remove': participantIds,
+          },
+        );
+
+        if (response == null) {
+          throw ServerException('Errore nella rimozione dei partecipanti');
+        }
+
+        final updatedLeague = _convertResponseToModel(
+          response as Map<String, dynamic>,
+          fallbackType: LeagueType.team,
+        );
+
+        return _withRecalculatedTotals(updatedLeague);
       }
 
-      // Update in Supabase
+      // INDIVIDUAL LEAGUE: remove events then participants
+      final leagueWithoutEvents = await _removeEventsForUserIds(
+        league: league,
+        userIds: participantIds,
+      );
+
+      final updatedParticipants = leagueWithoutEvents.participants
+          .where((participant) =>
+              participant is IndividualParticipantModel &&
+              !participantIds.contains(participant.userId))
+          .map((p) => (p as ParticipantModel).toJson())
+          .toList();
+
       return await _updateLeagueInDb(
-        leagueId: league.id,
+        leagueId: leagueWithoutEvents.id,
+        type: leagueWithoutEvents.type,
         updateData: {
-          'participants': updatedParticipants
-              .map((p) => (p as ParticipantModel).toJson())
+          'participants': updatedParticipants,
+          'events': leagueWithoutEvents.events
+              .map((e) => (e as EventModel).toJson())
               .toList(),
         },
-      );
+      ).then(_withRecalculatedTotals);
     });
   }
 
@@ -579,25 +645,118 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
     required String creatorId,
     required String targetUser,
     required RuleType type,
-    required bool isTeamMember,
+    String? targetTeamName,
+    bool isTeamMember = false,
+    String? description,
+  }) async {
+    if (league.type == LeagueType.individual) {
+      return addIndividualLeagueEvent(
+        leagueId: league.id,
+        name: name,
+        points: points,
+        creatorId: creatorId,
+        targetUserId: targetUser,
+        type: type,
+        description: description,
+      );
+    }
+
+    final resolvedTeamName =
+        targetTeamName ?? (!isTeamMember ? targetUser : null);
+
+    if (resolvedTeamName == null || resolvedTeamName.isEmpty) {
+      throw ServerException(
+          'Specificare un nome squadra per aggiungere un evento in lega a squadre');
+    }
+
+    return addTeamLeagueEvent(
+      leagueId: league.id,
+      name: name,
+      points: points,
+      creatorId: creatorId,
+      targetTeamName: resolvedTeamName,
+      isTeamMember: isTeamMember,
+      targetMemberId: isTeamMember ? targetUser : null,
+      type: type,
+      description: description,
+    );
+  }
+
+  @override
+  Future<LeagueModel> addIndividualLeagueEvent({
+    required String leagueId,
+    required String name,
+    required double points,
+    required String creatorId,
+    required String targetUserId,
+    required RuleType type,
     String? description,
   }) async {
     return _tryDatabaseOperation(() async {
       final response = await supabaseClient.rpc(
-        'add_event',
+        'add_individual_league_event',
         params: {
-          'p_league_id': league.id,
+          'p_league_id': leagueId,
+          'p_event_name': name,
+          'p_points': points,
+          'p_creator_id': creatorId,
+          'p_target_user_id': targetUserId,
+          'p_rule_type': type.toString().split('.').last,
+          'p_description': description,
+        },
+      );
+
+      if (response == null) {
+        throw ServerException('Errore nell\'aggiunta dell\'evento');
+      }
+
+      return _convertResponseToModel(
+        response as Map<String, dynamic>,
+        fallbackType: LeagueType.individual,
+      );
+    });
+  }
+
+  @override
+  Future<LeagueModel> addTeamLeagueEvent({
+    required String leagueId,
+    required String name,
+    required double points,
+    required String creatorId,
+    required String targetTeamName,
+    required RuleType type,
+    bool isTeamMember = false,
+    String? description,
+    String? targetMemberId,
+  }) async {
+    return _tryDatabaseOperation(() async {
+      // The Supabase RPC expects a single target_user and a flag to indicate
+      // whether it is a team member. When targeting the whole team we pass the
+      // team name; when targeting a member we pass the member id.
+      final targetUser = isTeamMember ? (targetMemberId ?? '') : targetTeamName;
+
+      final response = await supabaseClient.rpc(
+        'add_team_league_event',
+        params: {
+          'p_league_id': leagueId,
           'p_event_name': name,
           'p_points': points,
           'p_creator_id': creatorId,
           'p_target_user': targetUser,
           'p_rule_type': type.toString().split('.').last,
-          'p_is_team_member': isTeamMember,
           'p_description': description,
+          'p_is_team_member': isTeamMember,
         },
       );
 
-      return _convertResponseToModel(response);
+      if (response == null) {
+        throw ServerException('Errore nell\'aggiunta dell\'evento');
+      }
+
+      return _convertResponseToModel(
+        response as Map<String, dynamic>,
+        fallbackType: LeagueType.team,
+      );
     });
   }
 
@@ -607,14 +766,13 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
     required String eventId,
   }) async {
     return _tryDatabaseOperation(() async {
-      final currentUserId = _checkAuthentication();
+      _checkAuthentication();
 
       final response = await supabaseClient.rpc(
         'remove_event_from_league',
         params: {
           'p_league_id': league.id,
           'p_event_id': eventId,
-          'p_user_id': currentUserId,
         },
       );
 
@@ -622,7 +780,10 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
         throw ServerException('Errore nella rimozione dell\'evento');
       }
 
-      return _convertResponseToModel(response as Map<String, dynamic>);
+      return _convertResponseToModel(
+        response as Map<String, dynamic>,
+        fallbackType: league.type,
+      );
     });
   }
 
@@ -662,6 +823,7 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
       // Update in Supabase
       return await _updateLeagueInDb(
         leagueId: league.id,
+        type: league.type,
         updateData: {
           'memories': updatedMemories.map((m) => m.toJson()).toList()
         },
@@ -709,6 +871,7 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
       // Update in Supabase
       return await _updateLeagueInDb(
         leagueId: league.id,
+        type: league.type,
         updateData: {'memories': updatedMemories},
       );
     });
@@ -724,13 +887,15 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
     String? originalRuleName,
   }) async {
     return _tryDatabaseOperation(() async {
+      final normalizedRule = _normalizeRulePoints(rule);
+
       // Find the rule to update
       final nameToFind = originalRuleName ?? rule.name;
 
       // Efficiently map the rules
       final updatedRulesList = league.rules.map((currentRule) {
         if (currentRule.name == nameToFind) {
-          return rule;
+          return normalizedRule;
         }
         return currentRule;
       }).toList();
@@ -742,6 +907,7 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
       // Update in Supabase
       return await _updateLeagueInDb(
         leagueId: league.id,
+        type: league.type,
         updateData: {'rules': rulesJson},
       );
     });
@@ -762,6 +928,7 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
       // Update in Supabase
       return await _updateLeagueInDb(
         leagueId: league.id,
+        type: league.type,
         updateData: {'rules': remainingRules},
       );
     });
@@ -773,6 +940,8 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
     required RuleModel rule,
   }) async {
     return _tryDatabaseOperation(() async {
+      final normalizedRule = _normalizeRulePoints(rule);
+
       // Get existing rules
       final List<RuleModel> existingRules =
           league.rules.map((r) => r as RuleModel).toList();
@@ -780,13 +949,14 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
       // Insert the new rule
       final List<RuleModel> updatedRules = _insertRule(
         existingRules: existingRules,
-        newRule: rule,
-        ruleType: rule.type,
+        newRule: normalizedRule,
+        ruleType: normalizedRule.type,
       );
 
       // Update in Supabase
       return await _updateLeagueInDb(
         leagueId: league.id,
+        type: league.type,
         updateData: {
           'rules': updatedRules.map((r) => r.toJson()).toList(),
         },
@@ -868,6 +1038,7 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
       // Update in Supabase
       return await _updateLeagueInDb(
         leagueId: league.id,
+        type: league.type,
         updateData: {
           'participants': updatedParticipants
               .map((p) => (p as ParticipantModel).toJson())
@@ -973,28 +1144,69 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
   }
 
   /// Gets league data by ID
-  Future<LeagueModel> _getLeagueData(String leagueId) async {
+  Future<LeagueModel> _getLeagueData(
+    String leagueId, {
+    LeagueType? type,
+  }) async {
     try {
-      final response = await supabaseClient
-          .from('leagues')
-          .select()
-          .eq('id', leagueId)
-          .single();
+      if (type != null) {
+        final response = await supabaseClient
+            .from(_tableForType(type))
+            .select()
+            .eq('id', leagueId)
+            .single();
 
-      return _convertResponseToModel(response);
+        return _convertResponseToModel(
+          response,
+          fallbackType: type,
+        );
+      }
+
+      // Try individual leagues first, then team leagues
+      try {
+        final individualResponse = await supabaseClient
+            .from('individual_leagues')
+            .select()
+            .eq('id', leagueId)
+            .single();
+
+        return _convertResponseToModel(
+          individualResponse,
+          fallbackType: LeagueType.individual,
+        );
+      } catch (_) {
+        final teamResponse = await supabaseClient
+            .from('team_leagues')
+            .select()
+            .eq('id', leagueId)
+            .single();
+
+        return _convertResponseToModel(
+          teamResponse,
+          fallbackType: LeagueType.team,
+        );
+      }
     } catch (e) {
       throw ServerException(_extractErrorMessage(e));
     }
   }
 
   /// Converts a DB response to a LeagueModel
-  LeagueModel _convertResponseToModel(Map<String, dynamic> response) {
+  LeagueModel _convertResponseToModel(
+    Map<String, dynamic> response, {
+    LeagueType? fallbackType,
+  }) {
+    final inferredType = _inferLeagueTypeFromResponse(
+      response,
+      fallbackType: fallbackType,
+    );
+
     final jsonData = {
       ...response,
-      'createdAt': response['created_at'],
-      'isTeamBased': response['is_team_based'],
+      if (response['created_at'] != null) 'createdAt': response['created_at'],
       if (response['invite_code'] != null)
         'inviteCode': response['invite_code'],
+      'type': inferredType.name,
     };
 
     return LeagueModel.fromJson(jsonData);
@@ -1003,29 +1215,117 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
   /// Updates a league in the database
   Future<LeagueModel> _updateLeagueInDb({
     required String leagueId,
+    required LeagueType type,
     required Map<String, dynamic> updateData,
   }) async {
     try {
+      final table = _tableForType(type);
       final updatedResponse = await supabaseClient
-          .from('leagues')
+          .from(table)
           .update(updateData)
           .eq('id', leagueId)
           .select()
           .single();
 
-      return _convertResponseToModel(updatedResponse);
+      return _convertResponseToModel(updatedResponse, fallbackType: type);
     } catch (e) {
       throw ServerException(_extractErrorMessage(e));
     }
   }
 
+  /// Removes every event that targets one of the provided user IDs
+  /// and returns the latest league snapshot from the database.
+  Future<LeagueModel> _removeEventsForUserIds({
+    required LeagueModel league,
+    required List<String> userIds,
+  }) async {
+    if (userIds.isEmpty || league.events.isEmpty) return league;
+
+    LeagueModel updatedLeague = league;
+    final Set<String> idsToRemove = userIds.toSet();
+
+    // Iterate over a snapshot of the events because the RPC returns an updated league each time
+    for (final event in List<Event>.from(updatedLeague.events)) {
+      if (!_isEventTargetingUser(event, idsToRemove)) continue;
+
+      final response = await supabaseClient.rpc(
+        'remove_event_from_league',
+        params: {
+          'p_league_id': updatedLeague.id,
+          'p_event_id': event.id,
+        },
+      );
+
+      if (response == null) {
+        throw ServerException('Errore nella rimozione dell\'evento');
+      }
+
+      updatedLeague = _convertResponseToModel(
+        response as Map<String, dynamic>,
+        fallbackType: updatedLeague.type,
+      );
+    }
+
+    return updatedLeague;
+  }
+
+  bool _isEventTargetingUser(Event event, Set<String> userIds) {
+    final target = event.target;
+
+    switch (target.kind) {
+      case EventTargetKind.teamMember:
+        final memberId = target.memberId ?? target.userId ?? event.targetUser;
+        return memberId.isNotEmpty && userIds.contains(memberId);
+      case EventTargetKind.individual:
+        final userId = target.userId ?? event.targetUser;
+        return userId.isNotEmpty && userIds.contains(userId);
+      case EventTargetKind.team:
+        final fallbackUserId = target.userId;
+        return fallbackUserId != null && userIds.contains(fallbackUserId);
+    }
+  }
+
+  LeagueType _inferLeagueTypeFromResponse(
+    Map<String, dynamic> response, {
+    LeagueType? fallbackType,
+  }) {
+    final rawType =
+        response['type'] ?? response['leagueType'] ?? response['league_type'];
+    if (rawType is String) {
+      return rawType.toLowerCase() == 'team'
+          ? LeagueType.team
+          : LeagueType.individual;
+    }
+
+    final rawIsTeamBased = response['is_team_based'] ?? response['isTeamBased'];
+    if (rawIsTeamBased is bool) {
+      return rawIsTeamBased ? LeagueType.team : LeagueType.individual;
+    }
+
+    final participants = response['participants'];
+    if (participants is List && participants.isNotEmpty) {
+      final first = participants.first;
+      if (first is Map<String, dynamic>) {
+        final participantType = first['type'] as String?;
+        if (participantType == 'team') return LeagueType.team;
+        if (participantType == 'individual') return LeagueType.individual;
+      }
+    }
+
+    return fallbackType ?? LeagueType.individual;
+  }
+
+  String _tableForType(LeagueType type) {
+    return type == LeagueType.team ? 'team_leagues' : 'individual_leagues';
+  }
+
   /// Creates an initial participant when creating a league
   ParticipantModel _createInitialParticipant({
-    required bool isTeamBased,
+    required LeagueType type,
     required String creatorId,
     required String creatorName,
   }) {
-    if (isTeamBased) {
+    if (type == LeagueType.team) {
       return TeamParticipantModel(
         members: [
           SimpleParticipantModel(
@@ -1059,49 +1359,6 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
       }
     }
     return (found: false, index: -1);
-  }
-
-  /// Process team participant removal with captain handling
-  TeamParticipantModel? _processTeamParticipantRemoval({
-    required TeamParticipantModel team,
-    required List<String> participantIds,
-    String? newCaptainId,
-  }) {
-    // Check if captain is being removed
-    final isCaptainBeingRemoved = participantIds.contains(team.captainId);
-
-    // Filter out members to remove
-    final updatedMembers = team.members
-        .where((member) => !participantIds.contains(member.userId))
-        .toList();
-
-    // Check if team will be empty
-    if (updatedMembers.isEmpty) {
-      throw ServerException(
-          'Non puoi rimuovere tutti i membri del team. Il team deve avere almeno un membro.');
-    }
-
-    // If captain is being removed, validate new captain
-    String captainId = team.captainId;
-    if (isCaptainBeingRemoved) {
-      if (newCaptainId == null ||
-          !updatedMembers.any((member) => member.userId == newCaptainId)) {
-        throw ServerException(
-            'Il nuovo capitano specificato non è un membro valido del team.');
-      }
-      captainId = newCaptainId;
-    }
-
-    // Return updated team
-    return TeamParticipantModel(
-      members: updatedMembers,
-      name: team.name,
-      points: team.points,
-      malusTotal: team.malusTotal,
-      bonusTotal: team.bonusTotal,
-      captainId: captainId,
-      teamLogoUrl: team.teamLogoUrl,
-    );
   }
 
   /// Check if any participants to remove are admins
@@ -1168,6 +1425,96 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
     return "Utente";
   }
 
+  /// Finds the team name associated with the provided participant IDs
+  String? _inferTeamNameForRemoval(
+    LeagueModel league,
+    List<String> participantIds,
+  ) {
+    for (final participant in league.participants) {
+      if (participant is TeamParticipantModel &&
+          participant.members
+              .any((member) => participantIds.contains(member.userId))) {
+        return participant.name;
+      }
+    }
+    return null;
+  }
+
+  /// Ensures rule points follow type semantics (malus always negative, bonus positive)
+  RuleModel _normalizeRulePoints(RuleModel rule) {
+    final normalizedPoints =
+        rule.type == RuleType.malus ? -rule.points.abs() : rule.points.abs();
+
+    if (normalizedPoints == rule.points) return rule;
+
+    return RuleModel(
+      createdAt: rule.createdAt,
+      name: rule.name,
+      type: rule.type,
+      points: normalizedPoints,
+    );
+  }
+
+  /// Recomputes bonusTotal and malusTotal for participants based on existing events
+  LeagueModel _withRecalculatedTotals(LeagueModel league) {
+    final bonusByKey = <String, double>{};
+    final malusByKey = <String, double>{};
+
+    void addTotals(String key, double points) {
+      if (points > 0) {
+        bonusByKey[key] = (bonusByKey[key] ?? 0) + points;
+      } else if (points < 0) {
+        malusByKey[key] = (malusByKey[key] ?? 0) + points.abs();
+      }
+    }
+
+    if (league.type == LeagueType.team) {
+      for (final event in league.events) {
+        final teamName = event.target.teamName ??
+            event.targetTeamName ??
+            (event.targetUser.isNotEmpty ? event.targetUser : null);
+        if (teamName == null || teamName.isEmpty) continue;
+
+        addTotals(teamName, event.points);
+      }
+
+      final updatedParticipants = league.participants.map((participant) {
+        if (participant is TeamParticipantModel) {
+          final bonus = bonusByKey[participant.name] ?? 0;
+          final malus = malusByKey[participant.name] ?? 0;
+          return participant.copyWith(
+            bonusTotal: bonus,
+            malusTotal: malus,
+          );
+        }
+        return participant;
+      }).toList();
+
+      return league.copyWith(participants: updatedParticipants);
+    }
+
+    // Individual league
+    for (final event in league.events) {
+      final userId = event.target.userId ?? event.targetUser;
+      if (userId.isEmpty) continue;
+      addTotals(userId, event.points);
+    }
+
+    final updatedParticipants = league.participants.map((participant) {
+      if (participant is IndividualParticipantModel) {
+        final bonus = bonusByKey[participant.userId] ?? 0;
+        final malus = malusByKey[participant.userId] ?? 0;
+        return participant.copyWith(
+          bonusTotal: bonus,
+          malusTotal: malus,
+        );
+      }
+      return participant;
+    }).toList();
+
+    return league.copyWith(participants: updatedParticipants);
+  }
+
   /// Inserts a rule in the correct position based on type
   List<RuleModel> _insertRule({
     required List<RuleModel> existingRules,
@@ -1177,6 +1524,7 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
     // Separate by type
     final List<RuleModel> bonusRules =
         existingRules.where((r) => r.type == RuleType.bonus).toList();
+
     final List<RuleModel> malusRules =
         existingRules.where((r) => r.type == RuleType.malus).toList();
 

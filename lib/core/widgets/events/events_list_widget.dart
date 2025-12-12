@@ -168,7 +168,6 @@ class _EventsListWidgetState extends State<EventsListWidget> {
     return EventFinder.getAllEventsForParticipant(
       league: widget.league,
       participant: widget.participant!,
-      isTeamBased: widget.league.isTeamBased,
     );
   }
 

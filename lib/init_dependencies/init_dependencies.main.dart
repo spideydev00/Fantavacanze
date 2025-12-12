@@ -44,6 +44,7 @@ Future<void> initDependencies() async {
       ),
     );
 
+    _initAppStatus();
     _initAuth();
     _initLeague();
     _initDailyChallenges();
@@ -118,7 +119,13 @@ Future<void> initDependencies() async {
       ..registerLazySingleton(
         () => FloatingButtonAnimationCubit(),
       )
-      //9. connection checker
+      //9. app status cubit
+      ..registerLazySingleton(
+        () => AppStatusCubit(
+          getAppStatus: serviceLocator(),
+        ),
+      )
+      //10. connection checker
       ..registerFactory<ConnectionChecker>(
         () => ConnectionCheckerImpl(
           serviceLocator(),
@@ -249,6 +256,9 @@ void _registerHiveAdapters() {
   Hive.registerAdapter(SimpleParticipantModelAdapter());
   Hive.registerAdapter(TeamParticipantModelAdapter());
   Hive.registerAdapter(RuleTypeAdapter());
+  Hive.registerAdapter(LeagueTypeAdapter());
+  Hive.registerAdapter(EventTargetKindAdapter());
+  Hive.registerAdapter(EventTargetAdapter());
 
   // Fantaserata adapters
   Hive.registerAdapter(FsRuleModelAdapter());
@@ -256,6 +266,7 @@ void _registerHiveAdapters() {
   Hive.registerAdapter(FsParticipantModelAdapter());
   Hive.registerAdapter(FsLeagueModelAdapter());
   Hive.registerAdapter(FsNightTypeAdapter());
+  Hive.registerAdapter(FsRuleCompletionModelAdapter());
 
   debugPrint("🔌 Tutti gli adapter di Hive registrati correttamente");
 }
@@ -300,6 +311,31 @@ Future<void> _openHiveBoxes() async {
     debugPrint("Errore nell'apertura dei box di Hive: $e");
     rethrow;
   }
+}
+
+void _initAppStatus() {
+  serviceLocator
+    ..registerFactory<AppRemoteDataSource>(
+      () => AppRemoteDataSourceImpl(
+        supabaseClient: serviceLocator(),
+      ),
+    )
+    ..registerFactory<AppRepository>(
+      () => AppRepositoryImpl(
+        remoteDataSource: serviceLocator(),
+      ),
+    )
+    ..registerFactory(
+      () => GetAppStatus(
+        appRepository: serviceLocator(),
+      ),
+    )
+    ..registerFactory(
+      () => AppStatusBloc(
+        getAppStatus: serviceLocator(),
+        appStatusCubit: serviceLocator(),
+      ),
+    );
 }
 
 void _initAuth() {
@@ -474,9 +510,6 @@ void _initLeague() {
       () => DeleteRule(leagueRepository: serviceLocator()),
     )
     ..registerFactory(
-      () => RemoveTeamParticipants(leagueRepository: serviceLocator()),
-    )
-    ..registerFactory(
       () => SearchLeague(leagueRepository: serviceLocator()),
     )
     ..registerFactory(
@@ -529,7 +562,6 @@ void _initLeague() {
         deleteRule: serviceLocator(),
         appUserCubit: serviceLocator(),
         appLeagueCubit: serviceLocator(),
-        removeTeamParticipants: serviceLocator(),
         searchLeague: serviceLocator(),
         getNotes: serviceLocator(),
         saveNote: serviceLocator(),
@@ -893,6 +925,9 @@ void _initFantaserata() {
     )
     ..registerFactory(
       () => LockFsRule(serviceLocator()),
+    )
+    ..registerFactory(
+      () => GetFsRuleCompletions(serviceLocator()),
     );
 
   // BLoCs - Update to use dynamic rules repository
@@ -923,6 +958,7 @@ void _initFantaserata() {
       appFsLeagueCubit: serviceLocator(),
       lockFsRule: serviceLocator(),
       appUserCubit: serviceLocator(),
+      getFsRuleCompletions: serviceLocator(),
     ),
   );
   // ===== SERVICES =====

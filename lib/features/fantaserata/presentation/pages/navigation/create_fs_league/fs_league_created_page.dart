@@ -136,6 +136,7 @@ class _FsLeagueCreatedPageState extends State<FsLeagueCreatedPage>
 
                 // Navigation buttons
                 ModernIconButton(
+                  text: "Vai alla lega",
                   icon: Icons.keyboard_double_arrow_right_rounded,
                   iconSize: 40,
                   onTap: () {

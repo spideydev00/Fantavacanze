@@ -5,6 +5,7 @@ import 'package:fantavacanze_official/core/widgets/empty_state.dart';
 import 'package:fantavacanze_official/core/widgets/loader.dart';
 import 'package:fantavacanze_official/features/fantaserata/domain/entities/fs_league.dart';
 import 'package:fantavacanze_official/features/fantaserata/domain/entities/fs_rule/fs_rule.dart';
+import 'package:fantavacanze_official/features/fantaserata/domain/entities/fs_rule_completion.dart';
 import 'package:fantavacanze_official/features/fantaserata/presentation/bloc/fs_rules_bloc/fs_rules_bloc.dart';
 import 'package:fantavacanze_official/features/fantaserata/presentation/widgets/events/fs_event_card.dart';
 import 'package:fantavacanze_official/features/fantaserata/presentation/widgets/events/fs_events_info_banner.dart';
@@ -25,7 +26,11 @@ class FsEventsPage extends StatelessWidget {
       builder: (context, state) {
         final isLoading = state is FsRulesLoading;
         final rules = (state is FsRulesLoaded) ? state.rules : <FsRule>[];
-        final completed = _completedOf(rules);
+        final completions =
+            (state is FsRulesLoaded) ? state.completions : <FsRuleCompletion>[];
+        final completed = completions.isNotEmpty
+            ? _mapCompletions(completions)
+            : _completedOf(rules);
 
         return CustomScrollView(
           slivers: [
@@ -84,7 +89,46 @@ class FsEventsPage extends StatelessWidget {
   // --- HELPERS ---
 
   static List<FsRule> _completedOf(List<FsRule> all) {
-    final list = all.where((r) => r.isCompleted).toList();
+    // Only consider non-repeatable rules (position 1-3) for fallback
+    // Repeatable rules (position >= 4) should come from completions list
+    final list = all
+        .where(
+            (r) => r.position <= 3 && (r.isCompleted || r.completedAt != null))
+        .toList();
+
+    list.sort((a, b) {
+      final aTime = a.completedAt ?? a.createdAt;
+      final bTime = b.completedAt ?? b.createdAt;
+      return bTime.compareTo(aTime);
+    });
+
+    return list;
+  }
+
+  static List<FsRule> _mapCompletions(List<FsRuleCompletion> completions) {
+    final list = completions
+        .map(
+          (c) => FsRule(
+            id: c.challengeId,
+            userId: c.userId,
+            userName: c.userName,
+            completionId: c.id,
+            leagueId: c.leagueId,
+            challengeId: c.challengeId,
+            name: c.name,
+            points: c.points,
+            type: c.type,
+            position: (c.position ?? 0).toDouble(),
+            isUnlocked: true,
+            isCompleted: true,
+            isRefreshed: false,
+            createdAt: c.completedAt,
+            completedAt: c.completedAt,
+            refreshedAt: null,
+          ),
+        )
+        .toList();
+
     list.sort((a, b) {
       final aTime = a.completedAt ?? a.createdAt;
       final bTime = b.completedAt ?? b.createdAt;

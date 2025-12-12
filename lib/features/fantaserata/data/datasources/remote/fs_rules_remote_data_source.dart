@@ -1,6 +1,7 @@
 import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/app_fs_league/app_fs_league_cubit.dart';
 import 'package:fantavacanze_official/features/fantaserata/data/datasources/remote/fs_remote_data_source.dart';
+import 'package:fantavacanze_official/features/fantaserata/data/models/rule_completion/fs_rule_completion_model.dart';
 import 'package:fantavacanze_official/features/fantaserata/domain/entities/fs_rule/fs_rule.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -18,18 +19,13 @@ abstract interface class FsRulesRemoteDataSource {
     required String challengeId,
   });
 
-  Future<FsRuleModel> setRuleAsCompleted({
-    required String leagueId,
-    required String challengeId,
-    required String ruleName,
-    required double points,
-    required String type,
+  Future<Map<String, dynamic>> setRuleAsCompleted({
+    required FsRuleModel rule,
   });
 
   Future<FsRuleModel> setRuleAsUncompleted({
-    required String leagueId,
-    required String userId,
-    required String challengeId,
+    required FsRuleModel rule,
+    String? completionId,
   });
 
   Future<List<FsRuleModel>> getUserRules({
@@ -50,6 +46,10 @@ abstract interface class FsRulesRemoteDataSource {
   Future<FsRuleModel> lockRule({
     required String leagueId,
     required String challengeId,
+  });
+
+  Future<List<FsRuleCompletionModel>> getRuleCompletions({
+    required String leagueId,
   });
 }
 
@@ -150,74 +150,94 @@ class FsRulesRemoteDataSourceImpl implements FsRulesRemoteDataSource {
   }
 
   @override
-  Future<FsRuleModel> setRuleAsCompleted({
-    required String leagueId,
-    required String challengeId,
-    required String ruleName,
-    required double points,
-    required String type,
+  Future<Map<String, dynamic>> setRuleAsCompleted({
+    required FsRuleModel rule,
   }) async {
     return _tryDatabaseOperation(() async {
       final userId = _checkAuthentication();
       final userName = _getCurrentUserName();
 
+      final shouldMarkCompleted = rule.position <= 3;
+      final completedAt = DateTime.now().toIso8601String();
+
+      final isDynamic = rule.position >= 1 && rule.position <= 3;
+
       // Update rule completion
       final response = await supabaseClient
           .from('user_fs_rules')
           .update({
-            'is_completed': true,
-            'completed_at': DateTime.now().toIso8601String(),
+            'is_completed': shouldMarkCompleted,
+            // Manteniamo sempre il timestamp di completamento per lo storico eventi,
+            // ma lasciamo is_completed=false per le posizioni >=4 (ripetibili).
+            'completed_at': completedAt,
           })
           .eq('user_id', userId)
-          .eq('league_id', leagueId)
-          .eq('challenge_id', challengeId)
+          .eq('league_id', rule.leagueId)
+          .eq('challenge_id', rule.challengeId)
           .select()
           .single();
 
       // Calculate points and bonus/malus based on rule type
-      double pointsToAdd = points;
+      double pointsToAdd = rule.points;
       double bonusToAdd = 0;
       double malusToAdd = 0;
 
+      final type = rule.type.name;
+
       if (type.toLowerCase() == 'bonus') {
-        bonusToAdd = points;
+        bonusToAdd = rule.points;
       } else if (type.toLowerCase() == 'malus') {
-        malusToAdd = points;
-        pointsToAdd = -points;
+        malusToAdd = rule.points;
+        pointsToAdd = -rule.points;
       }
+
+      final Map<String, dynamic> completionResponse = await supabaseClient
+          .from('user_fs_rule_completions')
+          .insert({
+            'user_id': userId,
+            'user_name': userName,
+            'league_id': rule.leagueId,
+            'challenge_id': rule.challengeId,
+            'name': rule.name,
+            'type': type.toLowerCase(),
+            'points': rule.points,
+            'position': rule.position.toInt(),
+            'is_dynamic': isDynamic,
+            'completed_at': completedAt,
+          })
+          .select()
+          .single();
+
+      final completion = FsRuleCompletionModel.fromJson(completionResponse);
 
       // Update participant points in fs_leagues table
       await fsRemoteDataSource.updateParticipantPoints(
-        leagueId: leagueId,
+        leagueId: rule.leagueId,
         userId: userId,
         pointsToAdd: pointsToAdd,
         bonusToAdd: bonusToAdd,
         malusToAdd: malusToAdd,
       );
 
-      return FsRuleModel.fromJson(response).copyWith(
+      final fsRule = FsRuleModel.fromJson(response).copyWith(
         userName: userName,
+        completionId: completion.id,
       );
+
+      return {
+        'fsRule': fsRule,
+        'completion': completion,
+      };
     });
   }
 
   @override
   Future<FsRuleModel> setRuleAsUncompleted({
-    required String leagueId,
-    required String userId,
-    required String challengeId,
+    required FsRuleModel rule,
+    String? completionId,
   }) async {
     return _tryDatabaseOperation(() async {
-      // First, get the current rule to know how many points to subtract
-      final currentRuleResponse = await supabaseClient
-          .from('user_fs_rules')
-          .select()
-          .eq('user_id', userId)
-          .eq('league_id', leagueId)
-          .eq('challenge_id', challengeId)
-          .single();
-
-      final currentRule = FsRuleModel.fromJson(currentRuleResponse);
+      final userId = _checkAuthentication();
 
       // Update rule to uncompleted state
       final response = await supabaseClient
@@ -227,33 +247,52 @@ class FsRulesRemoteDataSourceImpl implements FsRulesRemoteDataSource {
             'completed_at': null,
           })
           .eq('user_id', userId)
-          .eq('league_id', leagueId)
-          .eq('challenge_id', challengeId)
+          .eq('league_id', rule.leagueId)
+          .eq('challenge_id', rule.challengeId)
           .select()
           .single();
 
       // Calculate points to subtract (opposite of what was added)
-      double pointsToSubtract = -currentRule.points;
+      double pointsToSubtract = -rule.points;
       double bonusToSubtract = 0;
       double malusToSubtract = 0;
 
-      if (currentRule.type == FsRuleType.bonus) {
-        bonusToSubtract = -currentRule.points;
-      } else if (currentRule.type == FsRuleType.malus) {
-        malusToSubtract = -currentRule.points;
-        pointsToSubtract = currentRule.points;
+      if (rule.type == FsRuleType.bonus) {
+        bonusToSubtract = -rule.points;
+      } else if (rule.type == FsRuleType.malus) {
+        malusToSubtract = -rule.points;
+        pointsToSubtract = rule.points;
       }
 
       // Update participant points in fs_leagues table
       await fsRemoteDataSource.updateParticipantPoints(
-        leagueId: leagueId,
+        leagueId: rule.leagueId,
         userId: userId,
         pointsToAdd: pointsToSubtract,
         bonusToAdd: bonusToSubtract,
         malusToAdd: malusToSubtract,
       );
 
-      return FsRuleModel.fromJson(response);
+      // Delete the specific completion record from user_fs_rule_completions
+      if (completionId != null) {
+        await supabaseClient
+            .from('user_fs_rule_completions')
+            .delete()
+            .eq('id', completionId);
+      } else {
+        await supabaseClient
+            .from('user_fs_rule_completions')
+            .delete()
+            .eq('user_id', userId)
+            .eq('league_id', rule.leagueId)
+            .eq('challenge_id', rule.challengeId);
+      }
+
+      return FsRuleModel.fromJson(response).copyWith(
+        completionId: null,
+        completedAt: null,
+        isCompleted: false,
+      );
     });
   }
 
@@ -343,6 +382,24 @@ class FsRulesRemoteDataSourceImpl implements FsRulesRemoteDataSource {
           .single();
 
       return FsRuleModel.fromJson(response);
+    });
+  }
+
+  @override
+  Future<List<FsRuleCompletionModel>> getRuleCompletions({
+    required String leagueId,
+  }) async {
+    return _tryDatabaseOperation(() async {
+      final response = await supabaseClient
+          .from('user_fs_rule_completions')
+          .select()
+          .eq('league_id', leagueId)
+          .order('completed_at', ascending: false);
+
+      return (response as List<dynamic>)
+          .map((item) =>
+              FsRuleCompletionModel.fromJson(item as Map<String, dynamic>))
+          .toList();
     });
   }
 }

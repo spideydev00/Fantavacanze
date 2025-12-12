@@ -16,6 +16,18 @@ class LeagueModelAdapter extends TypeAdapter<LeagueModel> {
     final fields = <int, dynamic>{
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
+    final dynamic rawType = fields[10];
+    final LeagueType leagueType;
+    if (rawType is LeagueType) {
+      leagueType = rawType;
+    } else if (rawType is String) {
+      leagueType =
+          rawType.toLowerCase() == 'team' ? LeagueType.team : LeagueType.individual;
+    } else if (rawType is bool) {
+      leagueType = rawType ? LeagueType.team : LeagueType.individual;
+    } else {
+      leagueType = LeagueType.individual;
+    }
     return LeagueModel(
       id: fields[0] as String,
       name: fields[1] as String,
@@ -27,7 +39,7 @@ class LeagueModelAdapter extends TypeAdapter<LeagueModel> {
       rules: (fields[7] as List).cast<Rule>(),
       admins: (fields[8] as List).cast<String>(),
       inviteCode: fields[9] as String,
-      isTeamBased: fields[10] as bool,
+      type: leagueType,
     );
   }
 
@@ -56,7 +68,7 @@ class LeagueModelAdapter extends TypeAdapter<LeagueModel> {
       ..writeByte(9)
       ..write(obj.inviteCode)
       ..writeByte(10)
-      ..write(obj.isTeamBased);
+      ..write(obj.type);
   }
 
   @override

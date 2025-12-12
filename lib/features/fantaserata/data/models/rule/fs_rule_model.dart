@@ -65,10 +65,15 @@ class FsRuleModel extends FsRule {
   @override
   String? get userName => super.userName;
 
+  @HiveField(15)
+  @override
+  String? get completionId => super.completionId;
+
   FsRuleModel({
     required super.id,
     required super.userId,
     super.userName,
+    super.completionId,
     required super.leagueId,
     required super.challengeId,
     required super.name,
@@ -106,6 +111,7 @@ class FsRuleModel extends FsRule {
       refreshedAt: json['refreshed_at'] != null
           ? DateTime.parse(json['refreshed_at'] as String)
           : null,
+      completionId: json['completion_id'] as String?,
     );
   }
 
@@ -138,6 +144,7 @@ class FsRuleModel extends FsRule {
       'created_at': createdAt.toIso8601String(),
       'completed_at': completedAt?.toIso8601String(),
       'refreshed_at': refreshedAt?.toIso8601String(),
+      'completion_id': completionId,
     };
   }
 
@@ -158,6 +165,7 @@ class FsRuleModel extends FsRule {
       createdAt: rule.createdAt,
       completedAt: rule.completedAt,
       refreshedAt: rule.refreshedAt,
+      completionId: rule.completionId,
     );
   }
 
@@ -165,6 +173,7 @@ class FsRuleModel extends FsRule {
     String? id,
     String? userId,
     String? userName,
+    String? completionId,
     String? leagueId,
     String? challengeId,
     String? name,
@@ -194,6 +203,7 @@ class FsRuleModel extends FsRule {
       createdAt: createdAt ?? this.createdAt,
       completedAt: completedAt ?? this.completedAt,
       refreshedAt: refreshedAt ?? this.refreshedAt,
+      completionId: completionId ?? this.completionId,
     );
   }
 }

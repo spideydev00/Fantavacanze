@@ -26,11 +26,12 @@ class ParticipantsSectionState extends State<ParticipantsSection> {
   final List<String> _selectedParticipantIds = [];
   bool _isSelectionMode = false;
   String? _selectedTeamName; // Track which team has selected members
+  bool get _isTeamLeague => widget.league.type == LeagueType.team;
 
   // Calculate if there are any removable participants
   bool get _hasRemovableParticipants {
     // For team-based leagues
-    if (widget.league.isTeamBased) {
+    if (_isTeamLeague) {
       for (final participant in widget.league.participants) {
         if (participant is TeamParticipant) {
           for (final member in participant.members) {
@@ -141,9 +142,7 @@ class ParticipantsSectionState extends State<ParticipantsSection> {
             ),
 
           // Participants list
-          widget.league.isTeamBased
-              ? _buildTeamsList()
-              : _buildIndividualsList(),
+          _isTeamLeague ? _buildTeamsList() : _buildIndividualsList(),
 
           // Display "Remove" button at the bottom when in selection mode with participants selected
           if (_isSelectionMode && _selectedParticipantIds.isNotEmpty)
@@ -629,7 +628,7 @@ class ParticipantsSectionState extends State<ParticipantsSection> {
     String? captainIdToRemove;
     TeamParticipant? affectedTeam;
 
-    if (widget.league.isTeamBased) {
+    if (_isTeamLeague) {
       for (final participant in widget.league.participants) {
         if (participant is TeamParticipant) {
           if (_selectedParticipantIds.contains(participant.captainId)) {
@@ -763,6 +762,7 @@ class ParticipantsSectionState extends State<ParticipantsSection> {
                 RemoveParticipantsEvent(
                   league: widget.league,
                   participantIds: _selectedParticipantIds,
+                  teamName: _selectedTeamName,
                   newCaptainId: newCaptainId,
                 ),
               );
@@ -777,6 +777,7 @@ class ParticipantsSectionState extends State<ParticipantsSection> {
             RemoveParticipantsEvent(
               league: widget.league,
               participantIds: participantIds,
+              teamName: _selectedTeamName,
             ),
           );
     }

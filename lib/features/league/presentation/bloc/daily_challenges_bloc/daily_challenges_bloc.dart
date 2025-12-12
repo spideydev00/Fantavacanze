@@ -67,12 +67,17 @@ class DailyChallengesBloc
     GetDailyChallengesEvent event,
     Emitter<DailyChallengesState> emit,
   ) async {
+    final userState = _appUserCubit.state;
+    if (userState is! AppUserIsLoggedIn) {
+      emit(const DailyChallengesError(message: 'Utente non autenticato'));
+      return;
+    }
+
     emit(const DailyChallengesLoading());
 
     final result = await _getDailyChallenges.call(
       GetDailyChallengesParams(
         leagueId: event.leagueId,
-        userId: event.userId,
       ),
     );
 
@@ -82,7 +87,7 @@ class DailyChallengesBloc
         emit(DailyChallengesLoaded(
           challenges: challenges,
           leagueId: event.leagueId,
-          userId: event.userId,
+          userId: userState.user.id,
         ));
       },
     );
@@ -331,6 +336,8 @@ class DailyChallengesBloc
           ),
         );
       }
+    } else {
+      add(const DailyChallengesResetStateEvent());
     }
   }
 
@@ -339,12 +346,17 @@ class DailyChallengesBloc
     if (leagueState is AppLeagueExists) {
       final userState = _appUserCubit.state;
       if (userState is AppUserIsLoggedIn) {
+        final currentState = state;
+        final leagueId = leagueState.selectedLeague.id;
+        if (currentState is DailyChallengesLoaded &&
+            currentState.leagueId == leagueId) {
+          return;
+        }
         // Reload challenges when league changes
-        add(GetDailyChallengesEvent(
-          userId: userState.user.id,
-          leagueId: leagueState.selectedLeague.id,
-        ));
+        add(GetDailyChallengesEvent(leagueId: leagueId));
       }
+    } else {
+      add(const DailyChallengesResetStateEvent());
     }
   }
 
@@ -360,7 +372,6 @@ class DailyChallengesBloc
       // Se non abbiamo già caricato le sfide, dobbiamo farlo
       await _onGetDailyChallenges(
         GetDailyChallengesEvent(
-          userId: event.userId,
           leagueId: event.leagueId,
         ),
         emit,
@@ -403,12 +414,15 @@ class DailyChallengesBloc
     Emitter<DailyChallengesState> emit,
   ) async {
     if (state is! DailyChallengesLoaded) {
-      add(
-        GetDailyChallengesEvent(
-          userId: (_appUserCubit as AppUserIsLoggedIn).user.id,
-          leagueId: (_appLeagueCubit as AppLeagueExists).selectedLeague.id,
-        ),
-      );
+      final leagueState = _appLeagueCubit.state;
+      if (leagueState is AppLeagueExists) {
+        add(
+          GetDailyChallengesEvent(
+            leagueId: leagueState.selectedLeague.id,
+          ),
+        );
+      }
+      return;
     }
 
     final currentState = state as DailyChallengesLoaded;

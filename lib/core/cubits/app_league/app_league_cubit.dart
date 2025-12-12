@@ -139,8 +139,35 @@ class AppLeagueCubit extends Cubit<AppLeagueState> {
     final currentState = state;
     if (currentState is AppLeagueExists) {
       _prefs.remove(_selectedLeagueKey);
-      emit(currentState.copyWith(selectedLeague: null));
+      emit(AppLeagueInitial());
     }
+  }
+
+  /// Removes a league by ID and selects the most recent remaining one (if any)
+  void removeLeagueById(String leagueId) {
+    final currentState = state;
+    if (currentState is! AppLeagueExists) {
+      return;
+    }
+
+    final remainingLeagues =
+        currentState.leagues.where((league) => league.id != leagueId).toList();
+
+    if (remainingLeagues.isEmpty) {
+      _prefs.remove(_selectedLeagueKey);
+      emit(AppLeagueInitial());
+      return;
+    }
+
+    final sorted = sortLeaguesByDate(remainingLeagues);
+    final selected = sorted.first;
+
+    _prefs.setString(_selectedLeagueKey, selected.id);
+
+    emit(AppLeagueExists(
+      leagues: remainingLeagues,
+      selectedLeague: selected,
+    ));
   }
 
   /// Clears all locally cached league data

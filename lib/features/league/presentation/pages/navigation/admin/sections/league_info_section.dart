@@ -85,9 +85,13 @@ class _LeagueInfoSectionState extends State<LeagueInfoSection> {
               Divider(
                   color: context.borderColor.withValues(alpha: 0.1), height: 1),
               _buildInfoItem(
-                icon: widget.league.isTeamBased ? Icons.groups : Icons.person,
+                icon: widget.league.type == LeagueType.team
+                    ? Icons.groups
+                    : Icons.person,
                 title: 'Tipo',
-                value: widget.league.isTeamBased ? 'A squadre' : 'Individuale',
+                value: widget.league.type == LeagueType.team
+                    ? 'A squadre'
+                    : 'Individuale',
               ),
               Divider(
                   color: context.borderColor.withValues(alpha: 0.1), height: 1),

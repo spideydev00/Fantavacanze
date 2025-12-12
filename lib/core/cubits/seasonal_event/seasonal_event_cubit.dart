@@ -73,7 +73,7 @@ class SeasonalEventCubit extends Cubit<SeasonalEventState> {
     }
   }
 
-  /// Force set a specific night type (useful for testing)
+  /// Force set a specific night type
   void setNightType(FsNightType nightType) {
     emit(SeasonalEventState(nightType));
   }

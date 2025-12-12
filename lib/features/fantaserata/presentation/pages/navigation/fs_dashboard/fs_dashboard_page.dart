@@ -65,8 +65,8 @@ class _FsDashboardPageContentState extends State<_FsDashboardPageContent> {
 
   @override
   Widget build(BuildContext context) {
-    final userState = context.read<AppUserCubit>().state;
-    final fsLeagueState = context.read<AppFsLeagueCubit>().state;
+    final userState = context.watch<AppUserCubit>().state;
+    final fsLeagueState = context.watch<AppFsLeagueCubit>().state;
 
     // Check if user is authenticated
     if (userState is! AppUserIsLoggedIn) {

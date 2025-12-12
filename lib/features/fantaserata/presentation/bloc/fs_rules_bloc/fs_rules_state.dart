@@ -13,11 +13,12 @@ class FsRulesLoading extends FsRulesState {}
 
 class FsRulesLoaded extends FsRulesState {
   final List<FsRule> rules;
+  final List<FsRuleCompletion> completions;
 
-  const FsRulesLoaded(this.rules);
+  const FsRulesLoaded(this.rules, {this.completions = const []});
 
   @override
-  List<Object> get props => [rules];
+  List<Object> get props => [rules, completions];
 }
 
 class FsRulesFailure extends FsRulesState {

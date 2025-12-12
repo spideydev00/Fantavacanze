@@ -52,7 +52,7 @@ class _AddMemoryBottomSheetState extends State<AddMemoryBottomSheet> {
   void _filterUserEvents() {
     _userEvents = widget.events.where((event) {
       // Use the utility to check if this event belongs to the current user
-      if (widget.league.isTeamBased) {
+      if (widget.league.type == LeagueType.team) {
         if (event.isTeamMember) {
           // For team member events, check if the targetUser is the current user
           return event.targetUser == widget.currentUserId;

@@ -3,6 +3,18 @@ import 'package:fantavacanze_official/features/league/domain/entities/event.dart
 import 'package:fantavacanze_official/features/league/domain/entities/memory.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/participant.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/rule/rule.dart';
+import 'package:hive/hive.dart';
+
+part 'league.g.dart';
+
+@HiveType(typeId: 18)
+enum LeagueType {
+  @HiveField(0)
+  individual,
+
+  @HiveField(1)
+  team
+}
 
 @immutable
 class League {
@@ -15,7 +27,7 @@ class League {
   final List<Participant> participants;
   final List<Event> events;
   final List<Memory> memories;
-  final bool isTeamBased;
+  final LeagueType type;
   final String inviteCode;
 
   const League({
@@ -28,7 +40,7 @@ class League {
     required this.participants,
     required this.events,
     required this.memories,
-    required this.isTeamBased,
+    required this.type,
     required this.inviteCode,
   });
 }

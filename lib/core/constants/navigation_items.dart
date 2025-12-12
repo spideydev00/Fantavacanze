@@ -10,7 +10,7 @@ import 'package:fantavacanze_official/features/league/presentation/pages/navigat
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/memories/memories_page.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/notes/notes_page.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/rules/rules_page.dart';
-import 'package:fantavacanze_official/features/league/presentation/pages/navigation/smash_or_pass/smash_or_pass.dart';
+// import 'package:fantavacanze_official/features/league/presentation/pages/navigation/smash_or_pass/smash_or_pass.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/team_info/team_info_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
@@ -67,14 +67,15 @@ List<NavigationItem> nonParticipantNavbarItems = [
     screen: const CreateLeaguePage(),
     subsection: "Lega",
   ),
-  NavigationItem(
-    title: "Smash Or Pass",
-    lightSvgIcon:
-        'assets/images/icons/homepage_icons/question-mark-icon-sp.svg',
-    darkSvgIcon: 'assets/images/icons/homepage_icons/question-mark-icon-sp.svg',
-    screen: SmashOrPass(),
-    subsection: "IRL",
-  )
+  // TODO: Remove this in production
+  // NavigationItem(
+  //   title: "Smash Or Pass",
+  //   lightSvgIcon:
+  //       'assets/images/icons/homepage_icons/question-mark-icon-sp.svg',
+  //   darkSvgIcon: 'assets/images/icons/homepage_icons/question-mark-icon-sp.svg',
+  //   screen: SmashOrPass(),
+  //   subsection: "IRL",
+  // )
 ];
 
 List<NavigationItem> participantNavbarItems = [
@@ -100,7 +101,7 @@ List<NavigationItem> participantNavbarItems = [
     subsection: "Naviga",
   ),
   NavigationItem(
-    title: "Nuovo Bonus o Malus",
+    title: "Bonus o Malus",
     darkSvgIcon: 'assets/images/icons/homepage_icons/event-icon.svg',
     lightSvgIcon: 'assets/images/icons/homepage_icons/event-icon-dark.svg',
     screen: const AddEventPage(),
@@ -180,12 +181,13 @@ List<NavigationItem> participantNavbarItems = [
   //   screen: const ArticlesPage(),
   //   subsection: "Altro",
   // ),
-  NavigationItem(
-    title: "Smash Or Pass",
-    lightSvgIcon:
-        'assets/images/icons/homepage_icons/question-mark-icon-sp.svg',
-    darkSvgIcon: 'assets/images/icons/homepage_icons/question-mark-icon-sp.svg',
-    screen: SmashOrPass(),
-    subsection: "IRL",
-  )
+  // TODO: Remove this in production
+  // NavigationItem(
+  //   title: "Smash Or Pass",
+  //   lightSvgIcon:
+  //       'assets/images/icons/homepage_icons/question-mark-icon-sp.svg',
+  //   darkSvgIcon: 'assets/images/icons/homepage_icons/question-mark-icon-sp.svg',
+  //   screen: SmashOrPass(),
+  //   subsection: "IRL",
+  // )
 ];

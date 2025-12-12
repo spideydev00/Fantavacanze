@@ -14,18 +14,18 @@ abstract class LeagueEvent extends Equatable {
 class CreateLeagueEvent extends LeagueEvent {
   final String name;
   final String? description;
-  final bool isTeamBased;
+  final LeagueType type;
   final List<Rule> rules;
 
   const CreateLeagueEvent({
     required this.name,
     this.description,
-    required this.isTeamBased,
+    required this.type,
     required this.rules,
   });
 
   @override
-  List<Object?> get props => [name, description, isTeamBased, rules];
+  List<Object?> get props => [name, description, type, rules];
 }
 
 class GetLeagueEvent extends LeagueEvent {
@@ -57,15 +57,13 @@ class JoinLeagueEvent extends LeagueEvent {
 
 class ExitLeagueEvent extends LeagueEvent {
   final League league;
-  final String userId;
 
   const ExitLeagueEvent({
     required this.league,
-    required this.userId,
   });
 
   @override
-  List<Object?> get props => [league, userId];
+  List<Object?> get props => [league];
 }
 
 class UpdateTeamNameEvent extends LeagueEvent {
@@ -92,6 +90,7 @@ class AddEventEvent extends LeagueEvent {
   final RuleType type;
   final String? description;
   final bool isTeamMember;
+  final String? targetTeamName;
 
   const AddEventEvent({
     required this.league,
@@ -102,6 +101,7 @@ class AddEventEvent extends LeagueEvent {
     required this.type,
     this.description,
     this.isTeamMember = false,
+    this.targetTeamName,
   });
 
   @override
@@ -114,6 +114,7 @@ class AddEventEvent extends LeagueEvent {
         type,
         description,
         isTeamMember,
+        targetTeamName,
       ];
 }
 
@@ -210,21 +211,6 @@ class AddRuleEvent extends LeagueEvent {
 
   @override
   List<Object?> get props => [league, rule];
-}
-
-class RemoveTeamParticipantsEvent extends LeagueEvent {
-  final League league;
-  final String teamName;
-  final List<String> userIdsToRemove;
-
-  const RemoveTeamParticipantsEvent({
-    required this.league,
-    required this.teamName,
-    required this.userIdsToRemove,
-  });
-
-  @override
-  List<Object?> get props => [league, teamName, userIdsToRemove];
 }
 
 class SearchLeagueEvent extends LeagueEvent {
@@ -330,16 +316,18 @@ class AddAdministratorsEvent extends LeagueEvent {
 class RemoveParticipantsEvent extends LeagueEvent {
   final League league;
   final List<String> participantIds;
+  final String? teamName;
   final String? newCaptainId;
 
   const RemoveParticipantsEvent({
     required this.league,
     required this.participantIds,
+    this.teamName,
     this.newCaptainId,
   });
 
   @override
-  List<Object?> get props => [league, participantIds, newCaptainId];
+  List<Object?> get props => [league, participantIds, teamName, newCaptainId];
 }
 
 class UpdateLeagueInfoEvent extends LeagueEvent {
