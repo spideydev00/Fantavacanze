@@ -1,5 +1,5 @@
 import 'package:fantavacanze_official/features/league/domain/entities/individual_participant.dart';
-import 'package:fantavacanze_official/features/league/domain/entities/league.dart';
+import 'package:fantavacanze_official/features/league/domain/entities/league/league.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/team_participant.dart';
 
 String findAdminName(League league, String adminId) {

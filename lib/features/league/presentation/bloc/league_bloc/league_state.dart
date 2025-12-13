@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import 'package:fantavacanze_official/features/league/domain/entities/league.dart';
+import 'package:fantavacanze_official/features/league/domain/entities/league/league.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/note.dart';
 
 abstract class LeagueState extends Equatable {

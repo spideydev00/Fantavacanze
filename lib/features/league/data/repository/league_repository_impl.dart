@@ -8,7 +8,7 @@ import 'package:fantavacanze_official/core/errors/failure.dart';
 import 'package:fantavacanze_official/core/network/connection_checker.dart';
 import 'package:fantavacanze_official/features/league/data/datasources/local/local_data_source.dart';
 import 'package:fantavacanze_official/features/league/data/datasources/remote/league_remote_data_source.dart';
-import 'package:fantavacanze_official/features/league/domain/entities/league.dart';
+import 'package:fantavacanze_official/features/league/domain/entities/league/league.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/rule/rule.dart';
 import 'package:fantavacanze_official/features/league/domain/repository/league_repository.dart';
 import 'dart:io';
@@ -122,46 +122,17 @@ class LeagueRepositoryImpl implements LeagueRepository {
   }
 
   @override
-  Future<Either<Failure, League>> updateLeagueNameOrDescription({
-    required String leagueId,
-    String? name,
-    String? description,
+  Future<Either<Failure, void>> deleteLeague(
+    String leagueId, {
+    LeagueType? type,
   }) async {
-    try {
-      if (!await connectionChecker.isConnected) {
-        return Left(
-          Failure(
-            "Nessuna connessione ad internet, riprova appena sarai connesso.",
-          ),
-        );
-      }
-
-      final league = await remoteDataSource.updateLeagueNameOrDescription(
-        leagueId: leagueId,
-        name: name,
-        description: description,
-      );
-
-      // Update cache
-      await localDataSource.cacheLeague(league);
-
-      return Right(league);
-    } on ServerException catch (e) {
-      return Left(Failure(e.message));
-    } on CacheException catch (e) {
-      return Left(Failure('Errore nella cache: ${e.message}'));
-    }
-  }
-
-  @override
-  Future<Either<Failure, void>> deleteLeague(String leagueId) async {
     try {
       if (!await connectionChecker.isConnected) {
         return Left(Failure(
             "Nessuna connessione ad internet, riprova appena sarai connesso."));
       }
 
-      await remoteDataSource.deleteLeague(leagueId);
+      await remoteDataSource.deleteLeague(leagueId, type: type);
 
       // Remove the league from cache as well
       await localDataSource.removeLeagueFromCache(leagueId);
@@ -258,7 +229,7 @@ class LeagueRepositoryImpl implements LeagueRepository {
   @override
   Future<Either<Failure, League>> updateTeamName({
     required League league,
-    required String userId,
+    required String oldTeamName,
     required String newName,
   }) async {
     try {
@@ -271,7 +242,7 @@ class LeagueRepositoryImpl implements LeagueRepository {
 
       final updatedLeague = await remoteDataSource.updateTeamName(
         league: league as LeagueModel,
-        userId: userId,
+        oldTeamName: oldTeamName,
         newName: newName,
       );
 
@@ -295,7 +266,7 @@ class LeagueRepositoryImpl implements LeagueRepository {
     required String targetUser,
     required RuleType type,
     String? targetTeamName,
-    bool isTeamMember = false,
+    String? targetMemberId,
     String? description,
   }) async {
     try {
@@ -315,7 +286,7 @@ class LeagueRepositoryImpl implements LeagueRepository {
         type: type,
         description: description,
         targetTeamName: targetTeamName,
-        isTeamMember: isTeamMember,
+        targetMemberId: targetMemberId,
       );
 
       // Update cache

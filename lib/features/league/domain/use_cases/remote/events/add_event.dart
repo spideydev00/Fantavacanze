@@ -1,6 +1,6 @@
 import 'package:fantavacanze_official/core/errors/failure.dart';
 import 'package:fantavacanze_official/core/use-case/usecase.dart';
-import 'package:fantavacanze_official/features/league/domain/entities/league.dart';
+import 'package:fantavacanze_official/features/league/domain/entities/league/league.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/rule/rule.dart';
 import 'package:fantavacanze_official/features/league/domain/repository/league_repository.dart';
 import 'package:fpdart/fpdart.dart';
@@ -21,8 +21,8 @@ class AddEvent implements Usecase<League, AddEventParams> {
       targetUser: params.targetUser,
       type: params.type,
       description: params.description,
-      isTeamMember: params.isTeamMember,
       targetTeamName: params.targetTeamName,
+      targetMemberId: params.targetMemberId,
     );
   }
 }
@@ -36,8 +36,8 @@ class AddEventParams {
   final String targetUser;
   final RuleType type;
   final String? description;
-  final bool isTeamMember;
   final String? targetTeamName;
+  final String? targetMemberId;
 
   const AddEventParams({
     required this.league,
@@ -46,8 +46,8 @@ class AddEventParams {
     required this.creatorId,
     required this.targetUser,
     required this.type,
-    this.isTeamMember = false,
     this.description,
     this.targetTeamName,
+    this.targetMemberId,
   });
 }

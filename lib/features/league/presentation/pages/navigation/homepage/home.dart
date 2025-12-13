@@ -12,7 +12,7 @@ import 'package:fantavacanze_official/core/widgets/divider.dart';
 import 'package:fantavacanze_official/core/widgets/events/events_list_widget.dart';
 import 'package:fantavacanze_official/features/blog/presentation/widgets/article_page.dart';
 import 'package:fantavacanze_official/features/fantaserata/presentation/pages/fs_router_page.dart';
-import 'package:fantavacanze_official/features/league/domain/entities/league.dart';
+import 'package:fantavacanze_official/features/league/domain/entities/league/league.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc/league_bloc.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc/league_event.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/create_league/create_league_page.dart';

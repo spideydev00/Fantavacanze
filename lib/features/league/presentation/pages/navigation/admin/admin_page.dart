@@ -7,7 +7,7 @@ import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:fantavacanze_official/core/utils/show-snackbar-or-paywall/show_snackbar.dart';
 import 'package:fantavacanze_official/core/widgets/divider.dart';
 import 'package:fantavacanze_official/core/widgets/loader.dart';
-import 'package:fantavacanze_official/features/league/domain/entities/league.dart';
+import 'package:fantavacanze_official/features/league/domain/entities/league/league.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc/league_bloc.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc/league_event.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc/league_state.dart';
@@ -351,7 +351,10 @@ class _AdminPageState extends State<AdminPage> {
   void _deleteLeague() {
     if (_currentLeague != null) {
       context.read<LeagueBloc>().add(
-            DeleteLeagueEvent(leagueId: _currentLeague!.id),
+            DeleteLeagueEvent(
+              leagueId: _currentLeague!.id,
+              type: _currentLeague!.type,
+            ),
           );
     }
   }

@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:fantavacanze_official/core/errors/failure.dart';
-import 'package:fantavacanze_official/features/league/domain/entities/league.dart';
+import 'package:fantavacanze_official/features/league/domain/entities/league/league.dart';
 import 'package:fantavacanze_official/features/league/domain/repository/league_repository.dart';
 import 'package:fpdart/fpdart.dart';
 

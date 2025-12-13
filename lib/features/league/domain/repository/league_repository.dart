@@ -1,6 +1,6 @@
 import 'package:fantavacanze_official/core/errors/failure.dart';
 import 'package:fantavacanze_official/features/league/data/models/note_model/note_model.dart';
-import 'package:fantavacanze_official/features/league/domain/entities/league.dart';
+import 'package:fantavacanze_official/features/league/domain/entities/league/league.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/note.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/rule/rule.dart';
 import 'package:fpdart/fpdart.dart';
@@ -18,13 +18,10 @@ abstract class LeagueRepository {
 
   Future<Either<Failure, List<League>>> getUserLeagues();
 
-  Future<Either<Failure, League>> updateLeagueNameOrDescription({
-    required String leagueId,
-    String? name,
-    String? description,
+  Future<Either<Failure, void>> deleteLeague(
+    String leagueId, {
+    LeagueType? type,
   });
-
-  Future<Either<Failure, void>> deleteLeague(String leagueId);
 
   // Participant operations
   Future<Either<Failure, List<League>>> searchLeague(
@@ -43,7 +40,7 @@ abstract class LeagueRepository {
 
   Future<Either<Failure, League>> updateTeamName({
     required League league,
-    required String userId,
+    required String oldTeamName,
     required String newName,
   });
 
@@ -56,7 +53,7 @@ abstract class LeagueRepository {
     required String targetUser,
     required RuleType type,
     String? targetTeamName,
-    bool isTeamMember = false,
+    String? targetMemberId,
     String? description,
   });
 

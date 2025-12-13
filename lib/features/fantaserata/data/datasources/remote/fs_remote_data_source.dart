@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:fantavacanze_official/core/entities/fs_league/fs_night_type.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter/foundation.dart';
@@ -114,7 +116,14 @@ class FsRemoteDataSourceImpl implements FsRemoteDataSource {
     try {
       return await operation();
     } catch (e) {
-      debugPrint('❌ Errore nella comunicazione col database FS: $e');
+      debugPrint('❌ Errore nella comunicazione col database: $e');
+      if (e is ServerException) rethrow;
+      if (e is PostgrestException) {
+        throw ServerException(e.message);
+      }
+      if (e is TimeoutException) {
+        throw ServerException(e.message ?? 'Operazione scaduta');
+      }
       throw ServerException(_extractErrorMessage(e));
     }
   }

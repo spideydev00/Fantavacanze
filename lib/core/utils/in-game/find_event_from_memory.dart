@@ -1,6 +1,6 @@
-import 'package:fantavacanze_official/features/league/domain/entities/event.dart';
+import 'package:fantavacanze_official/features/league/domain/entities/event/event.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/memory.dart';
-import 'package:fantavacanze_official/features/league/domain/entities/league.dart';
+import 'package:fantavacanze_official/features/league/domain/entities/league/league.dart';
 import 'package:fantavacanze_official/core/cubits/app_league/app_league_cubit.dart';
 
 /// Utility class for finding event data related to memories

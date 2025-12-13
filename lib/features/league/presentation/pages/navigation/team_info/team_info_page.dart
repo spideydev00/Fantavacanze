@@ -11,7 +11,7 @@ import 'package:fantavacanze_official/core/utils/show-snackbar-or-paywall/show_s
 import 'package:fantavacanze_official/core/utils/media/image_picker_util.dart';
 import 'package:fantavacanze_official/core/widgets/loader.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/individual_participant.dart';
-import 'package:fantavacanze_official/features/league/domain/entities/league.dart';
+import 'package:fantavacanze_official/features/league/domain/entities/league/league.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/participant.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/team_participant.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc/league_bloc.dart';
@@ -177,7 +177,7 @@ class _TeamBasedInfoState extends State<_TeamBasedInfo>
     context.read<LeagueBloc>().add(
           UpdateTeamNameEvent(
             league: widget.league,
-            userId: widget.userId,
+            oldTeamName: widget.team.name,
             newName: _teamNameController.text.trim(),
           ),
         );

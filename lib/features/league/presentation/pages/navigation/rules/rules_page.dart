@@ -5,7 +5,7 @@ import 'package:fantavacanze_official/core/cubits/app_theme/app_theme_cubit.dart
 import 'package:fantavacanze_official/core/widgets/custom_tab.dart';
 import 'package:fantavacanze_official/core/widgets/custom_tab_bar.dart';
 import 'package:fantavacanze_official/core/widgets/loader.dart';
-import 'package:fantavacanze_official/features/league/domain/entities/league.dart';
+import 'package:fantavacanze_official/features/league/domain/entities/league/league.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/rule/rule.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc/league_bloc.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc/league_event.dart';

@@ -1,5 +1,5 @@
-import 'package:fantavacanze_official/features/league/domain/entities/event.dart';
-import 'package:fantavacanze_official/features/league/domain/entities/league.dart';
+import 'package:fantavacanze_official/features/league/domain/entities/event/event.dart';
+import 'package:fantavacanze_official/features/league/domain/entities/league/league.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/participant.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/team_participant.dart';
 
@@ -21,16 +21,17 @@ class EventFinder {
 
     if (league.type == LeagueType.team) {
       // For team-based leagues, we need to handle two cases:
-      // 1. Events targeting the entire team (where targetUser is the team name)
-      // 2. Events targeting specific team members (where targetUser is the member ID)
+      // 1. Events targeting the entire team (target.kind = team)
+      // 2. Events targeting specific team members (target.kind = team_member)
       for (final event in sortedEvents) {
         // Case 1: Direct team event
-        if (!event.isTeamMember && event.targetUser == participant.name) {
+        if (event.target.kind == EventTargetKind.team &&
+            event.target.teamName == participant.name) {
           return event;
         }
 
         // Case 2: Team member event - check if the member belongs to this team
-        if (event.isTeamMember &&
+        if (event.target.kind == EventTargetKind.teamMember &&
             participant is TeamParticipant &&
             _isEventForTeamMember(event, participant)) {
           return event;
@@ -38,13 +39,10 @@ class EventFinder {
       }
       return null;
     } else {
-      // For individual leagues: find event where targetUser matches participant ID
-      final Map<String, dynamic> participantData =
-          (participant as dynamic).toJson();
-      final String userId = participantData['userId'];
-
+      // For individual leagues: find event where target.userId matches participant ID
+      final String userId = (participant as dynamic).toJson()['userId'];
       for (final event in sortedEvents) {
-        if (event.targetUser == userId) {
+        if (event.target.userId == userId) {
           return event;
         }
       }
@@ -67,25 +65,24 @@ class EventFinder {
       // For team-based leagues, collect both direct team events and team member events
       for (final event in league.events) {
         // Direct team event
-        if (!event.isTeamMember && event.targetUser == participant.name) {
+        if (event.target.kind == EventTargetKind.team &&
+            event.target.teamName == participant.name) {
           participantEvents.add(event);
         }
 
         // Team member event
-        if (event.isTeamMember &&
+        if (event.target.kind == EventTargetKind.teamMember &&
             participant is TeamParticipant &&
             _isEventForTeamMember(event, participant)) {
           participantEvents.add(event);
         }
       }
     } else {
-      // For individual leagues: find events where targetUser matches participant ID
-      final Map<String, dynamic> participantData =
-          (participant as dynamic).toJson();
-      final String userId = participantData['userId'];
+      // For individual leagues: find events where target.userId matches participant ID
+      final String userId = (participant as dynamic).toJson()['userId'];
 
       for (final event in league.events) {
-        if (event.targetUser == userId) {
+        if (event.target.userId == userId) {
           participantEvents.add(event);
         }
       }
@@ -99,6 +96,7 @@ class EventFinder {
 
   /// Helper method to check if an event is for a member of this team
   static bool _isEventForTeamMember(Event event, TeamParticipant team) {
-    return team.members.any((member) => member.userId == event.targetUser);
+    return team.members
+        .any((member) => member.userId == (event.target.memberId ?? event.target.userId));
   }
 }

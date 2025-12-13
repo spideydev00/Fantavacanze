@@ -2,7 +2,7 @@ import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/utils/show-snackbar-or-paywall/show_snackbar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:fantavacanze_official/features/league/domain/entities/league.dart';
+import 'package:fantavacanze_official/features/league/domain/entities/league/league.dart';
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/extensions/context_extension.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
@@ -65,7 +65,9 @@ class LeagueCard extends StatelessWidget {
                           BorderRadius.circular(ThemeSizes.borderRadiusMd),
                     ),
                     child: Text(
-                      league.type == LeagueType.team ? 'Squadre' : 'Individuale',
+                      league.type == LeagueType.team
+                          ? 'Squadre'
+                          : 'Individuale',
                       style: TextStyle(
                         color: league.type == LeagueType.team
                             ? Colors.blue

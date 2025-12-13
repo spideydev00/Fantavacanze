@@ -3,6 +3,7 @@ import 'package:fantavacanze_official/core/extensions/context_extension.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:fantavacanze_official/core/widgets/dialogs/confirmation_dialog.dart';
+import 'package:fantavacanze_official/features/league/domain/entities/event/event.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/rule/rule.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -16,6 +17,7 @@ class EventCard extends StatelessWidget {
   final DateFormat? dateFormat;
   final bool showDetails;
   final bool allowDismiss;
+  final String? targetNameOverride;
 
   const EventCard({
     super.key,
@@ -25,6 +27,7 @@ class EventCard extends StatelessWidget {
     this.dateFormat,
     this.showDetails = true,
     this.allowDismiss = false,
+    this.targetNameOverride,
   });
 
   @override
@@ -36,7 +39,17 @@ class EventCard extends StatelessWidget {
     final bool isBonus = event.type == RuleType.bonus;
     final DateTime createdAt = event.createdAt;
 
-    final String targetName = event.targetUser;
+    String targetName = targetNameOverride ??
+        (() {
+          switch (event.target.kind) {
+            case EventTargetKind.teamMember:
+              return event.target.memberId ?? event.target.userId ?? '';
+            case EventTargetKind.team:
+              return event.target.teamName ?? '';
+            case EventTargetKind.individual:
+              return event.target.userId ?? '';
+          }
+        })();
 
     final String formattedDate =
         (dateFormat ?? _defaultDateFormat).format(createdAt);

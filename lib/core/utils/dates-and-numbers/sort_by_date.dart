@@ -1,4 +1,4 @@
-import 'package:fantavacanze_official/features/league/domain/entities/league.dart';
+import 'package:fantavacanze_official/features/league/domain/entities/league/league.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/memory.dart';
 
 /// Sorts a list of leagues by creation date, newest first

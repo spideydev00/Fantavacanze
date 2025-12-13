@@ -19,7 +19,6 @@ import 'package:fantavacanze_official/features/app/data/datasources/app_remote_d
 import 'package:fantavacanze_official/features/app/data/repository/app_repository_impl.dart';
 import 'package:fantavacanze_official/features/app/domain/repository/app_repository.dart';
 import 'package:fantavacanze_official/features/app/domain/use_cases/get_app_status.dart';
-import 'package:fantavacanze_official/features/app/presentation/bloc/app_status_bloc.dart';
 import 'package:fantavacanze_official/features/auth/data/datasources/auth_remote_data_source.dart';
 import 'package:fantavacanze_official/features/auth/data/repository/auth_repository_impl.dart';
 import 'package:fantavacanze_official/features/auth/domain/repository/auth_repository.dart';
@@ -45,7 +44,6 @@ import 'package:fantavacanze_official/features/fantaserata/data/datasources/remo
 import 'package:fantavacanze_official/features/fantaserata/data/repository/fs_rules_repository_impl.dart';
 import 'package:fantavacanze_official/features/fantaserata/data/repository/fs_repository_impl.dart';
 import 'package:fantavacanze_official/features/fantaserata/domain/entities/fs_rule/fs_rule.dart';
-import 'package:fantavacanze_official/features/league/domain/entities/event.dart';
 import 'package:fantavacanze_official/features/fantaserata/domain/repository/fs_rules_repository.dart';
 import 'package:fantavacanze_official/features/fantaserata/domain/repository/fs_repository.dart';
 import 'package:fantavacanze_official/features/fantaserata/domain/use_cases/fs_league/clear_fs_cache.dart';
@@ -66,7 +64,7 @@ import 'package:fantavacanze_official/features/fantaserata/domain/use_cases/fs_r
 import 'package:fantavacanze_official/features/fantaserata/domain/use_cases/fs_rules/set_fs_rule_as_completed.dart';
 import 'package:fantavacanze_official/features/fantaserata/domain/use_cases/fs_rules/set_fs_rule_as_uncompleted.dart';
 import 'package:fantavacanze_official/features/fantaserata/domain/use_cases/fs_rules/unlock_fs_rule.dart';
-import 'package:fantavacanze_official/features/league/domain/entities/league.dart';
+import 'package:fantavacanze_official/features/league/domain/entities/league/league.dart';
 import 'package:fantavacanze_official/features/fantaserata/presentation/bloc/fs_league_bloc/fs_bloc.dart';
 import 'package:fantavacanze_official/features/fantaserata/presentation/bloc/fs_rules_bloc/fs_rules_bloc.dart';
 import 'package:fantavacanze_official/features/games/data/datasources/game_remote_data_source.dart';

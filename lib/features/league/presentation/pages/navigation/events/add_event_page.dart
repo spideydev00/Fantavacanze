@@ -12,7 +12,7 @@ import 'package:fantavacanze_official/core/widgets/info_container.dart';
 import 'package:fantavacanze_official/core/widgets/loader.dart';
 import 'package:fantavacanze_official/core/widgets/participants/participant_card.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/individual_participant.dart';
-import 'package:fantavacanze_official/features/league/domain/entities/league.dart';
+import 'package:fantavacanze_official/features/league/domain/entities/league/league.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/rule/rule.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/team_participant.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc/league_bloc.dart';
@@ -58,7 +58,6 @@ class _AddEventPageState extends State<AddEventPage> {
 
   // Step 3: Assignment
   String? _selectedParticipantId;
-  bool _isTeamMember = false;
   String? selectedTeamName;
 
   // UI State
@@ -225,6 +224,17 @@ class _AddEventPageState extends State<AddEventPage> {
       finalPoints = -finalPoints;
     }
 
+    String? targetMemberId;
+    String? targetTeamNameOut;
+
+    if (league.type == LeagueType.team) {
+      final isMemberSelection =
+          selectedTeamName != null && _selectedParticipantId != selectedTeamName;
+
+      targetTeamNameOut = selectedTeamName ?? targetUser;
+      targetMemberId = isMemberSelection ? targetUser : null;
+    }
+
     context.read<LeagueBloc>().add(
           AddEventEvent(
             league: league,
@@ -234,10 +244,8 @@ class _AddEventPageState extends State<AddEventPage> {
             targetUser: targetUser,
             type: eventType,
             description: description,
-            isTeamMember: _isTeamMember,
-            targetTeamName: league.type == LeagueType.team
-                ? (selectedTeamName ?? (_isTeamMember ? null : targetUser))
-                : null,
+            targetTeamName: targetTeamNameOut,
+            targetMemberId: targetMemberId,
           ),
         );
   }
@@ -905,7 +913,6 @@ class _AddEventPageState extends State<AddEventPage> {
             onTap: () => setState(() {
               _showTeamMembers = false;
               _selectedParticipantId = null;
-              _isTeamMember = false;
               selectedTeamName = null;
             }),
             description: 'Assegna alla squadra',
@@ -922,7 +929,6 @@ class _AddEventPageState extends State<AddEventPage> {
             onTap: () => setState(() {
               _showTeamMembers = true;
               _selectedParticipantId = null;
-              _isTeamMember = false;
               selectedTeamName = null;
             }),
             description: 'Assegna a un membro',
@@ -962,8 +968,7 @@ class _AddEventPageState extends State<AddEventPage> {
           const SizedBox(height: ThemeSizes.sm),
       itemBuilder: (context, index) {
         final team = filteredTeams[index];
-        final isSelected =
-            _selectedParticipantId == team.name && !_isTeamMember;
+        final isSelected = _selectedParticipantId == team.name;
 
         return ParticipantCard(
           name: team.name,
@@ -977,12 +982,10 @@ class _AddEventPageState extends State<AddEventPage> {
             setState(() {
               if (isSelected) {
                 _selectedParticipantId = null;
-                _isTeamMember = false;
                 selectedTeamName = null;
               } else {
                 _selectedParticipantId = team.name;
-                _isTeamMember = false;
-                selectedTeamName = null;
+                selectedTeamName = team.name;
               }
             });
           },
@@ -1036,8 +1039,7 @@ class _AddEventPageState extends State<AddEventPage> {
           const SizedBox(height: ThemeSizes.sm),
       itemBuilder: (context, index) {
         final member = allMembers[index];
-        final isSelected =
-            _selectedParticipantId == member['userId'] && _isTeamMember;
+        final isSelected = _selectedParticipantId == member['userId'];
 
         return ParticipantCard(
           name: member['name'],
@@ -1051,11 +1053,9 @@ class _AddEventPageState extends State<AddEventPage> {
             setState(() {
               if (isSelected) {
                 _selectedParticipantId = null;
-                _isTeamMember = false;
                 selectedTeamName = null;
               } else {
                 _selectedParticipantId = member['userId'];
-                _isTeamMember = true;
                 selectedTeamName = member['teamName'];
               }
             });

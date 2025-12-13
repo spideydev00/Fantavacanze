@@ -258,7 +258,6 @@ void _registerHiveAdapters() {
   Hive.registerAdapter(RuleTypeAdapter());
   Hive.registerAdapter(LeagueTypeAdapter());
   Hive.registerAdapter(EventTargetKindAdapter());
-  Hive.registerAdapter(EventTargetAdapter());
 
   // Fantaserata adapters
   Hive.registerAdapter(FsRuleModelAdapter());
@@ -328,12 +327,6 @@ void _initAppStatus() {
     ..registerFactory(
       () => GetAppStatus(
         appRepository: serviceLocator(),
-      ),
-    )
-    ..registerFactory(
-      () => AppStatusBloc(
-        getAppStatus: serviceLocator(),
-        appStatusCubit: serviceLocator(),
       ),
     );
 }

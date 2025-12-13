@@ -1,6 +1,6 @@
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/extensions/context_extension.dart';
-import 'package:fantavacanze_official/features/league/domain/entities/league.dart';
+import 'package:fantavacanze_official/features/league/domain/entities/league/league.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/participant.dart';
 import 'package:fantavacanze_official/core/widgets/leaderboard/leaderboard_header.dart';
 import 'package:fantavacanze_official/core/widgets/leaderboard/leaderboard_item.dart';
@@ -66,8 +66,7 @@ class LeaderboardList extends StatelessWidget {
         itemBuilder: (context, index) {
           if (index == 0) {
             // Header
-            return customHeader ??
-                LeaderboardHeader(isTeamBased: isTeamLeague);
+            return customHeader ?? LeaderboardHeader(isTeamBased: isTeamLeague);
           } else {
             // List items
             final participant = sortedParticipants[index - 1];

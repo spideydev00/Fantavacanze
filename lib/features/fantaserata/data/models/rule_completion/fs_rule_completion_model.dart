@@ -4,7 +4,7 @@ import 'package:hive/hive.dart';
 
 part 'fs_rule_completion_model.g.dart';
 
-@HiveType(typeId: 21)
+@HiveType(typeId: 20)
 class FsRuleCompletionModel extends FsRuleCompletion {
   @HiveField(0)
   @override

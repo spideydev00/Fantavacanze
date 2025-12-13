@@ -3,12 +3,12 @@ import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/extensions/context_extension.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
-import 'package:fantavacanze_official/core/utils/in-game/participant_name_resolver.dart';
 import 'package:fantavacanze_official/core/utils/show-snackbar-or-paywall/show_snackbar.dart';
+import 'package:fantavacanze_official/core/utils/in-game/participant_name_resolver.dart';
 import 'package:fantavacanze_official/core/widgets/events/event_card.dart';
 import 'package:fantavacanze_official/core/widgets/media/video_thumbnail.dart';
-import 'package:fantavacanze_official/features/league/domain/entities/event.dart';
-import 'package:fantavacanze_official/features/league/domain/entities/league.dart';
+import 'package:fantavacanze_official/features/league/domain/entities/event/event.dart';
+import 'package:fantavacanze_official/features/league/domain/entities/league/league.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/rule/rule.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/team_participant.dart';
 import 'package:flutter/material.dart';
@@ -53,15 +53,16 @@ class _AddMemoryBottomSheetState extends State<AddMemoryBottomSheet> {
     _userEvents = widget.events.where((event) {
       // Use the utility to check if this event belongs to the current user
       if (widget.league.type == LeagueType.team) {
-        if (event.isTeamMember) {
-          // For team member events, check if the targetUser is the current user
-          return event.targetUser == widget.currentUserId;
+        if (event.target.kind == EventTargetKind.teamMember) {
+          // For team member events, check if the memberId/userId is the current user
+          final memberId = event.target.memberId ?? event.target.userId;
+          return memberId == widget.currentUserId;
         } else {
           // For team events, find the user's team and check if it matches
           for (final participant in widget.league.participants) {
             if (participant is TeamParticipant) {
               if (participant.userIds.contains(widget.currentUserId)) {
-                return event.targetUser == participant.name;
+                return event.target.teamName == participant.name;
               }
             }
           }
@@ -69,7 +70,7 @@ class _AddMemoryBottomSheetState extends State<AddMemoryBottomSheet> {
         }
       } else {
         // For individual leagues, check if the event is for this user
-        return event.targetUser == widget.currentUserId;
+        return event.target.userId == widget.currentUserId;
       }
     }).toList();
   }
@@ -882,12 +883,13 @@ class _AddMemoryBottomSheetState extends State<AddMemoryBottomSheet> {
                           itemBuilder: (context, index) {
                             final event = _userEvents[index];
 
-                            String resolvedName =
+                            final resolvedName =
                                 ParticipantNameResolver.resolveParticipantName(
                                     event, widget.league);
 
                             return EventCard(
-                              event: event.copyWith(targetUser: resolvedName),
+                              event: event,
+                              targetNameOverride: resolvedName,
                               onTap: () => _selectEvent(event),
                             );
                           },

@@ -2,8 +2,8 @@ import 'package:fantavacanze_official/features/league/data/models/event_model/ev
 import 'package:fantavacanze_official/features/league/data/models/memory_model/memory_model.dart';
 import 'package:fantavacanze_official/features/league/data/models/participant_model/participant_model.dart';
 import 'package:fantavacanze_official/features/league/data/models/rule_model/rule_model.dart';
-import 'package:fantavacanze_official/features/league/domain/entities/event.dart';
-import 'package:fantavacanze_official/features/league/domain/entities/league.dart';
+import 'package:fantavacanze_official/features/league/domain/entities/event/event.dart';
+import 'package:fantavacanze_official/features/league/domain/entities/league/league.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/memory.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/participant.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/rule/rule.dart';
@@ -81,12 +81,12 @@ class LeagueModel extends League {
         : (createdAtRaw as DateTime).toIso8601String();
     final dynamic rawType =
         json['type'] ?? json['leagueType'] ?? json['league_type'];
-    final dynamic rawIsTeamBased =
-        json['isTeamBased'] ?? json['is_team_based'];
+    final dynamic rawIsTeamBased = json['isTeamBased'] ?? json['is_team_based'];
     LeagueType leagueType;
     if (rawType is String) {
-      leagueType =
-          rawType.toLowerCase() == 'team' ? LeagueType.team : LeagueType.individual;
+      leagueType = rawType.toLowerCase() == 'team'
+          ? LeagueType.team
+          : LeagueType.individual;
     } else if (rawType is bool) {
       leagueType = rawType ? LeagueType.team : LeagueType.individual;
     } else if (rawIsTeamBased is bool) {

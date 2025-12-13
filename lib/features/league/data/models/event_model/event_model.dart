@@ -1,8 +1,32 @@
-import 'package:fantavacanze_official/features/league/domain/entities/event.dart';
+import 'package:fantavacanze_official/features/league/domain/entities/event/event.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/rule/rule.dart';
 import 'package:hive/hive.dart';
 
 part 'event_model.g.dart';
+
+// Manual adapter for EventTargetKind (domain enum is now pure)
+class EventTargetKindAdapter extends TypeAdapter<EventTargetKind> {
+  @override
+  final int typeId = 19;
+
+  @override
+  EventTargetKind read(BinaryReader reader) {
+    final value = reader.read();
+    if (value is int) {
+      return EventTargetKind.values[value];
+    }
+    if (value is String) {
+      return EventTargetKind.values
+          .firstWhere((e) => e.name == value, orElse: () => EventTargetKind.individual);
+    }
+    return EventTargetKind.individual;
+  }
+
+  @override
+  void write(BinaryWriter writer, EventTargetKind obj) {
+    writer.write(obj.index);
+  }
+}
 
 @HiveType(typeId: 2)
 class EventModel extends Event {
@@ -58,68 +82,31 @@ class EventModel extends Event {
   });
 
   factory EventModel.fromJson(Map<String, dynamic> json) {
-    final targetData = json['target'];
-    String? targetTeamName;
-    String? targetUserId;
-    String? targetMemberId;
-    EventTargetKind targetKind = EventTargetKind.individual;
+    final targetData = Map<String, dynamic>.from(json['target'] as Map);
+    final targetKind = _mapTargetKind(targetData['kind'] as String?);
+    final targetUserId = targetData['user_id'] as String?;
+    final targetTeamName = targetData['team_name'] as String?;
+    final targetMemberId = targetData['member_id'] as String?;
 
-    if (targetData is Map<String, dynamic>) {
-      targetTeamName = targetData['team_name'] as String? ??
-          targetData['teamName'] as String?;
-      final rawKind =
-          (targetData['kind'] ?? targetData['target_kind']) as String?;
-      targetKind = _mapTargetKind(rawKind);
-
-      targetMemberId = (targetData['member_id'] ??
-              targetData['memberId'] ??
-              targetData['target_member_id'])
-          as String?;
-      targetUserId = (targetData['user_id'] ??
-          targetData['userId'] ??
-          targetData['target_user_id'] ??
-          targetData['target']) as String?;
-    } else {
-      targetTeamName = json['targetTeamName'] as String?;
-      final rawTarget = json['targetUser'] ?? json['target_user'];
-      targetUserId = rawTarget as String?;
-      final rawKind = json['targetKind'] ?? json['target_kind'];
-      if (rawKind is String) {
-        targetKind = _mapTargetKind(rawKind);
-      } else if (targetTeamName != null && targetTeamName.isNotEmpty) {
-        targetKind = EventTargetKind.team;
-      } else {
-        targetKind = EventTargetKind.individual;
-      }
-    }
-    final isTeamMember =
-        (json['isTeamMember'] ?? json['is_team_member']) as bool?;
-    if (isTeamMember == true) {
-      targetKind = EventTargetKind.teamMember;
-      targetMemberId ??= targetUserId;
-    }
-
-    final createdAtRaw = json['createdAt'] ?? json['created_at'];
+    final createdAtRaw = json['created_at'] ?? json['createdAt'];
     final createdAt = createdAtRaw is String
         ? DateTime.parse(createdAtRaw)
         : (createdAtRaw is DateTime ? createdAtRaw : DateTime.now());
 
-    // Determine type based on points or explicitly from JSON
-    RuleType eventType;
-    if (json['type'] != null) {
-      eventType = json['type'].toString().toLowerCase() == 'bonus'
-          ? RuleType.bonus
-          : RuleType.malus;
-    } else {
-      final pointsValue = _extractPointsValue(json['points']);
-      eventType = pointsValue >= 0 ? RuleType.bonus : RuleType.malus;
-    }
+    final rawType = json['rule_type'] ?? json['type'];
+    final eventType = rawType != null
+        ? (rawType.toString().toLowerCase() == 'bonus'
+            ? RuleType.bonus
+            : RuleType.malus)
+        : (_extractPointsValue(json['points']) >= 0
+            ? RuleType.bonus
+            : RuleType.malus);
 
     return EventModel(
       id: json['id'] as String,
       name: json['name'] as String,
       points: _extractPointsValue(json['points']),
-      creatorId: (json['creatorId'] ?? json['creator_id']) as String,
+      creatorId: (json['creator_id'] ?? json['creatorId']) as String,
       target: EventTarget(
         kind: targetKind,
         userId: targetUserId,
@@ -137,17 +124,15 @@ class EventModel extends Event {
       'id': id,
       'name': name,
       'points': points,
-      'creatorId': creatorId,
-      'createdAt': createdAt.toIso8601String(),
-      'type': type.toString().split('.').last,
+      'creator_id': creatorId,
+      'created_at': createdAt.toIso8601String(),
+      'rule_type': type.toString().split('.').last,
       'description': description,
       'target': {
         'kind': target.kind.name,
         'team_name': target.teamName,
         'user_id': target.userId,
         'member_id': target.memberId,
-        'target_member_id': target.memberId,
-        'target_team_name': target.teamName,
       },
     };
   }

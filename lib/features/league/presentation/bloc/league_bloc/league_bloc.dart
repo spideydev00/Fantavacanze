@@ -292,8 +292,10 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
   ) async {
     emit(LeagueLoading());
 
-    final result =
-        await deleteLeague(DeleteLeagueParams(leagueId: event.leagueId));
+    final result = await deleteLeague(DeleteLeagueParams(
+      leagueId: event.leagueId,
+      leagueType: event.type,
+    ));
 
     result.fold(
       (failure) => emit(LeagueError(message: failure.message)),
@@ -315,7 +317,9 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
 
   // U P D A T E   R U L E
   Future<void> _onUpdateRule(
-      UpdateRuleEvent event, Emitter<LeagueState> emit) async {
+    UpdateRuleEvent event,
+    Emitter<LeagueState> emit,
+  ) async {
     emit(LeagueLoading());
 
     final result = await updateRule(
@@ -391,17 +395,10 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
     try {
       emit(LeagueLoading());
 
-      late String userId;
-      final state = appUserCubit.state;
-
-      if (state is AppUserIsLoggedIn) {
-        userId = state.user.id;
-      }
-
       final result = await updateTeamName(
         UpdateTeamNameParams(
           league: event.league,
-          userId: userId,
+          oldTeamName: event.oldTeamName,
           newName: event.newName,
         ),
       );
@@ -411,7 +408,7 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
         (league) {
           emit(LeagueSuccess(league: league, operation: 'update_team_name'));
 
-          appLeagueCubit.selectLeague(league);
+          appLeagueCubit.updateLeagues(league);
         },
       );
     } catch (e) {
@@ -438,8 +435,8 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
         targetUser: event.targetUser,
         type: event.type,
         description: event.description,
-        isTeamMember: event.isTeamMember,
         targetTeamName: event.targetTeamName,
+        targetMemberId: event.targetMemberId,
       ),
     );
 
@@ -758,8 +755,8 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
           operation: 'remove_participants',
         ));
 
-        // Update the current selected league
-        appLeagueCubit.selectLeague(league);
+        // Aggiorna la lega selezionata e la lista in AppLeagueCubit
+        appLeagueCubit.updateLeagues(league);
       },
     );
   }

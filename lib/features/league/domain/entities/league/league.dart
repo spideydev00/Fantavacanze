@@ -1,5 +1,5 @@
 import 'package:flutter/foundation.dart';
-import 'package:fantavacanze_official/features/league/domain/entities/event.dart';
+import 'package:fantavacanze_official/features/league/domain/entities/event/event.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/memory.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/participant.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/rule/rule.dart';

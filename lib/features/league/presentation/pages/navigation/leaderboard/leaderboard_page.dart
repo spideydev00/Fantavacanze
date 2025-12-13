@@ -8,7 +8,7 @@ import 'package:fantavacanze_official/core/widgets/custom_tab_bar.dart';
 import 'package:fantavacanze_official/core/widgets/empty_state.dart';
 import 'package:fantavacanze_official/core/widgets/participants/participant_card.dart';
 import 'package:fantavacanze_official/core/cubits/app_theme/app_theme_cubit.dart';
-import 'package:fantavacanze_official/features/league/domain/entities/league.dart';
+import 'package:fantavacanze_official/features/league/domain/entities/league/league.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/team_participant.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/leaderboard/widgets/index.dart';
 import 'package:flutter/material.dart';

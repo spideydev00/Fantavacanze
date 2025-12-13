@@ -1,7 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/note.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/rule/rule.dart';
-import 'package:fantavacanze_official/features/league/domain/entities/league.dart';
+import 'package:fantavacanze_official/features/league/domain/entities/league/league.dart';
 import 'dart:io';
 
 abstract class LeagueEvent extends Equatable {
@@ -68,17 +68,17 @@ class ExitLeagueEvent extends LeagueEvent {
 
 class UpdateTeamNameEvent extends LeagueEvent {
   final League league;
-  final String userId;
+  final String oldTeamName;
   final String newName;
 
   const UpdateTeamNameEvent({
     required this.league,
-    required this.userId,
+    required this.oldTeamName,
     required this.newName,
   });
 
   @override
-  List<Object?> get props => [league, userId, newName];
+  List<Object?> get props => [league, oldTeamName, newName];
 }
 
 class AddEventEvent extends LeagueEvent {
@@ -89,8 +89,8 @@ class AddEventEvent extends LeagueEvent {
   final String targetUser;
   final RuleType type;
   final String? description;
-  final bool isTeamMember;
   final String? targetTeamName;
+  final String? targetMemberId;
 
   const AddEventEvent({
     required this.league,
@@ -100,8 +100,8 @@ class AddEventEvent extends LeagueEvent {
     required this.targetUser,
     required this.type,
     this.description,
-    this.isTeamMember = false,
     this.targetTeamName,
+    this.targetMemberId,
   });
 
   @override
@@ -113,8 +113,8 @@ class AddEventEvent extends LeagueEvent {
         targetUser,
         type,
         description,
-        isTeamMember,
         targetTeamName,
+        targetMemberId,
       ];
 }
 
@@ -347,11 +347,12 @@ class UpdateLeagueInfoEvent extends LeagueEvent {
 
 class DeleteLeagueEvent extends LeagueEvent {
   final String leagueId;
+  final LeagueType type;
 
-  const DeleteLeagueEvent({required this.leagueId});
+  const DeleteLeagueEvent({required this.leagueId, required this.type});
 
   @override
-  List<Object?> get props => [leagueId];
+  List<Object?> get props => [leagueId, type];
 }
 
 // Daily challenges events moved to daily_challenges_event.dart

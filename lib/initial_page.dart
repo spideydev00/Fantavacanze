@@ -8,7 +8,7 @@ import 'package:fantavacanze_official/features/app/domain/entities/app_status.da
 import 'package:fantavacanze_official/features/auth/presentation/pages/gender_and_status_selection_page.dart';
 import 'package:fantavacanze_official/features/auth/presentation/pages/onboarding.dart';
 import 'package:fantavacanze_official/features/auth/presentation/pages/social_login.dart';
-import 'package:fantavacanze_official/features/app/presentation/pages/app_unavailable.dart';
+import 'package:fantavacanze_official/features/app/presentation/app_unavailable.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/dashboard/sections/dashboard.dart';
 import 'package:fantavacanze_official/features/fantaserata/presentation/pages/navigation/fs_dashboard/fs_dashboard_page.dart';
 import 'package:flutter/material.dart';

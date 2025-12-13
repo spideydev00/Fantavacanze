@@ -37,6 +37,7 @@ abstract interface class AuthRemoteDataSource {
     required bool newValue,
   });
   Future<UserModel> updateDisplayName(String newName);
+
   Future<void> updatePassword(
       String oldPassword, String newPassword, String captchaToken);
   Future<void> deleteAccount();

@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:fantavacanze_official/core/utils/show-snackbar-or-paywall/show_snackbar.dart';
-import 'package:fantavacanze_official/features/league/domain/entities/league.dart';
+import 'package:fantavacanze_official/features/league/domain/entities/league/league.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/rule/rule.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc/league_bloc.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc/league_event.dart';
@@ -170,9 +170,8 @@ class RulesList extends StatelessWidget {
           if (formKey.currentState!.validate()) {
             final name = nameController.text.trim();
             final rawPoints = double.parse(pointsController.text.trim());
-            final pointsValue = ruleType == RuleType.malus
-                ? -rawPoints.abs()
-                : rawPoints.abs();
+            final pointsValue =
+                ruleType == RuleType.malus ? -rawPoints.abs() : rawPoints.abs();
 
             final rule = Rule(
               name: name,

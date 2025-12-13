@@ -6,7 +6,7 @@ import 'package:fantavacanze_official/features/league/data/datasources/remote/le
 import 'package:fantavacanze_official/features/league/data/datasources/remote/notification_remote_data_source.dart';
 import 'package:fantavacanze_official/features/league/data/models/daily_challenge_model/daily_challenge_model.dart';
 import 'package:fantavacanze_official/features/league/data/models/league_model/league_model.dart';
-import 'package:fantavacanze_official/features/league/domain/entities/league.dart';
+import 'package:fantavacanze_official/features/league/domain/entities/league/league.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/rule/rule.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/team_participant.dart';
 import 'package:flutter/material.dart';
@@ -201,7 +201,7 @@ class DailyChallengesRemoteDataSourceImpl
           creatorId: userId,
           targetUser: userId,
           type: RuleType.bonus,
-          isTeamMember: league.type == LeagueType.team,
+          targetMemberId: league.type == LeagueType.team ? userId : null,
           targetTeamName:
               league.type == LeagueType.team ? _findTeamName(league, userId) : null,
         );

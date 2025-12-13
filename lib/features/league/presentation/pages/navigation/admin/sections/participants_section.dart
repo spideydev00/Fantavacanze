@@ -4,12 +4,13 @@ import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:fantavacanze_official/core/widgets/icon_label.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/individual_participant.dart';
-import 'package:fantavacanze_official/features/league/domain/entities/league.dart';
+import 'package:fantavacanze_official/features/league/domain/entities/league/league.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/team_participant.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc/league_bloc.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc/league_event.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/admin/widgets/admin_section_card.dart';
 import 'package:fantavacanze_official/core/widgets/dialogs/confirmation_dialog.dart';
+import 'package:fantavacanze_official/core/widgets/dialogs/operation_error_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -677,16 +678,10 @@ class ParticipantsSectionState extends State<ParticipantsSection> {
       // If no potential captains, show an error
       showDialog(
         context: context,
-        builder: (context) => AlertDialog(
-          title: const Text('Impossibile Rimuovere il Capitano'),
-          content: const Text(
-              'Non è possibile rimuovere il capitano perché non ci sono altri membri nel team che possano prendere il suo posto.'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('OK'),
-            ),
-          ],
+        builder: (context) => const OperationErrorDialog(
+          title: 'Impossibile rimuovere il capitano',
+          message:
+              'Non ci sono altri membri nel team che possano prendere il suo posto. Aggiungi un membro oppure nomina un nuovo capitano prima di procedere.',
         ),
       );
       return;
