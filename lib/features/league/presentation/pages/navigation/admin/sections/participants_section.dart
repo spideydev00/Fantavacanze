@@ -349,11 +349,14 @@ class ParticipantsSectionState extends State<ParticipantsSection> {
                                     ? (value) {
                                         setState(() {
                                           if (value == true) {
-                                            // If selecting first member, set this as the selected team
-                                            _selectedTeamName == null
-                                                ? _selectedTeamName = team.name
-                                                : _selectedParticipantIds
-                                                    .add(userId);
+                                            // If selecting first member, set this as the selected team and add it
+                                            _selectedTeamName ??=
+                                                team.name;
+                                            if (!_selectedParticipantIds
+                                                .contains(userId)) {
+                                              _selectedParticipantIds
+                                                  .add(userId);
+                                            }
                                           } else {
                                             _selectedParticipantIds
                                                 .remove(userId);
@@ -702,6 +705,7 @@ class ParticipantsSectionState extends State<ParticipantsSection> {
               message:
                   'Stai rimuovendo il capitano del team. Seleziona un nuovo capitano per continuare:',
               icon: Icons.shield,
+              backgroundColor: context.bgColor,
               iconColor: context.primaryColor,
               confirmText: 'Conferma',
               additionalContent: Padding(

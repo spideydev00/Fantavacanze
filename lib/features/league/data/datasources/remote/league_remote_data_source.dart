@@ -559,6 +559,7 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
             'p_league_id': leagueWithoutEvents.id,
             'p_team_name': inferredTeamName,
             'p_user_ids_to_remove': participantIds,
+            'p_new_captain_id': newCaptainId,
           },
         );
 

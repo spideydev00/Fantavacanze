@@ -331,11 +331,11 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
     );
 
     result.fold(
-      (failure) => LeagueError(message: failure.message),
+      (failure) => emit(LeagueError(message: failure.message)),
       (league) {
         emit(LeagueSuccess(league: league, operation: 'update_rule'));
 
-        appLeagueCubit.selectLeague(league);
+        appLeagueCubit.updateLeagues(league);
       },
     );
   }
@@ -353,11 +353,11 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
     );
 
     result.fold(
-      (failure) => LeagueError(message: failure.message),
+      (failure) => emit(LeagueError(message: failure.message)),
       (league) {
         emit(LeagueSuccess(league: league, operation: 'delete_rule'));
 
-        appLeagueCubit.selectLeague(league);
+        appLeagueCubit.updateLeagues(league);
       },
     );
   }
@@ -378,7 +378,7 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
       (league) {
         emit(LeagueSuccess(league: league, operation: 'add_rule'));
 
-        appLeagueCubit.selectLeague(league);
+        appLeagueCubit.updateLeagues(league);
       },
     );
   }
@@ -445,7 +445,7 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
       (league) {
         emit(LeagueSuccess(league: league, operation: 'add_event'));
 
-        appLeagueCubit.selectLeague(league);
+        appLeagueCubit.updateLeagues(league);
       },
     );
   }
@@ -465,7 +465,8 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
     result.fold(
       (failure) => emit(LeagueError(message: failure.message)),
       (league) {
-        appLeagueCubit.selectLeague(league);
+        appLeagueCubit.updateLeagues(league);
+
         emit(LeagueSuccess(league: league, operation: 'remove_event'));
       },
     );
@@ -493,7 +494,7 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
         (league) {
           emit(LeagueSuccess(league: league, operation: 'add_memory'));
 
-          appLeagueCubit.selectLeague(league);
+          appLeagueCubit.updateLeagues(league);
         },
       );
     } catch (e) {
@@ -521,7 +522,7 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
         (league) {
           emit(LeagueSuccess(league: league, operation: 'remove_memory'));
 
-          appLeagueCubit.selectLeague(league);
+          appLeagueCubit.updateLeagues(league);
         },
       );
     } catch (e) {
@@ -695,7 +696,8 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
       (failure) => emit(LeagueError(message: failure.message)),
       (league) {
         emit(LeagueSuccess(league: league, operation: 'update_team_logo'));
-        appLeagueCubit.selectLeague(league);
+
+        appLeagueCubit.updateLeagues(league);
       },
     );
   }
@@ -726,7 +728,7 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
           operation: 'add_administrators',
         ));
 
-        appLeagueCubit.selectLeague(league);
+        appLeagueCubit.updateLeagues(league);
       },
     );
   }

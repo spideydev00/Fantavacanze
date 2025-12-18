@@ -160,40 +160,40 @@ class _AdminPageState extends State<AdminPage> {
 
           const SizedBox(height: ThemeSizes.lg),
 
-          // Section 1: Admin management
+          // Section 1: League info management
+          const GradientSectionDivider(
+            text: 'LEGA',
+            sectionNumber: 1,
+          ),
+          LeagueInfoSection(
+            league: _currentLeague!,
+          ),
+
+          // Section 2: Admin management
           const GradientSectionDivider(
             text: 'AMMINISTRATORI',
-            sectionNumber: 1,
+            sectionNumber: 2,
           ),
           AdminSection(
             league: _currentLeague!,
           ),
 
-          // Section 2: Participants management
+          // Section 3: Participants management
           const GradientSectionDivider(
             text: 'PARTECIPANTI',
-            sectionNumber: 2,
+            sectionNumber: 3,
           ),
           ParticipantsSection(
             key: _participantsKey,
             league: _currentLeague!,
           ),
 
-          // Section 3: Event management
+          // Section 4: Event management
           const GradientSectionDivider(
             text: 'EVENTI',
-            sectionNumber: 3,
-          ),
-          _buildEventManagementCard(),
-
-          // Section 4: League info management
-          const GradientSectionDivider(
-            text: 'LEGA',
             sectionNumber: 4,
           ),
-          LeagueInfoSection(
-            league: _currentLeague!,
-          ),
+          _buildEventManagementCard(),
 
           const SizedBox(height: ThemeSizes.lg),
 
