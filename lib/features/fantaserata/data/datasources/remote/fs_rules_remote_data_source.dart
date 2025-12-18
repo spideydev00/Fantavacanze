@@ -237,7 +237,9 @@ class FsRulesRemoteDataSourceImpl implements FsRulesRemoteDataSource {
     String? completionId,
   }) async {
     return _tryDatabaseOperation(() async {
-      final userId = _checkAuthentication();
+      // Authentication is still required, but the completion belongs to the rule.owner
+      _checkAuthentication();
+      final targetUserId = rule.userId;
 
       // Update rule to uncompleted state
       final response = await supabaseClient
@@ -246,7 +248,7 @@ class FsRulesRemoteDataSourceImpl implements FsRulesRemoteDataSource {
             'is_completed': false,
             'completed_at': null,
           })
-          .eq('user_id', userId)
+          .eq('user_id', targetUserId)
           .eq('league_id', rule.leagueId)
           .eq('challenge_id', rule.challengeId)
           .select()
@@ -267,7 +269,7 @@ class FsRulesRemoteDataSourceImpl implements FsRulesRemoteDataSource {
       // Update participant points in fs_leagues table
       await fsRemoteDataSource.updateParticipantPoints(
         leagueId: rule.leagueId,
-        userId: userId,
+        userId: targetUserId,
         pointsToAdd: pointsToSubtract,
         bonusToAdd: bonusToSubtract,
         malusToAdd: malusToSubtract,
@@ -283,7 +285,7 @@ class FsRulesRemoteDataSourceImpl implements FsRulesRemoteDataSource {
         await supabaseClient
             .from('user_fs_rule_completions')
             .delete()
-            .eq('user_id', userId)
+            .eq('user_id', targetUserId)
             .eq('league_id', rule.leagueId)
             .eq('challenge_id', rule.challengeId);
       }
