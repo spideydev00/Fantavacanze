@@ -1061,21 +1061,23 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
     try {
       final currentTime = DateTime.now().millisecondsSinceEpoch;
 
-      // Determine file extension based on file content or path
-      String fileExtension = _getFileExtension(mediaFile);
+      // Determine file extension and content type from the file name.
+      final fileExtension = _getFileExtension(mediaFile);
+      final contentType = _getContentTypeForExtension(fileExtension);
 
       final fullFileName = '$currentTime$fileExtension';
       final fullPath =
           path.endsWith('/') ? '$path$fullFileName' : '$path/$fullFileName';
 
       await supabaseClient.storage.from(bucket).upload(
-            fullPath,
-            mediaFile,
-            fileOptions: const FileOptions(
-              cacheControl: '3600',
-              upsert: true,
-            ),
-          );
+        fullPath,
+        mediaFile,
+        fileOptions: FileOptions(
+          cacheControl: '3600',
+          upsert: true,
+          contentType: contentType,
+        ),
+      );
 
       // Create a signed URL
       final signedUrl = await supabaseClient.storage
@@ -1113,6 +1115,29 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
     // Default to jpg
     else {
       return '.jpg';
+    }
+  }
+
+  /// Resolves the content-type to satisfy storage bucket MIME constraints.
+  String _getContentTypeForExtension(String extension) {
+    switch (extension) {
+      case '.mp4':
+        return 'video/mp4';
+      case '.mov':
+        return 'video/quicktime';
+      case '.avi':
+        return 'video/x-msvideo';
+      case '.mkv':
+        return 'video/x-matroska';
+      case '.png':
+        return 'image/png';
+      case '.gif':
+        return 'image/gif';
+      case '.jpeg':
+      case '.jpg':
+        return 'image/jpeg';
+      default:
+        return 'application/octet-stream';
     }
   }
 

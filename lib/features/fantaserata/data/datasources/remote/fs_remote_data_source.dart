@@ -93,24 +93,6 @@ class FsRemoteDataSourceImpl implements FsRemoteDataSource {
     return e.toString();
   }
 
-  /// Gets the current user ID from cache or cubit
-  String? _getCurrentUserId() {
-    final state = appUserCubit.state;
-    if (state is AppUserIsLoggedIn) {
-      return state.user.id;
-    }
-    return null;
-  }
-
-  /// Checks authentication and returns user ID or throws exception
-  String _checkAuthentication() {
-    final currentUserId = _getCurrentUserId();
-    if (currentUserId == null) {
-      throw ServerException('Utente non autenticato');
-    }
-    return currentUserId;
-  }
-
   /// Wraps database operations to handle exceptions uniformly
   Future<T> _tryDatabaseOperation<T>(Future<T> Function() operation) async {
     try {
@@ -425,13 +407,8 @@ class FsRemoteDataSourceImpl implements FsRemoteDataSource {
   @override
   Future<FsLeagueModel?> getFsLeague() async {
     return _tryDatabaseOperation(() async {
-      final currentUserId = _checkAuthentication();
-
       // Primary approach: Use RPC function for safe JSONB querying
-      final response =
-          await supabaseClient.rpc('get_fs_league_for_user', params: {
-        'user_id': currentUserId,
-      });
+      final response = await supabaseClient.rpc('get_fs_league_for_user');
 
       // Controlla se la response è null o una lista vuota
       if (response == null || (response is List && response.isEmpty)) {
