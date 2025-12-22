@@ -56,7 +56,7 @@ class AppInfoDialog extends StatelessWidget {
             ),
             Text(
               //TODO: Replace with actual version from pubspec.yaml
-              'Versione 1.1.2',
+              'Versione 1.1.3',
               style: context.textTheme.bodyMedium,
             ),
             const SizedBox(height: ThemeSizes.lg),
