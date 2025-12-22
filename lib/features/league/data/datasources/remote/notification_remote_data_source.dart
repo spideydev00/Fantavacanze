@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:fantavacanze_official/core/cubits/app_league/app_league_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit.dart';
 import 'package:fantavacanze_official/core/errors/exceptions.dart';
 import 'package:fantavacanze_official/features/league/data/models/notification_model/daily_challenge_notification_model.dart';
@@ -21,6 +22,7 @@ abstract class NotificationRemoteDataSource {
 class NotificationRemoteDataSourceImpl implements NotificationRemoteDataSource {
   final SupabaseClient supabaseClient;
   final AppUserCubit appUserCubit;
+  final AppLeagueCubit appLeagueCubit;
   final Uuid uuid = const Uuid();
 
   final _notificationModelController =
@@ -58,6 +60,7 @@ class NotificationRemoteDataSourceImpl implements NotificationRemoteDataSource {
   NotificationRemoteDataSourceImpl({
     required this.supabaseClient,
     required this.appUserCubit,
+    required this.appLeagueCubit,
   }) {
     initNotificationListener();
   }
@@ -98,15 +101,37 @@ class NotificationRemoteDataSourceImpl implements NotificationRemoteDataSource {
     return currentUserId;
   }
 
+  /// Gets the current league ID from cubit state
+  String? _getCurrentLeagueId() {
+    final state = appLeagueCubit.state;
+    if (state is AppLeagueExists) {
+      return state.selectedLeague.id;
+    }
+    return null;
+  }
+
+  /// Checks league selection and returns league ID or throws exception
+  String _checkLeagueSelected() {
+    final currentLeagueId = _getCurrentLeagueId();
+    if (currentLeagueId == null) {
+      throw ServerException('Lega non selezionata');
+    }
+    return currentLeagueId;
+  }
+
   @override
   Future<List<NotificationModel>> getNotifications() async {
     return _tryDatabaseOperation(() async {
       final userId = _checkAuthentication();
+      final leagueId = _checkLeagueSelected();
 
       // Use the updated RPC function
       final response = await supabaseClient.rpc(
         'get_user_notifications',
-        params: {'p_user_id': userId},
+        params: {
+          'p_user_id': userId,
+          'p_league_id': leagueId,
+        },
       );
 
       // The response now contains objects with a "notification" field

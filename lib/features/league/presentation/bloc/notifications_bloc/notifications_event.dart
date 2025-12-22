@@ -9,6 +9,10 @@ abstract class NotificationsEvent extends Equatable {
 
 class GetNotificationsEvent extends NotificationsEvent {}
 
+class ResetNotificationsEvent extends NotificationsEvent {
+  const ResetNotificationsEvent();
+}
+
 class MarkNotificationAsReadEvent extends NotificationsEvent {
   final String notificationId;
 

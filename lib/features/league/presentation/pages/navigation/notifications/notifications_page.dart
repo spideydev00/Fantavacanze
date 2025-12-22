@@ -131,13 +131,17 @@ class _NotificationsPageState extends State<NotificationsPage> {
     return false;
   }
 
-  void _handleDailyChallengeApproval(DailyChallengeNotification notification) {
+  void _handleDailyChallengeApproval(
+      DailyChallengeNotification notification) async {
     context.read<DailyChallengesBloc>().add(
           ApproveDailyChallengeEvent(notificationId: notification.id),
         );
-    context.read<NotificationsBloc>().add(
-          DeleteNotificationEvent(notificationId: notification.id),
-        );
+
+    if (context.mounted) {
+      context.read<NotificationsBloc>().add(
+            DeleteNotificationEvent(notificationId: notification.id),
+          );
+    }
   }
 
   void _handleDailyChallengeRejection(DailyChallengeNotification notification) {

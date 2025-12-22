@@ -202,8 +202,9 @@ class DailyChallengesRemoteDataSourceImpl
           targetUser: userId,
           type: RuleType.bonus,
           targetMemberId: league.type == LeagueType.team ? userId : null,
-          targetTeamName:
-              league.type == LeagueType.team ? _findTeamName(league, userId) : null,
+          targetTeamName: league.type == LeagueType.team
+              ? _findTeamName(league, userId)
+              : null,
         );
 
         // Also update the challenge record to mark it as completed
@@ -230,15 +231,12 @@ class DailyChallengesRemoteDataSourceImpl
   @override
   Future<void> approveDailyChallenge(String notificationId) async {
     return _tryDatabaseOperation(() async {
-      final eventId = uuid.v4();
-
       // Call the RPC function with just the notification ID and necessary parameters
       await supabaseClient.rpc(
         'approve_daily_challenge',
         params: {
           'p_notification_id': notificationId,
           'p_created_at': DateTime.now().toIso8601String(),
-          'p_event_id': eventId,
         },
       );
     });

@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:fantavacanze_official/core/cubits/app_league/app_league_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/notification_count/notification_count_cubit.dart';
 import 'package:fantavacanze_official/core/use-case/usecase.dart';
 import 'package:fantavacanze_official/core/entities/notification/entity/notification.dart';
@@ -15,19 +16,26 @@ class NotificationsBloc extends Bloc<NotificationsEvent, NotificationsState> {
   final DeleteNotification deleteNotification;
   final ListenToNotification listenToNotification;
   final NotificationCountCubit notificationCountCubit;
+  final AppLeagueCubit appLeagueCubit;
 
   // Stream subscription for notifications
   StreamSubscription<Notification>? _notificationSubscription;
+  StreamSubscription<AppLeagueState>? _leagueSubscription;
+  String? _lastLeagueId;
 
   NotificationsBloc({
     required this.getNotifications,
     required this.deleteNotification,
     required this.listenToNotification,
     required this.notificationCountCubit,
+    required this.appLeagueCubit,
   }) : super(const NotificationsInitial()) {
     on<GetNotificationsEvent>(_onGetNotifications);
     on<DeleteNotificationEvent>(_onDeleteNotification);
     on<ListenToNotificationEvent>(_onListenToNotification);
+    on<ResetNotificationsEvent>(_onResetNotifications);
+
+    _leagueSubscription = appLeagueCubit.stream.listen(_onLeagueStateChanged);
   }
 
   // Handle getting notifications
@@ -35,6 +43,13 @@ class NotificationsBloc extends Bloc<NotificationsEvent, NotificationsState> {
     GetNotificationsEvent event,
     Emitter<NotificationsState> emit,
   ) async {
+    final leagueState = appLeagueCubit.state;
+    if (leagueState is! AppLeagueExists) {
+      notificationCountCubit.reset();
+      emit(const NotificationsInitial());
+      return;
+    }
+
     emit(NotificationsLoading());
 
     final result = await getNotifications(NoParams());
@@ -48,6 +63,14 @@ class NotificationsBloc extends Bloc<NotificationsEvent, NotificationsState> {
         emit(NotificationsLoaded(notifications: notifications));
       },
     );
+  }
+
+  void _onResetNotifications(
+    ResetNotificationsEvent event,
+    Emitter<NotificationsState> emit,
+  ) {
+    notificationCountCubit.reset();
+    emit(const NotificationsInitial());
   }
 
   Future<void> _onDeleteNotification(
@@ -101,9 +124,24 @@ class NotificationsBloc extends Bloc<NotificationsEvent, NotificationsState> {
     );
   }
 
+  void _onLeagueStateChanged(AppLeagueState leagueState) {
+    if (leagueState is AppLeagueExists) {
+      final leagueId = leagueState.selectedLeague.id;
+      if (_lastLeagueId == leagueId) {
+        return;
+      }
+      _lastLeagueId = leagueId;
+      add(GetNotificationsEvent());
+    } else {
+      _lastLeagueId = null;
+      add(const ResetNotificationsEvent());
+    }
+  }
+
   @override
   Future<void> close() {
     _notificationSubscription?.cancel();
+    _leagueSubscription?.cancel();
     return super.close();
   }
 }

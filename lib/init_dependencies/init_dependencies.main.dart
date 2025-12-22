@@ -692,6 +692,7 @@ Future<void> _initNotifications() async {
     () => NotificationRemoteDataSourceImpl(
       supabaseClient: serviceLocator(),
       appUserCubit: serviceLocator(),
+      appLeagueCubit: serviceLocator(),
     ),
   );
 
@@ -722,6 +723,7 @@ Future<void> _initNotifications() async {
         deleteNotification: serviceLocator(),
         listenToNotification: serviceLocator(),
         notificationCountCubit: serviceLocator(),
+        appLeagueCubit: serviceLocator(),
       ),
     );
 
@@ -732,6 +734,7 @@ Future<void> _initNotifications() async {
       deleteNotification: serviceLocator(),
       listenToNotification: serviceLocator(),
       notificationCountCubit: serviceLocator(),
+      appLeagueCubit: serviceLocator(),
     ),
   );
 }
