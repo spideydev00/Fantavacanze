@@ -1,15 +1,29 @@
-import 'package:fantavacanze_official/core/utils/rive/get_rive_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:rive/rive.dart';
 
-class GoogleLoader extends StatelessWidget {
+class GoogleLoader extends StatefulWidget {
   const GoogleLoader({super.key});
 
-  _onRiveInit(Artboard artboard) {
-    final controller = getRiveController(artboard);
+  @override
+  State<GoogleLoader> createState() => _GoogleLoaderState();
+}
 
-    final animationTrigger = controller.findSMI("active") as SMIBool;
-    animationTrigger.value = true;
+class _GoogleLoaderState extends State<GoogleLoader> {
+  late final FileLoader _fileLoader;
+
+  @override
+  void initState() {
+    super.initState();
+    _fileLoader = FileLoader.fromAsset(
+      'assets/animations/rive/material_loader.riv',
+      riveFactory: Factory.rive,
+    );
+  }
+
+  @override
+  void dispose() {
+    _fileLoader.dispose();
+    super.dispose();
   }
 
   @override
@@ -17,10 +31,24 @@ class GoogleLoader extends StatelessWidget {
     return SizedBox(
       width: 130,
       height: 130,
-      child: RiveAnimation.asset(
-        "assets/animations/rive/material_loader.riv",
-        onInit: (artboard) => _onRiveInit(artboard),
+      child: RiveWidgetBuilder(
+        fileLoader: _fileLoader,
+        builder: (context, state) => switch (state) {
+          RiveLoading() => const SizedBox.shrink(),
+          RiveFailed() => const Icon(Icons.error),
+          RiveLoaded() => RiveWidget(
+              controller: _setupController(state.file),
+              fit: Fit.contain,
+            ),
+        },
       ),
     );
+  }
+
+  RiveWidgetController _setupController(File file) {
+    final controller = RiveWidgetController(file);
+    final trigger = controller.stateMachine.boolean("active");
+    trigger?.value = true;
+    return controller;
   }
 }

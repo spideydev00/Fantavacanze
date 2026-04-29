@@ -1,28 +1,24 @@
 import 'dart:async';
-import 'package:fantavacanze_official/core/cubits/app_fs_league/app_fs_league_cubit.dart';
-import 'package:fantavacanze_official/core/cubits/app_status/app_status_cubit.dart';
-import 'package:fantavacanze_official/core/cubits/fs_navigation/fs_navigation_cubit.dart';
-import 'package:fantavacanze_official/core/cubits/seasonal_event/seasonal_event_cubit.dart';
-import 'package:fantavacanze_official/features/fantaserata/presentation/bloc/fs_rules_bloc/fs_rules_bloc.dart';
-import 'package:fantavacanze_official/features/fantaserata/presentation/bloc/fs_league_bloc/fs_bloc.dart';
-import 'package:fantavacanze_official/features/league/presentation/bloc/notifications_bloc/notifications_bloc.dart';
-import 'package:fantavacanze_official/features/league/presentation/bloc/subscription_bloc/subscription_bloc.dart';
-import 'package:flutter/material.dart';
+
 import 'package:fantavacanze_official/core/cubits/app_league/app_league_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/app_navigation/app_navigation_cubit.dart';
+import 'package:fantavacanze_official/core/cubits/app_status/app_status_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/app_theme/app_theme_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/notification_count/notification_count_cubit.dart';
 import 'package:fantavacanze_official/core/theme/theme.dart';
 import 'package:fantavacanze_official/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:fantavacanze_official/features/games/presentation/bloc/game/game_bloc.dart';
 import 'package:fantavacanze_official/features/games/presentation/bloc/never_have_i_ever/never_have_i_ever_bloc.dart';
 import 'package:fantavacanze_official/features/games/presentation/bloc/truth_or_dare/truth_or_dare_bloc.dart';
 import 'package:fantavacanze_official/features/games/presentation/bloc/word_bomb/word_bomb_bloc.dart';
-import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc/league_bloc.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/daily_challenges_bloc/daily_challenges_bloc.dart';
-import 'package:fantavacanze_official/features/games/presentation/bloc/game/game_bloc.dart';
+import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc/league_bloc.dart';
+import 'package:fantavacanze_official/features/league/presentation/bloc/notifications_bloc/notifications_bloc.dart';
+import 'package:fantavacanze_official/features/league/presentation/bloc/subscription_bloc/subscription_bloc.dart';
 import 'package:fantavacanze_official/init_dependencies/init_dependencies.dart';
 import 'package:fantavacanze_official/initial_page.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -68,14 +64,8 @@ void main() async {
           BlocProvider(create: (_) => serviceLocator<SubscriptionBloc>()),
           BlocProvider(create: (_) => serviceLocator<NotificationCountCubit>()),
 
-          // Fantaserata
-          BlocProvider(create: (_) => serviceLocator<FsBloc>()),
-          BlocProvider(create: (_) => serviceLocator<FsRulesBloc>()),
-          BlocProvider(create: (_) => serviceLocator<AppFsLeagueCubit>()),
-
           // Navigation
           BlocProvider(create: (_) => serviceLocator<AppNavigationCubit>()),
-          BlocProvider(create: (_) => serviceLocator<FsNavigationCubit>()),
 
           // Theme
           BlocProvider.value(value: themeCubit),
@@ -87,7 +77,6 @@ void main() async {
           BlocProvider(create: (_) => serviceLocator<NeverHaveIEverBloc>()),
 
           // Seasonal Events Cubit
-          BlocProvider(create: (_) => serviceLocator<SeasonalEventCubit>()),
         ],
         child: const MyApp(),
       ),
@@ -112,7 +101,6 @@ class _MyAppState extends State<MyApp> {
   Future<void> _initializeApp() async {
     final appUserCubit = context.read<AppUserCubit>();
     final appLeagueCubit = context.read<AppLeagueCubit>();
-    final appFsLeagueCubit = context.read<AppFsLeagueCubit>();
     final appStatusCubit = context.read<AppStatusCubit>();
     try {
       // Check availability flag stored on Supabase
@@ -123,8 +111,6 @@ class _MyAppState extends State<MyApp> {
       // If user is logged in, then load their specific data and check subscription
       if (appUserCubit.state is AppUserIsLoggedIn) {
         await _checkSubscriptionOnStartup();
-
-        await appFsLeagueCubit.checkFsLeague();
 
         await appLeagueCubit.getUserLeagues();
       }

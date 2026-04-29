@@ -1,16 +1,16 @@
-import 'package:fantavacanze_official/core/widgets/info_container.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fantavacanze_official/core/constants/constants.dart';
 import 'package:fantavacanze_official/core/cubits/app_theme/app_theme_cubit.dart';
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/extensions/context_extension.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
+import 'package:fantavacanze_official/core/widgets/info_container.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class AppUnavailablePage extends StatelessWidget {
   static const String routeName = '/app-unavailable';
 
-  static get route => MaterialPageRoute(
+  static MaterialPageRoute<dynamic> get route => MaterialPageRoute(
         builder: (context) => const AppUnavailablePage(),
         settings: const RouteSettings(name: routeName),
       );

@@ -38,6 +38,5 @@ abstract class DailyChallengesRepository {
 
   Future<Either<Failure, void>> rejectDailyChallenge(
     String notificationId,
-    String challengeId,
   );
 }

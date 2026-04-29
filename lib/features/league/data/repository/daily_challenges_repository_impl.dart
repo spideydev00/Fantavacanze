@@ -53,16 +53,24 @@ class DailyChallengesRepositoryImpl implements DailyChallengesRepository {
             Failure('❌ Nessuna connessione e nessun dato nella cache.'));
       }
 
-      // Get from remote and cache
-      final challenges = await remoteDataSource.getDailyChallenges(
-        leagueId: leagueId,
-      );
+      try {
+        // Get from remote and cache
+        final challenges = await remoteDataSource.getDailyChallenges(
+          leagueId: leagueId,
+        );
 
-      await localDataSource.cacheDailyChallenges(challenges, leagueId);
+        // Pulisci le sfide vecchie della lega prima di cachare le nuove,
+        // così non si accumulano record stale di giorni precedenti.
+        await localDataSource.clearDailyChallengesForLeague(leagueId);
+        await localDataSource.cacheDailyChallenges(challenges, leagueId);
 
-      return Right(challenges);
-    } on ServerException catch (e) {
-      return Left(Failure(e.message));
+        return Right(challenges);
+      } on ServerException catch (e) {
+        if (cachedChallenges.isNotEmpty) {
+          return Right(cachedChallenges);
+        }
+        return Left(Failure(e.message));
+      }
     } on CacheException catch (e) {
       return Left(Failure('Errore nella cache: ${e.message}'));
     }
@@ -212,7 +220,6 @@ class DailyChallengesRepositoryImpl implements DailyChallengesRepository {
   @override
   Future<Either<Failure, void>> rejectDailyChallenge(
     String notificationId,
-    String challengeId,
   ) async {
     try {
       if (!await connectionChecker.isConnected) {
@@ -221,7 +228,7 @@ class DailyChallengesRepositoryImpl implements DailyChallengesRepository {
       }
 
       // Reject on server
-      await remoteDataSource.rejectDailyChallenge(notificationId, challengeId);
+      await remoteDataSource.rejectDailyChallenge(notificationId);
 
       // Delete from cache since it's been processed
       await localDataSource.deleteNotificationFromCache(notificationId);

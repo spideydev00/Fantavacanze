@@ -1,29 +1,26 @@
 import 'dart:async';
+
 // ignore: depend_on_referenced_packages
 import 'package:collection/collection.dart';
+import 'package:fantavacanze_official/core/constants/constants.dart';
 import 'package:fantavacanze_official/core/constants/navigation_items.dart';
 import 'package:fantavacanze_official/core/cubits/app_league/app_league_cubit.dart';
+import 'package:fantavacanze_official/core/cubits/app_navigation/app_navigation_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/app_theme/app_theme_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit.dart';
+import 'package:fantavacanze_official/core/entities/navigation/navigation_item.dart';
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
+import 'package:fantavacanze_official/core/extensions/context_extension.dart';
+import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:fantavacanze_official/core/widgets/become_premium_button.dart';
-import 'package:fantavacanze_official/features/fantaserata/presentation/pages/fs_router_page.dart';
+import 'package:fantavacanze_official/core/widgets/divider.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc/league_bloc.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/dashboard/widgets/side_menu/league_dropdown.dart';
-import 'package:fantavacanze_official/features/league/presentation/pages/dashboard/widgets/side_menu/side_menu_gradient_button.dart';
+import 'package:fantavacanze_official/features/league/presentation/pages/dashboard/widgets/side_menu/side_menu_navigation_asset.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/settings/privacy_policy.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:fantavacanze_official/core/constants/constants.dart';
-import 'package:fantavacanze_official/core/cubits/app_navigation/app_navigation_cubit.dart';
-import 'package:fantavacanze_official/core/extensions/context_extension.dart';
-import 'package:fantavacanze_official/core/entities/navigation/navigation_item.dart';
-import 'package:fantavacanze_official/core/theme/sizes.dart';
-import 'package:fantavacanze_official/core/widgets/divider.dart';
-import 'package:fantavacanze_official/features/league/presentation/pages/dashboard/widgets/side_menu/side_menu_navigation_asset.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:fantavacanze_official/core/cubits/seasonal_event/seasonal_event_cubit.dart';
-import 'package:fantavacanze_official/core/entities/fs_league/fs_night_type.dart';
 
 class SideMenu extends StatefulWidget {
   final VoidCallback? closeMenuCallback;
@@ -192,35 +189,10 @@ class _SideMenuState extends State<SideMenu> {
 
       for (final item in items) {
         final originalIndex = originalIndices[item.title];
+
         if (originalIndex == null) continue;
 
-        if (item.title == "Fanta Serata") {
-          menuWidgets.add(
-            BlocBuilder<SeasonalEventCubit, SeasonalEventState>(
-              builder: (context, seasonalState) {
-                return SideMenuGradientButton.seasonal(
-                  title: _getSeasonalTitle(seasonalState.activeNightType),
-                  svgIcon: context.read<AppThemeCubit>().isDarkMode(context)
-                      ? item.darkSvgIcon
-                      : item.lightSvgIcon,
-                  isActive: true,
-                  emojiPath:
-                      _getSeasonalEmojiPath(seasonalState.activeNightType),
-                  nightType: seasonalState.activeNightType,
-                  onTap: () {
-                    _handleNavigation(
-                      context,
-                      item,
-                      originalIndex,
-                      hasLeagues,
-                    );
-                  },
-                );
-              },
-            ),
-          );
-        } else {
-          // Use regular navigation asset for other items
+        {
           menuWidgets.add(
             SideMenuNavigationAsset(
               title: item.title,
@@ -245,38 +217,6 @@ class _SideMenuState extends State<SideMenu> {
     return menuWidgets;
   }
 
-  /// Get seasonal title based on night type
-  String _getSeasonalTitle(FsNightType nightType) {
-    switch (nightType) {
-      case FsNightType.halloween:
-        return "Fanta Halloween";
-      case FsNightType.christmas:
-        return "Fanta Vigilia";
-      case FsNightType.carnival:
-        return "Fanta Carnevale";
-      case FsNightType.newYearsEve:
-        return "Fanta Capodanno";
-      default:
-        return "Fanta Serata";
-    }
-  }
-
-  /// Get seasonal emoji path based on night type
-  String _getSeasonalEmojiPath(FsNightType nightType) {
-    switch (nightType) {
-      case FsNightType.halloween:
-        return 'assets/images/icons/fs_icons/fanta-halloween-emoji.svg';
-      case FsNightType.christmas:
-        return 'assets/images/icons/fs_icons/fanta-christmas-emoji.svg';
-      case FsNightType.carnival:
-        return 'assets/images/icons/fs_icons/fanta-carnival-emoji.svg';
-      case FsNightType.newYearsEve:
-        return 'assets/images/icons/fs_icons/fanta-newyear-emoji.svg';
-      default:
-        return 'assets/images/icons/homepage_icons/fanta-serata-emoji.svg';
-    }
-  }
-
   // Gestisce la logica di navigazione
   void _handleNavigation(
     BuildContext context,
@@ -298,24 +238,11 @@ class _SideMenuState extends State<SideMenu> {
       return;
     }
 
-    // Gestione specifica per FantaSerata
-    if (item.title == "FantaSerata" || item.title == "Fanta Serata") {
-      _handleFantaSerataNavigation(context);
-      widget.closeMenuCallback?.call();
-      return;
-    }
-
     // Per gli item di navigazione standard, usa l'indice originale passato
     context.read<AppNavigationCubit>().setIndex(originalItemIndex);
 
     // Call the callback to close the menu
     widget.closeMenuCallback?.call();
-  }
-
-  // Nuova funzione per gestire la navigazione FantaSerata
-  Future<void> _handleFantaSerataNavigation(BuildContext context) async {
-    // Naviga direttamente alla pagina router
-    Navigator.of(context).pushReplacement(FsRouterPage.route);
   }
 
   // Footer fisso in basso

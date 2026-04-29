@@ -1,8 +1,10 @@
 import 'dart:io';
+
 import 'package:fantavacanze_official/core/constants/constants.dart';
+import 'package:fantavacanze_official/core/pages/empty_branded_page.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
-import 'package:fantavacanze_official/core/pages/empty_branded_page.dart';
+import 'package:fantavacanze_official/core/widgets/dialogs/auth_dialog_box.dart';
 import 'package:fantavacanze_official/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:fantavacanze_official/features/auth/presentation/pages/signup.dart';
 import 'package:fantavacanze_official/features/auth/presentation/pages/standard_login.dart';
@@ -10,7 +12,6 @@ import 'package:fantavacanze_official/features/auth/presentation/widgets/age_ver
 import 'package:fantavacanze_official/features/auth/presentation/widgets/promo_text.dart';
 import 'package:fantavacanze_official/features/auth/presentation/widgets/rich_text.dart';
 import 'package:fantavacanze_official/features/auth/presentation/widgets/social_button.dart';
-import 'package:fantavacanze_official/core/widgets/dialogs/auth_dialog_box.dart';
 import 'package:fantavacanze_official/initial_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -18,7 +19,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 class SocialLoginPage extends StatefulWidget {
   static const String routeName = '/social_login';
 
-  static get route => MaterialPageRoute(
+  static MaterialPageRoute<dynamic> get route => MaterialPageRoute(
         builder: (context) => const SocialLoginPage(),
         settings: const RouteSettings(name: routeName),
       );

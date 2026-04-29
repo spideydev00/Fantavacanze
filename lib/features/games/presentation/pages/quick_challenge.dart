@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class QuickChallenge extends StatelessWidget {
-  static get route =>
+  static MaterialPageRoute<dynamic> get route =>
       MaterialPageRoute(builder: (context) => const QuickChallenge());
   const QuickChallenge({super.key});
 

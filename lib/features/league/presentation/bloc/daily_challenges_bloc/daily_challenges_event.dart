@@ -103,15 +103,13 @@ class ApproveDailyChallengeEvent extends DailyChallengesEvent {
 
 class RejectDailyChallengeEvent extends DailyChallengesEvent {
   final String notificationId;
-  final String challengeId;
 
   const RejectDailyChallengeEvent({
     required this.notificationId,
-    required this.challengeId,
   });
 
   @override
-  List<Object?> get props => [notificationId, challengeId];
+  List<Object?> get props => [notificationId];
 }
 
 class DailyChallengesResetStateEvent extends DailyChallengesEvent {

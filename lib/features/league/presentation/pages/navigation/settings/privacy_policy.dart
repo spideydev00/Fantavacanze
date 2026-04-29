@@ -7,7 +7,7 @@ import 'package:flutter/material.dart';
 class PrivacyPolicyPage extends StatelessWidget {
   static const String routeName = '/privacy_policy';
 
-  static get route => MaterialPageRoute(
+  static MaterialPageRoute<dynamic> get route => MaterialPageRoute(
         builder: (context) => const PrivacyPolicyPage(),
         settings: const RouteSettings(name: routeName),
       );

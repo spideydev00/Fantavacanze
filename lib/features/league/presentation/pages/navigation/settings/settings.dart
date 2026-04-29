@@ -1,23 +1,22 @@
 import 'package:fantavacanze_official/core/cubits/app_league/app_league_cubit.dart';
-import 'package:fantavacanze_official/core/cubits/app_fs_league/app_fs_league_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/app_theme/app_theme_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit.dart';
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/extensions/context_extension.dart';
+import 'package:fantavacanze_official/core/pages/app_terms.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:fantavacanze_official/core/theme/theme.dart';
-import 'package:fantavacanze_official/features/auth/presentation/pages/social_login.dart';
-import 'package:fantavacanze_official/features/league/presentation/pages/dashboard/sections/dashboard.dart';
+import 'package:fantavacanze_official/core/widgets/buttons/danger_action_button.dart';
 import 'package:fantavacanze_official/core/widgets/dialogs/confirmation_dialog.dart';
 import 'package:fantavacanze_official/core/widgets/divider.dart';
-import 'package:fantavacanze_official/core/pages/app_terms.dart';
+import 'package:fantavacanze_official/features/auth/presentation/pages/social_login.dart';
+import 'package:fantavacanze_official/features/league/presentation/pages/dashboard/sections/dashboard.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/settings/privacy_policy.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/settings/widgets/app_info_dialog.dart';
+import 'package:fantavacanze_official/features/league/presentation/pages/navigation/settings/widgets/settings_widgets.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/settings/widgets/support_contact_dialog.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/settings/widgets/user_profile_menu.dart';
-import 'package:fantavacanze_official/features/league/presentation/pages/navigation/settings/widgets/settings_widgets.dart';
-import 'package:fantavacanze_official/core/widgets/buttons/danger_action_button.dart';
 import 'package:fantavacanze_official/main.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -25,7 +24,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 class SettingsPage extends StatelessWidget {
   static const String routeName = '/settings';
 
-  static get route => MaterialPageRoute(
+  static MaterialPageRoute<dynamic> get route => MaterialPageRoute(
         builder: (context) => const SettingsPage(),
         settings: const RouteSettings(name: routeName),
       );
@@ -116,7 +115,6 @@ class SettingsPage extends StatelessWidget {
   void _handleLogout(BuildContext context) {
     final appUserCubit = context.read<AppUserCubit>();
     final appLeagueCubit = context.read<AppLeagueCubit>();
-    final appFsLeagueCubit = context.read<AppFsLeagueCubit>();
 
     showDialog(
       context: context,
@@ -128,7 +126,6 @@ class SettingsPage extends StatelessWidget {
 
           await appUserCubit.signOut();
           await appLeagueCubit.clearCache();
-          await appFsLeagueCubit.clearCache();
 
           // Azzero tutto lo stack e mostro solo SocialLoginPage
           navigatorKey.currentState!.pushAndRemoveUntil(

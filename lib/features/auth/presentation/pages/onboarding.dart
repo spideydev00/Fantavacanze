@@ -12,7 +12,7 @@ import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 class OnBoardingScreen extends StatefulWidget {
   static const String routeName = '/onboarding';
 
-  static get route => MaterialPageRoute(
+  static MaterialPageRoute<dynamic> get route => MaterialPageRoute(
         builder: (context) => const OnBoardingScreen(),
         settings: const RouteSettings(name: routeName),
       );

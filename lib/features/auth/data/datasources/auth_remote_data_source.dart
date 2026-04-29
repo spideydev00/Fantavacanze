@@ -3,15 +3,14 @@ import 'dart:convert';
 
 import 'package:crypto/crypto.dart';
 import 'package:fantavacanze_official/core/errors/exceptions.dart';
-import 'package:fantavacanze_official/core/secrets/app_secrets.dart';
 import 'package:fantavacanze_official/features/auth/data/models/user_model.dart';
+import 'package:fantavacanze_official/init_dependencies/init_dependencies.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:fantavacanze_official/init_dependencies/init_dependencies.dart';
 
 abstract interface class AuthRemoteDataSource {
   // AUTHENTICATION METHODS
@@ -231,26 +230,24 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   @override
   Future<UserModel> signInWithGoogle() async {
     try {
-      const iosClientId = AppSecrets.iosClientId;
-      const webClientId = AppSecrets.webClientId;
-      final googleSignIn = GoogleSignIn(
-        clientId: iosClientId,
-        serverClientId: webClientId,
-        scopes: ['email'],
-      );
-      final googleUser = await googleSignIn.signIn();
-      final googleAuth = await googleUser!.authentication;
-      final accessToken = googleAuth.accessToken;
-      final idToken = googleAuth.idToken;
+      if (!GoogleSignIn.instance.supportsAuthenticate()) {
+        throw ServerException(
+            'Google Sign-In non supportato su questa piattaforma.');
+      }
 
-      if (accessToken == null || idToken == null) {
-        throw ServerException('Token di accesso o ID mancante.');
+      final googleUser = await GoogleSignIn.instance.authenticate(
+        scopeHint: ['email'],
+      );
+
+      final idToken = googleUser.authentication.idToken;
+
+      if (idToken == null) {
+        throw ServerException('ID token mancante.');
       }
 
       final response = await supabaseClient.auth.signInWithIdToken(
         provider: OAuthProvider.google,
         idToken: idToken,
-        accessToken: accessToken,
       );
 
       if (response.user == null) {
@@ -297,6 +294,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   @override
   Future<void> signOut() async {
     try {
+      await GoogleSignIn.instance.signOut();
       await supabaseClient.auth.signOut();
       await Purchases.logOut();
 

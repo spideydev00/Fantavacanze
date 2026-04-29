@@ -6,7 +6,7 @@ import 'package:fantavacanze_official/features/auth/presentation/widgets/promo_t
 import 'package:flutter/material.dart';
 
 class PostOtpVerification extends StatelessWidget {
-  static get route =>
+  static MaterialPageRoute<dynamic> get route =>
       MaterialPageRoute(builder: (context) => const PostOtpVerification());
   const PostOtpVerification({super.key});
 

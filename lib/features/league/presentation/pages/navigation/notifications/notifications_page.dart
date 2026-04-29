@@ -1,8 +1,7 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-
 import 'package:fantavacanze_official/core/cubits/app_league/app_league_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit.dart';
+import 'package:fantavacanze_official/core/entities/notification/entity/notification.dart'
+    as app_notification;
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/extensions/context_extension.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
@@ -10,21 +9,20 @@ import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:fantavacanze_official/core/utils/show-snackbar-or-paywall/show_snackbar.dart';
 import 'package:fantavacanze_official/core/widgets/empty_state.dart';
 import 'package:fantavacanze_official/core/widgets/loader.dart';
-
 import 'package:fantavacanze_official/features/league/domain/entities/daily_challenge_notification.dart';
-import 'package:fantavacanze_official/core/entities/notification/entity/notification.dart'
-    as app_notification;
 import 'package:fantavacanze_official/features/league/presentation/bloc/daily_challenges_bloc/daily_challenges_bloc.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/daily_challenges_bloc/daily_challenges_event.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/notifications_bloc/notifications_bloc.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/notifications_bloc/notifications_event.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/notifications_bloc/notifications_state.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/notifications/widgets/notification_card.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class NotificationsPage extends StatefulWidget {
   static const String routeName = '/notifications';
 
-  static get route => MaterialPageRoute(
+  static MaterialPageRoute<dynamic> get route => MaterialPageRoute(
         builder: (context) => const NotificationsPage(),
         settings: const RouteSettings(name: routeName),
       );
@@ -148,7 +146,6 @@ class _NotificationsPageState extends State<NotificationsPage> {
     context.read<DailyChallengesBloc>().add(
           RejectDailyChallengeEvent(
             notificationId: notification.id,
-            challengeId: notification.challengeId,
           ),
         );
     context.read<NotificationsBloc>().add(

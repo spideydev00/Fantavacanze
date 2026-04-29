@@ -2,15 +2,13 @@ import 'dart:async';
 
 import 'package:fantavacanze_official/core/cubits/app_status/app_status_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit.dart';
-import 'package:fantavacanze_official/core/cubits/app_fs_league/app_fs_league_cubit.dart';
 import 'package:fantavacanze_official/core/services/gdpr_service.dart';
 import 'package:fantavacanze_official/features/app/domain/entities/app_status.dart';
+import 'package:fantavacanze_official/features/app/presentation/app_unavailable.dart';
 import 'package:fantavacanze_official/features/auth/presentation/pages/gender_and_status_selection_page.dart';
 import 'package:fantavacanze_official/features/auth/presentation/pages/onboarding.dart';
 import 'package:fantavacanze_official/features/auth/presentation/pages/social_login.dart';
-import 'package:fantavacanze_official/features/app/presentation/app_unavailable.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/dashboard/sections/dashboard.dart';
-import 'package:fantavacanze_official/features/fantaserata/presentation/pages/navigation/fs_dashboard/fs_dashboard_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
@@ -47,16 +45,7 @@ class _InitialPageState extends State<InitialPage> {
         return BlocBuilder<AppUserCubit, AppUserState>(
           builder: (context, userState) {
             if (userState is AppUserIsLoggedIn) {
-              // User is logged in, now check FS league status
-              return BlocBuilder<AppFsLeagueCubit, AppFsLeagueState>(
-                builder: (context, fsState) {
-                  if (fsState is AppFsLeagueExists) {
-                    return const FsDashboardPage();
-                  } else {
-                    return const DashboardScreen();
-                  }
-                },
-              );
+              return const DashboardScreen();
             } else if (userState is AppUserNeedsOnboarding) {
               return OnBoardingScreen();
             } else if (userState is AppUserNeedsGenderOrStatus) {

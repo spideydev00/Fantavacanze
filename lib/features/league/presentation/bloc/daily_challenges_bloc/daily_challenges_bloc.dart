@@ -1,14 +1,14 @@
 import 'dart:async';
 
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fantavacanze_official/core/cubits/app_league/app_league_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/remote/daily_challenges/approve_daily_challenge.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/remote/daily_challenges/get_daily_challenges.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/remote/daily_challenges/mark_challenge_as_completed.dart';
-import 'package:fantavacanze_official/features/league/domain/use_cases/remote/daily_challenges/update_challenge_refresh_status.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/remote/daily_challenges/reject_daily_challenge.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/remote/daily_challenges/unlock_daily_challenge.dart';
+import 'package:fantavacanze_official/features/league/domain/use_cases/remote/daily_challenges/update_challenge_refresh_status.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'daily_challenges_event.dart';
 import 'daily_challenges_state.dart';
@@ -286,7 +286,6 @@ class DailyChallengesBloc
     final result = await _rejectDailyChallenge.call(
       RejectDailyChallengeParams(
         notificationId: event.notificationId,
-        challengeId: event.challengeId,
       ),
     );
 

@@ -1,10 +1,10 @@
 import 'package:fantavacanze_official/core/entities/navigation/navigation_item.dart';
-import 'package:fantavacanze_official/features/league/presentation/pages/navigation/admin/admin_page.dart';
-import 'package:fantavacanze_official/features/league/presentation/pages/navigation/events/add_event_page.dart';
-import 'package:fantavacanze_official/features/league/presentation/pages/navigation/homepage/home.dart';
 import 'package:fantavacanze_official/features/games/presentation/pages/drink_games.dart';
+import 'package:fantavacanze_official/features/league/presentation/pages/navigation/admin/admin_page.dart';
 // import 'package:fantavacanze_official/features/games/presentation/pages/quick_challenge.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/create_league/create_league_page.dart';
+import 'package:fantavacanze_official/features/league/presentation/pages/navigation/events/add_event_page.dart';
+import 'package:fantavacanze_official/features/league/presentation/pages/navigation/homepage/home.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/join_league/search_league_page.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/leaderboard/leaderboard_page.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/memories/memories_page.dart';
@@ -59,14 +59,6 @@ List<NavigationItem> nonParticipantNavbarItems = [
   //   screen: const FvBotPage(),
   //   subsection: "Games",
   // ),
-  NavigationItem(
-    title: "Fanta Serata",
-    darkSvgIcon: 'assets/images/icons/homepage_icons/create-league-icon.svg',
-    lightSvgIcon:
-        'assets/images/icons/homepage_icons/create-league-icon-dark.svg',
-    screen: const CreateLeaguePage(),
-    subsection: "Lega",
-  ),
   // TODO: Remove this in production
   // NavigationItem(
   //   title: "Smash Or Pass",
@@ -150,14 +142,6 @@ List<NavigationItem> participantNavbarItems = [
     lightSvgIcon: 'assets/images/icons/homepage_icons/notes-icon-dark.svg',
     screen: const NotesPage(),
     subsection: "Naviga",
-  ),
-  NavigationItem(
-    title: "Fanta Serata",
-    darkSvgIcon: 'assets/images/icons/homepage_icons/create-league-icon.svg',
-    lightSvgIcon:
-        'assets/images/icons/homepage_icons/create-league-icon-dark.svg',
-    screen: const CreateLeaguePage(),
-    subsection: "Nuova Lega",
   ),
   NavigationItem(
     title: "Crea Lega",

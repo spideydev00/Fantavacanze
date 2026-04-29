@@ -46,7 +46,7 @@ class _RiveBottomNavigationAssetState
         const SizedBox(height: 4),
         GestureDetector(
           onTap: () {
-            widget.onTap;
+            widget.onTap();
             triggerAnimation();
           },
           child: Column(
@@ -71,11 +71,11 @@ class _RiveBottomNavigationAssetState
   }
 
   void triggerAnimation() {
-    input?.change(true);
+    input?.value = true;
     Future.delayed(
       const Duration(seconds: 1),
       () {
-        input?.change(false);
+        input?.value = false;
       },
     );
   }

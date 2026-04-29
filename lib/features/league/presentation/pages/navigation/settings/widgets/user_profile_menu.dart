@@ -5,8 +5,8 @@ import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:fantavacanze_official/core/utils/show-snackbar-or-paywall/show_snackbar.dart';
 import 'package:fantavacanze_official/core/widgets/buttons/danger_action_button.dart';
-import 'package:fantavacanze_official/features/league/presentation/pages/navigation/settings/widgets/consent_settings_dialog.dart';
 import 'package:fantavacanze_official/core/widgets/dialogs/gdpr_consent_dialog.dart'; // Import the new dialog
+import 'package:fantavacanze_official/features/league/presentation/pages/navigation/settings/widgets/consent_settings_dialog.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/settings/widgets/delete_account_dialog.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/settings/widgets/edit_profile_dialog.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/settings/widgets/password_change_dialog.dart';
@@ -16,7 +16,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 class UserProfileMenu extends StatelessWidget {
   static const String routeName = '/user_profile_menu';
 
-  static get route => MaterialPageRoute(
+  static MaterialPageRoute<dynamic> get route => MaterialPageRoute(
         builder: (context) => const UserProfileMenu(),
         settings: const RouteSettings(name: routeName),
       );

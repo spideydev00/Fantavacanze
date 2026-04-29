@@ -5,10 +5,8 @@ import 'package:fpdart/fpdart.dart';
 
 class RejectDailyChallengeParams {
   final String notificationId;
-  final String challengeId;
 
-  RejectDailyChallengeParams(
-      {required this.notificationId, required this.challengeId});
+  RejectDailyChallengeParams({required this.notificationId});
 }
 
 class RejectDailyChallenge
@@ -19,7 +17,7 @@ class RejectDailyChallenge
 
   @override
   Future<Either<Failure, void>> call(RejectDailyChallengeParams params) async {
-    return await dailyChallengesRepository.rejectDailyChallenge(
-        params.notificationId, params.challengeId);
+    return await dailyChallengesRepository
+        .rejectDailyChallenge(params.notificationId);
   }
 }

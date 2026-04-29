@@ -6,7 +6,7 @@ import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/participant.dart';
 import 'package:flutter/material.dart';
 
-class ParticipantSelector<T> extends StatelessWidget {
+class ParticipantSelector<T> extends StatefulWidget {
   final List<T> items;
   final T? value;
   final Function(T?) onChanged;
@@ -33,72 +33,7 @@ class ParticipantSelector<T> extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
-    return DropdownButtonHideUnderline(
-      child: DropdownButton2<T>(
-        isExpanded: true,
-        hint: Row(
-          children: [
-            Icon(
-              prefixIcon,
-              size: 22,
-              color: context.primaryColor,
-            ),
-            const SizedBox(width: ThemeSizes.sm),
-            Expanded(
-              child: Text(
-                hintText,
-                overflow: TextOverflow.ellipsis,
-                style: context.textTheme.bodyMedium,
-              ),
-            ),
-          ],
-        ),
-        items: items.map((item) {
-          return DropdownMenuItem<T>(
-            value: item,
-            child: itemBuilder(item),
-          );
-        }).toList(),
-        value: value,
-        onChanged: onChanged,
-        buttonStyleData: buttonStyleData ??
-            ButtonStyleData(
-              height: height,
-              padding: const EdgeInsets.symmetric(
-                horizontal: ThemeSizes.md,
-              ),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusMd),
-                border: Border.all(
-                  color: Colors.black26.withValues(alpha: 0.1),
-                ),
-                color: context.secondaryBgColor,
-              ),
-            ),
-        dropdownStyleData: dropdownStyleData ??
-            DropdownStyleData(
-              maxHeight: Constants.getHeight(context) * maxDropdownHeight,
-              elevation: 0,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusMd),
-                color: context.secondaryBgColor,
-              ),
-            ),
-        menuItemStyleData: const MenuItemStyleData(
-          height: 50,
-          padding: EdgeInsets.symmetric(horizontal: ThemeSizes.md),
-        ),
-        iconStyleData: IconStyleData(
-          icon: Icon(
-            Icons.arrow_drop_down,
-            color: context.textPrimaryColor,
-          ),
-          iconSize: 24,
-        ),
-      ),
-    );
-  }
+  State<ParticipantSelector<T>> createState() => _ParticipantSelectorState<T>();
 
   static Widget defaultParticipantItem(
       BuildContext context, Participant participant) {
@@ -142,6 +77,102 @@ class ParticipantSelector<T> extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+class _ParticipantSelectorState<T> extends State<ParticipantSelector<T>> {
+  late final ValueNotifier<T?> _vn;
+
+  @override
+  void initState() {
+    super.initState();
+    _vn = ValueNotifier<T?>(widget.value);
+  }
+
+  @override
+  void didUpdateWidget(covariant ParticipantSelector<T> oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.value != widget.value) {
+      _vn.value = widget.value;
+    }
+  }
+
+  @override
+  void dispose() {
+    _vn.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return DropdownButtonHideUnderline(
+      child: DropdownButton2<T>(
+        isExpanded: true,
+        hint: Row(
+          children: [
+            Icon(
+              widget.prefixIcon,
+              size: 22,
+              color: context.primaryColor,
+            ),
+            const SizedBox(width: ThemeSizes.sm),
+            Expanded(
+              child: Text(
+                widget.hintText,
+                overflow: TextOverflow.ellipsis,
+                style: context.textTheme.bodyMedium,
+              ),
+            ),
+          ],
+        ),
+        items: widget.items.map((item) {
+          return DropdownItem<T>(
+            value: item,
+            height: 50,
+            child: widget.itemBuilder(item),
+          );
+        }).toList(),
+        valueListenable: _vn,
+        onChanged: (v) {
+          _vn.value = v;
+          widget.onChanged(v);
+        },
+        buttonStyleData: widget.buttonStyleData ??
+            ButtonStyleData(
+              height: widget.height,
+              padding: const EdgeInsets.symmetric(
+                horizontal: ThemeSizes.md,
+              ),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusMd),
+                border: Border.all(
+                  color: Colors.black26.withValues(alpha: 0.1),
+                ),
+                color: context.secondaryBgColor,
+              ),
+            ),
+        dropdownStyleData: widget.dropdownStyleData ??
+            DropdownStyleData(
+              maxHeight:
+                  Constants.getHeight(context) * widget.maxDropdownHeight,
+              elevation: 0,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusMd),
+                color: context.secondaryBgColor,
+              ),
+            ),
+        menuItemStyleData: const MenuItemStyleData(
+          padding: EdgeInsets.symmetric(horizontal: ThemeSizes.md),
+        ),
+        iconStyleData: IconStyleData(
+          icon: Icon(
+            Icons.arrow_drop_down,
+            color: context.textPrimaryColor,
+          ),
+          iconSize: 24,
+        ),
+      ),
     );
   }
 }

@@ -1,13 +1,16 @@
 import 'dart:math';
 
+import 'package:fantavacanze_official/core/constants/constants.dart';
 import 'package:fantavacanze_official/core/constants/navigation_items.dart';
 import 'package:fantavacanze_official/core/cubits/app_league/app_league_cubit.dart';
+import 'package:fantavacanze_official/core/cubits/app_navigation/app_navigation_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/app_theme/app_theme_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/notification_count/notification_count_cubit.dart';
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/services/ad_helper.dart';
 import 'package:fantavacanze_official/core/services/review_service.dart';
+import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:fantavacanze_official/core/widgets/dialogs/notification_dialog.dart';
 import 'package:fantavacanze_official/core/widgets/notification_badge.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/daily_challenges_bloc/daily_challenges_bloc.dart';
@@ -16,24 +19,20 @@ import 'package:fantavacanze_official/features/league/presentation/bloc/league_b
 import 'package:fantavacanze_official/features/league/presentation/bloc/notifications_bloc/notifications_bloc.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/notifications_bloc/notifications_event.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/notifications_bloc/notifications_state.dart';
+import 'package:fantavacanze_official/features/league/presentation/pages/dashboard/sections/bottom_navigation_bar.dart';
+import 'package:fantavacanze_official/features/league/presentation/pages/dashboard/sections/side_menu.dart';
+import 'package:fantavacanze_official/features/league/presentation/pages/dashboard/widgets/side_menu/custom_menu_icon.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/notifications/notifications_page.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/settings/settings.dart';
-import 'package:fantavacanze_official/features/league/presentation/pages/dashboard/widgets/side_menu/custom_menu_icon.dart';
-import 'package:fantavacanze_official/features/league/presentation/pages/dashboard/sections/side_menu.dart';
 import 'package:fantavacanze_official/init_dependencies/init_dependencies.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:fantavacanze_official/core/constants/constants.dart';
-import 'package:fantavacanze_official/core/cubits/app_navigation/app_navigation_cubit.dart';
-import 'package:fantavacanze_official/core/theme/sizes.dart';
-import 'package:fantavacanze_official/features/league/presentation/pages/dashboard/sections/bottom_navigation_bar.dart';
 import 'package:get_it/get_it.dart';
-import 'package:fantavacanze_official/core/cubits/app_fs_league/app_fs_league_cubit.dart';
 
 class DashboardScreen extends StatefulWidget {
   static const String routeName = '/dashboard';
 
-  static get route => MaterialPageRoute(
+  static MaterialPageRoute<dynamic> get route => MaterialPageRoute(
         builder: (context) => const DashboardScreen(),
         settings: const RouteSettings(name: routeName),
       );
@@ -100,9 +99,6 @@ class _DashboardScreenState extends State<DashboardScreen>
     context.read<NotificationsBloc>().add(GetNotificationsEvent());
     // Listen for new notifications
     context.read<NotificationsBloc>().add(ListenToNotificationEvent());
-
-    // Check for Fantaserata league
-    context.read<AppFsLeagueCubit>().checkFsLeague();
   }
 
   @override
@@ -324,8 +320,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                                       });
                                     }
 
-                                    final selectedItem =
-                                        navItems[safeIndex];
+                                    final selectedItem = navItems[safeIndex];
 
                                     if (selectedItem.title == 'Crea Lega' ||
                                         selectedItem.title == 'Cerca Lega') {
@@ -404,8 +399,8 @@ class _DashboardScreenState extends State<DashboardScreen>
 
     return Image.asset(
       context.read<AppThemeCubit>().isDarkMode(context)
-          ? 'assets/images/logos/logo-winter-neon.png'
-          : 'assets/images/logos/logo-winter.png',
+          ? 'assets/images/logos/logo-neon.png'
+          : 'assets/images/logos/logo-naked.png',
       width: Constants.getWidth(context) * widthFactor,
     );
   }

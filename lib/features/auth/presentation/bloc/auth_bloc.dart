@@ -243,7 +243,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     });
   }
 
-  _onUpdateGender(AuthUpdateGender event, Emitter<AuthState> emit) async {
+  Future<void> _onUpdateGender(
+      AuthUpdateGender event, Emitter<AuthState> emit) async {
     final result = await _updateGender.call(event.gender);
 
     result.fold(
@@ -254,7 +255,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     );
   }
 
-  _onUpdateIsSingleStatus(
+  Future<void> _onUpdateIsSingleStatus(
     AuthUpdateIsSingleStatus event,
     Emitter<AuthState> emit,
   ) async {
@@ -325,7 +326,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   // =====================================================================
 
   //Save information about user state (logged in or not)
-  _emitAuthSuccess(User user, Emitter<AuthState> emit) {
+  void _emitAuthSuccess(User user, Emitter<AuthState> emit) {
     _appUserCubit.updateUser(user);
 
     // Only fetch leagues if user is fully onboarded - prevents error during onboarding
@@ -336,7 +337,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     emit(AuthSuccess(user));
   }
 
-  _emitLogoutSuccess(Emitter<AuthState> emit) {
+  void _emitLogoutSuccess(Emitter<AuthState> emit) {
     _appUserCubit.updateUser(null);
     emit(AuthInitial());
   }

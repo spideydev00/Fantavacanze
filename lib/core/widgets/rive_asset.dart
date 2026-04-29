@@ -1,4 +1,3 @@
-import 'package:fantavacanze_official/core/utils/rive/get_rive_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:rive/rive.dart';
 
@@ -25,24 +24,39 @@ abstract class RiveAsset extends StatefulWidget {
 }
 
 abstract class RiveAssetState<T extends RiveAsset> extends State<T> {
-  SMIBool? input;
-  StateMachineController? _controller;
-
-  void _initializeArtboard(Artboard artboard) {
-    _controller = getRiveController(
-      artboard,
-      stateMachineName: widget.stateMachineName,
-    );
-    input = _controller?.findSMI(widget.triggerValue) as SMIBool?;
-    input?.value = widget.isActive;
-    if (mounted) {
-      setState(() {});
-    }
-  }
+  File? riveFile;
+  RiveWidgetController? controller;
+  BooleanInput? input; // <-- niente underscore, accessibile dalle sottoclassi
 
   @override
   void initState() {
     super.initState();
+    _loadRiveFile();
+  }
+
+  Future<void> _loadRiveFile() async {
+    final file = await File.asset(
+      widget.path,
+      riveFactory: Factory.rive,
+    );
+
+    if (file == null || !mounted) return;
+
+    final c = RiveWidgetController(
+      file,
+      artboardSelector: ArtboardSelector.byName(widget.artboard),
+      stateMachineSelector:
+          StateMachineSelector.byName(widget.stateMachineName),
+    );
+
+    final i = c.stateMachine.boolean(widget.triggerValue);
+    i?.value = widget.isActive;
+
+    setState(() {
+      riveFile = file;
+      controller = c;
+      input = i;
+    });
   }
 
   @override
@@ -55,18 +69,25 @@ abstract class RiveAssetState<T extends RiveAsset> extends State<T> {
 
   @override
   void dispose() {
-    _controller?.dispose();
+    controller?.dispose();
+    riveFile?.dispose();
     super.dispose();
   }
 
   Widget buildRiveAnimation() {
+    if (controller == null) {
+      return SizedBox(
+        height: widget.height,
+        width: widget.width,
+      );
+    }
+
     return SizedBox(
       height: widget.height,
       width: widget.width,
-      child: RiveAnimation.asset(
-        widget.path,
-        artboard: widget.artboard,
-        onInit: _initializeArtboard,
+      child: RiveWidget(
+        controller: controller!,
+        fit: Fit.contain,
       ),
     );
   }

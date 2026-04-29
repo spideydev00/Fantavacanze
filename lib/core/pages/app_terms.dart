@@ -7,7 +7,7 @@ import 'package:flutter/material.dart';
 class AppTermsPage extends StatelessWidget {
   static const String routeName = '/app_terms';
 
-  static get route => MaterialPageRoute(
+  static MaterialPageRoute<dynamic> get route => MaterialPageRoute(
         builder: (context) => const AppTermsPage(),
         settings: const RouteSettings(name: routeName),
       );

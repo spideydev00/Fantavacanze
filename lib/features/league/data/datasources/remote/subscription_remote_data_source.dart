@@ -52,10 +52,12 @@ class SubscriptionRemoteDataSourceImpl implements SubscriptionRemoteDataSource {
       );
 
       // Make the purchase
-      final purchaseResult = await Purchases.purchasePackage(package);
+      final purchaseResult =
+          await Purchases.purchase(PurchaseParams.package(package));
 
       // Create subscription model from customer info
-      final subscription = SubscriptionModel.fromCustomerInfo(purchaseResult);
+      final subscription =
+          SubscriptionModel.fromCustomerInfo(purchaseResult.customerInfo);
 
       return subscription;
     } catch (e) {

@@ -1,19 +1,37 @@
 import 'package:fantavacanze_official/core/constants/constants.dart';
 import 'package:fantavacanze_official/core/cubits/app_theme/app_theme_cubit.dart';
+import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/extensions/context_extension.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
-import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-
 import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
-  static get fontFamily => GoogleFonts.numans;
+  static TextStyle Function(
+      {Paint? background,
+      Color? backgroundColor,
+      Color? color,
+      TextDecoration? decoration,
+      Color? decorationColor,
+      TextDecorationStyle? decorationStyle,
+      double? decorationThickness,
+      List<FontFeature>? fontFeatures,
+      double? fontSize,
+      FontStyle? fontStyle,
+      FontWeight? fontWeight,
+      Paint? foreground,
+      double? height,
+      double? letterSpacing,
+      Locale? locale,
+      List<Shadow>? shadows,
+      TextBaseline? textBaseline,
+      TextStyle? textStyle,
+      double? wordSpacing}) get fontFamily => GoogleFonts.numans;
 
   //border re-usable function
-  static border(
+  static OutlineInputBorder border(
       [Color color = Colors.grey, double width = 3, double radius = 10]) {
     return OutlineInputBorder(
       borderSide: BorderSide(color: color, width: width),
@@ -223,21 +241,36 @@ class AppTheme {
   static TextTheme getPremiumTextTheme(BuildContext context) {
     return GoogleFonts.numansTextTheme(
       context.textTheme.copyWith(
-        displayLarge: context.textTheme.displayLarge?.copyWith(color: ColorPalette.premiumUser),
-        displayMedium: context.textTheme.displayMedium?.copyWith(color: ColorPalette.premiumUser),
-        displaySmall: context.textTheme.displaySmall?.copyWith(color: ColorPalette.premiumUser),
-        headlineLarge: context.textTheme.headlineLarge?.copyWith(color: ColorPalette.premiumUser),
-        headlineMedium: context.textTheme.headlineMedium?.copyWith(color: ColorPalette.premiumUser),
-        headlineSmall: context.textTheme.headlineSmall?.copyWith(color: ColorPalette.premiumUser),
-        titleLarge: context.textTheme.titleLarge?.copyWith(color: ColorPalette.premiumUser),
-        titleMedium: context.textTheme.titleMedium?.copyWith(color: ColorPalette.premiumUser),
-        titleSmall: context.textTheme.titleSmall?.copyWith(color: ColorPalette.premiumUser),
-        bodyLarge: context.textTheme.bodyLarge?.copyWith(color: ColorPalette.premiumUser),
-        bodyMedium: context.textTheme.bodyMedium?.copyWith(color: ColorPalette.premiumUser),
-        bodySmall: context.textTheme.bodySmall?.copyWith(color: ColorPalette.premiumUser),
-        labelLarge: context.textTheme.labelLarge?.copyWith(color: ColorPalette.premiumUser),
-        labelMedium: context.textTheme.labelMedium?.copyWith(color: ColorPalette.premiumUser),
-        labelSmall: context.textTheme.labelSmall?.copyWith(color: ColorPalette.premiumUser),
+        displayLarge: context.textTheme.displayLarge
+            ?.copyWith(color: ColorPalette.premiumUser),
+        displayMedium: context.textTheme.displayMedium
+            ?.copyWith(color: ColorPalette.premiumUser),
+        displaySmall: context.textTheme.displaySmall
+            ?.copyWith(color: ColorPalette.premiumUser),
+        headlineLarge: context.textTheme.headlineLarge
+            ?.copyWith(color: ColorPalette.premiumUser),
+        headlineMedium: context.textTheme.headlineMedium
+            ?.copyWith(color: ColorPalette.premiumUser),
+        headlineSmall: context.textTheme.headlineSmall
+            ?.copyWith(color: ColorPalette.premiumUser),
+        titleLarge: context.textTheme.titleLarge
+            ?.copyWith(color: ColorPalette.premiumUser),
+        titleMedium: context.textTheme.titleMedium
+            ?.copyWith(color: ColorPalette.premiumUser),
+        titleSmall: context.textTheme.titleSmall
+            ?.copyWith(color: ColorPalette.premiumUser),
+        bodyLarge: context.textTheme.bodyLarge
+            ?.copyWith(color: ColorPalette.premiumUser),
+        bodyMedium: context.textTheme.bodyMedium
+            ?.copyWith(color: ColorPalette.premiumUser),
+        bodySmall: context.textTheme.bodySmall
+            ?.copyWith(color: ColorPalette.premiumUser),
+        labelLarge: context.textTheme.labelLarge
+            ?.copyWith(color: ColorPalette.premiumUser),
+        labelMedium: context.textTheme.labelMedium
+            ?.copyWith(color: ColorPalette.premiumUser),
+        labelSmall: context.textTheme.labelSmall
+            ?.copyWith(color: ColorPalette.premiumUser),
       ),
     );
   }

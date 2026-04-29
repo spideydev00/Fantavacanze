@@ -11,7 +11,6 @@ import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:fantavacanze_official/core/widgets/divider.dart';
 import 'package:fantavacanze_official/core/widgets/events/events_list_widget.dart';
 import 'package:fantavacanze_official/features/blog/presentation/widgets/article_page.dart';
-import 'package:fantavacanze_official/features/fantaserata/presentation/pages/fs_router_page.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/league/league.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc/league_bloc.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc/league_event.dart';
@@ -22,7 +21,6 @@ import 'package:fantavacanze_official/features/league/presentation/pages/navigat
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/homepage/widgets/articles_list.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/homepage/widgets/daily_goals.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/join_league/search_league_page.dart';
-import 'package:fantavacanze_official/features/league/presentation/pages/dashboard/widgets/bottom_navbar/animated_floating_action_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -35,64 +33,39 @@ class HomePage extends StatelessWidget {
     final currentUserId =
         currentUser is AppUserIsLoggedIn ? currentUser.user.id : null;
 
-    // Variable to store the show button callback
-    void Function()? showFloatingButton;
-
     return Scaffold(
-      body: GestureDetector(
-        // Add gesture detection for showing floating button
-        onPanEnd: (DragEndDetails details) {
-          // Swipe verso sinistra per mostrare il floating button
-          if (details.velocity.pixelsPerSecond.dx < -500) {
-            showFloatingButton?.call();
-          }
-        },
-        child: BlocBuilder<AppLeagueCubit, AppLeagueState>(
-          builder: (context, state) {
-            // User has leagues and a selected league
-            if (state is AppLeagueExists) {
-              return SingleChildScrollView(
-                physics: const ClampingScrollPhysics(),
-                child: Column(
-                  children: [
-                    _buildParticipantContent(
-                        context,
-                        state.selectedLeague.admins.contains(currentUserId)
-                            ? true
-                            : false,
-                        state.selectedLeague),
-                    // _buildSeasonalTestForm(context),
-                  ],
-                ),
-              );
-            }
-
+      body: BlocBuilder<AppLeagueCubit, AppLeagueState>(
+        builder: (context, state) {
+          // User has leagues and a selected league
+          if (state is AppLeagueExists) {
             return SingleChildScrollView(
               physics: const ClampingScrollPhysics(),
               child: Column(
                 children: [
-                  _buildNonParticipantContent(context),
+                  _buildParticipantContent(
+                      context,
+                      state.selectedLeague.admins.contains(currentUserId)
+                          ? true
+                          : false,
+                      state.selectedLeague),
                   // _buildSeasonalTestForm(context),
                 ],
               ),
             );
-          },
-        ),
-      ),
-      floatingActionButton: AnimatedFloatingActionButton(
-        onPressed: () => _handleFantaSerataNavigation(context),
-        onRegisterShowCallback: (showCallback) {
-          // Register the callback to show the button
-          showFloatingButton = showCallback;
+          }
+
+          return SingleChildScrollView(
+            physics: const ClampingScrollPhysics(),
+            child: Column(
+              children: [
+                _buildNonParticipantContent(context),
+                // _buildSeasonalTestForm(context),
+              ],
+            ),
+          );
         },
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
-  }
-
-  Future<void> _handleFantaSerataNavigation(BuildContext context) async {
-    // Naviga direttamente alla pagina router
-    Navigator.of(context).pushReplacement(FsRouterPage.route);
   }
 
   Widget _buildNonParticipantContent(BuildContext context) {

@@ -7,10 +7,12 @@ import 'package:fantavacanze_official/core/extensions/context_extension.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:fantavacanze_official/core/utils/show-snackbar-or-paywall/show_snackbar.dart';
+import 'package:fantavacanze_official/core/widgets/buttons/gradient_option_button.dart';
 import 'package:fantavacanze_official/core/widgets/divider.dart';
 import 'package:fantavacanze_official/core/widgets/info_container.dart';
 import 'package:fantavacanze_official/core/widgets/loader.dart';
 import 'package:fantavacanze_official/core/widgets/participants/participant_card.dart';
+import 'package:fantavacanze_official/core/widgets/rules/type_selector.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/individual_participant.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/league/league.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/rule/rule.dart';
@@ -20,16 +22,14 @@ import 'package:fantavacanze_official/features/league/presentation/bloc/league_b
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc/league_state.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/events/widgets/app_search_bar.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/events/widgets/event_preview_card.dart';
-import 'package:fantavacanze_official/core/widgets/buttons/gradient_option_button.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/events/widgets/selected_rule_card.dart';
-import 'package:fantavacanze_official/core/widgets/rules/type_selector.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/rules/widgets/rule_item.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class AddEventPage extends StatefulWidget {
-  static get route =>
+  static MaterialPageRoute<dynamic> get route =>
       MaterialPageRoute(builder: (context) => const AddEventPage());
   const AddEventPage({super.key, this.showAppBar = true});
 
@@ -228,8 +228,8 @@ class _AddEventPageState extends State<AddEventPage> {
     String? targetTeamNameOut;
 
     if (league.type == LeagueType.team) {
-      final isMemberSelection =
-          selectedTeamName != null && _selectedParticipantId != selectedTeamName;
+      final isMemberSelection = selectedTeamName != null &&
+          _selectedParticipantId != selectedTeamName;
 
       targetTeamNameOut = selectedTeamName ?? targetUser;
       targetMemberId = isMemberSelection ? targetUser : null;

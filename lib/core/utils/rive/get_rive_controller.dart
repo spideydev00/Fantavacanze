@@ -1,12 +1,15 @@
 import 'package:rive/rive.dart';
 
-StateMachineController getRiveController(
-  Artboard artboard, {
+RiveWidgetController getRiveController(
+  File riveFile,
+  String? artboardName, {
   String stateMachineName = "State Machine 1",
 }) {
-  StateMachineController? controller =
-      StateMachineController.fromArtboard(artboard, stateMachineName);
-
-  artboard.addController(controller!);
-  return controller;
+  return RiveWidgetController(
+    riveFile,
+    artboardSelector: artboardName != null
+        ? ArtboardSelector.byName(artboardName)
+        : ArtboardSelector.byDefault(),
+    stateMachineSelector: StateMachineSelector.byName(stateMachineName),
+  );
 }

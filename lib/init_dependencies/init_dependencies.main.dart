@@ -10,6 +10,11 @@ Future<void> initDependencies() async {
       url: AppSecrets.supabaseUrl,
     );
 
+    await google_sign_in.GoogleSignIn.instance.initialize(
+      clientId: AppSecrets.iosClientId,
+      serverClientId: AppSecrets.webClientId,
+    );
+
     serviceLocator.registerLazySingleton(() => supabase.client);
 
     // FIREBASE
@@ -19,6 +24,9 @@ Future<void> initDependencies() async {
     serviceLocator.registerLazySingleton<FirebaseMessaging>(
       () => FirebaseMessaging.instance,
     );
+
+    // RIVE
+    await RiveNative.init();
 
     // HIVE
     await _initializeHive();
@@ -50,7 +58,6 @@ Future<void> initDependencies() async {
     _initDailyChallenges();
     _initNotifications();
     _initGames();
-    _initFantaserata();
 
     // Register UUID generator
     serviceLocator.registerLazySingleton(() => const Uuid());
@@ -99,33 +106,17 @@ Future<void> initDependencies() async {
           clearLocalCache: serviceLocator<ClearLocalCache>(),
         ),
       )
-      //5. fs league cubit
-      ..registerLazySingleton(
-        () => AppFsLeagueCubit(
-          getFsLeague: serviceLocator(),
-          clearFsCache: serviceLocator(),
-          appUserCubit: serviceLocator(),
-        ),
-      )
-      //6. fs navigation cubit
-      ..registerLazySingleton(
-        () => FsNavigationCubit(),
-      )
-      //7. notification count cubit
+      //5. notification count cubit
       ..registerLazySingleton(
         () => NotificationCountCubit(),
       )
-      //8. floating button animation cubit
-      ..registerLazySingleton(
-        () => FloatingButtonAnimationCubit(),
-      )
-      //9. app status cubit
+      //6. app status cubit
       ..registerLazySingleton(
         () => AppStatusCubit(
           getAppStatus: serviceLocator(),
         ),
       )
-      //10. connection checker
+      //7. connection checker
       ..registerFactory<ConnectionChecker>(
         () => ConnectionCheckerImpl(
           serviceLocator(),
@@ -258,15 +249,6 @@ void _registerHiveAdapters() {
   Hive.registerAdapter(RuleTypeAdapter());
   Hive.registerAdapter(LeagueTypeAdapter());
   Hive.registerAdapter(EventTargetKindAdapter());
-
-  // Fantaserata adapters
-  Hive.registerAdapter(FsRuleModelAdapter());
-  Hive.registerAdapter(FsRuleTypeAdapter());
-  Hive.registerAdapter(FsParticipantModelAdapter());
-  Hive.registerAdapter(FsLeagueModelAdapter());
-  Hive.registerAdapter(FsNightTypeAdapter());
-  Hive.registerAdapter(FsRuleCompletionModelAdapter());
-
   debugPrint("🔌 Tutti gli adapter di Hive registrati correttamente");
 }
 
@@ -282,18 +264,10 @@ Future<void> _openHiveBoxes() async {
 
     final challengesBox =
         await Hive.openBox<DailyChallengeModel>('challenges_box');
-    await challengesBox.clear();
 
     final notificationsBox =
         await Hive.openBox<NotificationModel>('notifications_box');
     await notificationsBox.clear();
-
-    // Fantaserata box
-    final fsLeaguesBox = await Hive.openBox<FsLeagueModel>('fs_leagues_box');
-
-    // Fantaserata dynamic rules box
-    final fsRulesBox = await Hive.openBox<FsRuleModel>('fs_rules_box');
-    await fsRulesBox.clear();
 
     // Register boxes in GetIt
     serviceLocator
@@ -301,9 +275,7 @@ Future<void> _openHiveBoxes() async {
       ..registerLazySingleton(() => rulesBox)
       ..registerLazySingleton(() => notesBox)
       ..registerLazySingleton(() => challengesBox)
-      ..registerLazySingleton(() => notificationsBox)
-      ..registerLazySingleton(() => fsLeaguesBox)
-      ..registerLazySingleton(() => fsRulesBox);
+      ..registerLazySingleton(() => notificationsBox);
 
     debugPrint("📦 Tutti i box di Hive aperti correttamente");
   } catch (e) {
@@ -726,17 +698,6 @@ Future<void> _initNotifications() async {
         appLeagueCubit: serviceLocator(),
       ),
     );
-
-  // Bloc
-  serviceLocator.registerFactory(
-    () => NotificationsBloc(
-      getNotifications: serviceLocator(),
-      deleteNotification: serviceLocator(),
-      listenToNotification: serviceLocator(),
-      notificationCountCubit: serviceLocator(),
-      appLeagueCubit: serviceLocator(),
-    ),
-  );
 }
 
 Future<void> _initDailyChallenges() async {
@@ -802,168 +763,4 @@ Future<void> _initDailyChallenges() async {
         appLeagueCubit: serviceLocator(),
       ),
     );
-
-  // Bloc
-  serviceLocator.registerFactory(
-    () => DailyChallengesBloc(
-      getDailyChallenges: serviceLocator(),
-      markChallengeAsCompleted: serviceLocator(),
-      updateChallengeRefreshStatus: serviceLocator(),
-      unlockDailyChallenge: serviceLocator(),
-      approveDailyChallenge: serviceLocator(),
-      rejectDailyChallenge: serviceLocator(),
-      appUserCubit: serviceLocator(),
-      appLeagueCubit: serviceLocator(),
-    ),
-  );
-}
-
-void _initFantaserata() {
-  // Data Sources
-  serviceLocator.registerFactory<FsRemoteDataSource>(
-    () => FsRemoteDataSourceImpl(
-      supabaseClient: serviceLocator(),
-      uuid: serviceLocator(),
-      appUserCubit: serviceLocator(),
-    ),
-  );
-
-  serviceLocator.registerFactory<FsLocalDataSource>(
-    () => FsLocalDataSourceImpl(fsLeaguesBox: serviceLocator()),
-  );
-
-  // Dynamic Rules Data Sources
-  serviceLocator.registerFactory<FsRulesRemoteDataSource>(
-    () => FsRulesRemoteDataSourceImpl(
-      supabaseClient: serviceLocator(),
-      appUserCubit: serviceLocator(),
-      appFsLeagueCubit: serviceLocator(),
-      fsRemoteDataSource: serviceLocator(),
-    ),
-  );
-
-  serviceLocator.registerFactory<FsRulesLocalDataSource>(
-    () => FsRulesLocalDataSourceImpl(
-      fsRulesBox: serviceLocator(),
-      appUserCubit: serviceLocator(),
-    ),
-  );
-
-  // Repositories
-  serviceLocator.registerFactory<FsRulesRepository>(
-    () => FsRulesRepositoryImpl(
-      remoteDataSource: serviceLocator(),
-      localDataSource: serviceLocator(),
-      connectionChecker: serviceLocator(),
-    ),
-  );
-
-  serviceLocator.registerFactory<FsRepository>(
-    () => FsRepositoryImpl(
-      remoteDataSource: serviceLocator(),
-      localDataSource: serviceLocator(),
-      connectionChecker: serviceLocator(),
-    ),
-  );
-
-  // FS League Use Cases
-  serviceLocator
-    ..registerFactory(
-      () => CreateFsLeague(serviceLocator()),
-    )
-    ..registerFactory(
-      () => CreateNightSpecificFsLeague(serviceLocator()),
-    )
-    ..registerFactory(
-      () => JoinFsLeague(serviceLocator()),
-    )
-    ..registerFactory(
-      () => JoinNightSpecificFsLeague(serviceLocator()),
-    )
-    ..registerFactory(
-      () => GetFsLeague(serviceLocator()),
-    )
-    ..registerFactory(
-      () => ExitFsLeague(serviceLocator()),
-    )
-    ..registerFactory(
-      () => DeleteFsLeague(serviceLocator()),
-    )
-    ..registerFactory(
-      () => UploadWinnerPhoto(serviceLocator()),
-    )
-    ..registerFactory(
-      () => DeleteWinnerPhoto(serviceLocator()),
-    )
-    ..registerFactory(
-      () => ClearFsCache(serviceLocator()),
-    );
-
-  // FS Rules Use Cases
-  serviceLocator
-    ..registerFactory(
-      () => GetLeagueRules(serviceLocator()),
-    )
-    ..registerFactory(
-      () => RefreshFsRule(serviceLocator()),
-    )
-    ..registerFactory(
-      () => SetFsRuleAsCompleted(serviceLocator()),
-    )
-    ..registerFactory(
-      () => SetFsRuleAsUncompleted(serviceLocator()),
-    )
-    ..registerFactory(
-      () => UnlockFsRule(serviceLocator()),
-    )
-    ..registerFactory(
-      () => InsertRulesForLeagueFromExisting(serviceLocator()),
-    )
-    ..registerFactory(
-      () => LockFsRule(serviceLocator()),
-    )
-    ..registerFactory(
-      () => GetFsRuleCompletions(serviceLocator()),
-    );
-
-  // BLoCs - Update to use dynamic rules repository
-  serviceLocator.registerFactory(
-    () => FsBloc(
-      createFsLeague: serviceLocator(),
-      createNightSpecificFsLeague: serviceLocator(),
-      joinFsLeague: serviceLocator(),
-      joinNightSpecificFsLeague: serviceLocator(),
-      getFsLeague: serviceLocator(),
-      exitFsLeague: serviceLocator(),
-      deleteFsLeague: serviceLocator(),
-      uploadWinnerPhoto: serviceLocator(),
-      deleteWinnerPhoto: serviceLocator(),
-      appFsLeagueCubit: serviceLocator(),
-    ),
-  );
-
-  // Dynamic Rules BLoC
-  serviceLocator.registerFactory(
-    () => FsRulesBloc(
-      getLeagueRules: serviceLocator(),
-      refreshFsRule: serviceLocator(),
-      unlockFsRule: serviceLocator(),
-      setFsRuleAsCompleted: serviceLocator(),
-      setFsRuleAsUncompleted: serviceLocator(),
-      insertRulesForLeagueFromExisting: serviceLocator(),
-      appFsLeagueCubit: serviceLocator(),
-      lockFsRule: serviceLocator(),
-      appUserCubit: serviceLocator(),
-      getFsRuleCompletions: serviceLocator(),
-    ),
-  );
-  // ===== SERVICES =====
-  serviceLocator.registerLazySingleton<SeasonalEventService>(
-    () => SeasonalEventService(),
-  );
-
-  // ===== GLOBAL CUBITS =====
-  serviceLocator.registerLazySingleton<SeasonalEventCubit>(
-    () => SeasonalEventCubit(serviceLocator()),
-  );
 }

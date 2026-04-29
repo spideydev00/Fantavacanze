@@ -41,7 +41,6 @@ abstract class DailyChallengesRemoteDataSource {
 
   Future<void> rejectDailyChallenge(
     String notificationId,
-    String challengeId,
   );
 
   Future<void> updateChallengeRefreshStatus({
@@ -243,16 +242,14 @@ class DailyChallengesRemoteDataSourceImpl
   }
 
   @override
-  Future<void> rejectDailyChallenge(
-      String notificationId, String challengeId) async {
+  Future<void> rejectDailyChallenge(String notificationId) async {
     return _tryDatabaseOperation(() async {
-      // 1. If we have a challenge ID, update its pending status
-      await supabaseClient.from('user_daily_challenges').update({
-        'is_pending_approval': false,
-      }).eq('id', challengeId);
-
-      // 3. Delete the notification
-      await notificationRemoteDataSource.deleteNotification(notificationId);
+      await supabaseClient.rpc(
+        'reject_daily_challenge',
+        params: {
+          'p_notification_id': notificationId,
+        },
+      );
     });
   }
 

@@ -1,9 +1,9 @@
 import 'package:fantavacanze_official/core/extensions/context_extension.dart';
-import 'package:fantavacanze_official/core/widgets/loader.dart';
 import 'package:fantavacanze_official/core/pages/empty_branded_page.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:fantavacanze_official/core/widgets/dialogs/auth_dialog_box.dart';
+import 'package:fantavacanze_official/core/widgets/loader.dart';
 import 'package:fantavacanze_official/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:fantavacanze_official/features/auth/presentation/pages/phone_login_unused/otp_page.dart';
 import 'package:fantavacanze_official/features/auth/presentation/widgets/auth_field.dart';
@@ -15,7 +15,7 @@ import 'package:flutter_svg/svg.dart';
 class ForgotPasswordPage extends StatefulWidget {
   static const String routeName = '/forgot_password';
 
-  static get route => MaterialPageRoute(
+  static MaterialPageRoute<dynamic> get route => MaterialPageRoute(
         builder: (context) => const ForgotPasswordPage(),
         settings: const RouteSettings(name: routeName),
       );

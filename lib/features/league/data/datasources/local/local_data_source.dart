@@ -1,12 +1,12 @@
-import 'package:fantavacanze_official/features/league/data/models/notification_model/daily_challenge_notification_model.dart';
-import 'package:hive/hive.dart';
-
-import 'package:fantavacanze_official/core/errors/exceptions.dart';
-import 'package:fantavacanze_official/features/league/data/models/league_model/league_model.dart';
-import 'package:fantavacanze_official/features/league/data/models/rule_model/rule_model.dart';
-import 'package:fantavacanze_official/features/league/data/models/note_model/note_model.dart';
-import 'package:fantavacanze_official/features/league/data/models/daily_challenge_model/daily_challenge_model.dart';
 import 'package:fantavacanze_official/core/entities/notification/model/notification_model.dart';
+import 'package:fantavacanze_official/core/errors/exceptions.dart';
+import 'package:fantavacanze_official/features/league/data/models/daily_challenge_model/daily_challenge_model.dart';
+import 'package:fantavacanze_official/features/league/data/models/league_model/league_model.dart';
+import 'package:fantavacanze_official/features/league/data/models/note_model/note_model.dart';
+import 'package:fantavacanze_official/features/league/data/models/notification_model/daily_challenge_notification_model.dart';
+import 'package:fantavacanze_official/features/league/data/models/rule_model/rule_model.dart';
+import 'package:flutter/material.dart';
+import 'package:hive/hive.dart';
 
 abstract interface class LocalDataSource {
   // =====================================================================
@@ -32,6 +32,7 @@ abstract interface class LocalDataSource {
   Future<List<DailyChallengeModel>> getCachedDailyChallenges(
     String leagueId,
   );
+  Future<void> clearDailyChallengesForLeague(String leagueId);
   Future<void> updateCachedChallenge(
       String challengeId, String leagueId, bool isRefreshed);
   Future<String> findLeagueIdForChallenge(String challengeId);
@@ -253,9 +254,29 @@ class LocalDataSourceImpl implements LocalDataSource {
         challenges.add(challenge);
       });
 
+      debugPrint('Box totale: ${challengesBox.values.length}');
+      debugPrint('LeagueId richiesto: $leagueId');
+      debugPrint(
+          'LeagueId nei record: ${challengesBox.values.map((c) => c.leagueId).toList()}');
+
       return challenges;
     } catch (e) {
       throw CacheException('Errore nel recuperare le sfide: $e');
+    }
+  }
+
+  @override
+  Future<void> clearDailyChallengesForLeague(String leagueId) async {
+    try {
+      final keysToDelete = challengesBox.keys.where((key) {
+        final challenge = challengesBox.get(key);
+        return challenge != null && challenge.leagueId == leagueId;
+      }).toList();
+
+      await challengesBox.deleteAll(keysToDelete);
+    } catch (e) {
+      throw CacheException(
+          'Errore nel pulire le sfide per la lega $leagueId: $e');
     }
   }
 

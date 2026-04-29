@@ -1,16 +1,29 @@
+import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:fantavacanze_official/core/cubits/app_league/app_league_cubit.dart';
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/extensions/context_extension.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
-import 'package:fantavacanze_official/features/league/domain/entities/league/league.dart';
 import 'package:fantavacanze_official/core/widgets/divider.dart';
+import 'package:fantavacanze_official/features/league/domain/entities/league/league.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:dropdown_button2/dropdown_button2.dart';
 
-class LeagueDropdown extends StatelessWidget {
+class LeagueDropdown extends StatefulWidget {
   const LeagueDropdown({super.key});
+
+  @override
+  State<LeagueDropdown> createState() => _LeagueDropdownState();
+}
+
+class _LeagueDropdownState extends State<LeagueDropdown> {
+  final _vn = ValueNotifier<String?>(null);
+
+  @override
+  void dispose() {
+    _vn.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -47,13 +60,16 @@ class LeagueDropdown extends StatelessWidget {
 
   Widget _buildLeagueSelector(
       BuildContext context, List<League> leagues, League selectedLeague) {
-    // Controllo di sicurezza: verifica che l'ID della lega selezionata esista nella lista
-    final leagueIds = leagues.map((l) => l.id).toList();
+    // Deduplicazione per id: evita che due item abbiano lo stesso value.
+    final uniqueLeagues = <String, League>{
+      for (final l in leagues) l.id: l,
+    }.values.toList();
+
+    final leagueIds = uniqueLeagues.map((l) => l.id).toList();
     final safeValue = leagueIds.contains(selectedLeague.id)
         ? selectedLeague.id
         : (leagueIds.isNotEmpty ? leagueIds.first : null);
 
-    // Se non viene trovato nessun valore valido, mostra un placeholder
     if (safeValue == null) {
       return Container(
         padding: const EdgeInsets.symmetric(
@@ -71,22 +87,26 @@ class LeagueDropdown extends StatelessWidget {
       );
     }
 
-    // Implementazione con DropdownButton2
+    if (_vn.value != safeValue) {
+      _vn.value = safeValue;
+    }
+
     return DropdownButton2<String>(
-      value: safeValue,
+      valueListenable: _vn,
       onChanged: (String? newLeagueId) {
         if (newLeagueId != null) {
-          final newLeague = leagues.firstWhere(
+          final newLeague = uniqueLeagues.firstWhere(
             (league) => league.id == newLeagueId,
           );
+          _vn.value = newLeagueId;
           context.read<AppLeagueCubit>().selectLeague(newLeague);
         }
       },
 
-      // `items` definisce l'aspetto degli elementi nel menu APERTO.
-      items: leagues.map<DropdownMenuItem<String>>((League league) {
-        return DropdownMenuItem<String>(
+      items: uniqueLeagues.map<DropdownItem<String>>((League league) {
+        return DropdownItem<String>(
           value: league.id,
+          height: 40,
           child: Row(
             children: [
               Icon(
@@ -102,6 +122,7 @@ class LeagueDropdown extends StatelessWidget {
                     fontWeight: FontWeight.w500,
                   ),
                   overflow: TextOverflow.ellipsis,
+                  maxLines: 2,
                 ),
               ),
             ],
@@ -109,31 +130,18 @@ class LeagueDropdown extends StatelessWidget {
         );
       }).toList(),
 
-      // `selectedItemBuilder` ora costruisce un widget con icona e testo
-      // anche quando il dropdown è chiuso.
       selectedItemBuilder: (context) {
-        return leagues.map<Widget>((League league) {
-          return Row(
-            children: [
-              Icon(
-                Icons.group,
-                size: 22,
-                color: context.textTheme.bodyMedium?.color,
+        return uniqueLeagues.map<Widget>((league) {
+          return Align(
+            alignment: Alignment.centerLeft,
+            child: Text(
+              league.name,
+              style: context.textTheme.bodyMedium!.copyWith(
+                fontWeight: FontWeight.w500,
               ),
-              const SizedBox(width: ThemeSizes.sm),
-              Expanded(
-                child: Text(
-                  league.name,
-                  style: context.textTheme.bodyMedium!.copyWith(
-                    fontWeight: FontWeight.w500,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                  // *** MODIFICA CHIAVE ***
-                  // Permette al testo di andare a capo su un massimo di 2 righe.
-                  maxLines: 2,
-                ),
-              ),
-            ],
+              overflow: TextOverflow.ellipsis,
+              maxLines: 1,
+            ),
           );
         }).toList();
       },
@@ -143,6 +151,7 @@ class LeagueDropdown extends StatelessWidget {
 
       // Stile del bottone con il nuovo bordo
       buttonStyleData: ButtonStyleData(
+        height: 56,
         padding: const EdgeInsets.symmetric(
           horizontal: ThemeSizes.md,
           vertical: ThemeSizes.xs,
@@ -174,7 +183,6 @@ class LeagueDropdown extends StatelessWidget {
 
       // Stile per gli elementi nel menu
       menuItemStyleData: const MenuItemStyleData(
-        height: 40,
         padding: EdgeInsets.only(left: 14, right: 14),
       ),
     );

@@ -2,6 +2,7 @@ enum NotificationType {
   //TODO: add all ephemeral types
   dailyChallengeRequest('daily_challenge_request'),
   dailyChallengeApproved('daily_challenge_approved'),
+  dailyChallengeRejected('daily_challenge_rejected'),
   dailyChallengeReminder('daily_challenge_reminder'),
   ruleCompleted('rule_completed'),
   newRule('new_rule'),
@@ -31,6 +32,7 @@ enum NotificationType {
       this == memoryAdded ||
       this == dailyChallengeReminder ||
       this == dailyChallengeApproved ||
+      this == dailyChallengeRejected ||
       this == appUpdate;
 
   bool get isPersistent => !isEphemeral;

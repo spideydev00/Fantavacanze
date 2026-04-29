@@ -1,14 +1,14 @@
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/extensions/context_extension.dart';
-import 'package:fantavacanze_official/features/auth/presentation/widgets/age_verification_form.dart';
-import 'package:fantavacanze_official/core/widgets/loader.dart';
 import 'package:fantavacanze_official/core/pages/empty_branded_page.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:fantavacanze_official/core/widgets/dialogs/auth_dialog_box.dart';
+import 'package:fantavacanze_official/core/widgets/loader.dart';
 import 'package:fantavacanze_official/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:fantavacanze_official/features/auth/presentation/pages/standard_login.dart';
+import 'package:fantavacanze_official/features/auth/presentation/widgets/age_verification_form.dart';
 import 'package:fantavacanze_official/features/auth/presentation/widgets/auth_field.dart';
 import 'package:fantavacanze_official/features/auth/presentation/widgets/cloudflare_turnstile_widget.dart';
 import 'package:flutter/material.dart';
@@ -18,7 +18,7 @@ import 'package:flutter_svg/svg.dart';
 class SignUpPage extends StatefulWidget {
   static const String routeName = '/signup';
 
-  static get route => MaterialPageRoute(
+  static MaterialPageRoute<dynamic> get route => MaterialPageRoute(
         builder: (context) => const SignUpPage(),
         settings: const RouteSettings(name: routeName),
       );
@@ -36,7 +36,7 @@ class _SignUpPageState extends State<SignUpPage> {
 
   String _turnstile = "";
   bool _isAdult = false;
-  String? _selectedGender;
+  final _selectedGenderVN = ValueNotifier<String?>(null);
 
   bool get _nameValid => _nameCtrl.text.trim().isNotEmpty;
   bool get _emailValid {
@@ -45,7 +45,7 @@ class _SignUpPageState extends State<SignUpPage> {
   }
 
   bool get _passValid => _passCtrl.text.length >= 6;
-  bool get _genderValid => _selectedGender != null;
+  bool get _genderValid => _selectedGenderVN.value != null;
 
   bool get _formReady =>
       _nameValid &&
@@ -66,6 +66,7 @@ class _SignUpPageState extends State<SignUpPage> {
     _nameCtrl.dispose();
     _emailCtrl.dispose();
     _passCtrl.dispose();
+    _selectedGenderVN.dispose();
     super.dispose();
   }
 
@@ -179,7 +180,7 @@ class _SignUpPageState extends State<SignUpPage> {
                       flex: 6,
                       child: DropdownButton2<String>(
                         isExpanded: true,
-                        value: _selectedGender,
+                        valueListenable: _selectedGenderVN,
                         hint: Text(
                           "Genere",
                           style: TextStyle(
@@ -188,21 +189,15 @@ class _SignUpPageState extends State<SignUpPage> {
                             fontWeight: FontWeight.w500,
                           ),
                         ),
-                        selectedItemBuilder: (context) {
-                          return genders.map((gender) {
-                            return _buildGenderItem(gender);
-                          }).toList();
-                        },
                         items: genders.map((String gender) {
-                          return DropdownMenuItem<String>(
+                          return DropdownItem<String>(
                             value: gender,
                             child: _buildGenderItem(gender),
                           );
                         }).toList(),
                         onChanged: (String? newValue) {
-                          setState(() {
-                            _selectedGender = newValue;
-                          });
+                          _selectedGenderVN.value = newValue;
+                          _rebuild();
                         },
                         underline: const SizedBox(),
                         buttonStyleData: ButtonStyleData(
@@ -389,7 +384,8 @@ class _SignUpPageState extends State<SignUpPage> {
                                     password: _passCtrl.text.trim(),
                                     hCaptcha: _turnstile,
                                     isAdult: _isAdult,
-                                    gender: _getGenderText(_selectedGender!),
+                                    gender: _getGenderText(
+                                        _selectedGenderVN.value!),
                                   ),
                                 );
                           }

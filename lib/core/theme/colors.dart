@@ -1,4 +1,3 @@
-import 'package:fantavacanze_official/core/entities/fs_league/fs_night_type.dart';
 import 'package:flutter/material.dart';
 
 class ColorPalette {
@@ -226,36 +225,6 @@ class ColorPalette {
     Color(0xFF21ABEA),
     Color(0xFF0371AD),
   ];
-
-  // ===== SEASONAL GRADIENT UTILITY METHODS =====
-
-  /// Get seasonal gradient based on FsNightType
-  static List<Color> getSeasonalGradient(FsNightType nightType) {
-    switch (nightType) {
-      case FsNightType.halloween:
-        return halloweenGradient;
-      case FsNightType.christmas:
-        return christmasGradient;
-      case FsNightType.carnival:
-        return carnivalGradient;
-      case FsNightType.newYearsEve:
-        return newYearGradient;
-      case FsNightType.apresSki:
-        return winterGradient;
-      default:
-        return fsGradients;
-    }
-  }
-
-  /// Get seasonal gradient as LinearGradient
-  static LinearGradient getSeasonalLinearGradient(FsNightType nightType) {
-    return LinearGradient(
-      colors: getSeasonalGradient(nightType),
-      begin: Alignment.topLeft,
-      end: Alignment.bottomRight,
-    );
-  }
-
   // ===== NOTE GRADIENTS =====
 
   /// Gradient collection for notes - optimized for white text readability
@@ -353,36 +322,36 @@ class ColorPalette {
   // ];
 
   /// Gradient collection for daily challenge cards (winter vibes 🌨️)
-  static List<List<Color>> challengeGradients = [
-    [
-      const Color(0xFF5CB3DB),
-      const Color(0xFF37C0FF),
-    ],
-    [
-      const Color(0xFF21ABEA),
-      const Color(0xFF0371AD),
-    ],
-    [
-      const Color(0xFF01579B),
-      const Color(0xFF0D47A1),
-    ],
-  ];
-
-  /// Gradient collection for daily challenge cards (Standard)
   // static List<List<Color>> challengeGradients = [
   //   [
-  //     const Color(0xFF134E5E),
-  //     const Color(0xFF71B280),
+  //     const Color(0xFF5CB3DB),
+  //     const Color(0xFF37C0FF),
   //   ],
   //   [
-  //     const Color(0xFFFF8008),
-  //     const Color.fromARGB(255, 231, 180, 51),
+  //     const Color(0xFF21ABEA),
+  //     const Color(0xFF0371AD),
   //   ],
   //   [
-  //     const Color(0xFF614385),
-  //     const Color(0xFFD76D77),
+  //     const Color(0xFF01579B),
+  //     const Color(0xFF0D47A1),
   //   ],
   // ];
+
+  // Gradient collection for daily challenge cards (Standard)
+  static List<List<Color>> challengeGradients = [
+    [
+      const Color(0xFF134E5E),
+      const Color(0xFF71B280),
+    ],
+    [
+      const Color(0xFFFF8008),
+      const Color.fromARGB(255, 231, 180, 51),
+    ],
+    [
+      const Color(0xFF614385),
+      const Color(0xFFD76D77),
+    ],
+  ];
 
   // ===== GRADIENT UTILITY METHODS =====
 

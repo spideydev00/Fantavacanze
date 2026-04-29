@@ -1,3 +1,4 @@
+import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit.dart';
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/extensions/context_extension.dart';
@@ -11,12 +12,11 @@ import 'package:fantavacanze_official/features/auth/presentation/bloc/auth_bloc.
 import 'package:fantavacanze_official/features/league/presentation/pages/dashboard/sections/dashboard.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:dropdown_button2/dropdown_button2.dart';
 
 class GenderAndStatusSelectionPage extends StatefulWidget {
   static const String routeName = '/gender_selection';
 
-  static get route => MaterialPageRoute(
+  static MaterialPageRoute<dynamic> get route => MaterialPageRoute(
         builder: (context) => const GenderAndStatusSelectionPage(),
         settings: const RouteSettings(name: routeName),
       );
@@ -30,8 +30,8 @@ class GenderAndStatusSelectionPage extends StatefulWidget {
 
 class _GenderAndStatusSelectionPageState
     extends State<GenderAndStatusSelectionPage> {
-  String? _selectedGender;
-  String? _selectedSentimentalStatus;
+  final _genderVN = ValueNotifier<String?>(null);
+  final _statusVN = ValueNotifier<String?>(null);
   bool _isLoading = false;
 
   // Opzioni per il genere
@@ -55,13 +55,23 @@ class _GenderAndStatusSelectionPageState
     final userState = context.read<AppUserCubit>().state;
 
     if (userState is AppUserNeedsGenderOrStatus) {
-      _selectedGender = userState.user.gender;
-      _selectedSentimentalStatus = userState.user.sentimentalStatus;
+      _genderVN.value = userState.user.gender;
+      _statusVN.value = userState.user.sentimentalStatus;
     }
   }
 
+  @override
+  void dispose() {
+    _genderVN.dispose();
+    _statusVN.dispose();
+    super.dispose();
+  }
+
   void _confirmSelection() async {
-    if (_selectedGender == null) {
+    final selectedGender = _genderVN.value;
+    final selectedSentimentalStatus = _statusVN.value;
+
+    if (selectedGender == null) {
       // Mostra dialog di errore se non è stato selezionato alcun genere
       showDialog(
         context: context,
@@ -75,7 +85,7 @@ class _GenderAndStatusSelectionPageState
       return;
     }
 
-    if (_selectedSentimentalStatus == null) {
+    if (selectedSentimentalStatus == null) {
       // Mostra dialog di errore se non è stato selezionato lo stato sentimentale
       showDialog(
         context: context,
@@ -101,12 +111,12 @@ class _GenderAndStatusSelectionPageState
     if (mounted) {
       // Invia l'evento per aggiornare il genere dell'utente
       context.read<AuthBloc>().add(
-            AuthUpdateGender(gender: _selectedGender!),
+            AuthUpdateGender(gender: selectedGender),
           );
 
       // Invia l'evento per aggiornare lo stato sentimentale
       context.read<AuthBloc>().add(
-            AuthUpdateIsSingleStatus(status: _selectedSentimentalStatus!),
+            AuthUpdateIsSingleStatus(status: selectedSentimentalStatus),
           );
     }
   }
@@ -206,24 +216,30 @@ class _GenderAndStatusSelectionPageState
                           const SizedBox(height: ThemeSizes.xxl),
 
                           // Pulsante continua
-                          ElevatedButton(
-                            onPressed: _isLoading ||
-                                    _selectedGender == null ||
-                                    _selectedSentimentalStatus == null
-                                ? null
-                                : _confirmSelection,
-                            style:
-                                context.elevatedButtonThemeData.style!.copyWith(
-                              backgroundColor: WidgetStatePropertyAll(
-                                _selectedGender == null ||
-                                        _selectedSentimentalStatus == null
-                                    ? ColorPalette.buttonDisabled
-                                    : context.primaryColor,
-                              ),
-                            ),
-                            child: _isLoading
-                                ? Loader(color: context.textPrimaryColor)
-                                : const Text('Continua'),
+                          AnimatedBuilder(
+                            animation: Listenable.merge([_genderVN, _statusVN]),
+                            builder: (context, _) {
+                              final isSelectionComplete =
+                                  _genderVN.value != null &&
+                                      _statusVN.value != null;
+
+                              return ElevatedButton(
+                                onPressed: _isLoading || !isSelectionComplete
+                                    ? null
+                                    : _confirmSelection,
+                                style: context.elevatedButtonThemeData.style!
+                                    .copyWith(
+                                  backgroundColor: WidgetStatePropertyAll(
+                                    isSelectionComplete
+                                        ? context.primaryColor
+                                        : ColorPalette.buttonDisabled,
+                                  ),
+                                ),
+                                child: _isLoading
+                                    ? Loader(color: context.textPrimaryColor)
+                                    : const Text('Continua'),
+                              );
+                            },
                           ),
                         ],
                       ),
@@ -240,40 +256,15 @@ class _GenderAndStatusSelectionPageState
 
   Widget _buildGenderDropdown() {
     return DropdownButton2<String>(
-      value: _selectedGender,
+      valueListenable: _genderVN,
       onChanged: (String? newValue) {
-        setState(() {
-          _selectedGender = newValue;
-        });
+        _genderVN.value = newValue;
       },
-      items: _genderOptions.entries.map<DropdownMenuItem<String>>((entry) {
-        return DropdownMenuItem<String>(
+      items: _genderOptions.entries.map<DropdownItem<String>>((entry) {
+        return DropdownItem<String>(
           value: entry.key,
+          height: 40,
           child: Row(
-            children: [
-              Icon(
-                entry.key == 'male'
-                    ? Icons.male
-                    : entry.key == 'female'
-                        ? Icons.female
-                        : Icons.do_not_disturb_rounded,
-                size: 22,
-                color: context.textTheme.bodyMedium?.color,
-              ),
-              const SizedBox(width: ThemeSizes.sm),
-              Text(
-                entry.value,
-                style: context.textTheme.bodyMedium!.copyWith(
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ],
-          ),
-        );
-      }).toList(),
-      selectedItemBuilder: (context) {
-        return _genderOptions.entries.map<Widget>((entry) {
-          return Row(
             children: [
               Icon(
                 entry.key == 'male'
@@ -295,9 +286,9 @@ class _GenderAndStatusSelectionPageState
                 ),
               ),
             ],
-          );
-        }).toList();
-      },
+          ),
+        );
+      }).toList(),
       isExpanded: true,
       underline: const SizedBox(),
       hint: Text(
@@ -332,7 +323,6 @@ class _GenderAndStatusSelectionPageState
         offset: const Offset(0, -5),
       ),
       menuItemStyleData: const MenuItemStyleData(
-        height: 40,
         padding: EdgeInsets.only(left: 14, right: 14),
       ),
     );
@@ -340,41 +330,16 @@ class _GenderAndStatusSelectionPageState
 
   Widget _buildSentimentalStatusDropdown() {
     return DropdownButton2<String>(
-      value: _selectedSentimentalStatus,
+      valueListenable: _statusVN,
       onChanged: (String? newValue) {
-        setState(() {
-          _selectedSentimentalStatus = newValue;
-        });
+        _statusVN.value = newValue;
       },
-      items: _sentimentalStatusOptions.entries
-          .map<DropdownMenuItem<String>>((entry) {
-        return DropdownMenuItem<String>(
+      items:
+          _sentimentalStatusOptions.entries.map<DropdownItem<String>>((entry) {
+        return DropdownItem<String>(
           value: entry.key,
+          height: 40,
           child: Row(
-            children: [
-              Icon(
-                entry.key == 'single'
-                    ? Icons.person
-                    : entry.key == 'engaged'
-                        ? Icons.favorite
-                        : Icons.do_not_disturb_rounded,
-                size: 22,
-                color: context.textTheme.bodyMedium?.color,
-              ),
-              const SizedBox(width: ThemeSizes.sm),
-              Text(
-                entry.value,
-                style: context.textTheme.bodyMedium!.copyWith(
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ],
-          ),
-        );
-      }).toList(),
-      selectedItemBuilder: (context) {
-        return _sentimentalStatusOptions.entries.map<Widget>((entry) {
-          return Row(
             children: [
               Icon(
                 entry.key == 'single'
@@ -396,9 +361,9 @@ class _GenderAndStatusSelectionPageState
                 ),
               ),
             ],
-          );
-        }).toList();
-      },
+          ),
+        );
+      }).toList(),
       isExpanded: true,
       underline: const SizedBox(),
       hint: Text(
@@ -433,7 +398,6 @@ class _GenderAndStatusSelectionPageState
         offset: const Offset(0, -5),
       ),
       menuItemStyleData: const MenuItemStyleData(
-        height: 40,
         padding: EdgeInsets.only(left: 14, right: 14),
       ),
     );
