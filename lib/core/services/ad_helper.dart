@@ -1,11 +1,10 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:flutter/material.dart';
-import 'package:google_mobile_ads/google_mobile_ads.dart';
-
 import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit.dart';
 import 'package:fantavacanze_official/core/secrets/app_secrets.dart';
+import 'package:flutter/material.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 class AdHelper {
   static final AdHelper _instance = AdHelper._internal();
@@ -40,20 +39,20 @@ class AdHelper {
 
   // --- Ad Unit IDs ---
   static String get _interstitialUnitId {
-    // if (true) {
-    //   // Change to a proper environment check later
-    //   return testInterstitialAdUnitId;
-    // }
+    if (true) {
+      // Change to a proper environment check later
+      return testInterstitialAdUnitId;
+    }
     if (Platform.isAndroid) return AppSecrets.androidInterstitialAdUnitId;
     if (Platform.isIOS) return AppSecrets.iosInterstitialAdUnitId;
     throw UnsupportedError('Unsupported platform');
   }
 
   static String get _rewardedUnitId {
-    // if (true) {
-    //   // Change to a proper environment check later
-    //   return testRewardedAdUnitId;
-    // }
+    if (true) {
+      // Change to a proper environment check later
+      return testRewardedAdUnitId;
+    }
 
     if (Platform.isAndroid) return AppSecrets.androidRewardedAdUnitId;
     if (Platform.isIOS) return AppSecrets.iosRewardedAdUnitId;

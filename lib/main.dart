@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:fantavacanze_official/core/config/store_config.dart';
 import 'package:fantavacanze_official/core/cubits/app_league/app_league_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/app_navigation/app_navigation_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/app_status/app_status_cubit.dart';
@@ -125,7 +126,7 @@ class _MyAppState extends State<MyApp> {
     try {
       final customerInfo = await Purchases.getCustomerInfo();
 
-      final entitlement = customerInfo.entitlements.all['premium_benefit'];
+      final entitlement = customerInfo.entitlements.all[kPremiumEntitlementId];
       final isPremium = entitlement?.isActive ?? false;
 
       // If the user is no longer premium, update their status in the app
@@ -144,7 +145,8 @@ class _MyAppState extends State<MyApp> {
   void _listenToPremiumStatusChanges() {
     Purchases.addCustomerInfoUpdateListener(
       (customerInfo) {
-        final entitlement = customerInfo.entitlements.all['premium_benefit'];
+        final entitlement =
+            customerInfo.entitlements.all[kPremiumEntitlementId];
 
         // If the entitlement doesn't exist, do nothing.
         if (entitlement == null) {

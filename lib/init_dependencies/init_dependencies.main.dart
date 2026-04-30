@@ -123,47 +123,18 @@ Future<void> initDependencies() async {
         ),
       );
 
-    await _initRevenueCat();
+    String? appUserId;
+    final appUserState = serviceLocator<AppUserCubit>().state;
+    if (appUserState is AppUserIsLoggedIn) {
+      appUserId = appUserState.user.id;
+    }
+    await bootstrapPurchases(appUserId: appUserId);
     _initSubscription();
 
     debugPrint("⬆ Dipendenze inizializzate correttamente con get_it");
   } catch (e) {
     debugPrint("Errore di inizializzazione delle dipendenze: $e");
     // Rethrow to be caught by main()
-    rethrow;
-  }
-}
-
-Future<void> _initRevenueCat() async {
-  try {
-    // Initialize RevenueCat with your API keys
-    await Purchases.setLogLevel(LogLevel.debug);
-
-    // Get user ID if available
-    String? appUserId;
-
-    final appUserState = serviceLocator<AppUserCubit>().state;
-
-    if (appUserState is AppUserIsLoggedIn) {
-      appUserId = appUserState.user.id;
-    }
-
-    // Use the appropriate API key based on platform
-    if (Platform.isAndroid) {
-      await Purchases.configure(
-        PurchasesConfiguration(AppSecrets.revenueCatAndroidApiKey)
-          ..appUserID = appUserId,
-      );
-    } else if (Platform.isIOS) {
-      await Purchases.configure(
-        PurchasesConfiguration(AppSecrets.revenueCatIosApiKey)
-          ..appUserID = appUserId,
-      );
-    }
-
-    debugPrint("✅ RevenueCat inizializzato correttamente");
-  } catch (e) {
-    debugPrint("❌ Errore nell'inizializzazione di RevenueCat: $e");
     rethrow;
   }
 }

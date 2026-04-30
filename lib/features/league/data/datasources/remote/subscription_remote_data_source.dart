@@ -1,3 +1,4 @@
+import 'package:fantavacanze_official/core/config/store_config.dart';
 import 'package:fantavacanze_official/core/errors/exceptions.dart';
 import 'package:fantavacanze_official/features/league/data/models/subscription_model/subscription_model.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
@@ -88,8 +89,8 @@ class SubscriptionRemoteDataSourceImpl implements SubscriptionRemoteDataSource {
 
       // Check if premium entitlement is active
       final entitlements = customerInfo.entitlements.active;
-      final isPremium = entitlements.containsKey('premium_benefit') &&
-          entitlements['premium_benefit']?.isActive == true;
+      final isPremium = entitlements.containsKey(kPremiumEntitlementId) &&
+          entitlements[kPremiumEntitlementId]?.isActive == true;
 
       return isPremium;
     } catch (e) {
