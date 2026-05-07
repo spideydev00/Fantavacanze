@@ -100,6 +100,10 @@ class ColorPalette {
   /// Error states and validation failures
   static const Color error = Color(0xFFD32F2F);
 
+  /// Rejected daily challenge gradient colors
+  static const Color rejectedStart = Color(0xFF6B0F1A);
+  static const Color rejectedEnd = Color(0xFF8B1A2B);
+
   /// Success states and positive feedback
   static const Color success = Color(0xFF388E3C);
 

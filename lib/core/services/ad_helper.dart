@@ -107,7 +107,7 @@ class AdHelper {
           _isInterstitialLoading = false;
         },
         onAdFailedToLoad: (err) {
-          debugPrint('Interstitial load failed: $err');
+          debugPrint('Errore caricamento interstitial: $err');
           _isInterstitialLoading = false;
         },
       ),
@@ -136,7 +136,7 @@ class AdHelper {
       },
       onAdFailedToShowFullScreenContent: (ad, err) {
         _isAnyAdShowing = false;
-        debugPrint('Interstitial show failed: $err');
+        debugPrint('Errore nel mostrare interstitial: $err');
         ad.dispose();
         _interstitialAd = null;
         _loadInterstitialAd();
@@ -166,7 +166,7 @@ class AdHelper {
           completer.complete(true);
         },
         onAdFailedToLoad: (err) {
-          debugPrint('Rewarded load failed: $err');
+          debugPrint('Errore caricamento rewarded ad: $err');
           _isRewardedLoading = false;
           completer.complete(false);
         },
@@ -195,7 +195,7 @@ class AdHelper {
       },
       onAdFailedToShowFullScreenContent: (ad, err) {
         _isAnyAdShowing = false;
-        debugPrint('Rewarded show failed: $err');
+        debugPrint('Errore nel mostrare rewarded ad: $err');
         ad.dispose();
         _rewardedAd = null;
         loadRewardedAd();

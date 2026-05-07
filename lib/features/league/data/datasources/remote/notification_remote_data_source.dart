@@ -2,10 +2,10 @@ import 'dart:async';
 
 import 'package:fantavacanze_official/core/cubits/app_league/app_league_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit.dart';
+import 'package:fantavacanze_official/core/entities/notification/enums/notification_type.dart';
+import 'package:fantavacanze_official/core/entities/notification/model/notification_model.dart';
 import 'package:fantavacanze_official/core/errors/exceptions.dart';
 import 'package:fantavacanze_official/features/league/data/models/notification_model/daily_challenge_notification_model.dart';
-import 'package:fantavacanze_official/core/entities/notification/model/notification_model.dart';
-import 'package:fantavacanze_official/core/entities/notification/enums/notification_type.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -37,7 +37,7 @@ class NotificationRemoteDataSourceImpl implements NotificationRemoteDataSource {
 
       //TODO: Debug types returning null
       if (type != null && type.isEphemeral) {
-        debugPrint('🔄 Processing ephemeral notification: ${type.value}');
+        debugPrint('🔄 Processando notifiche effimere: ${type.value}');
         return;
       }
 
@@ -50,7 +50,7 @@ class NotificationRemoteDataSourceImpl implements NotificationRemoteDataSource {
           if (notificationModel != null) {
             _notificationModelController.add(notificationModel);
             debugPrint(
-                '📨 Daily challenge notification processed: ${notificationModel.title}');
+                '📨 Notifica daily challenge processata: ${notificationModel.title}');
           }
         });
       }
@@ -183,7 +183,7 @@ class NotificationRemoteDataSourceImpl implements NotificationRemoteDataSource {
       final type = NotificationType.fromString(data['type']);
       if (type != NotificationType.dailyChallengeRequest) {
         debugPrint(
-            '🚫 Filtering out non-daily-challenge notification: ${type?.value}');
+            '🚫 Filtrando notifiche non legate alle daily challenge: ${type?.value}');
         return null;
       }
 

@@ -117,7 +117,7 @@ Future<void> initDependencies() async {
         ),
       )
       //7. connection checker
-      ..registerFactory<ConnectionChecker>(
+      ..registerLazySingleton<ConnectionChecker>(
         () => ConnectionCheckerImpl(
           serviceLocator(),
         ),
@@ -238,7 +238,6 @@ Future<void> _openHiveBoxes() async {
 
     final notificationsBox =
         await Hive.openBox<NotificationModel>('notifications_box');
-    await notificationsBox.clear();
 
     // Register boxes in GetIt
     serviceLocator
@@ -732,6 +731,7 @@ Future<void> _initDailyChallenges() async {
         rejectDailyChallenge: serviceLocator(),
         appUserCubit: serviceLocator(),
         appLeagueCubit: serviceLocator(),
+        notificationCountCubit: serviceLocator(),
       ),
     );
 }

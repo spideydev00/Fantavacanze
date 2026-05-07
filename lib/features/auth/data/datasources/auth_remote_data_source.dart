@@ -510,8 +510,6 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       // Get the FCM token
       final token = await firebaseMessaging.getToken();
 
-      debugPrint('🪙 FCM Token: $token');
-
       if (token == null || token.isEmpty) {
         throw ServerException('FCM token non disponibile');
       }

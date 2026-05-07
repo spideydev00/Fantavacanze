@@ -24,6 +24,8 @@ class DailyChallengeModelAdapter extends TypeAdapter<DailyChallengeModel> {
       name: fields[1] as String,
       points: fields[2] as double,
       isCompleted: fields[3] as bool,
+      isPendingApproval: fields[13] == null ? false : fields[13] as bool,
+      isRejected: fields[14] == null ? false : fields[14] as bool,
       completedAt: fields[4] as DateTime?,
       isRefreshed: fields[5] as bool,
       refreshedAt: fields[6] as DateTime,
@@ -36,7 +38,7 @@ class DailyChallengeModelAdapter extends TypeAdapter<DailyChallengeModel> {
   @override
   void write(BinaryWriter writer, DailyChallengeModel obj) {
     writer
-      ..writeByte(13)
+      ..writeByte(15)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -62,7 +64,11 @@ class DailyChallengeModelAdapter extends TypeAdapter<DailyChallengeModel> {
       ..writeByte(11)
       ..write(obj.createdAt)
       ..writeByte(12)
-      ..write(obj.isUnlocked);
+      ..write(obj.isUnlocked)
+      ..writeByte(13)
+      ..write(obj.isPendingApproval)
+      ..writeByte(14)
+      ..write(obj.isRejected);
   }
 
   @override

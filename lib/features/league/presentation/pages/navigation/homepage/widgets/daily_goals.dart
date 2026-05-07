@@ -176,8 +176,13 @@ class _DailyGoalsState extends State<DailyGoals> {
         c.position == 4 || c.position == 5 || c.position == 6;
 
     final isSub = c.isRefreshed || isSubstitutePosition;
-    final canRefresh = !isSub && !c.isCompleted && !locked;
-    final canComplete = !locked && !c.isCompleted;
+    final canRefresh = !isSub &&
+        !c.isCompleted &&
+        !c.isPendingApproval &&
+        !c.isRejected &&
+        !locked;
+    final canComplete =
+        !locked && !c.isCompleted && !c.isPendingApproval && !c.isRejected;
 
     return DailyGoalCard(
       challengeId: c.id,
@@ -188,7 +193,8 @@ class _DailyGoalsState extends State<DailyGoals> {
       startColor: colors[0],
       endColor: colors[1],
       isRefreshed: c.isRefreshed,
-      isCompleted: c.isCompleted,
+      isCompleted: c.isCompleted || c.isPendingApproval,
+      isRejected: c.isRejected,
       onRefresh: canRefresh ? () => _refreshChallenge(c) : null,
       onComplete: canComplete ? () => _completeChallenge(c) : null,
       onLockedTap: locked ? () => _handleLockedTap(lockType, c) : null,

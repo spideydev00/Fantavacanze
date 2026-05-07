@@ -30,12 +30,14 @@ class DailyChallengesLoaded extends DailyChallengesState {
   final String leagueId;
   final String userId;
   final String? operation;
+  final DateTime? operationAt;
 
   const DailyChallengesLoaded({
     required this.challenges,
     required this.leagueId,
     required this.userId,
     this.operation,
+    this.operationAt,
   });
 
   @override
@@ -44,6 +46,7 @@ class DailyChallengesLoaded extends DailyChallengesState {
         leagueId,
         userId,
         operation,
+        operationAt,
       ];
 
   DailyChallengesLoaded copyWith({
@@ -54,12 +57,14 @@ class DailyChallengesLoaded extends DailyChallengesState {
     DailyChallenge? lastRefreshedChallenge,
     DailyChallenge? lastUnlockedChallenge,
     String? operation,
+    DateTime? operationAt,
   }) {
     return DailyChallengesLoaded(
       challenges: challenges ?? this.challenges,
       leagueId: leagueId ?? this.leagueId,
       userId: userId ?? this.userId,
       operation: operation,
+      operationAt: operationAt,
     );
   }
 

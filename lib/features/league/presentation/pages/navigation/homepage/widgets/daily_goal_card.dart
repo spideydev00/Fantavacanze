@@ -15,6 +15,7 @@ class DailyGoalCard extends StatefulWidget {
   final Color endColor;
   final bool isRefreshed;
   final bool isCompleted;
+  final bool isRejected;
   final VoidCallback? onRefresh;
   final VoidCallback? onComplete;
   final String challengeId;
@@ -30,6 +31,7 @@ class DailyGoalCard extends StatefulWidget {
     required this.endColor,
     this.isRefreshed = false,
     this.isCompleted = false,
+    this.isRejected = false,
     this.onRefresh,
     this.onComplete,
     required this.challengeId,
@@ -75,6 +77,10 @@ class _DailyGoalCardState extends State<DailyGoalCard>
 
   @override
   Widget build(BuildContext context) {
+    if (widget.isRejected) {
+      return _buildRejectedCard(context);
+    }
+
     if (widget.isLocked) {
       return _buildLockedContent(context);
     }
@@ -240,6 +246,120 @@ class _DailyGoalCardState extends State<DailyGoalCard>
                 children: [
                   const Icon(
                     Icons.check_circle,
+                    color: Colors.white,
+                    size: 24,
+                  ),
+                  const SizedBox(width: ThemeSizes.sm),
+                  Expanded(
+                    child: Text(
+                      widget.name,
+                      style: context.textTheme.labelSmall?.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w600,
+                        decoration: TextDecoration.lineThrough,
+                        decorationColor: Colors.white,
+                        decorationThickness: 2.0,
+                        shadows: [
+                          Shadow(
+                            blurRadius: 3,
+                            color: Colors.black.withValues(alpha: 0.3),
+                            offset: const Offset(0, 1),
+                          ),
+                        ],
+                      ),
+                      maxLines: 10,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  const SizedBox(width: ThemeSizes.xs),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: ThemeSizes.sm,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.2),
+                      borderRadius:
+                          BorderRadius.circular(ThemeSizes.borderRadiusSm),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(
+                          Icons.stars_rounded,
+                          color: Colors.white,
+                          size: 14,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          "${widget.score}",
+                          style: context.textTheme.bodySmall?.copyWith(
+                            color: ColorPalette.white,
+                            fontWeight: FontWeight.bold,
+                            shadows: [
+                              Shadow(
+                                blurRadius: 2,
+                                color: Colors.black.withValues(alpha: 0.2),
+                                offset: const Offset(0, 1),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRejectedCard(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.symmetric(
+          horizontal: ThemeSizes.lg, vertical: ThemeSizes.sm),
+      constraints: const BoxConstraints(minHeight: 60),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [ColorPalette.rejectedStart, ColorPalette.rejectedEnd],
+        ),
+        borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusMd),
+        boxShadow: [
+          BoxShadow(
+            color: ColorPalette.rejectedEnd.withValues(alpha: 0.3),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusMd),
+        child: Stack(
+          children: [
+            // Blurred background
+            BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 1.5, sigmaY: 1.5),
+              child: Container(
+                color: Colors.black.withValues(alpha: 0.1),
+              ),
+            ),
+
+            // Content with rejection indicator
+            Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: ThemeSizes.md,
+                vertical: ThemeSizes.sm,
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  const Icon(
+                    Icons.block_rounded,
                     color: Colors.white,
                     size: 24,
                   ),

@@ -1,8 +1,9 @@
 import 'dart:io';
+
 import 'package:dio/dio.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:gallery_saver_plus/gallery_saver.dart';
 import 'package:flutter/material.dart';
+import 'package:gallery_saver_plus/gallery_saver.dart';
+import 'package:path_provider/path_provider.dart';
 
 class Downloader {
   final Dio _dio = Dio();
@@ -39,7 +40,7 @@ class Downloader {
         },
       );
 
-      debugPrint("File downloaded to temp: $tempFilePath");
+      debugPrint("File scaricato su temp: $tempFilePath");
 
       // Now save to gallery using gallery_saver_plus
       bool? saveSuccess;
@@ -56,11 +57,11 @@ class Downloader {
           await tempFile.delete();
         }
       } catch (e) {
-        debugPrint("Failed to cleanup temp file: $e");
+        debugPrint("Errore nel cleanup del file temp: $e");
       }
 
       if (saveSuccess == true) {
-        debugPrint("File saved to gallery successfully");
+        debugPrint("File salvato correttamente in galleria");
         onComplete?.call();
         return tempFilePath; // Return the path for reference
       } else {
@@ -68,7 +69,7 @@ class Downloader {
         return null;
       }
     } catch (e) {
-      debugPrint("Download failed: $e");
+      debugPrint("Download fallito: $e");
       onError?.call("Errore durante il download: $e");
       return null;
     }
@@ -118,7 +119,7 @@ class Downloader {
       final bool? success = await GallerySaver.saveImage(imageUrl);
       return success ?? false;
     } catch (e) {
-      debugPrint("Direct save failed: $e");
+      debugPrint("Salvataggio diretto fallito: $e");
       return false;
     }
   }
@@ -129,7 +130,7 @@ class Downloader {
       final bool? success = await GallerySaver.saveVideo(videoUrl);
       return success ?? false;
     } catch (e) {
-      debugPrint("Direct save failed: $e");
+      debugPrint("Salvataggio diretto fallito: $e");
       return false;
     }
   }

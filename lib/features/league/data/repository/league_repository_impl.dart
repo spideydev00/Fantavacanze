@@ -1,17 +1,18 @@
+import 'dart:io';
+
 import 'package:fantavacanze_official/core/errors/exceptions.dart';
-import 'package:fantavacanze_official/features/league/data/models/league_model/league_model.dart';
-import 'package:fantavacanze_official/features/league/data/models/note_model/note_model.dart';
-import 'package:fantavacanze_official/features/league/data/models/rule_model/rule_model.dart';
-import 'package:fantavacanze_official/features/league/domain/entities/note.dart';
-import 'package:fpdart/fpdart.dart';
 import 'package:fantavacanze_official/core/errors/failure.dart';
 import 'package:fantavacanze_official/core/network/connection_checker.dart';
 import 'package:fantavacanze_official/features/league/data/datasources/local/local_data_source.dart';
 import 'package:fantavacanze_official/features/league/data/datasources/remote/league_remote_data_source.dart';
+import 'package:fantavacanze_official/features/league/data/models/league_model/league_model.dart';
+import 'package:fantavacanze_official/features/league/data/models/note_model/note_model.dart';
+import 'package:fantavacanze_official/features/league/data/models/rule_model/rule_model.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/league/league.dart';
+import 'package:fantavacanze_official/features/league/domain/entities/note.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/rule/rule.dart';
 import 'package:fantavacanze_official/features/league/domain/repository/league_repository.dart';
-import 'dart:io';
+import 'package:fpdart/fpdart.dart';
 
 class LeagueRepositoryImpl implements LeagueRepository {
   final LeagueRemoteDataSource remoteDataSource;
@@ -134,7 +135,9 @@ class LeagueRepositoryImpl implements LeagueRepository {
 
       await remoteDataSource.deleteLeague(leagueId, type: type);
 
-      // Remove the league from cache as well
+      await localDataSource.clearDailyChallengesForLeague(leagueId);
+      await localDataSource.clearNotificationsForLeague(leagueId);
+      await localDataSource.clearNotesForLeague(leagueId);
       await localDataSource.removeLeagueFromCache(leagueId);
 
       return const Right(null);
@@ -216,6 +219,9 @@ class LeagueRepositoryImpl implements LeagueRepository {
         league: league as LeagueModel,
       );
 
+      await localDataSource.clearDailyChallengesForLeague(league.id);
+      await localDataSource.clearNotificationsForLeague(league.id);
+      await localDataSource.clearNotesForLeague(league.id);
       await localDataSource.removeLeagueFromCache(league.id);
 
       return const Right(null);

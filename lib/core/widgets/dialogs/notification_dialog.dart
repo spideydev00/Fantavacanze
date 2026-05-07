@@ -1,8 +1,8 @@
+import 'package:fantavacanze_official/core/entities/notification/entity/notification.dart'
+    as app_notification;
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/extensions/context_extension.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
-import 'package:fantavacanze_official/core/entities/notification/entity/notification.dart'
-    as app_notification;
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 
@@ -140,6 +140,15 @@ class NotificationDialog extends StatelessWidget {
                 // Message
                 Text(
                   message,
+                  style: context.textTheme.labelLarge?.copyWith(
+                    color: context.textSecondaryColor,
+                  ),
+                ),
+
+                const SizedBox(height: 24),
+
+                Text(
+                  "Vai sulla campanella delle notifiche in alto a destra per confermarne o meno l'esecuzione.",
                   style: context.textTheme.labelLarge?.copyWith(
                     color: context.textSecondaryColor,
                   ),

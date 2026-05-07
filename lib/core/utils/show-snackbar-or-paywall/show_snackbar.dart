@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/main.dart';
+import 'package:flutter/material.dart';
 
 void showSnackBar(
   String message, {
@@ -29,6 +29,6 @@ void showSnackBar(
     );
   } else {
     debugPrint(
-        '⚠️ ScaffoldMessengerKey not initialized for snackbar: $message');
+        '⚠️ ScaffoldMessengerKey non inizializzato per la snackbar: $message');
   }
 }

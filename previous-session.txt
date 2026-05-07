@@ -1,0 +1,277 @@
+# Recap sessione - Fantavacanze (30/04/2026)
+
+## 1. CONTESTO STRATEGICO DELLA SESSIONE
+
+L'obiettivo della sessione era analizzare e sistemare il caching delle notifiche
+admin (daily challenge approval/rejection), che presentava più incoerenze:
+
+- `notificationsBox.clear()` al cold start → distruggeva la cache offline ad ogni
+  avvio, vanificando l'offline-first.
+- Cache-first puro su un dato "condiviso multi-admin" → race condition: admin1
+  approva → riga DELETE su DB → admin2 vede notifica fantasma per ore.
+- `cacheNotifications` skippava le esistenti → aggiornamenti server invisibili.
+- `getCachedNotifications` non filtrava per leagueId → switch lega mostrava
+  notifiche di altre leghe.
+- Cleanup chiamato PRIMA del cache write → ordine errato.
+- Stream FCM cachava notifiche cross-league → inquinava la cache.
+- Doppio delete su approve/reject (page + RPC server-side) → race + errore
+  silenzioso sul secondo DELETE.
+- Counter `NotificationCountCubit` triggerava refetch su delete invece di
+  decrementare direttamente.
+
+Decisione presa dopo discussione architetturale: passare a **NETWORK-ONLY quando
+online + cache come fallback offline READ-ONLY**. La cache notifiche resta utile
+solo per offline (UI mostrata, ma azioni distruttive disabilitate). La cache
+delle daily challenges invece resta cache-first (è dato personale, stabile
+entro la giornata).
+
+Realtime Supabase: scartato come fuori scope.
+Stale-while-revalidate: scartato dopo discussione (più semplice il network-only,
+e UX della pagina notifiche non critica come una home).
+
+## 2. MODIFICHE COMPLETATE E FUNZIONANTI
+
+### 2.1 Refactor caching notifiche
+
+**`lib/init_dependencies/init_dependencies.main.dart`**
+- Rimosso `await notificationsBox.clear();` al cold start (riga 241).
+
+**`lib/features/league/data/datasources/local/local_data_source.dart`**
+- Aggiunti tre metodi all'interface + impl:
+  - `getCachedNotificationsForLeague(String leagueId)` — filtra per leagueId,
+    sort desc, cap 50.
+  - `replaceNotificationsForLeague(String leagueId, List<NotificationModel> fresh)`
+    — delete keys della lega + put nuove.
+  - `clearNotificationsForLeague(String leagueId)` — delete keys della lega.
+- `cacheNotifications`: rimosso check `if existing == null`, ora sovrascrive sempre.
+- NON toccati (lasciati per uso futuro): `markNotificationAsRead`,
+  `updateNotification`, `cleanupOldNotifications`, `cacheNotification`,
+  `getCachedNotifications`, `deleteNotificationFromCache`, `clearCache`.
+
+**`lib/features/league/domain/repository/notifications_repository.dart`**
+- Cambio firma: `Future<Either<Failure, List<Notification>>> getNotifications(String leagueId)`.
+- Tornato a esporre solo `Notification` (entity), non `NotificationModel` →
+  separation of concerns rispettata.
+
+**`lib/features/league/domain/use_cases/remote/notifications/get_notifications.dart`**
+- Sostituito `NoParams` con `GetNotificationsParams { final String leagueId }`.
+- Return type aggiornato a `List<Notification>`.
+
+**`lib/features/league/data/repository/notifications_repository_impl.dart`**
+- Nuova logica `getNotifications`:
+  ```
+  if (online) {
+    try { fetch remote → replaceNotificationsForLeague → return remote }
+    on ServerException { fallback cache, se vuota Left }
+  }
+  return cache filtrata per lega (offline)
+  ```
+- `listenToNotification`: rimosso il `.listen` che cachava lo stream.
+  Lo stream FCM serve solo a far incrementare il counter live, non a popolare
+  la cache (la cache si popola solo via fetch network-only).
+- Return type aggiornato a `Stream<Notification>`.
+
+**`lib/features/league/presentation/bloc/notifications_bloc/notifications_bloc.dart`**
+- `_onGetNotifications`: ricava `leagueId` da `AppLeagueExists`, lo passa
+  a `GetNotificationsParams`.
+- `_onDeleteNotification`: su success NON triggera più `GetNotificationsEvent`.
+  Decrementa counter con `notificationCountCubit.decrement()` ed emette nuovo
+  `NotificationsLoaded` filtrando l'id eliminato dalla lista corrente.
+
+**`lib/features/league/data/repository/league_repository_impl.dart`** (riga ~220)
+- Aggiunto `clearNotificationsForLeague(league.id)` accanto al già esistente
+  `clearDailyChallengesForLeague(league.id)` prima di `removeLeagueFromCache`.
+  → Coerenza: uscendo da una lega, sia challenges che notifiche cachate
+  vengono pulite.
+
+### 2.2 Fix UX su approve/reject notifiche
+
+**Bug osservato**: la 1ª notifica processata spariva correttamente, ma la 2ª
+(arrivata via FCM) restava visibile dopo l'azione admin → serviva uscire e
+rientrare nella pagina.
+
+**Causa root**: `BlocListener<DailyChallengesBloc>` ascoltava lo state per
+`operation == 'approve_challenge'/'reject_challenge'`. Ma `DailyChallengesLoaded`
+estende `Equatable` con props `[challenges, leagueId, userId, operation]`.
+Due approve consecutivi emettevano state identici (challenges/leagueId/userId
+invariati + stessa operation) → flutter_bloc skippava l'emit per Equatable →
+listener non triggerava → refetch non partiva.
+
+**Fix in `notifications_page.dart`**:
+- Rimosso `MultiBlocListener` con `BlocListener<DailyChallengesBloc>`.
+- `_handleDailyChallengeApproval` / `_handleDailyChallengeRejection` ora:
+  1. Capturano i bloc references prima dell'await.
+  2. Fanno `_ensureOnlineForDailyChallengeAction()` (check + dialog).
+  3. Dispatchano `Approve/RejectDailyChallengeEvent`.
+  4. `await dailyChallengesBloc.stream.firstWhere((s) =>
+       (s is DailyChallengesLoaded && s.operation == '...') ||
+       s is DailyChallengesError);`
+     → bypassa Equatable, intercetta sia success che failure.
+  5. Check `mounted`, poi `notificationsBloc.add(GetNotificationsEvent())`.
+- Approccio "fire-and-await" esplicito invece di listener reattivo:
+  più leggibile, deterministic, immune al distinct-skip.
+
+**Offline UX**: `_ensureOnlineForDailyChallengeAction` controlla
+`serviceLocator<ConnectionChecker>().isConnected`. Se offline mostra
+`AlertDialog` con titolo "Connessione assente", messaggio
+"Per approvare o rifiutare le sfide quotidiane è necessaria una connessione
+internet. Riprova quando sarai online." e bottone "Ho capito".
+
+### 2.3 File con modifiche pending (working tree, NON ancora committate)
+
+```
+M lib/init_dependencies/init_dependencies.main.dart
+M lib/features/league/data/datasources/local/local_data_source.dart
+M lib/features/league/data/repository/league_repository_impl.dart
+M lib/features/league/data/repository/notifications_repository_impl.dart
+M lib/features/league/domain/repository/notifications_repository.dart
+M lib/features/league/domain/use_cases/remote/notifications/get_notifications.dart
+M lib/features/league/presentation/bloc/daily_challenges_bloc/daily_challenges_bloc.dart
+M lib/features/league/presentation/bloc/notifications_bloc/notifications_bloc.dart
+M lib/features/league/presentation/pages/navigation/notifications/notifications_page.dart
+M lib/core/widgets/dialogs/notification_dialog.dart  (testo extra UX, preesistente al refactor)
+M CLAUDE.MD  (auto-aggiornato dal linter)
+```
+
+`flutter analyze --no-fatal-infos` pulito (4 warning preesistenti non correlati:
+ad_helper.dart x2, rive_asset.dart, google_loader.dart).
+
+## 3. DA FARE DOMANI
+
+### 3.1 Decisione preliminare: come committare le modifiche pending
+
+Tre opzioni:
+a) Unico commit "feat: refactor notifications caching to network-only with offline fallback".
+b) Split per area: (1) cache refactor, (2) fix UX approve/reject, (3) cleanup exitLeague.
+c) Lasciare tutto come WIP e committare insieme al task 3.2.
+
+Preferenza utente da chiedere prima di procedere.
+
+### 3.2 Task pianificato (prompt Codex pronto, NON ancora eseguito)
+
+**Obiettivo**: tracciare lato client `is_pending_approval` e `is_rejected`,
+fare refetch on-startup quando ci sono challenge pending non ancora processate,
+e mostrare uno stile UI dedicato per le challenge rifiutate (rosso bordeaux).
+
+**Motivazione**: oggi una challenge segnata da non-admin (is_pending_approval=true)
+appare sbarrata "in attesa". Quando admin approva/rifiuta, il client non vede
+l'aggiornamento finché non scatta il cleanup 7AM. Con il tracciamento + refetch
+on-startup, l'utente vede l'esito alla prossima apertura dell'app.
+
+**Step 1 — File SQL** (creare in `tools/sql/` o `supabase/migrations/`,
+percorso da decidere)
+- Aggiornare la RPC `reject_daily_challenge` aggiungendo:
+  ```sql
+  UPDATE public.user_daily_challenges
+  SET is_rejected = true
+  WHERE user_id::text = v_user_id::text
+    AND challenge_id::text = v_challenge_id::text
+    AND league_id::text = v_league_id::text;
+  ```
+  fra step 3 (commento esistente) e step 4 (DELETE notifica).
+- `is_pending_approval` resta true (commento già presente: impedisce all'utente
+  di rieseguirla, riga rimossa dal cleanup 7AM).
+- File SQL viene applicato manualmente dall'utente sul DB Supabase.
+
+**VERIFICA preliminare** (fare prima dello Step 3): conferma che la RPC
+`approve_daily_challenge` setti `is_pending_approval = false` E
+`is_completed = true`. Senza questo, il refetch on-startup andrebbe in loop
+infinito per le approvate (cache resta sempre con pending=true → fetch ad ogni
+boot). L'utente deve mostrare il body SQL della RPC approve.
+
+**Step 2 — Entity + Model**
+
+`lib/features/league/domain/entities/daily_challenge.dart`:
+- Aggiungere `final bool isPendingApproval;` e `final bool isRejected;`
+  con default `false` (non `required`).
+- Propagare in `copyWith`.
+
+`lib/features/league/data/models/daily_challenge_model/daily_challenge_model.dart`:
+- HiveFields 0-12 sono usati. Aggiungere:
+  - `@HiveField(13)` per `isPendingApproval` (bool)
+  - `@HiveField(14)` per `isRejected` (bool)
+- Costruttore: aggiungere parametri con default `false`.
+- `fromJson`: leggere `is_pending_approval` e `is_rejected` con `?? false`.
+- `toJson`: aggiungere le due chiavi.
+- `copyWith`: aggiungere i due parametri opzionali.
+- typeId resta `1`. NON cambiarlo. NON riusare numeri 0-12.
+
+Compatibilità Hive: i record cached vecchi caricheranno con default `false`.
+Nessun crash, nessuna migration esplicita.
+
+Rigenerare adapter:
+```
+flutter pub run build_runner build --delete-conflicting-outputs
+```
+Verificare che `daily_challenge_model.g.dart` includa i nuovi field 13 e 14.
+
+**Step 3 — Repository: refetch on-startup**
+
+`lib/features/league/data/repository/daily_challenges_repository_impl.dart`
+in `getDailyChallenges` (righe 24-77), aggiungere il check prima del check
+7AM:
+```dart
+final hasPendingApproval = cachedChallenges.any((c) =>
+    c.isPendingApproval && !c.isCompleted && !c.isRejected);
+
+bool needsRefresh =
+    now.isAfter(today7AM) && challenge.createdAt.isBefore(today7AM);
+
+if (!needsRefresh && !hasPendingApproval) {
+  return Right(cachedChallenges);
+} else if ((needsRefresh || hasPendingApproval) &&
+           !await connectionChecker.isConnected) {
+  return Right(cachedChallenges);
+}
+```
+Resto invariato (fetch + cache).
+
+**Step 4 — UI: stile "rejected" rosso bordeaux**
+
+`lib/features/league/presentation/pages/navigation/homepage/widgets/daily_goal_card.dart`:
+- Aggiungere parametro `final bool isRejected` (default false).
+- In `build()`, prima del check `widget.isCompleted`:
+  ```dart
+  if (widget.isRejected) return _buildRejectedCard(context);
+  ```
+- Implementare `_buildRejectedCard` clonando `_buildCompletedCard` ma:
+  - Gradient rosso bordeaux (es. `#6B0F1A` → `#8B1A2B`).
+  - Valutare di aggiungere costanti in `lib/core/theme/colors.dart`:
+    `rejectedStart = Color(0xFF6B0F1A)`, `rejectedEnd = Color(0xFF8B1A2B)`.
+  - Icona `Icons.block_rounded` o `Icons.cancel_rounded` invece di
+    `Icons.check_circle`.
+  - Mantenere lineThrough sul testo bianco e layout identico.
+
+`lib/features/league/presentation/pages/navigation/homepage/widgets/daily_goals.dart`
+- In `_buildGoalCard` passare `isRejected: c.isRejected`.
+- Aggiornare:
+  ```dart
+  final canRefresh = !isSub && !c.isCompleted && !c.isRejected && !locked;
+  final canComplete = !locked && !c.isCompleted && !c.isRejected;
+  ```
+
+### 3.3 Test manuali post-task 3.2
+
+1. Compatibilità Hive: avvio app dopo update → record vecchi caricano con
+   default false, no crash.
+2. Non-admin segna challenge → card "in attesa" (comportamento attuale).
+3. Admin1 approva sul suo dispositivo → utente non-admin chiude/riapre app →
+   card diventa "completata" (grigia).
+4. Admin1 rifiuta sul suo dispositivo (post-SQL applicato) → utente non-admin
+   chiude/riapre app → card appare con stile rosso bordeaux.
+5. Offline: nessun refetch, cache mostrata as-is.
+6. Cache senza pending: nessun refetch extra, comportamento attuale invariato.
+
+## 4. NOTE DI CONTESTO PERSISTENTI (da sessioni precedenti, ancora valide)
+
+- AdMob: `lib/core/services/ad_helper.dart` ha `if (true) return testInterstitialAdUnitId`
+  da rimuovere prima del deploy. L'utente lo gestisce manualmente.
+- Android: `applicationIdSuffix ".debug"` in `android/app/build.gradle:65` causa
+  PRODUCT_NOT_FOUND su IAP debug (non critico, in release il package è giusto).
+- TODO Play Console: 16 KB page size entro 31/05/2026. Script
+  `tools/check_16kb_alignment.sh` non ancora eseguito.
+- RevenueCat Step 6 (sync `Purchases.logIn/logOut` con auth) opzionale,
+  non eseguito.
+- RPC `reject_daily_challenge` corrente (versione precedente al task 3.2)
+  documentata nella sessione: cancella notifica + push edge function, NON
+  popola is_rejected (motivo del task 3.2).

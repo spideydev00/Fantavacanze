@@ -6,6 +6,8 @@ class DailyChallenge {
   final String name;
   final double points;
   final bool isCompleted;
+  final bool isPendingApproval;
+  final bool isRejected;
   final bool isRefreshed;
   final DateTime refreshedAt;
   final DateTime createdAt;
@@ -21,6 +23,8 @@ class DailyChallenge {
     required this.leagueId,
     required this.tableChallengeId,
     required this.isCompleted,
+    this.isPendingApproval = false,
+    this.isRejected = false,
     required this.isRefreshed,
     required this.refreshedAt,
     required this.createdAt,
@@ -37,6 +41,8 @@ class DailyChallenge {
     String? name,
     double? points,
     bool? isCompleted,
+    bool? isPendingApproval,
+    bool? isRejected,
     bool? isRefreshed,
     DateTime? refreshedAt,
     DateTime? createdAt,
@@ -52,6 +58,8 @@ class DailyChallenge {
       name: name ?? this.name,
       points: points ?? this.points,
       isCompleted: isCompleted ?? this.isCompleted,
+      isPendingApproval: isPendingApproval ?? this.isPendingApproval,
+      isRejected: isRejected ?? this.isRejected,
       isRefreshed: isRefreshed ?? this.isRefreshed,
       refreshedAt: refreshedAt ?? this.refreshedAt,
       createdAt: createdAt ?? this.createdAt,

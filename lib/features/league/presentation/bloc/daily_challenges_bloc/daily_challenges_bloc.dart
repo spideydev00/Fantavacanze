@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:fantavacanze_official/core/cubits/app_league/app_league_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit.dart';
+import 'package:fantavacanze_official/core/cubits/notification_count/notification_count_cubit.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/remote/daily_challenges/approve_daily_challenge.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/remote/daily_challenges/get_daily_challenges.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/remote/daily_challenges/mark_challenge_as_completed.dart';
@@ -23,6 +24,7 @@ class DailyChallengesBloc
   final RejectDailyChallenge _rejectDailyChallenge;
   final AppLeagueCubit _appLeagueCubit;
   final AppUserCubit _appUserCubit;
+  final NotificationCountCubit _notificationCountCubit;
 
   StreamSubscription? _userSubscription;
   StreamSubscription? _leagueSubscription;
@@ -36,6 +38,7 @@ class DailyChallengesBloc
     required RejectDailyChallenge rejectDailyChallenge,
     required AppUserCubit appUserCubit,
     required AppLeagueCubit appLeagueCubit,
+    required NotificationCountCubit notificationCountCubit,
   })  : _getDailyChallenges = getDailyChallenges,
         _markChallengeAsCompleted = markChallengeAsCompleted,
         _updateChallengeRefreshStatus = updateChallengeRefreshStatus,
@@ -44,6 +47,7 @@ class DailyChallengesBloc
         _rejectDailyChallenge = rejectDailyChallenge,
         _appLeagueCubit = appLeagueCubit,
         _appUserCubit = appUserCubit,
+        _notificationCountCubit = notificationCountCubit,
         super(const DailyChallengesInitial()) {
     on<GetDailyChallengesEvent>(_onGetDailyChallenges);
     on<MarkChallengeAsCompletedEvent>(_onMarkChallengeAsCompleted);
@@ -122,9 +126,13 @@ class DailyChallengesBloc
     result.fold(
       (failure) => emit(DailyChallengesError(message: failure.message)),
       (_) {
+        final isAdmin =
+            leagueState.selectedLeague.admins.contains(event.userId);
         final updatedChallenge = event.challenge.copyWith(
-          isCompleted: true,
-          completedAt: DateTime.now(),
+          isCompleted: isAdmin,
+          isPendingApproval: !isAdmin,
+          isRejected: false,
+          completedAt: isAdmin ? DateTime.now() : null,
         );
 
         // Update the challenges list with the completed challenge
@@ -138,9 +146,10 @@ class DailyChallengesBloc
           leagueId: currentState.leagueId,
           userId: currentState.userId,
           operation: 'mark_completed',
+          operationAt: DateTime.now(),
         ));
 
-        if (leagueState.selectedLeague.admins.contains(event.userId)) {
+        if (isAdmin) {
           // Fetch updated league data to refresh events
           _appLeagueCubit.getUserLeagues();
         }
@@ -186,6 +195,7 @@ class DailyChallengesBloc
           leagueId: currentState.leagueId,
           userId: currentState.userId,
           operation: 'refresh_challenge',
+          operationAt: DateTime.now(),
         ));
       },
     );
@@ -237,6 +247,7 @@ class DailyChallengesBloc
           leagueId: currentState.leagueId,
           userId: currentState.userId,
           operation: 'unlock_challenge',
+          operationAt: DateTime.now(),
         ));
       },
     );
@@ -250,7 +261,8 @@ class DailyChallengesBloc
     final currentState = state;
     if (currentState is! DailyChallengesLoaded) return;
 
-    emit(const DailyChallengesLoading());
+    // Non emettere Loading: l'operazione riguarda la notifica admin,
+    // non la lista in home. Evita di sbarrare la home con shimmer.
 
     final result = await _approveDailyChallenge.call(
       ApproveDailyChallengeParams(
@@ -258,16 +270,22 @@ class DailyChallengesBloc
       ),
     );
 
-    result.fold(
-      (failure) => emit(DailyChallengesError(message: failure.message)),
+    await result.fold(
+      (failure) async {
+        // Se fallisce, ripristina lo stato Loaded precedente così la
+        // home non resta in Error con placeholder infinito.
+        emit(DailyChallengesError(message: failure.message));
+        emit(currentState);
+      },
       (_) async {
+        _notificationCountCubit.decrement();
         await _appLeagueCubit.getUserLeagues();
-        // Emettiamo un unico stato aggiornato con l'operazione completata
         emit(DailyChallengesLoaded(
           challenges: currentState.challenges,
           leagueId: currentState.leagueId,
           userId: currentState.userId,
           operation: 'approve_challenge',
+          operationAt: DateTime.now(),
         ));
       },
     );
@@ -281,7 +299,7 @@ class DailyChallengesBloc
     final currentState = state;
     if (currentState is! DailyChallengesLoaded) return;
 
-    emit(const DailyChallengesLoading());
+    // Non emettere Loading: vedi commento in _onApproveDailyChallenge.
 
     final result = await _rejectDailyChallenge.call(
       RejectDailyChallengeParams(
@@ -290,14 +308,18 @@ class DailyChallengesBloc
     );
 
     result.fold(
-      (failure) => emit(DailyChallengesError(message: failure.message)),
+      (failure) {
+        emit(DailyChallengesError(message: failure.message));
+        emit(currentState);
+      },
       (_) {
-        // Emettiamo un unico stato aggiornato con l'operazione completata
+        _notificationCountCubit.decrement();
         emit(DailyChallengesLoaded(
           challenges: currentState.challenges,
           leagueId: currentState.leagueId,
           userId: currentState.userId,
           operation: 'reject_challenge',
+          operationAt: DateTime.now(),
         ));
       },
     );
@@ -404,6 +426,7 @@ class DailyChallengesBloc
       leagueId: currentState.leagueId,
       userId: currentState.userId,
       operation: 'premium_unlocked',
+      operationAt: DateTime.now(),
     ));
   }
 
@@ -446,6 +469,7 @@ class DailyChallengesBloc
       leagueId: currentState.leagueId,
       userId: currentState.userId,
       operation: 'premium_locked',
+      operationAt: DateTime.now(),
     ));
   }
 

@@ -4,13 +4,22 @@ import 'package:fantavacanze_official/core/entities/notification/entity/notifica
 import 'package:fantavacanze_official/features/league/domain/repository/notifications_repository.dart';
 import 'package:fpdart/fpdart.dart';
 
-class GetNotifications implements Usecase<List<Notification>, NoParams> {
+class GetNotificationsParams {
+  final String leagueId;
+
+  const GetNotificationsParams({required this.leagueId});
+}
+
+class GetNotifications
+    implements Usecase<List<Notification>, GetNotificationsParams> {
   final NotificationsRepository notificationsRepository;
 
   GetNotifications({required this.notificationsRepository});
 
   @override
-  Future<Either<Failure, List<Notification>>> call(NoParams params) async {
-    return await notificationsRepository.getNotifications();
+  Future<Either<Failure, List<Notification>>> call(
+    GetNotificationsParams params,
+  ) async {
+    return await notificationsRepository.getNotifications(params.leagueId);
   }
 }

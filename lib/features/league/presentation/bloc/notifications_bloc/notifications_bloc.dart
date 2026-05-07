@@ -52,7 +52,10 @@ class NotificationsBloc extends Bloc<NotificationsEvent, NotificationsState> {
 
     emit(NotificationsLoading());
 
-    final result = await getNotifications(NoParams());
+    final leagueId = leagueState.selectedLeague.id;
+    final result = await getNotifications(
+      GetNotificationsParams(leagueId: leagueId),
+    );
 
     result.fold(
       (failure) => emit(NotificationsError(message: failure.message)),
@@ -77,6 +80,7 @@ class NotificationsBloc extends Bloc<NotificationsEvent, NotificationsState> {
     DeleteNotificationEvent event,
     Emitter<NotificationsState> emit,
   ) async {
+    final currentState = state;
     final result = await deleteNotification(
       DeleteNotificationParams(notificationId: event.notificationId),
     );
@@ -89,8 +93,15 @@ class NotificationsBloc extends Bloc<NotificationsEvent, NotificationsState> {
           notificationId: event.notificationId,
         ));
 
-        // Refresh the notifications list
-        add(GetNotificationsEvent());
+        notificationCountCubit.decrement();
+
+        if (currentState is NotificationsLoaded) {
+          final updatedNotifications = currentState.notifications
+              .where((notification) => notification.id != event.notificationId)
+              .toList();
+
+          emit(NotificationsLoaded(notifications: updatedNotifications));
+        }
       },
     );
   }

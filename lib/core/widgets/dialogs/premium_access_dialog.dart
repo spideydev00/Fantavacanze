@@ -1,11 +1,11 @@
-import 'package:fantavacanze_official/core/utils/show-snackbar-or-paywall/show_premium_paywall.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/extensions/context_extension.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
+import 'package:fantavacanze_official/core/utils/show-snackbar-or-paywall/show_premium_paywall.dart';
 import 'package:fantavacanze_official/core/widgets/buttons/gradient_option_button.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class PremiumAccessDialog extends StatefulWidget {
   final bool premiumOnly;
@@ -66,7 +66,7 @@ class _PremiumAccessDialogState extends State<PremiumAccessDialog>
     try {
       granted = await widget.onAdsBtnTapped!();
     } catch (e) {
-      debugPrint('Error showing ad: $e');
+      debugPrint('Error nel mostrare ad: $e');
       granted = true;
     }
 

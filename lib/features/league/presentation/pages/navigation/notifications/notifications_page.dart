@@ -4,6 +4,7 @@ import 'package:fantavacanze_official/core/entities/notification/entity/notifica
     as app_notification;
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/extensions/context_extension.dart';
+import 'package:fantavacanze_official/core/network/connection_checker.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:fantavacanze_official/core/utils/show-snackbar-or-paywall/show_snackbar.dart';
@@ -12,10 +13,12 @@ import 'package:fantavacanze_official/core/widgets/loader.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/daily_challenge_notification.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/daily_challenges_bloc/daily_challenges_bloc.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/daily_challenges_bloc/daily_challenges_event.dart';
+import 'package:fantavacanze_official/features/league/presentation/bloc/daily_challenges_bloc/daily_challenges_state.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/notifications_bloc/notifications_bloc.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/notifications_bloc/notifications_event.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/notifications_bloc/notifications_state.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/notifications/widgets/notification_card.dart';
+import 'package:fantavacanze_official/init_dependencies/init_dependencies.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -34,6 +37,9 @@ class NotificationsPage extends StatefulWidget {
 }
 
 class _NotificationsPageState extends State<NotificationsPage> {
+  static const String _dailyChallengeOfflineMessage =
+      'Per approvare o rifiutare le sfide quotidiane è necessaria una connessione internet. Riprova quando sarai online.';
+
   @override
   void initState() {
     super.initState();
@@ -131,25 +137,71 @@ class _NotificationsPageState extends State<NotificationsPage> {
 
   void _handleDailyChallengeApproval(
       DailyChallengeNotification notification) async {
-    context.read<DailyChallengesBloc>().add(
-          ApproveDailyChallengeEvent(notificationId: notification.id),
-        );
+    final dailyChallengesBloc = context.read<DailyChallengesBloc>();
+    final notificationsBloc = context.read<NotificationsBloc>();
 
-    if (context.mounted) {
-      context.read<NotificationsBloc>().add(
-            DeleteNotificationEvent(notificationId: notification.id),
-          );
-    }
+    if (!await _ensureOnlineForDailyChallengeAction()) return;
+
+    dailyChallengesBloc.add(
+      ApproveDailyChallengeEvent(notificationId: notification.id),
+    );
+
+    // Attende il completamento dell'operazione direttamente sullo stream
+    // del bloc, bypassando il distinct-skip di Equatable quando si compiono
+    // due approve/reject consecutivi sulla stessa pagina.
+    await dailyChallengesBloc.stream.firstWhere(
+      (s) =>
+          (s is DailyChallengesLoaded && s.operation == 'approve_challenge') ||
+          s is DailyChallengesError,
+    );
+
+    if (!mounted) return;
+    notificationsBloc.add(GetNotificationsEvent());
   }
 
-  void _handleDailyChallengeRejection(DailyChallengeNotification notification) {
-    context.read<DailyChallengesBloc>().add(
-          RejectDailyChallengeEvent(
-            notificationId: notification.id,
+  void _handleDailyChallengeRejection(
+      DailyChallengeNotification notification) async {
+    final dailyChallengesBloc = context.read<DailyChallengesBloc>();
+    final notificationsBloc = context.read<NotificationsBloc>();
+
+    if (!await _ensureOnlineForDailyChallengeAction()) return;
+
+    dailyChallengesBloc.add(
+      RejectDailyChallengeEvent(
+        notificationId: notification.id,
+      ),
+    );
+
+    await dailyChallengesBloc.stream.firstWhere(
+      (s) =>
+          (s is DailyChallengesLoaded && s.operation == 'reject_challenge') ||
+          s is DailyChallengesError,
+    );
+
+    if (!mounted) return;
+    notificationsBloc.add(GetNotificationsEvent());
+  }
+
+  Future<bool> _ensureOnlineForDailyChallengeAction() async {
+    final isConnected = await serviceLocator<ConnectionChecker>().isConnected;
+    if (isConnected) return true;
+
+    if (!mounted) return false;
+
+    await showDialog<void>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Connessione assente'),
+        content: const Text(_dailyChallengeOfflineMessage),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: const Text('Ho capito'),
           ),
-        );
-    context.read<NotificationsBloc>().add(
-          DeleteNotificationEvent(notificationId: notification.id),
-        );
+        ],
+      ),
+    );
+
+    return false;
   }
 }

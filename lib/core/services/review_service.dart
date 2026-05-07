@@ -1,5 +1,6 @@
 import 'package:fantavacanze_official/core/cubits/app_league/app_league_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit.dart';
+import 'package:fantavacanze_official/core/widgets/dialogs/app_review_dialog.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/daily_challenges_bloc/daily_challenges_bloc.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/daily_challenges_bloc/daily_challenges_event.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/daily_challenges_bloc/daily_challenges_state.dart';
@@ -7,8 +8,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:in_app_review/in_app_review.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
-import 'package:fantavacanze_official/core/widgets/dialogs/app_review_dialog.dart';
 
 class ReviewService {
   final SharedPreferences _preferences;
@@ -96,7 +95,7 @@ class ReviewService {
         }
       }
     } catch (e) {
-      debugPrint('Error requesting app review: $e');
+      debugPrint('Errore nella richiesta di review: $e');
     }
   }
 
@@ -135,7 +134,8 @@ class ReviewService {
         }
       }
     } catch (e) {
-      debugPrint('Error unlocking daily challenge: $e');
+      debugPrint(
+          'Errore nello sbloccare le daily challenge dopo la review: $e');
     }
   }
 }

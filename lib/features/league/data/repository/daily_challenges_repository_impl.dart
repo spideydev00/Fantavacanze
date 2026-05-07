@@ -30,22 +30,24 @@ class DailyChallengesRepositoryImpl implements DailyChallengesRepository {
           await localDataSource.getCachedDailyChallenges(leagueId);
 
       if (cachedChallenges.isNotEmpty) {
-        // Check if cached challenges need refresh (passed 7 AM)
         final now = DateTime.now();
         final today7AM = DateTime(now.year, now.month, now.day, 7, 0);
 
-        // Get the first challenge to check its creation date
         final challenge = cachedChallenges.first;
 
-        // If it's past 7 AM and the challenge was created before today at 7 AM,
-        // we need to refresh the challenges
+        // Refresh forzato se ci sono challenge ancora in attesa di approvazione
+        // (admin potrebbe aver approvato/rifiutato dal suo dispositivo).
+        final hasPendingApproval = cachedChallenges
+            .any((c) => c.isPendingApproval && !c.isCompleted && !c.isRejected);
+
         bool needsRefresh =
             now.isAfter(today7AM) && challenge.createdAt.isBefore(today7AM);
 
-        if (!needsRefresh) {
+        if (!needsRefresh && !hasPendingApproval) {
           return Right(cachedChallenges);
-        } else if (!await connectionChecker.isConnected) {
-          // If we need refresh but have no connection, use cache anyway
+        } else if ((needsRefresh || hasPendingApproval) &&
+            !await connectionChecker.isConnected) {
+          // Offline: usa la cache anche se servirebbe refresh.
           return Right(cachedChallenges);
         }
       } else if (!await connectionChecker.isConnected) {
@@ -173,12 +175,15 @@ class DailyChallengesRepositoryImpl implements DailyChallengesRepository {
       // Update the challenge in the cache
       final cachedChallenges =
           await localDataSource.getCachedDailyChallenges(league.id);
+      final isAdmin = league.admins.contains(userId);
 
       final updatedChallenges = cachedChallenges.map((cachedChallenge) {
         if (cachedChallenge.id == challenge.id) {
           return cachedChallenge.copyWith(
-            isCompleted: true,
-            completedAt: DateTime.now(),
+            isCompleted: isAdmin,
+            isPendingApproval: !isAdmin,
+            isRejected: false,
+            completedAt: isAdmin ? DateTime.now() : null,
           );
         }
         return cachedChallenge;

@@ -1,9 +1,9 @@
 import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit.dart';
+import 'package:fantavacanze_official/core/theme/colors.dart';
+import 'package:fantavacanze_official/core/utils/show-snackbar-or-paywall/show_snackbar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:purchases_ui_flutter/purchases_ui_flutter.dart';
-import 'package:fantavacanze_official/core/utils/show-snackbar-or-paywall/show_snackbar.dart';
-import 'package:fantavacanze_official/core/theme/colors.dart';
 
 Future<bool> showPremiumPaywall(BuildContext context) async {
   try {
@@ -32,7 +32,7 @@ Future<bool> showPremiumPaywall(BuildContext context) async {
 
     return false;
   } catch (e) {
-    debugPrint("Error showing paywall: $e");
+    debugPrint("Error nel mostrare il paywall: $e");
     showSnackBar(
       "Si è verificato un errore. Riprova più tardi.",
       color: ColorPalette.error,

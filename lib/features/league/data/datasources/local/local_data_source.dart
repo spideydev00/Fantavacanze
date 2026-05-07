@@ -5,7 +5,6 @@ import 'package:fantavacanze_official/features/league/data/models/league_model/l
 import 'package:fantavacanze_official/features/league/data/models/note_model/note_model.dart';
 import 'package:fantavacanze_official/features/league/data/models/notification_model/daily_challenge_notification_model.dart';
 import 'package:fantavacanze_official/features/league/data/models/rule_model/rule_model.dart';
-import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 
 abstract interface class LocalDataSource {
@@ -17,6 +16,7 @@ abstract interface class LocalDataSource {
   Future<void> cacheLeague(LeagueModel league);
   Future<LeagueModel?> getCachedLeague(String leagueId);
   Future<void> removeLeagueFromCache(String leagueId);
+  Future<void> pruneLocalDataForLeagues(Set<String> validLeagueIds);
 
   // =====================================================================
   // RULE OPERATIONS
@@ -43,6 +43,7 @@ abstract interface class LocalDataSource {
   Future<List<NoteModel>> getNotes(String leagueId);
   Future<void> saveNote(NoteModel note, String leagueId);
   Future<void> deleteNote(String noteId, String leagueId);
+  Future<void> clearNotesForLeague(String leagueId);
 
   // =====================================================================
   // NOTIFICATION OPERATIONS
@@ -50,6 +51,11 @@ abstract interface class LocalDataSource {
   Future<void> cacheNotification(NotificationModel notification);
   Future<void> cacheNotifications(List<NotificationModel> notifications);
   Future<List<NotificationModel>> getCachedNotifications();
+  Future<List<NotificationModel>> getCachedNotificationsForLeague(
+      String leagueId);
+  Future<void> replaceNotificationsForLeague(
+      String leagueId, List<NotificationModel> fresh);
+  Future<void> clearNotificationsForLeague(String leagueId);
   Future<void> markNotificationAsRead(String notificationId);
   Future<void> deleteNotificationFromCache(String notificationId);
   Future<void> cleanupOldNotifications();
@@ -86,6 +92,9 @@ class LocalDataSourceImpl implements LocalDataSource {
       for (final league in leagues) {
         await leaguesBox.put(league.id, league);
       }
+
+      final validIds = leagues.map((l) => l.id).toSet();
+      await pruneLocalDataForLeagues(validIds);
     } catch (e) {
       throw CacheException('Errore nel salvare le leghe: $e');
     }
@@ -148,7 +157,6 @@ class LocalDataSourceImpl implements LocalDataSource {
   //   try {
   //     rulesBox.put("${mode}_rules", rules);
   //
-  //     debugPrint("📦${rules.length} regole cachate");
   //   } catch (e) {
   //     throw CacheException('Errore nel salvare le regole: $e');
   //   }
@@ -162,8 +170,6 @@ class LocalDataSourceImpl implements LocalDataSource {
   //     if (rules.isEmpty) {
   //       return [];
   //     }
-  //
-  //     debugPrint("Caricate ${rules.length} regole");
   //
   //     return rules;
   //   } catch (e) {
@@ -221,6 +227,21 @@ class LocalDataSourceImpl implements LocalDataSource {
     }
   }
 
+  @override
+  Future<void> clearNotesForLeague(String leagueId) async {
+    try {
+      final keysToDelete = notesBox.keys.where((key) {
+        final note = notesBox.get(key);
+        return note != null && note.leagueId == leagueId;
+      }).toList();
+
+      await notesBox.deleteAll(keysToDelete);
+    } catch (e) {
+      throw CacheException(
+          'Errore nel pulire le note per la lega $leagueId: $e');
+    }
+  }
+
   // =====================================================================
   // DAILY CHALLENGE OPERATIONS IMPLEMENTATION
   // =====================================================================
@@ -253,11 +274,6 @@ class LocalDataSourceImpl implements LocalDataSource {
           .forEach((challenge) {
         challenges.add(challenge);
       });
-
-      debugPrint('Box totale: ${challengesBox.values.length}');
-      debugPrint('LeagueId richiesto: $leagueId');
-      debugPrint(
-          'LeagueId nei record: ${challengesBox.values.map((c) => c.leagueId).toList()}');
 
       return challenges;
     } catch (e) {
@@ -339,13 +355,7 @@ class LocalDataSourceImpl implements LocalDataSource {
   Future<void> cacheNotifications(List<NotificationModel> notifications) async {
     try {
       for (final notification in notifications) {
-        // Controlliamo se la notifica esiste già
-        final existingNotification = notificationsBox.get(notification.id);
-
-        // Se non esiste, la salviamo
-        if (existingNotification == null) {
-          await notificationsBox.put(notification.id, notification);
-        }
+        await notificationsBox.put(notification.id, notification);
       }
     } catch (e) {
       throw CacheException('Errore nel cachare le notifiche: $e');
@@ -370,6 +380,60 @@ class LocalDataSourceImpl implements LocalDataSource {
       return result;
     } catch (e) {
       throw CacheException('Errore nel recuperare le notifiche: $e');
+    }
+  }
+
+  @override
+  Future<List<NotificationModel>> getCachedNotificationsForLeague(
+      String leagueId) async {
+    try {
+      final notifications = notificationsBox.values
+          .where((notification) => notification.leagueId == leagueId)
+          .toList();
+
+      notifications.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+
+      const int maxNotifications = 50;
+      final result = notifications.length > maxNotifications
+          ? notifications.sublist(0, maxNotifications)
+          : notifications;
+
+      return result;
+    } catch (e) {
+      throw CacheException('Errore nel recuperare le notifiche: $e');
+    }
+  }
+
+  @override
+  Future<void> replaceNotificationsForLeague(
+      String leagueId, List<NotificationModel> fresh) async {
+    try {
+      final keysToDelete = notificationsBox.keys.where((key) {
+        final notification = notificationsBox.get(key);
+        return notification?.leagueId == leagueId;
+      }).toList();
+
+      await notificationsBox.deleteAll(keysToDelete);
+
+      for (final notification in fresh) {
+        await notificationsBox.put(notification.id, notification);
+      }
+    } catch (e) {
+      throw CacheException('Errore nel sostituire le notifiche: $e');
+    }
+  }
+
+  @override
+  Future<void> clearNotificationsForLeague(String leagueId) async {
+    try {
+      final keysToDelete = notificationsBox.keys.where((key) {
+        final notification = notificationsBox.get(key);
+        return notification?.leagueId == leagueId;
+      }).toList();
+
+      await notificationsBox.deleteAll(keysToDelete);
+    } catch (e) {
+      throw CacheException('Errore nel pulire le notifiche della lega: $e');
     }
   }
 
@@ -445,6 +509,38 @@ class LocalDataSourceImpl implements LocalDataSource {
   // =====================================================================
   // CACHE MANAGEMENT IMPLEMENTATION
   // =====================================================================
+
+  @override
+  Future<void> pruneLocalDataForLeagues(Set<String> validLeagueIds) async {
+    try {
+      final staleLeagueKeys = leaguesBox.keys
+          .where((key) => !validLeagueIds.contains(key.toString()))
+          .toList();
+      await leaguesBox.deleteAll(staleLeagueKeys);
+
+      final staleChallengeKeys = challengesBox.keys.where((key) {
+        final challenge = challengesBox.get(key);
+        return challenge != null &&
+            !validLeagueIds.contains(challenge.leagueId);
+      }).toList();
+      await challengesBox.deleteAll(staleChallengeKeys);
+
+      final staleNoteKeys = notesBox.keys.where((key) {
+        final note = notesBox.get(key);
+        return note != null && !validLeagueIds.contains(note.leagueId);
+      }).toList();
+      await notesBox.deleteAll(staleNoteKeys);
+
+      final staleNotificationKeys = notificationsBox.keys.where((key) {
+        final notification = notificationsBox.get(key);
+        return notification != null &&
+            !validLeagueIds.contains(notification.leagueId);
+      }).toList();
+      await notificationsBox.deleteAll(staleNotificationKeys);
+    } catch (e) {
+      throw CacheException('Errore nel riallineare la cache locale: $e');
+    }
+  }
 
   @override
   Future<void> clearCache() async {

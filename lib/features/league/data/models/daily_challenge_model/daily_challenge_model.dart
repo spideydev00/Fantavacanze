@@ -57,6 +57,14 @@ class DailyChallengeModel extends DailyChallenge {
   @override
   bool get isUnlocked => super.isUnlocked;
 
+  @HiveField(13, defaultValue: false)
+  @override
+  bool get isPendingApproval => super.isPendingApproval;
+
+  @HiveField(14, defaultValue: false)
+  @override
+  bool get isRejected => super.isRejected;
+
   const DailyChallengeModel({
     required super.id,
     required super.userId,
@@ -65,6 +73,8 @@ class DailyChallengeModel extends DailyChallenge {
     required super.name,
     required super.points,
     required super.isCompleted,
+    super.isPendingApproval = false,
+    super.isRejected = false,
     super.completedAt,
     required super.isRefreshed,
     required super.refreshedAt,
@@ -84,6 +94,8 @@ class DailyChallengeModel extends DailyChallenge {
           ? (json['points'] as int).toDouble()
           : (json['points'] as num).toDouble(),
       isCompleted: json['is_completed'] as bool? ?? false,
+      isPendingApproval: json['is_pending_approval'] as bool? ?? false,
+      isRejected: json['is_rejected'] as bool? ?? false,
       isRefreshed: json['is_refreshed'] as bool? ?? false,
       refreshedAt: json['refreshed_at'] != null
           ? DateTime.parse(json['refreshed_at'] as String)
@@ -108,6 +120,8 @@ class DailyChallengeModel extends DailyChallenge {
       'name': name,
       'points': points,
       'is_completed': isCompleted,
+      'is_pending_approval': isPendingApproval,
+      'is_rejected': isRejected,
       'is_refreshed': isRefreshed,
       'refreshed_at': refreshedAt.toIso8601String(),
       'created_at': createdAt.toIso8601String(),
@@ -126,6 +140,8 @@ class DailyChallengeModel extends DailyChallenge {
     String? name,
     double? points,
     bool? isCompleted,
+    bool? isPendingApproval,
+    bool? isRejected,
     bool? isRefreshed,
     DateTime? refreshedAt,
     DateTime? createdAt,
@@ -141,6 +157,8 @@ class DailyChallengeModel extends DailyChallenge {
       name: name ?? this.name,
       points: points ?? this.points,
       isCompleted: isCompleted ?? this.isCompleted,
+      isPendingApproval: isPendingApproval ?? this.isPendingApproval,
+      isRejected: isRejected ?? this.isRejected,
       isRefreshed: isRefreshed ?? this.isRefreshed,
       refreshedAt: refreshedAt ?? this.refreshedAt,
       createdAt: createdAt ?? this.createdAt,

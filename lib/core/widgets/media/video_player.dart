@@ -1,11 +1,12 @@
 import 'dart:async';
 import 'dart:io';
+
 import 'package:awesome_video_player/awesome_video_player.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as path;
+import 'package:path_provider/path_provider.dart';
 
 enum VideoPlayerMode {
   memories,
@@ -243,7 +244,7 @@ class _BetterVideoPlayerState extends State<BetterVideoPlayer>
       return calculatedRatio.clamp(0.1, 10.0);
     } catch (e) {
       // If any error occurs, return safe fallback
-      debugPrint('Error calculating aspect ratio: $e');
+      debugPrint('Error nel calcolo dell\'aspect ratio: $e');
       return fallbackRatio;
     }
   }
@@ -365,7 +366,7 @@ class _BetterVideoPlayerState extends State<BetterVideoPlayer>
         }
       } catch (e) {
         // Ignore cleanup errors
-        debugPrint('Failed to cleanup temp file: $e');
+        debugPrint('Failed nel cleanup del file temp: $e');
       }
     }
   }

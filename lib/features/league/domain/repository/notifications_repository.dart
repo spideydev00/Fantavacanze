@@ -3,7 +3,7 @@ import 'package:fantavacanze_official/core/entities/notification/entity/notifica
 import 'package:fpdart/fpdart.dart';
 
 abstract class NotificationsRepository {
-  Future<Either<Failure, List<Notification>>> getNotifications();
+  Future<Either<Failure, List<Notification>>> getNotifications(String leagueId);
   Future<Either<Failure, void>> deleteNotification(String notificationId);
   Either<Failure, Stream<Notification>> listenToNotification();
 }

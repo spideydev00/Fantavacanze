@@ -7,7 +7,10 @@ import 'package:fantavacanze_official/core/cubits/app_status/app_status_cubit.da
 import 'package:fantavacanze_official/core/cubits/app_theme/app_theme_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/notification_count/notification_count_cubit.dart';
+import 'package:fantavacanze_official/core/network/connection_checker.dart';
+import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/theme.dart';
+import 'package:fantavacanze_official/core/utils/show-snackbar-or-paywall/show_snackbar.dart';
 import 'package:fantavacanze_official/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:fantavacanze_official/features/games/presentation/bloc/game/game_bloc.dart';
 import 'package:fantavacanze_official/features/games/presentation/bloc/never_have_i_ever/never_have_i_ever_bloc.dart';
@@ -92,11 +95,14 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
+  StreamSubscription<bool>? _connectionSubscription;
+
   @override
   void initState() {
     super.initState();
     _initializeApp();
     _listenToPremiumStatusChanges();
+    _listenToConnectionChanges();
   }
 
   Future<void> _initializeApp() async {
@@ -164,6 +170,26 @@ class _MyAppState extends State<MyApp> {
         }
       },
     );
+  }
+
+  void _listenToConnectionChanges() {
+    _connectionSubscription = serviceLocator<ConnectionChecker>()
+        .onStatusChange
+        .listen((isConnected) {
+      if (!isConnected) {
+        showSnackBar(
+          "Problemi di connessione. Alcune funzioni potrebbero non essere disponibili.",
+          color: ColorPalette.warning,
+          duration: const Duration(seconds: 4),
+        );
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _connectionSubscription?.cancel();
+    super.dispose();
   }
 
   @override
