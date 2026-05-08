@@ -151,7 +151,7 @@ class HomePage extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: ThemeSizes.xl),
       child: AdminActionCard(
         title: 'Aggiungi un bonus / malus',
-        imagePath: 'assets/images/add-event-winter.png',
+        imagePath: 'assets/images/add-event-bg.jpg',
         iconData: Icons.add,
         onTap: () => _navigateToAddEvent(context),
       ),

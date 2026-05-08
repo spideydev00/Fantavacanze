@@ -52,6 +52,10 @@ Future<void> initDependencies() async {
       ),
     );
 
+    serviceLocator.registerLazySingleton<ShareService>(
+      () => ShareService(),
+    );
+
     _initAppStatus();
     _initAuth();
     _initLeague();
@@ -109,6 +113,10 @@ Future<void> initDependencies() async {
       //5. notification count cubit
       ..registerLazySingleton(
         () => NotificationCountCubit(),
+      )
+      //5.1 share button animation cubit
+      ..registerLazySingleton(
+        () => ShareButtonAnimationCubit(),
       )
       //6. app status cubit
       ..registerLazySingleton(

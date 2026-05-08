@@ -88,6 +88,7 @@ dependencies:
   image: ^4.5.4
   dio: ^5.9.0
   gallery_saver_plus: ^3.2.9
+  screenshot: ^3.0.0
 
 dev_dependencies:
   flutter_test:

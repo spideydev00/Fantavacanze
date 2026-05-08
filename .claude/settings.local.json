@@ -2,7 +2,12 @@
   "permissions": {
     "allow": [
       "Bash(flutter --version)",
-      "Bash(flutter analyze *)"
+      "Bash(flutter analyze *)",
+      "WebSearch",
+      "WebFetch(domain:pub.dev)",
+      "WebFetch(domain:github.com)",
+      "Bash(gh api *)",
+      "WebFetch(domain:raw.githubusercontent.com)"
     ]
   }
 }

@@ -7,6 +7,7 @@ import 'package:fantavacanze_official/core/cubits/app_status/app_status_cubit.da
 import 'package:fantavacanze_official/core/cubits/app_theme/app_theme_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/notification_count/notification_count_cubit.dart';
+import 'package:fantavacanze_official/core/cubits/share_button_animation/share_button_animation_cubit.dart';
 import 'package:fantavacanze_official/core/network/connection_checker.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/theme.dart';
@@ -67,6 +68,8 @@ void main() async {
           BlocProvider(create: (_) => serviceLocator<NotificationsBloc>()),
           BlocProvider(create: (_) => serviceLocator<SubscriptionBloc>()),
           BlocProvider(create: (_) => serviceLocator<NotificationCountCubit>()),
+          BlocProvider(
+              create: (_) => serviceLocator<ShareButtonAnimationCubit>()),
 
           // Navigation
           BlocProvider(create: (_) => serviceLocator<AppNavigationCubit>()),

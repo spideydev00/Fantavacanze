@@ -5,10 +5,12 @@ import 'package:fantavacanze_official/core/cubits/app_status/app_status_cubit.da
 import 'package:fantavacanze_official/core/cubits/app_theme/app_theme_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/notification_count/notification_count_cubit.dart';
+import 'package:fantavacanze_official/core/cubits/share_button_animation/share_button_animation_cubit.dart';
 import 'package:fantavacanze_official/core/entities/notification/model/notification_model.dart';
 import 'package:fantavacanze_official/core/network/connection_checker.dart';
 import 'package:fantavacanze_official/core/secrets/app_secrets.dart';
 import 'package:fantavacanze_official/core/services/review_service.dart';
+import 'package:fantavacanze_official/core/services/share_service.dart';
 import 'package:fantavacanze_official/features/app/data/datasources/app_remote_data_source.dart';
 import 'package:fantavacanze_official/features/app/data/repository/app_repository_impl.dart';
 import 'package:fantavacanze_official/features/app/domain/repository/app_repository.dart';
