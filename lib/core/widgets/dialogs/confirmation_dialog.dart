@@ -191,38 +191,6 @@ class ConfirmationDialog extends StatelessWidget {
     );
   }
 
-  /// Factory constructor for creating a FantaSerata event confirmation dialog
-  factory ConfirmationDialog.setFsRuleCompleted({
-    required String ruleName,
-    required double points,
-    required bool isBonus,
-    required Function onConfirm,
-  }) {
-    final eventType = isBonus ? 'bonus' : 'malus';
-
-    return ConfirmationDialog(
-      title: 'Aggiungi $eventType',
-      message: 'Confermi di aver completato questo $eventType?\n\n"$ruleName"',
-      confirmText: 'Assegna',
-      cancelText: 'Annulla',
-      icon: isBonus ? Icons.add_circle_rounded : Icons.remove_circle_rounded,
-      iconColor: isBonus ? ColorPalette.success : ColorPalette.error,
-      useIconBackground: true,
-      isPrimaryAction: true,
-      elevatedButtonStyle: ElevatedButton.styleFrom(
-        backgroundColor: isBonus ? ColorPalette.success : ColorPalette.error,
-      ),
-      additionalContent: InfoBanner(
-        message: isBonus
-            ? "I punti bonus verranno aggiunti al tuo punteggio"
-            : "I punti malus verranno sottratti dal al tuo punteggio",
-        icon: Icons.info_outline_rounded,
-        color: isBonus ? ColorPalette.success : ColorPalette.error,
-      ),
-      onConfirm: () => onConfirm(),
-    );
-  }
-
   /// Factory constructor for creating a reactivate event confirmation dialog
   factory ConfirmationDialog.reactivateEvent({
     required String eventName,

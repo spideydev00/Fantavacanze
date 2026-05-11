@@ -9,6 +9,7 @@ import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:fantavacanze_official/core/utils/show-snackbar-or-paywall/show_snackbar.dart';
 import 'package:fantavacanze_official/core/utils/dates-and-numbers/sort_by_date.dart';
 import 'package:fantavacanze_official/core/widgets/buttons/gradient_option_button.dart';
+import 'package:fantavacanze_official/core/widgets/dialogs/processing_dialog.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/event/event.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/league/league.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/memory.dart';
@@ -38,7 +39,8 @@ class _MemoriesPageState extends State<MemoriesPage>
   String? _currentUserId;
 
   bool _isAdmin = false;
-  bool _isLoading = false;
+  ValueNotifier<ProcessingState>? _uploadNotifier;
+  BuildContext? _uploadDialogCtx;
 
   // Variabili per il caricamento progressivo
   int _visibleMemoriesCount = 5;
@@ -80,7 +82,7 @@ class _MemoriesPageState extends State<MemoriesPage>
         league: _currentLeague!,
         events: _currentLeague!.events,
         onSave: _handleSaveMemory,
-        currentUserId: _currentUserId!, // Add this parameter
+        currentUserId: _currentUserId!,
       ),
     );
   }
@@ -90,25 +92,149 @@ class _MemoriesPageState extends State<MemoriesPage>
     String text,
     Event? event,
     String? eventName,
+    bool isVideo,
   ) {
     if (_currentLeague == null || _currentUserId == null) return;
 
-    // Store the form values for later use
     _pendingMemoryText = text;
     _pendingEventId = event?.id;
     _pendingEventName = eventName;
+    final leagueId = _currentLeague!.id;
 
-    // First upload the image
-    context.read<LeagueBloc>().add(
-          UploadMediaEvent(
-            leagueId: _currentLeague!.id,
-            mediaFile: mediaFile,
-          ),
-        );
+    final firstMessage = isVideo
+        ? 'Caricamento video in corso...'
+        : 'Caricamento immagine in corso...';
+    _uploadNotifier = ValueNotifier<ProcessingState>(
+      ProcessingState(firstMessage),
+    );
 
-    setState(() {
-      _isLoading = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || _uploadNotifier == null) return;
+
+      showDialog<void>(
+        context: context,
+        barrierDismissible: false,
+        builder: (ctx) {
+          _uploadDialogCtx = ctx;
+          return ProcessingDialog(
+            state: _uploadNotifier!,
+            leadingIcon: Icons.cloud_upload_rounded,
+            onCancel: null,
+          );
+        },
+      );
+
+      context.read<LeagueBloc>().add(
+            UploadMediaEvent(
+              leagueId: leagueId,
+              mediaFile: mediaFile,
+            ),
+          );
     });
+  }
+
+  void _closeUploadDialog() {
+    if (_uploadDialogCtx != null && Navigator.canPop(_uploadDialogCtx!)) {
+      Navigator.of(_uploadDialogCtx!).pop();
+    }
+    _uploadDialogCtx = null;
+    _uploadNotifier?.dispose();
+    _uploadNotifier = null;
+  }
+
+  @override
+  void dispose() {
+    _uploadNotifier?.dispose();
+    super.dispose();
+  }
+
+  Widget _buildAddMemoryButton() {
+    return GradientOptionButton(
+      isSelected: true,
+      label: 'Aggiungi un ricordo',
+      icon: Icons.add_photo_alternate_rounded,
+      onTap: _showAddMemoryBottomSheet,
+      primaryColor: const Color(0xFF614385),
+      secondaryColor: const Color(0xFF516395),
+      iconSize: 32,
+      labelFontSize: 14,
+      description: 'Immortala un momento speciale',
+      descriptionFontSize: 12,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    super.build(context);
+
+    return BlocConsumer<LeagueBloc, LeagueState>(
+      listener: (context, state) {
+        if (state is LeagueError) {
+          _closeUploadDialog();
+          showSnackBar(state.message, color: ColorPalette.error);
+        } else if (state is ImageUploadSuccess) {
+          _uploadNotifier?.value =
+              const ProcessingState('Salvataggio del ricordo...');
+          if (_currentLeague != null && _currentUserId != null) {
+            context.read<LeagueBloc>().add(AddMemoryEvent(
+                  league: _currentLeague!,
+                  imageUrl: state.imageUrl,
+                  text: _pendingMemoryText,
+                  userId: _currentUserId!,
+                  relatedEventId: _pendingEventId,
+                  eventName: _pendingEventName,
+                ));
+          }
+        } else if (state is LeagueSuccess && state.operation == 'add_memory') {
+          _closeUploadDialog();
+          _currentLeague = state.league;
+          _pendingMemoryText = '';
+          _pendingEventId = null;
+          _pendingEventName = null;
+          showSnackBar(
+            'Ricordo aggiunto con successo!',
+            color: ColorPalette.success,
+          );
+        }
+      },
+      builder: (context, state) {
+        return BlocBuilder<AppLeagueCubit, AppLeagueState>(
+          builder: (context, leagueState) {
+            if (leagueState is AppLeagueExists) {
+              _currentLeague = leagueState.selectedLeague;
+              _isAdmin = _currentLeague!.admins.contains(_currentUserId);
+              final memories = _currentLeague!.memories;
+              return Scaffold(
+                body: memories.isEmpty
+                    ? _buildEmptyState()
+                    : _buildMemoriesGrid(memories),
+              );
+            }
+
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.sports_score_outlined,
+                    size: 60,
+                    color: context.textSecondaryColor.withValues(alpha: 0.5),
+                  ),
+                  const SizedBox(height: ThemeSizes.md),
+                  Text(
+                    'Nessuna lega selezionata',
+                    style: TextStyle(
+                      fontSize: 18,
+                      color: context.textSecondaryColor,
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
   }
 
   /// Carica altre memories
@@ -192,112 +318,6 @@ class _MemoriesPageState extends State<MemoriesPage>
           league: _currentLeague,
         ),
       ),
-    );
-  }
-
-  Widget _buildAddMemoryButton() {
-    return _isLoading
-        ? Container(
-            width: 150,
-            height: 150,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusLg),
-              color: context.secondaryBgColor,
-            ),
-            child: Center(
-              child: CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(context.primaryColor),
-              ),
-            ),
-          )
-        : GradientOptionButton(
-            isSelected: true,
-            label: 'Aggiungi un ricordo',
-            icon: Icons.add_photo_alternate_rounded,
-            onTap: _showAddMemoryBottomSheet,
-            primaryColor: const Color(0xFF614385),
-            secondaryColor: const Color(0xFF516395),
-            iconSize: 32,
-            labelFontSize: 14,
-            description: 'Immortala un momento speciale',
-            descriptionFontSize: 12,
-          );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    super.build(context);
-
-    return BlocConsumer<LeagueBloc, LeagueState>(
-      listener: (context, state) {
-        if (state is LeagueError) {
-          showSnackBar(state.message);
-          setState(() {
-            _isLoading = false;
-          });
-        } else if (state is ImageUploadSuccess) {
-          if (_currentLeague != null && _currentUserId != null) {
-            context.read<LeagueBloc>().add(AddMemoryEvent(
-                  league: _currentLeague!,
-                  imageUrl: state.imageUrl,
-                  text: _pendingMemoryText,
-                  userId: _currentUserId!,
-                  relatedEventId: _pendingEventId,
-                  eventName: _pendingEventName,
-                ));
-          }
-        } else if (state is LeagueSuccess && state.operation == 'add_memory') {
-          setState(() {
-            _isLoading = false;
-          });
-          _currentLeague = state.league;
-          _pendingMemoryText = '';
-          _pendingEventId = null;
-          _pendingEventName = null;
-          if (Navigator.canPop(context)) Navigator.pop(context);
-          showSnackBar(
-            'Ricordo aggiunto con successo!',
-            color: ColorPalette.success,
-          );
-        }
-      },
-      builder: (context, state) {
-        return BlocBuilder<AppLeagueCubit, AppLeagueState>(
-          builder: (context, leagueState) {
-            if (leagueState is AppLeagueExists) {
-              _currentLeague = leagueState.selectedLeague;
-              _isAdmin = _currentLeague!.admins.contains(_currentUserId);
-              final memories = _currentLeague!.memories;
-              return Scaffold(
-                body: memories.isEmpty
-                    ? _buildEmptyState()
-                    : _buildMemoriesGrid(memories),
-              );
-            }
-
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.sports_score_outlined,
-                    size: 60,
-                    color: context.textSecondaryColor.withValues(alpha: 0.5),
-                  ),
-                  const SizedBox(height: ThemeSizes.md),
-                  Text(
-                    'Nessuna lega selezionata',
-                    style: TextStyle(
-                      fontSize: 18,
-                      color: context.textSecondaryColor,
-                    ),
-                  ),
-                ],
-              ),
-            );
-          },
-        );
-      },
     );
   }
 

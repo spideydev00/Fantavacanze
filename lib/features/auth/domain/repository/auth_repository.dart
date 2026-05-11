@@ -77,6 +77,4 @@ abstract interface class AuthRepository {
 
   // New method for setting review status
   Future<Either<Failure, User>> setHasLeftReview({required bool hasLeftReview});
-
-  Future<Either<Failure, User>> setHasPlayedFs({required bool setHasPlayedFs});
 }

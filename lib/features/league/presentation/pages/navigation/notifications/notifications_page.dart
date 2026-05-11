@@ -37,9 +37,6 @@ class NotificationsPage extends StatefulWidget {
 }
 
 class _NotificationsPageState extends State<NotificationsPage> {
-  static const String _dailyChallengeOfflineMessage =
-      'Per approvare o rifiutare le sfide quotidiane è necessaria una connessione internet. Riprova quando sarai online.';
-
   @override
   void initState() {
     super.initState();
@@ -183,25 +180,6 @@ class _NotificationsPageState extends State<NotificationsPage> {
   }
 
   Future<bool> _ensureOnlineForDailyChallengeAction() async {
-    final isConnected = await serviceLocator<ConnectionChecker>().isConnected;
-    if (isConnected) return true;
-
-    if (!mounted) return false;
-
-    await showDialog<void>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('Connessione assente'),
-        content: const Text(_dailyChallengeOfflineMessage),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(),
-            child: const Text('Ho capito'),
-          ),
-        ],
-      ),
-    );
-
-    return false;
+    return serviceLocator<ConnectionChecker>().isConnected;
   }
 }

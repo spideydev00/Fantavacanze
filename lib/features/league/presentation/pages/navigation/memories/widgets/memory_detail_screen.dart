@@ -1,18 +1,24 @@
+import 'dart:io';
+
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:dio/dio.dart';
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
+import 'package:fantavacanze_official/core/utils/in-game/find_event_from_memory.dart';
+import 'package:fantavacanze_official/core/utils/media/image_branding_util.dart';
+import 'package:fantavacanze_official/core/utils/show-snackbar-or-paywall/show_snackbar.dart';
 import 'package:fantavacanze_official/core/widgets/dialogs/confirmation_dialog.dart';
+import 'package:fantavacanze_official/core/widgets/dialogs/processing_dialog.dart';
 import 'package:fantavacanze_official/core/widgets/loader.dart';
 import 'package:fantavacanze_official/core/widgets/media/video_player.dart';
-import 'package:fantavacanze_official/features/league/domain/entities/memory.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/league/league.dart';
+import 'package:fantavacanze_official/features/league/domain/entities/memory.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/rule/rule.dart';
-import 'package:fantavacanze_official/core/utils/in-game/find_event_from_memory.dart';
-import 'package:fantavacanze_official/core/utils/media/downloader.dart';
-import 'package:fantavacanze_official/core/utils/show-snackbar-or-paywall/show_snackbar.dart';
 import 'package:flutter/material.dart';
+import 'package:gallery_saver_plus/gallery_saver.dart';
 import 'package:intl/intl.dart';
+import 'package:path_provider/path_provider.dart';
 
 class MemoryDetailScreen extends StatefulWidget {
   final Memory memory;
@@ -33,81 +39,265 @@ class MemoryDetailScreen extends StatefulWidget {
 }
 
 class _MemoryDetailScreenState extends State<MemoryDetailScreen> {
-  bool _isDownloading = false;
-  double _downloadProgress = 0.0;
-  final Downloader _downloader = Downloader();
+  bool _isProcessing = false;
 
-  @override
-  void dispose() {
-    _downloader.cancelDownloads();
-    super.dispose();
-  }
+  Future<void> _runWithDialog({
+    required IconData icon,
+    required ProcessingState initialState,
+    required Future<void> Function(
+      ValueNotifier<ProcessingState> notifier,
+      CancelToken token,
+    ) work,
+    required String? successMessage,
+    Color successColor = ColorPalette.success,
+  }) async {
+    final notifier = ValueNotifier<ProcessingState>(initialState);
+    final cancelToken = CancelToken();
+    var cancelled = false;
+    NavigatorState? dialogNavigator;
 
-  /// Handle download action for both images and videos
-  Future<void> _handleDownload() async {
-    if (_isDownloading) return;
-
-    setState(() {
-      _isDownloading = true;
-      _downloadProgress = 0.0;
-    });
-
-    final String? downloadedPath;
-    if (widget.memory.isVideo) {
-      downloadedPath = await _downloader.downloadVideo(
-        widget.memory.mediaUrl,
-        onProgress: (progress) {
-          setState(() {
-            _downloadProgress = progress;
-          });
-        },
-        onComplete: () {
-          setState(() {
-            _isDownloading = false;
-          });
-          showSnackBar(
-            'Video salvato nella galleria!',
-            color: ColorPalette.success,
-          );
-        },
-        onError: (error) {
-          setState(() {
-            _isDownloading = false;
-          });
-          showSnackBar(error);
-        },
-      );
-    } else {
-      downloadedPath = await _downloader.downloadImage(
-        widget.memory.mediaUrl,
-        onProgress: (progress) {
-          setState(() {
-            _downloadProgress = progress;
-          });
-        },
-        onComplete: () {
-          setState(() {
-            _isDownloading = false;
-          });
-          showSnackBar(
-            'Immagine salvata nella galleria!',
-            color: ColorPalette.success,
-          );
-        },
-        onError: (error) {
-          setState(() {
-            _isDownloading = false;
-          });
-          showSnackBar(error);
-        },
-      );
-    }
-
-    if (downloadedPath == null) {
+    if (mounted) {
       setState(() {
-        _isDownloading = false;
+        _isProcessing = true;
       });
     }
+
+    showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) {
+        dialogNavigator = Navigator.of(ctx);
+        return ProcessingDialog(
+          state: notifier,
+          leadingIcon: icon,
+          onCancel: () {
+            cancelled = true;
+            cancelToken.cancel();
+            dialogNavigator?.pop();
+          },
+        );
+      },
+    );
+
+    try {
+      await work(notifier, cancelToken);
+      if (!cancelled && successMessage != null) {
+        showSnackBar(successMessage, color: successColor);
+      }
+    } on DioException catch (e) {
+      if (!CancelToken.isCancel(e)) {
+        showSnackBar(
+          'Errore durante l\'operazione',
+          color: ColorPalette.error,
+        );
+      }
+    } catch (_) {
+      if (!cancelled) {
+        showSnackBar(
+          'Errore durante l\'operazione',
+          color: ColorPalette.error,
+        );
+      }
+    } finally {
+      final navigator = dialogNavigator;
+      if (!cancelled && navigator != null && navigator.canPop()) {
+        navigator.pop();
+      }
+      notifier.dispose();
+      if (mounted) {
+        setState(() {
+          _isProcessing = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _handleShare() async {
+    if (_isProcessing) return;
+
+    if (widget.memory.isVideo) {
+      await _runWithDialog(
+        icon: Icons.ios_share_rounded,
+        initialState: const ProcessingState(
+          'Download del video...',
+          progress: 0,
+        ),
+        work: (notifier, token) async {
+          final tempDir = await getTemporaryDirectory();
+          final timestamp = DateTime.now().millisecondsSinceEpoch;
+          final extension = _extensionFromUrl(widget.memory.mediaUrl);
+          final videoFile =
+              File('${tempDir.path}/memory_share_$timestamp.$extension');
+          var handedToShare = false;
+
+          try {
+            await Dio().download(
+              widget.memory.mediaUrl,
+              videoFile.path,
+              cancelToken: token,
+              onReceiveProgress: (received, total) {
+                if (total > 0) {
+                  notifier.value = ProcessingState(
+                    'Download del video...',
+                    progress: received / total,
+                  );
+                }
+              },
+            );
+
+            if (token.isCancelled) return;
+
+            handedToShare = true;
+            await ImageBrandingUtil.shareFiles(
+              [videoFile],
+              text: 'Guarda questo momento da Fantavacanze! 🏖️'
+                  'Scarica l\'app e gioca con i tuoi amici.',
+            );
+          } finally {
+            if (!handedToShare) {
+              try {
+                if (await videoFile.exists()) {
+                  await videoFile.delete();
+                }
+              } catch (_) {}
+            }
+          }
+        },
+        successMessage: null,
+      );
+      return;
+    }
+
+    await _runWithDialog(
+      icon: Icons.ios_share_rounded,
+      initialState: const ProcessingState(
+        "Download dell'immagine...",
+        progress: 0,
+      ),
+      work: (notifier, token) async {
+        final brandedFile = await ImageBrandingUtil.brandImageFromUrl(
+          widget.memory.mediaUrl,
+          cancelToken: token,
+          onDownloadProgress: (progress) => notifier.value = ProcessingState(
+            "Download dell'immagine...",
+            progress: progress,
+          ),
+          onBrandingStart: () => notifier.value = const ProcessingState(
+            'Generazione del file per la condivisione...',
+          ),
+        );
+
+        if (token.isCancelled) {
+          try {
+            if (await brandedFile.exists()) {
+              await brandedFile.delete();
+            }
+          } catch (_) {}
+          return;
+        }
+
+        await ImageBrandingUtil.shareFiles(
+          [brandedFile],
+          text: 'Guarda il mio ricordo da Fantavacanze! 🏖️',
+        );
+      },
+      successMessage: null,
+    );
+  }
+
+  Future<void> _handleDownload() async {
+    if (_isProcessing) return;
+
+    if (widget.memory.isVideo) {
+      await _runWithDialog(
+        icon: Icons.download_rounded,
+        initialState: const ProcessingState(
+          'Download del video...',
+          progress: 0,
+        ),
+        work: (notifier, token) async {
+          final tempDir = await getTemporaryDirectory();
+          final timestamp = DateTime.now().millisecondsSinceEpoch;
+          final extension = _extensionFromUrl(widget.memory.mediaUrl);
+          final tempPath =
+              '${tempDir.path}/fantavacanze_video_$timestamp.$extension';
+          final tempFile = File(tempPath);
+
+          try {
+            await Dio().download(
+              widget.memory.mediaUrl,
+              tempPath,
+              cancelToken: token,
+              onReceiveProgress: (received, total) {
+                if (total > 0) {
+                  notifier.value = ProcessingState(
+                    'Download del video...',
+                    progress: received / total,
+                  );
+                }
+              },
+            );
+
+            if (token.isCancelled) return;
+
+            notifier.value =
+                const ProcessingState('Salvataggio in galleria...');
+            final saved = await GallerySaver.saveVideo(tempPath);
+            if (saved != true) throw Exception('save failed');
+          } finally {
+            try {
+              if (await tempFile.exists()) {
+                await tempFile.delete();
+              }
+            } catch (_) {}
+          }
+        },
+        successMessage: 'Video salvato nella galleria!',
+      );
+      return;
+    }
+
+    await _runWithDialog(
+      icon: Icons.download_rounded,
+      initialState: const ProcessingState(
+        "Download dell'immagine...",
+        progress: 0,
+      ),
+      work: (notifier, token) async {
+        final saved = await ImageBrandingUtil.saveBrandedImageToGallery(
+          widget.memory.mediaUrl,
+          cancelToken: token,
+          onDownloadProgress: (progress) => notifier.value = ProcessingState(
+            "Download dell'immagine...",
+            progress: progress,
+          ),
+          onBrandingStart: () => notifier.value = const ProcessingState(
+            'Generazione immagine brandizzata...',
+          ),
+          onSavingStart: () => notifier.value = const ProcessingState(
+            'Salvataggio in galleria...',
+          ),
+        );
+
+        if (!saved) throw Exception('save failed');
+      },
+      successMessage: 'Immagine salvata nella galleria!',
+    );
+  }
+
+  String _extensionFromUrl(String url) {
+    final uri = Uri.tryParse(url);
+    final fileName = uri?.pathSegments.isNotEmpty == true
+        ? uri!.pathSegments.last
+        : url.split('/').last.split('?').first;
+    final dotIndex = fileName.lastIndexOf('.');
+
+    if (dotIndex == -1 || dotIndex == fileName.length - 1) {
+      return 'mp4';
+    }
+
+    final extension = fileName.substring(dotIndex + 1).toLowerCase();
+    return RegExp(r'^[a-z0-9]{2,5}$').hasMatch(extension) ? extension : 'mp4';
   }
 
   @override
@@ -165,30 +355,19 @@ class _MemoryDetailScreenState extends State<MemoryDetailScreen> {
                 ),
               ),
             ),
-
-          // Download button
-          _isDownloading
-              ? Container(
-                  width: 40,
-                  height: 40,
-                  padding: const EdgeInsets.all(8),
-                  child: CircularProgressIndicator(
-                    value: _downloadProgress,
-                    strokeWidth: 2,
-                    valueColor:
-                        const AlwaysStoppedAnimation<Color>(Colors.white),
-                    backgroundColor: Colors.white.withValues(alpha: 0.3),
-                  ),
-                )
-              : IconButton(
-                  icon: const Icon(Icons.download_rounded, size: 25),
-                  color: Colors.white,
-                  onPressed: _handleDownload,
-                  tooltip: widget.memory.isVideo
-                      ? 'Scarica video'
-                      : 'Scarica immagine',
-                ),
-
+          IconButton(
+            icon: const Icon(Icons.ios_share_rounded, size: 25),
+            color: Colors.white,
+            onPressed: _isProcessing ? null : _handleShare,
+            tooltip: 'Condividi',
+          ),
+          IconButton(
+            icon: const Icon(Icons.download_rounded, size: 25),
+            color: Colors.white,
+            onPressed: _isProcessing ? null : _handleDownload,
+            tooltip:
+                widget.memory.isVideo ? 'Scarica video' : 'Scarica immagine',
+          ),
           if (widget.isCurrentUserAuthor && widget.onDelete != null)
             Padding(
               padding: const EdgeInsets.all(ThemeSizes.xs),

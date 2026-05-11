@@ -12,7 +12,6 @@ class User extends Equatable {
   final String? fcmToken;
   final bool isWordBombTrialAvailable;
   final bool hasLeftReview;
-  final bool hasPlayedFs;
   final String? sentimentalStatus;
 
   const User({
@@ -27,7 +26,6 @@ class User extends Equatable {
     this.fcmToken,
     required this.isWordBombTrialAvailable,
     this.hasLeftReview = false,
-    required this.hasPlayedFs,
     required this.sentimentalStatus,
   });
 
@@ -43,7 +41,6 @@ class User extends Equatable {
     String? fcmToken,
     bool? isWordBombTrialAvailable,
     bool? hasLeftReview,
-    bool? hasPlayedFs,
     String? sentimentalStatus,
   }) {
     return User(
@@ -59,7 +56,6 @@ class User extends Equatable {
       isWordBombTrialAvailable:
           isWordBombTrialAvailable ?? this.isWordBombTrialAvailable,
       hasLeftReview: hasLeftReview ?? this.hasLeftReview,
-      hasPlayedFs: hasPlayedFs ?? this.hasPlayedFs,
       sentimentalStatus: sentimentalStatus ?? this.sentimentalStatus,
     );
   }
@@ -77,7 +73,6 @@ class User extends Equatable {
         fcmToken,
         isWordBombTrialAvailable,
         hasLeftReview,
-        hasPlayedFs,
         sentimentalStatus,
       ];
 }

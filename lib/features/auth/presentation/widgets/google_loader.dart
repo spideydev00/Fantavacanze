@@ -47,6 +47,7 @@ class _GoogleLoaderState extends State<GoogleLoader> {
 
   RiveWidgetController _setupController(File file) {
     final controller = RiveWidgetController(file);
+    // ignore: deprecated_member_use
     final trigger = controller.stateMachine.boolean("active");
     trigger?.value = true;
     return controller;

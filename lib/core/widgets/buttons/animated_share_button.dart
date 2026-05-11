@@ -37,6 +37,7 @@ class _AnimatedShareButtonState extends State<AnimatedShareButton>
   static const double _expandedWidth = 210.0;
   static const double _collapsedWidth = 60.0;
   static const double _height = 60.0;
+
   static const Duration _collapseDelay = Duration(seconds: 4);
   static const Duration _animationDuration = Duration(milliseconds: 600);
 

@@ -2,6 +2,8 @@ import 'package:fantavacanze_official/core/cubits/app_league/app_league_cubit.da
 import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:fantavacanze_official/core/utils/show-snackbar-or-paywall/show_snackbar.dart';
+import 'package:fantavacanze_official/core/widgets/divider.dart';
+import 'package:fantavacanze_official/core/widgets/empty_state.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/individual_participant.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/league/league.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/note.dart';
@@ -10,8 +12,6 @@ import 'package:fantavacanze_official/features/league/domain/entities/team_parti
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc/league_bloc.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc/league_event.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc/league_state.dart';
-import 'package:fantavacanze_official/core/widgets/empty_state.dart';
-import 'package:fantavacanze_official/core/widgets/divider.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/notes/widgets/note_input.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/notes/widgets/notes_list.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/notes/widgets/participant_selector.dart';
@@ -227,7 +227,8 @@ class _NotesPageState extends State<NotesPage> {
                         children: [
                           Container(
                             padding: const EdgeInsets.symmetric(
-                                horizontal: ThemeSizes.md),
+                              horizontal: ThemeSizes.md,
+                            ),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [

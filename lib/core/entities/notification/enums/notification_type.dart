@@ -8,8 +8,6 @@ enum NotificationType {
   newRule('new_rule'),
   memoryAdded('memory_added'),
   appUpdate('app_update'),
-  fsFridayReminder('fs_friday_reminder'),
-  fsSaturdayReminder('fs_saturday_reminder'),
   specialEvent('special_event');
 
   const NotificationType(this.value);

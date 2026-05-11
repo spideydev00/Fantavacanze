@@ -49,6 +49,7 @@ abstract class RiveAssetState<T extends RiveAsset> extends State<T> {
           StateMachineSelector.byName(widget.stateMachineName),
     );
 
+    // ignore: deprecated_member_use
     final i = c.stateMachine.boolean(widget.triggerValue);
     i?.value = widget.isActive;
 

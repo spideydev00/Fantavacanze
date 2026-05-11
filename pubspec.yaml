@@ -120,34 +120,13 @@ flutter:
     - assets/images/logos/logo-naked.png
     - assets/images/logos/fantavacanze-esteso-neon.png
     - assets/images/logos/fantavacanze-esteso.png
-    - assets/images/fantaserata/logo/Logo-Fs-Dark.png
-    - assets/images/fantaserata/logo/Logo-Fs.png
-    - assets/images/fantaserata/logo/FantaSerata-esteso-neon.png
-    - assets/images/fantaserata/logo/fantaserata-no-neon-logo.png
     - assets/images/logos/logo-fall.png
     - assets/images/logos/logo-fall-no-neon.png
     - assets/images/logos/logo-halloween.png
     - assets/images/logos/logo-smash-or-pass.png
     - assets/images/logos/logo-winter-neon.png
     - assets/images/logos/logo-winter.png
-    
-    # ===== FANTASERATA =====
-    - assets/images/fantaserata/images/onboarding/1.png
-    - assets/images/fantaserata/images/onboarding/2.png
-    - assets/images/fantaserata/images/onboarding/3.png
-    - assets/images/fantaserata/images/onboarding/4.png
-    - assets/images/fantaserata/images/onboarding/5.png
-    - assets/images/fantaserata/images/onboarding/6.png
-    - assets/images/fantaserata/logo/winner-text.png
-    - assets/images/icons/fs_icons/fanta-carnival-emoji.svg
-    - assets/images/icons/fs_icons/fanta-christmas-emoji.svg
-    - assets/images/icons/fs_icons/fanta-halloween-emoji.svg
-    - assets/images/icons/fs_icons/fanta-halloween-emoji-2.svg
-    - assets/images/icons/fs_icons/fanta-newyear-emoji.svg
-    - assets/images/icons/fs_icons/fanta-ski-emoji.svg
-    - assets/images/icons/fs_icons/hugging-people.svg
 
-    
     # ===== BACKGROUNDS & GENERAL IMAGES =====
     - assets/images/bg.png
     - assets/images/avatar.png
@@ -161,7 +140,7 @@ flutter:
     - assets/images/about-us.jpg
     - assets/images/add-event-bg-fall-winter.png
     - assets/images/add-event-winter.png
-    
+
     # ===== AUTHENTICATION ICONS =====
     - assets/images/otp-verification-icon.png
     - assets/images/icons/auth_icons/google.svg
@@ -172,14 +151,14 @@ flutter:
     - assets/images/icons/auth_icons/email.svg
     - assets/images/icons/auth_icons/sign-up-icon.svg
     - assets/images/icons/auth_icons/sign-in-icon.svg
-    
+
     # ===== AUTHENTICATION FIELD ICONS =====
     - assets/images/icons/auth_field_icons/eye-hide.svg
     - assets/images/icons/auth_field_icons/eye-show.svg
     - assets/images/icons/auth_field_icons/add-email-icon.svg
     - assets/images/icons/auth_field_icons/lock-icon.svg
     - assets/images/icons/auth_field_icons/user-icon.svg
-    
+
     # ===== HOMEPAGE & NAVIGATION ICONS =====
     - assets/images/icons/homepage_icons/home-icon.svg
     - assets/images/icons/homepage_icons/home-icon-dark.svg
@@ -219,20 +198,20 @@ flutter:
     - assets/images/icons/homepage_icons/pass-illustration.png
     - assets/images/icons/homepage_icons/smash-illustration.png
     - assets/images/icons/homepage_icons/love-key-icon.svg
-    
+
     # ===== LEAGUE TYPE ICONS =====
     - assets/images/icons/homepage_icons/bro-code-icon.png
     - assets/images/icons/homepage_icons/baddies-icon.png
     - assets/images/icons/homepage_icons/custom-rules-icon.png
     - assets/images/icons/homepage_icons/mixed-genders-icon.png
-    
+
     # ===== DRINK GAMES ICONS =====
     - assets/images/icons/homepage_icons/drink-games-icon.svg
     - assets/images/icons/homepage_icons/drink-games-icon-dark.svg
     - assets/images/icons/homepage_icons/drink-games-icon-red.svg
     - assets/images/icons/homepage_icons/drink-game-preview.svg
     - assets/images/icons/homepage_icons/drink-games-page-icon.svg
-    
+
     # ===== GAME SPECIFIC ICONS =====
     - assets/images/icons/games_icons/yellow-tropical-drink-left.svg
     - assets/images/icons/games_icons/yellow-tropical-drink-right.svg
@@ -242,7 +221,7 @@ flutter:
     - assets/images/icons/games_icons/dices-icon.svg
     - assets/images/icons/games_icons/balance.png
     - assets/images/icons/games_icons/team-icon.png
-    
+
     # ===== GENERAL UI ICONS =====
     - assets/images/icons/other/error-icon.svg
     - assets/images/icons/other/success-icon.svg
@@ -250,14 +229,14 @@ flutter:
     - assets/images/icons/other/arrow-right-circle.svg
     - assets/images/icons/other/trophy-icon.svg
     - assets/images/icons/other/notification-icon.svg
-    
+
     # ===== ANIMATIONS =====
     - assets/animations/rive/material_loader.riv
     - assets/animations/rive/icons.riv
     - assets/animations/rive/rive_game_icon.riv
     - assets/animations/rive/menu_button.riv
     - assets/animations/rive/menu_button_black.riv
-    
+
     # # ===== TUTORIAL VIDEOS (iOS) =====
     # - assets/tutorials/ios-videos/add-event.mp4
     # - assets/tutorials/ios-videos/admin.mp4
@@ -268,7 +247,7 @@ flutter:
     # - assets/tutorials/ios-videos/join-league/join-team-league.mp4
     # - assets/tutorials/ios-videos/create-league/create-individual-league.mp4
     # - assets/tutorials/ios-videos/create-league/create-team-league.mp4
-    
+
     # # ===== TUTORIAL SCREENSHOTS (Android) =====
     # - assets/tutorials/android-screenshots/add-event.png
     # - assets/tutorials/android-screenshots/admin.png
@@ -291,11 +270,11 @@ flutter:
   # list giving the asset and other descriptors for the font. For
   # example:
   fonts:
-  - family: Falcon Sport one
-    fonts: 
-      - asset: assets/fonts/FalconSportOne-Regular.otf
-      - asset: assets/fonts/FalconSportOne-Italic.otf
-        style: italic
+    - family: Falcon Sport one
+      fonts:
+        - asset: assets/fonts/FalconSportOne-Regular.otf
+        - asset: assets/fonts/FalconSportOne-Italic.otf
+          style: italic
   #   - family: Schyler
   #     fonts:
   #       - asset: fonts/Schyler-Regular.ttf

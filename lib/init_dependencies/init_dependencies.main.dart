@@ -87,7 +87,6 @@ Future<void> initDependencies() async {
           becomePremium: serviceLocator(),
           removePremium: serviceLocator(),
           setHasLeftReview: serviceLocator(),
-          setHasPlayedFs: serviceLocator(),
         ),
       )
       //2. navigation cubit
@@ -357,9 +356,6 @@ void _initAuth() {
     )
     ..registerFactory(
       () => SetHasLeftReview(authRepository: serviceLocator()),
-    )
-    ..registerFactory(
-      () => SetHasPlayedFs(authRepository: serviceLocator()),
     )
     //bloc
     ..registerLazySingleton(

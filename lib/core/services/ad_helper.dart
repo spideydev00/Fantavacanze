@@ -29,6 +29,8 @@ class AdHelper {
   DateTime? _drinkGamesSessionExpiry;
 
   // Test Ad Unit IDs - Use these during development
+  static bool get _useTestAds => true;
+
   static String get testInterstitialAdUnitId {
     return 'ca-app-pub-3940256099942544/1033173712';
   }
@@ -39,7 +41,7 @@ class AdHelper {
 
   // --- Ad Unit IDs ---
   static String get _interstitialUnitId {
-    if (true) {
+    if (_useTestAds) {
       // Change to a proper environment check later
       return testInterstitialAdUnitId;
     }
@@ -49,7 +51,7 @@ class AdHelper {
   }
 
   static String get _rewardedUnitId {
-    if (true) {
+    if (_useTestAds) {
       // Change to a proper environment check later
       return testRewardedAdUnitId;
     }

@@ -418,21 +418,4 @@ class AuthRepositoryImpl implements AuthRepository {
       return left(Failure(e.message));
     }
   }
-
-  @override
-  Future<Either<Failure, User>> setHasPlayedFs(
-      {required bool setHasPlayedFs}) async {
-    try {
-      if (!await connectionChecker.isConnected) {
-        return left(
-            Failure("Connessione a internet assente. Riprova più tardi."));
-      }
-
-      final user = await authRemoteDataSource.setHasPlayedFs(
-          setHasPlayedFs: setHasPlayedFs);
-      return right(user);
-    } on ServerException catch (e) {
-      return left(Failure(e.message));
-    }
-  }
 }

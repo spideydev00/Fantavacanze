@@ -17,47 +17,57 @@ Il progetto è implementato usando la **CLEAN Architecture**. Per riferimento gu
 ## Architettura del Progetto
 
 ### Clean Architecture Structure
+
 - **Data Layer**: `lib/features/[feature]/data/` - modelli, repository, datasources
-- **Domain Layer**: `lib/features/[feature]/domain/` - entità, use cases, interfacce repository  
+- **Domain Layer**: `lib/features/[feature]/domain/` - entità, use cases, interfacce repository
 - **Presentation Layer**: `lib/features/[feature]/presentation/` - UI, BLoC, pagine
 
 ### State Management Globale (`lib/core/cubits/`)
+
 Sei cubits singleton gestiscono lo stato globale dell'app:
 
 1. **`app_user/`**: Stato di autenticazione dell'utente corrente
 2. **`app_league/`**: Appartenenze alle leghe dell'utente
-3. **`app_navigation/`**: Gestione indice navigazione bottom  
+3. **`app_navigation/`**: Gestione indice navigazione bottom
 4. **`app_theme/`**: Tema scuro/chiaro con persistenza SharedPreferences
-5. **`app_fs_league/`**: Stato appartenenza alle leghe Fantaserata dell'utente
-6. **`seasonal_event/`**: Gestione eventi stagionali e promozioni speciali
+5. **`seasonal_event/`**: Gestione eventi stagionali e promozioni speciali
 
 **Cubits di Navigazione**:
+
 - `fs_navigation/` - Gestione navigazione specifica sezione Fantaserata
 
 ### Features Principali
 
 #### Auth Feature (`lib/features/auth/`)
+
 Sistema di autenticazione completo:
+
 - OAuth (Google/Apple) e email/password tramite Supabase
 - Gestione stato utente globale
 - Integrazione RevenueCat per abbonamenti premium
 
 #### League Feature (`lib/features/league/`)
+
 Funzionalità core per gestire leghe competitive:
+
 - Leghe personalizzabili con partecipanti individuali o squadre
 - Sistema sfide giornaliere con approvazione admin
 - Gestione eventi, regole, ricordi e note
 - Sistema notifiche in tempo reale
 
 #### Fantaserata Feature (`lib/features/fantaserata/`)
+
 Leghe temporanee giornaliere che si auto-distruggono alle 7:00:
+
 - Solo partecipanti individuali, nessuna squadra
 - Struttura semplificata per competizioni rapide
 - Leghe tematiche basate su tipo di venue (discoteca, bar, casa)
 - Foto vincitore come funzionalità unica
 
 #### Games Feature (`lib/features/games/`)
+
 Sistema gaming multiplayer in tempo reale:
+
 - Truth or Dare, Word Bomb, Never Have I Ever
 - Gestione lobby e sessioni di gioco
 - Sincronizzazione real-time tramite Supabase
@@ -104,6 +114,7 @@ L'idea è quella di creare un gioco per stimolare le interazioni sociali nella v
 ## Workflow di Sviluppo
 
 ### Aggiunta Nuove Features
+
 1. Creare struttura cartelle sotto `lib/features/[feature_name]/`
 2. Definire entità in `domain/entities/`
 3. Creare interfaccia repository in `domain/repository/`
@@ -116,6 +127,7 @@ L'idea è quella di creare un gioco per stimolare le interazioni sociali nella v
 10. Costruire UI in `presentation/pages/`
 
 ### Comandi Essenziali
+
 ```bash
 # Genera adattatori Hive
 flutter packages pub run build_runner build

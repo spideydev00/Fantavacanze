@@ -1,403 +1,223 @@
-# Recap sessione - Fantavacanze (07/05/2026)
+# Recap sessione - Fantavacanze (08/05/2026)
 
 ## 1. CONTESTO STRATEGICO DELLA SESSIONE
 
-La sessione e' partita verificando l'esecuzione del Task 3.2 (tracciamento
-`is_pending_approval` / `is_rejected` lato client) lasciato pending dalla
-sessione del 30/04/2026, ed e' poi proseguita su una serie di bug emersi
-durante test manuali + l'aggiunta di una feature nuova (share immagine
-classifica).
+Sessione di rifinitura sulla feature share classifica iniziata il 07/05.
+Stato all'inizio della sessione:
+- Commit `c8c3b2e` aveva gia' portato in main: cache reconcile + reactive
+  ConnectionChecker + daily challenge rejection flow.
+- Working tree dirty con la feature share leaderboard non ancora committata
+  (ShareService, ShareableLeaderboardCard, FAB share, DI, +screenshot dep).
 
-Lavoro distribuito su quattro aree principali:
-1. Verifica + correzioni Task 3.2 (daily challenges flags rejection).
-2. Bug fix notifiche admin (counter stale, refetch perso alla seconda
-   interazione).
-3. Cache reconcile (lega cancellata su device A non si propagava su B,
-   challenges orfane in cache).
-4. ConnectionChecker reactive con stream-based caching.
-5. Feature nuova: share immagine classifica via native share sheet.
+Lavoro della sessione:
+1. Cap a N righe visibili nella ShareableLeaderboardCard + ellipsis row
+   (delegato a Codex via prompt strutturato).
+2. Sostituzione del FAB statico con bottone animato "Condividi sui social"
+   che collassa a icona dopo qualche secondo (replica del pattern di
+   `AnimatedFloatingActionButton` rimosso col fantaserata).
+3. Bug fix: animazione non partiva perche' IndexedStack monta tutti i tab
+   al boot e il timer scattava su un tab off-screen.
 
 ## 2. MODIFICHE COMPLETATE
 
-### 2.1 Task 3.2 verifica + fix SQL reject_daily_challenge
+### 2.1 Cap righe + ellipsis row in ShareableLeaderboardCard
 
-Codex aveva eseguito il task 3.2 tra le sessioni: aggiunti `isPendingApproval`
-e `isRejected` a entity (`daily_challenge.dart`), model con HiveField 13/14
-(`daily_challenge_model.dart` + `.g.dart` rigenerato), repository con refetch
-on-startup quando `hasPendingApproval`, UI con `_buildRejectedCard` rosso
-bordeaux in `daily_goal_card.dart`, gradient `rejectedStart`/`rejectedEnd`
-in `colors.dart`. Tutto allineato alla spec.
+Test manuale dell'utente con 12 partecipanti aveva mostrato bottom overflow.
 
-**Bug trovato nella RPC `reject_daily_challenge.sql`**:
-WHERE clause originale: `challenge_id::text = v_challenge_id::text` MA:
-- `daily_challenges_notifications.challenge_id` memorizza il PK di
-  `user_daily_challenges` (vedi `daily_challenges_remote_data_source.dart:171`
-  che fa `'challenge_id': challenge.id` dove `challenge.id` e' il row PK).
-- `approve_daily_challenge.sql` matcha infatti su `WHERE id = v_challenge_id`.
-
-**Fix applicato manualmente dall'utente sul DB Supabase**: WHERE su `id`
-invece di `challenge_id`, e aggiunta `is_pending_approval = false` (oltre a
-`is_rejected = true`) — l'utente ha confermato che funziona. File
-`tools/sql/reject_daily_challenge_set_is_rejected.sql` non e' stato
-riallineato a tutti i cambi (commento header e SET ancora da aggiornare se
-si vuole consistenza file-vs-DB).
-
-### 2.2 Bug A — Counter notifiche stale dopo approve/reject
-
-**Sintomo**: counter va a 2 invece di 1 quando arriva una nuova FCM.
-
-**Causa**: i rami success di `_onApproveDailyChallenge` e
-`_onRejectDailyChallenge` in `DailyChallengesBloc` cancellavano la notifica
-admin (server + cache) ma NON decrementavano `NotificationCountCubit`.
-Counter restava stantio, FCM successivo incrementava sopra valore sbagliato.
-
-**Fix** (`daily_challenges_bloc.dart` + `init_dependencies.main.dart`):
-- Iniettato `NotificationCountCubit` nel costruttore di `DailyChallengesBloc`
-  via DI factory.
-- `_notificationCountCubit.decrement()` aggiunto nel ramo success di approve
-  e reject prima dell'`emit`.
-
-### 2.3 Bug B — Notifica resta visibile dopo seconda approve/reject
-
-**Sintomo**: prima approve/reject funziona, la lista si refresha. Seconda
-approve/reject (stessa sessione, stessa pagina) cancella lato server ma la
-notifica resta visibile fino a uscita+rientro nella pagina.
-
-**Causa**: `notifications_page.dart` aspetta su
-`dailyChallengesBloc.stream.firstWhere((s) => s is DailyChallengesLoaded &&
-s.operation == 'approve_challenge')`. `DailyChallengesLoaded` ha props
-Equatable `[challenges, leagueId, userId, operation]`. Alla seconda approve
-gli emit hanno gli stessi valori (stessa lista, stessa lega, stessa
-operation) → distinct-skip interno di Bloc scarta l'emit → `firstWhere` non
-si risolve mai → `GetNotificationsEvent` non viene piu' dispatchato.
-Il commento "bypassando il distinct-skip di Equatable" nel codice era
-ingannevole: il bypass va fatto rendendo lo stato veramente distinto.
-
-**Fix** (`daily_challenges_state.dart` + `daily_challenges_bloc.dart`):
-- Aggiunto `final DateTime? operationAt` a `DailyChallengesLoaded`,
-  presente in `props` e `copyWith`.
-- In tutte le emit con `operation` valorizzato (`mark_completed`,
-  `refresh_challenge`, `unlock_challenge`, `approve_challenge`,
-  `reject_challenge`, `premium_unlocked`, `premium_locked`) aggiunto
-  `operationAt: DateTime.now()` → ogni emit operazionale e' ora unico.
-
-Modifica extra non richiesta ma sensata che Codex ha incluso:
-- `_onMarkChallengeAsCompleted` reso admin-aware: non setta piu'
-  `isCompleted: true` indiscriminatamente, ma `isCompleted: isAdmin,
-  isPendingApproval: !isAdmin, isRejected: false`. Allinea l'optimistic
-  update del bloc al cache update della repo (che gia' faceva la stessa
-  cosa). Senza questo, il cache reload "downgradava" la card del non-admin
-  da Completed a InAttesa.
-- Failure handler di approve/reject ora emette anche `currentState` dopo
-  `DailyChallengesError`, per evitare che la home resti bloccata in Error
-  con shimmer infinito.
-
-### 2.4 Cache reconcile su leghe cancellate
-
-**Sintomi osservati**:
-- Lega cancellata su device A: su device B (online) la lega resta visibile
-  nel dropdown finche' non riavvio. Offline puo' restare visibile a oltranza.
-- Cache `challengesBox` cresce indefinitamente: log utente mostrava 18
-  record totali per 3 leghe, di cui solo una corrente.
-
-**Causa**:
-- `cacheLeagues` (`local_data_source.dart`) era un upsert puro: salvava le
-  leghe ma non rimuoveva quelle che il server non riconosce piu'.
-- `challengesBox`, `notesBox`, `notificationsBox` non venivano mai potate
-  per leghe sparite.
-- `LeagueRepositoryImpl.deleteLeague` puliva solo `leaguesBox` (chi cancella
-  perdeva comunque tutto il resto in cache).
-
-**Fix architetturale scelto (opzione "replace + cascade")**:
-
-`local_data_source.dart`:
-- Aggiunto all'interface + impl `pruneLocalDataForLeagues(Set<String>
-  validLeagueIds)` che cancella entries con `leagueId NOT IN validIds` da
-  `leaguesBox` (filtro su key.toString()), `challengesBox`/`notesBox`/
-  `notificationsBox` (filtro su `model.leagueId`). Caso `validIds.isEmpty`
-  cancella tutto (corretto per utente senza leghe).
-- Aggiunto `clearNotesForLeague(String leagueId)` (pattern come
-  `clearDailyChallengesForLeague`).
-- `cacheLeagues(List<LeagueModel> leagues)` ora dopo l'upsert chiama
-  `pruneLocalDataForLeagues(leagues.map((l) => l.id).toSet())` → ogni
-  fetch full-list dal server riallinea automaticamente tutta la cache.
-- `cacheLeague(single)` non toccato (resta upsert puro per join,
-  updateTeamName, ecc., che non hanno la full list).
-
-`league_repository_impl.dart`:
-- `deleteLeague` ora chiama anche `clearDailyChallengesForLeague`,
-  `clearNotificationsForLeague`, `clearNotesForLeague` prima di
-  `removeLeagueFromCache`.
-- `exitLeague` esteso per chiamare anche `clearNotesForLeague` (gia'
-  chiamava le altre due).
-- Ramo offline di `getUserLeagues` NON pruna: senza connessione non possiamo
-  distinguere "lega cancellata" da "server irraggiungibile".
-
-### 2.5 ConnectionChecker reactive
-
-**Problema**: 76 call site di `connectionChecker.isConnected` nelle
-repository, ognuno fa una HTTP probe attiva ad ogni call → secondi di
-latenza su debug/dispositivi vecchi.
-
-**Fix** (`connection_checker.dart` + `init_dependencies.main.dart` +
-`main.dart`):
-- Interface estesa: `Future<bool> get isConnected`, `Stream<bool> get
-  onStatusChange`, `void dispose()`.
-- Impl mantiene `_lastKnownConnected = true` (default ottimistico),
-  subscription a `internetConnection.onStatusChange` (package
-  `internet_connection_checker_plus`), `StreamController<bool>.broadcast()`
-  per emettere solo i cambi di stato.
-- Probe iniziale fire-and-forget per popolare la cache (con
-  `.catchError((_) {})`).
-- `isConnected` ritorna `Future<bool>` cachato → 76 call site invariati,
-  l'await diventa di fatto a costo zero.
-- DI cambiato da `registerFactory` a `registerLazySingleton<ConnectionChecker>`
-  → una sola subscription per l'intera vita dell'app.
-- `_MyAppState.initState`: `_listenToConnectionChanges()` ascolta lo stream,
-  su disconnect mostra `showSnackBar` con `ColorPalette.warning`, durata 4s,
-  messaggio "Connessione assente. Alcune funzioni potrebbero non essere
-  disponibili." Nessun snackbar di "back online" (rumore evitato).
-- `_MyAppState.dispose` aggiunto, cancella subscription.
-
-Caveat noto e accettato: il flag iniziale `true` ottimistico significa che
-le primissime operazioni in cold start offline trovano `isConnected = true`
-e falliscono lato server, gestite dai fallback cache esistenti. Nessuna
-regressione.
-
-### 2.6 Feature nuova: share immagine classifica
-
-**Goal**: bottone share su `leaderboard_page.dart`. Tap → cattura widget
-brandizzato con logo + classifica completa → apre native share sheet (iOS
-+ Android).
-
-**Stack scelto** (dopo research):
-- `screenshot: ^3.0.0` (gia' aggiunto al pubspec dall'utente). Necessario
-  perche' la lista classifica e' scrollabile: con `RepaintBoundary` nudo
-  cattureremmo solo la viewport. `Screenshot().captureFromWidget(widget,
-  pixelRatio, context, delay)` renderizza off-screen un widget non in albero.
-- `share_plus ^12.0.2` gia' presente. API moderna:
-  `SharePlus.instance.share(ShareParams(...))` con `XFile.fromData(...)`.
-- Nessun `path_provider` esplicito.
-
-**Componenti aggiunti**:
-
-`lib/core/services/share_service.dart` (lazySingleton in DI):
-- `Future<Uint8List> renderWidgetToPng(Widget widget, {required BuildContext
-  context, double pixelRatio = 3.0})`
-- `Future<void> shareImageBytes(Uint8List bytes, {required Rect? originRect,
-  String filename = 'Classifica Fantavacanze.png'})`
-  Usa `XFile.fromData(bytes, mimeType: 'image/png')` + `fileNameOverrides:
-  [filename]` per controllare il nome file mostrato sotto la thumbnail iOS.
-
+**Implementazione (Codex via prompt)** in
 `lib/features/league/presentation/pages/navigation/leaderboard/widgets/shareable_leaderboard_card.dart`:
-- `StatelessWidget` con parametri `League league`, `List<Map<String,
-  dynamic>>? membersOverride`, `ThemeMode themeMode`.
-- Layout responsive (no SizedBox(width: 1080) — design clampato dal
-  RenderView del package).
-- `_ShareLeaderboardBrandHeader`: logo Fantavacanze (logo-neon dark /
-  logo-naked light), nome lega in `GoogleFonts.passeroOne` 34/700,
-  sottotitolo random (vedi sotto).
-- `_ShareLeaderboardHeader`: header colonne con gradient primary
-  (cloned da `core/widgets/leaderboard/leaderboard_header.dart`).
-- `_ShareLeaderboardRow`: posizione + nome + bonus + malus + punti.
-  Top 3 con icona `emoji_events` colorata oro/argento/bronzo, dal 4° in
-  poi numero piano.
-- `_ShareLeaderboardFooter`: container con gradient soft primary 0.15→0.05
-  e bordo, due righe "Vivi momenti indimenticabili!" + "Crea o unisciti a
-  una lega su FantaVacanze e inizia la competizione." → caption "burned"
-  nell'immagine perche' il `text` di share_plus su iOS forza la label
-  generica "Testo semplice e 1 documento".
+- Costante privata `static const int _maxVisibleRows = 8` (l'utente ha
+  tunato a 8; il prompt originale proponeva 9).
+- Loop iterazione cappa a `_maxVisibleRows`.
+- Nuovo widget `_ShareLeaderboardEllipsisRow` (stesso container/decoration
+  di `_ShareLeaderboardRow`): tre puntini centrati + label "+ N altri"
+  (singolare "+ 1 altro" se N == 1).
+- Inserito tra l'ultima riga partecipante e il footer, solo se
+  `participants.length > _maxVisibleRows`.
+- Footer e brand header invariati.
 
-`lib/features/league/presentation/pages/navigation/leaderboard/widgets/share_subtitle_phrases.dart`:
-- Classe `ShareSubtitlePhrases` con 20 frasi italiane in tono playful
-  ("Classifica ufficiale della lega piu' matta al mondo... (e ne andiamo
-  fieri)", ecc.) e metodo `random()` con `Random` statico riusato.
-- Chiamato in `_ShareLeaderboardBrandHeader.build` → ogni share ha un
-  sottotitolo diverso.
+### 2.2 AnimatedShareButton + ShareButtonAnimationCubit
 
-`lib/features/league/presentation/pages/navigation/leaderboard/leaderboard_page.dart`:
-- State `bool _isSharing = false`.
-- `_buildShareFab(context, league)`: container 60×60 circolare con
-  gradient identico a `LeaderboardHeader` (primary 0.6 → primary x5 →
-  primary 0.6 diagonale topLeft→bottomRight) + boxShadow primary 0.3,
-  blur 8, offset (0,4). InkWell + Material per ripple. Dentro icona
-  `Icons.ios_share_outlined` bianca o `Loader` bianco durante share.
-- `floatingActionButton: _buildShareFab(context, league)` su entrambi gli
-  Scaffold (team-mode con tabs e individual-mode).
-- `_onShareLeaderboard(buttonContext, league)` legge `_tabController.index`:
-  se team + tab Giocatori → costruisce lista appiattita membri via
-  `_buildMembersListForShare(league)` (helper estratto da
-  `_buildMembersLeaderboard`); altrimenti passa `null` (usa
-  `league.participants` direttamente).
-- `_shareWith` recupera themeMode da `AppThemeCubit`, chiama
-  `serviceLocator<ShareService>().renderWidgetToPng(card, context)` poi
-  `shareImageBytes(bytes, originRect, filename)`. Errore via `showSnackBar`.
+**Goal**: sostituire il FAB statico circolare con un bottone che alla
+prima visita del tab Classifica appare espanso ("Condividi sui social"
++ icona) e dopo un delay collassa in icona sola. Visite successive: parte
+gia' collassato.
 
-**Iterazioni di design (per memoria)**:
-1. Prima versione: AppBar con IconButton share. L'utente ha rimosso AppBar
-   e messo `ElevatedButton` in fondo alla Column. Bug: `onPressed: () =>
-   _buildShareAction(...)` chiamava il widget builder, non il metodo share.
-   Fix: routing diretto su `_onShareLeaderboard`.
-2. Seconda versione: `ElevatedButton.icon` sotto la lista. L'utente ha
-   detto "prende troppo la scena". Spostato a FAB circolare bottom-right
-   via `Scaffold.floatingActionButton`. Helper `_buildShareButton` rimosso.
-3. Crash `child!.hasSize: is not true`: causato da `Image.asset` (logo) e
-   `Image.network` (avatar) non decodificati al momento del layout
-   off-screen. Risolto rimuovendo `Image.network` (avatar fallback always)
-   e (in iterazioni successive) precaricando il logo. Dopo simplificazioni
-   l'utente ha rimesso il logo manualmente.
-4. Overflow `RenderFlex 30px`: `SizedBox(width: 1080)` veniva clampato a
-   ~390 (RenderView su iPhone). I fixed widths/font 78/170/28/42 erano
-   pensati per 1080 ma applicati a 262 px effettivi. Risolto droppando il
-   1080 e dimensionando per device-width (output PNG = device_width ×
-   pixelRatio = ~1170 px su iPhone).
-5. iOS share sheet mostrava "Testo semplice e 1 documento": label generata
-   da iOS quando ci sono `text` + `files` in `ShareParams`. NON
-   personalizzabile via API public di share_plus (ricerca + open issue
-   #1221). Strategia A+B applicata: rimosso `text`, usato `fileNameOverrides:
-   ['Classifica Fantavacanze.png']` (filename custom sotto la thumbnail),
-   e caption "Vivi momenti indimenticabili!" embeddata nel footer della
-   card stessa.
+Pattern replicato dal vecchio `AnimatedFloatingActionButton` (recuperato
+dal git tag `archive/fantaserata-before-removal` — il widget era usato sulla
+home con il fantaserata, rimosso assieme alla feature). Logica adattata e
+semplificata: niente swipe-to-hide, niente seasonal text variants.
 
-**Pattern Builder**: tutti i bottoni share usano `Builder` per ottenere il
-`buttonContext` corretto per `findRenderObject` → `originRect` corretto per
-`sharePositionOrigin` (necessario su iPad altrimenti
-UIActivityViewController crasha).
+**Componenti creati**:
 
-### 2.7 Misc
+`lib/core/cubits/share_button_animation/share_button_animation_cubit.dart`
++ `share_button_animation_state.dart`:
+- Cubit lazy singleton in DI con `markAnimationAsPlayed()` /
+  `resetAnimation()` / getter `hasAnimationPlayed`.
+- Stato in-memory (non persistito): cold start dell'app → animazione
+  ricomincia. Coerente con la UX originale del fantaserata.
 
-- `cacheNotifications` in `local_data_source.dart` cambiato da "skip if
-  exists" a "always put" (era pre-esistente nel working tree, lasciato).
-- `await notificationsBox.clear()` rimosso da `_openHiveBoxes` (gia' fatto
-  nella sessione 30/04).
-- Asset path in `home.dart` cambiato da `add-event-winter.png` a
-  `add-event-bg.jpg` (modifica probabilmente manuale dell'utente).
-- `lib/core/widgets/dialogs/notification_dialog.dart` modificato (preesistente
-  al refactor, lasciato).
-- Tutte le 76 call site di `isConnected` invariate (nessuna repo toccata).
+`lib/core/widgets/buttons/animated_share_button.dart`:
+- `StatefulWidget` con `SingleTickerProviderStateMixin`.
+- Larghezza animata 210 → 60 (height 60 fissa, borderRadius 30 = pill che
+  diventa cerchio).
+- Curve: `easeInOutCubic` per width, `Interval(0.0, 0.4, easeOut)` per
+  opacity testo.
+- **Tweak utente post-implementazione**: `_collapseDelay` da 5s a 4s,
+  `_animationDuration` da 800ms a 600ms.
+- Text collapse via `ClipRect(Align(widthFactor: opacity))` per
+  shrink-from-right naturale, icona resta centrata via `Row(MainAxisSize.min)`.
+- Loader durante share sostituisce solo l'icona (placeholder 24×24).
+- Gradient identico al vecchio FAB (primary 0.6 → primary x2 → primary 0.6).
+- `StadiumBorder` per InkWell ripple corretto in entrambi gli stati.
 
-## 3. FILE MODIFICATI NEL WORKING TREE
+**Parametri esposti**:
+- `onPressed`, `isLoading`, `label`, `icon` (default "Condividi sui social"
+  + `Icons.ios_share_outlined`).
+- `triggerOnNavIndex: int?` → vedi sezione 2.3.
+
+**DI + provider**:
+- `init_dependencies.main.dart`: `registerLazySingleton<ShareButtonAnimationCubit>`
+  subito dopo `NotificationCountCubit`.
+- `init_dependencies.dart`: import del cubit.
+- `main.dart`: `BlocProvider(create: (_) => serviceLocator<ShareButtonAnimationCubit>())`
+  nel MultiBlocProvider (per coerenza con gli altri global cubits, anche se
+  il widget accede via `serviceLocator` direttamente).
+
+**leaderboard_page.dart**: `_buildShareFab` ora ritorna `AnimatedShareButton`
+con `triggerOnNavIndex` calcolato dinamicamente:
+```dart
+final navIndex = participantNavbarItems
+    .indexWhere((item) => item.screen is LeaderboardPage);
+```
+Niente magic number: se i nav items vengono riordinati, l'index si
+ricalcola.
+
+### 2.3 Bug: animazione non parte sul tab Classifica
+
+**Sintomo**: utente apre il tab Classifica, vede subito il bottone
+collassato senza l'animazione iniziale.
+
+**Causa**: `dashboard.dart:343` usa `IndexedStack(children: screens)` per
+gestire la bottom navbar. IndexedStack costruisce TUTTI i figli al primo
+build → `LeaderboardPage.initState` (e quindi
+`AnimatedShareButton.initState`) parte all'avvio dell'app, mentre l'utente
+e' ancora sulla home. Il `Future.delayed(5s)` scatta in background,
+`markAnimationAsPlayed()` viene chiamato, e quando l'utente apre la
+classifica trova lo stato collassato.
+
+Il `FloatingButtonAnimationCubit` originale non aveva questo problema
+perche' era sulla home (tab 0, sempre visibile al boot).
+
+**Fix scelto** (BlocListener vs VisibilityDetector vs prop esterno → scelto
+il primo per zero-dep e logica self-contained):
+- Aggiunto parametro `triggerOnNavIndex: int?` al widget.
+- In `initState`: se settato e l'utente non e' gia' su quel tab, il widget
+  si iscrive a `AppNavigationCubit.stream` (via `serviceLocator`) invece
+  di partire subito.
+- Quando lo stream emette l'index target → `_scheduleCollapse()` parte e
+  la subscription viene cancellata (one-shot).
+- Flag `_animationScheduled` evita doppia schedulazione.
+- `dispose` cancella anche la subscription.
+
+Behavior atteso:
+- Cold start su home → AnimatedShareButton resta in attesa.
+- Utente naviga al tab Classifica per la prima volta → bottone espanso
+  visibile, dopo 4s collassa.
+- Utente esce e rientra → bottone gia' collassato (cubit ha stato in-memory).
+- Cold start successivo → ricomincia.
+
+## 3. STATO WORKING TREE A FINE SESSIONE
+
+Lavoro NON ancora committato. Da committare in un singolo commit:
 
 ```
-M .claude/settings.local.json
-M CLAUDE.MD
-M lib/core/cubits/notification_count/notification_count_cubit.dart
-M lib/core/network/connection_checker.dart                              [reactive]
-M lib/core/services/ad_helper.dart
-M lib/core/services/review_service.dart
-M lib/core/theme/colors.dart                                            [rejected gradient]
-M lib/core/utils/media/downloader.dart
-M lib/core/utils/show-snackbar-or-paywall/show_premium_paywall.dart
-M lib/core/utils/show-snackbar-or-paywall/show_snackbar.dart
-M lib/core/widgets/dialogs/notification_dialog.dart
-M lib/core/widgets/dialogs/premium_access_dialog.dart
-M lib/core/widgets/media/video_player.dart
-M lib/features/auth/data/datasources/auth_remote_data_source.dart
-M lib/features/league/data/datasources/local/local_data_source.dart     [prune+cascade]
-M lib/features/league/data/datasources/remote/notification_remote_data_source.dart
-M lib/features/league/data/models/daily_challenge_model/daily_challenge_model.dart  [HiveField 13/14]
-M lib/features/league/data/models/daily_challenge_model/daily_challenge_model.g.dart
-M lib/features/league/data/repository/daily_challenges_repository_impl.dart  [refetch on pending]
-M lib/features/league/data/repository/league_repository_impl.dart       [delete clears all boxes]
-M lib/features/league/data/repository/notifications_repository_impl.dart
-M lib/features/league/domain/entities/daily_challenge.dart              [+ isPendingApproval, isRejected]
-M lib/features/league/domain/repository/notifications_repository.dart
-M lib/features/league/domain/use_cases/remote/notifications/get_notifications.dart
-M lib/features/league/presentation/bloc/daily_challenges_bloc/daily_challenges_bloc.dart  [decrement counter, operationAt]
-M lib/features/league/presentation/bloc/daily_challenges_bloc/daily_challenges_state.dart [+ operationAt]
-M lib/features/league/presentation/bloc/notifications_bloc/notifications_bloc.dart
-M lib/features/league/presentation/pages/navigation/homepage/widgets/daily_goal_card.dart [_buildRejectedCard]
-M lib/features/league/presentation/pages/navigation/homepage/widgets/daily_goals.dart
-M lib/features/league/presentation/pages/navigation/leaderboard/leaderboard_page.dart     [share FAB]
-M lib/features/league/presentation/pages/navigation/notifications/notifications_page.dart
-M lib/features/league/presentation/pages/navigation/homepage/home.dart
-M lib/init_dependencies/init_dependencies.dart                          [share_service import]
-M lib/init_dependencies/init_dependencies.main.dart                     [DI: ShareService, ConnectionChecker singleton, NotificationCountCubit in DailyChallengesBloc]
-M lib/main.dart                                                         [_listenToConnectionChanges]
-M pubspec.yaml                                                          [+ screenshot]
-M pubspec.lock
+M  .claude/settings.local.json
+M  ios/Runner.xcodeproj/project.pbxproj                      [auto Xcode]
+M  lib/features/league/presentation/pages/navigation/homepage/home.dart
+   [asset add-event-winter.png → add-event-bg.jpg]
+M  lib/features/league/presentation/pages/navigation/leaderboard/leaderboard_page.dart
+   [share FAB → AnimatedShareButton + triggerOnNavIndex]
+M  lib/init_dependencies/init_dependencies.dart
+M  lib/init_dependencies/init_dependencies.main.dart
+M  lib/main.dart                                             [+ BlocProvider]
+M  pubspec.yaml                                              [+ screenshot ^3.0.0]
+M  pubspec.lock
+M  previous-session.txt
 
-A lib/core/services/share_service.dart
-A lib/features/league/presentation/pages/navigation/leaderboard/widgets/shareable_leaderboard_card.dart
-A lib/features/league/presentation/pages/navigation/leaderboard/widgets/share_subtitle_phrases.dart
-A tools/sql/reject_daily_challenge_set_is_rejected.sql
+A  lib/core/cubits/share_button_animation/share_button_animation_cubit.dart
+A  lib/core/cubits/share_button_animation/share_button_animation_state.dart
+A  lib/core/services/share_service.dart
+A  lib/core/widgets/buttons/animated_share_button.dart
+A  lib/features/league/presentation/pages/navigation/leaderboard/widgets/shareable_leaderboard_card.dart
+```
+
+Note:
+- Il file `share_subtitle_phrases.dart` menzionato nel recap del 07/05 non
+  esiste come file separato — le frasi sono inlined in
+  `shareable_leaderboard_card.dart` (probabile semplificazione manuale).
+- `tools/sql/reject_daily_challenge_set_is_rejected.sql` rimane fuori dal
+  commit (decisione di sezione 4.2).
+
+**Messaggio di commit proposto** (in linea con stile repo):
+
+```
+feat: :sparkles: leaderboard share with animated collapsible FAB
+
+- ShareService renders ShareableLeaderboardCard off-screen and opens
+  the native share sheet (screenshot ^3.0.0 + share_plus)
+- AnimatedShareButton starts expanded with "Condividi sui social" and
+  collapses to a circular icon after 4s; subsequent visits stay collapsed
+- ShareButtonAnimationCubit persists the "played" state per app session
+- nav-index trigger so the timer fires only when the leaderboard tab
+  becomes active (IndexedStack mounts every screen at app start)
+- home.dart: add-event asset switched from winter to default bg
 ```
 
 ## 4. DA FARE
 
-### 4.1 Commit pending
+### 4.1 Test manuali ancora da fare
 
-Tre opzioni discusse, decisione utente da prendere:
-- (a) Unico commit: "feat: cache reconcile + reactive connection check +
-  daily challenge rejection flow + leaderboard share"
-- (b) Split per area (cache reconcile, connection, share, daily challenges).
-- (c) Squash con messaggio sintetico stile esistente:
-  ":sparkles: cache reconcile + reactive connectivity + daily challenge
-  rejection + notification counter sync + leaderboard share".
-
-Messaggio proposto (stile sintetico in linea con il repo):
-
-```
-feat: :sparkles: leaderboard share + cache reconcile + reactive connectivity + daily challenge rejection
-
-- ShareService + ShareableLeaderboardCard + FAB share su leaderboard
-- pruning stale leagues con cascade su tutte le hive box
-- delete/exit league pulisce challenges/notes/notifications
-- ConnectionChecker stream-based con stato cachato + offline warning snackbar
-- daily challenges: is_pending_approval/is_rejected con card rejected dedicata
-- notification counter sync su approve/reject + DailyChallengesLoaded distinct-skip bypass
-```
+- Cold start su home: aspettare alcuni secondi, poi navigare al tab
+  Classifica → bottone DEVE apparire espanso "Condividi sui social",
+  collassare dopo 4s.
+- Esci dal tab e rientra → bottone DEVE essere gia' collassato.
+- Cold start dell'app (kill + restart) → animazione DEVE ricominciare da
+  capo.
+- Tap sul bottone in stato espanso → share sheet si apre normalmente.
+- Tap sul bottone in stato collassato → idem.
+- Loader durante share: sostituisce icona, stato espanso/collassato resta.
+- Lega con > 8 partecipanti: ellipsis row visibile con "+ N altri".
+- Lega con esattamente 8 partecipanti: nessuna ellipsis row.
+- iPad: share sheet posizionato vicino al bottone (test
+  `sharePositionOrigin` invariato).
+- iOS: filename "Classifica Fantavacanze.png" sotto thumbnail.
 
 ### 4.2 Riallineamento file SQL reject_daily_challenge_set_is_rejected.sql
 
-L'utente ha applicato manualmente sul DB:
+Pendente dalla sessione 07/05. L'utente ha applicato manualmente sul DB:
 - WHERE su `id` (era `challenge_id`).
-- `SET is_pending_approval = false` aggiunto al SET (oltre a
-  `is_rejected = true`).
+- `SET is_pending_approval = false` aggiunto al SET.
 
 Il file in `tools/sql/` ha ancora il commento "is_pending_approval resta
 true" e il SET con solo `is_rejected = true`. Da decidere se aggiornarlo
 per consistenza file-vs-DB.
 
-### 4.3 Test manuali ancora da fare
-
-- Counter notifiche: arriva FCM su admin con cache vuota → contatore va a 1
-  (non 2).
-- Approve consecutive: prima e seconda funzionano, lista si aggiorna in
-  entrambi i casi (test fix Bug B).
-- Reject consecutive: idem.
-- Cache reconcile:
-  - Cold start con cache piena di leghe stale → log
-    `getCachedDailyChallenges` deve mostrare `Box totale = n_leghe_attive ×
-    6`, non piu' alto.
-  - `deleteLeague` su device A → device B online riavviato perde la lega.
-  - `exitLeague` su A → tutte le box di A riallineate.
-- ConnectionChecker:
-  - Cold start online → niente probe blocking sui primi click.
-  - Wifi off → snackbar warning entro 1-2s.
-  - Wifi on → niente snackbar (corretto).
-- Share classifica:
-  - Lega individuale: tap FAB → share sheet con immagine brandizzata.
-  - Lega team, tab Squadre → idem con classifica squadre.
-  - Lega team, tab Giocatori → idem con lista appiattita membri.
-  - Su iPad: share sheet posizionato vicino al FAB (test
-    `sharePositionOrigin`).
-  - iOS share sheet: thumbnail prominente + filename "Classifica
-    Fantavacanze.png" (no piu' "Testo semplice e 1 documento").
-
-### 4.4 Nice-to-have rimandati
+### 4.3 Nice-to-have rimandati
 
 - Realtime su events/leaderboard durante sessione live: scartato come
   default (pull funziona bene). Da rivalutare solo se emerge frizione UX
   reale.
 - `recheckNow()` su ConnectionChecker (probe forzata): non implementato
-  (YAGNI). Si aggiunge se serve davvero.
-- Custom `LPLinkMetadata` per share su iOS (header con titolo + thumbnail
+  (YAGNI).
+- Custom `LPLinkMetadata` per share su iOS (header titolo + thumbnail
   ricca): richiederebbe fork del plugin share_plus. Tracciato all'open
-  issue #1221. Per ora accettiamo "Classifica Fantavacanze.png" come
-  filename sotto thumbnail.
+  issue #1221.
+- Persistenza di `hasAnimationPlayed` in SharedPreferences per non rivedere
+  l'animazione ad ogni cold start: NON richiesto dall'utente, valutato
+  ma scartato (UX originale del fantaserata era anche in-memory).
 
-## 5. NOTE DI CONTESTO PERSISTENTI (da sessioni precedenti, ancora valide)
+## 5. NOTE DI CONTESTO PERSISTENTI
 
 - AdMob: `lib/core/services/ad_helper.dart` ha
   `if (true) return testInterstitialAdUnitId` da rimuovere prima del deploy.
@@ -417,24 +237,34 @@ per consistenza file-vs-DB.
   process handle SIGUSR1 -n true -p true -s false
   breakpoint set -n NOTIFY_DEBUGGER_ABOUT_RX_PAGES --auto-continue true
   ```
+- Git tag `archive/fantaserata-before-removal` (con trattini, non
+  underscore): contiene il codice del fantaserata rimosso. Riferimento
+  utile per recuperare pattern (vedi `AnimatedFloatingActionButton` →
+  base per `AnimatedShareButton`). Comandi:
+  - `git show archive/fantaserata-before-removal:path/to/file.dart`
+  - `git ls-tree -r archive/fantaserata-before-removal`
+  - `git diff archive/fantaserata-before-removal HEAD -- path/`
 
 ## 6. DECISIONI ARCHITETTURALI DI QUESTA SESSIONE
 
-- **Cache reconcile via `cacheLeagues` replace+cascade**: scelto invece di
-  chiamate esplicite a `pruneLocalDataForLeagues` distribuite ovunque,
-  perche' impossibile dimenticarsene in un futuro call site.
-- **ConnectionChecker singleton + flag ottimistico**: vs probe awaited al
-  boot. Trade-off accettato: prime ms in cold start offline non bloccano i
-  click, le chiamate falliranno lato server e cadranno sui fallback cache.
-- **Pull-by-default su tutto, niente realtime espanso**: discussione
-  esplicita con l'utente. Listener riservati a casi chirurgici (FCM
-  notifiche, ConnectionChecker). Realtime per eventi/leaderboard solo se
-  emerge un pain UX dimostrato.
-- **`bloc.stream.firstWhere` con discriminator timestamp**: vs alternative
-  (UniqueKey, contatore incrementale, nuovi tipi di state). `DateTime.now()`
-  e' il piu' semplice e leggibile, e funziona perfettamente per il caso
-  d'uso.
-- **Share via widget brandizzato off-screen**: vs screenshot raw del body.
-  `screenshot.captureFromWidget` per off-screen rendering. Caption in
-  immagine (no `text` in ShareParams) per evitare la label generica iOS
-  "Testo semplice e 1 documento".
+- **AnimatedShareButton in `core/widgets/buttons/`** (non in
+  `features/league/...`): widget riusabile, default semantici (label e
+  icona) ma overridabili. Il caller passa `triggerOnNavIndex` se serve
+  aspettare un tab specifico. Trade-off: il widget conosce
+  `AppNavigationCubit` (dipendenza da core/cubit) — accettabile perche'
+  e' un cubit globale gia' usato in molti posti.
+- **Trigger via `BlocListener`/stream subscription a AppNavigationCubit**:
+  vs `VisibilityDetector` package. Scelto per zero-dep. Trade-off: se
+  domani il dashboard cambia da IndexedStack a PageView (lazy mounting),
+  questa logica diventa ridondante (ma non rompe). VisibilityDetector
+  sarebbe piu' robusto ma aggiunge una dep per un caso d'uso singolo.
+- **`hasAnimationPlayed` in-memory (cubit, non SharedPreferences)**:
+  coerente con il vecchio `FloatingButtonAnimationCubit`. Cold start
+  riproduce l'animazione, decisione UX dell'utente.
+- **Cap a 8 righe + ellipsis row vs scroll/scaling**: scelto cap fisso
+  per UX prevedibile sul share. Card di share sempre della stessa altezza
+  approssimativa indipendentemente dal numero partecipanti. Tunato a 8
+  dall'utente (prompt originale: 9).
+- **Calcolo dinamico `triggerOnNavIndex` via `indexWhere`** vs hardcode:
+  scelto dinamico per resilienza al riordino di `participantNavbarItems`.
+  Costo trascurabile (linear scan su una lista corta, una volta per build).

@@ -1,10 +1,12 @@
 import 'dart:io';
+
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/extensions/context_extension.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
-import 'package:fantavacanze_official/core/utils/show-snackbar-or-paywall/show_snackbar.dart';
 import 'package:fantavacanze_official/core/utils/in-game/participant_name_resolver.dart';
+import 'package:fantavacanze_official/core/utils/media/image_picker_util.dart';
+import 'package:fantavacanze_official/core/utils/show-snackbar-or-paywall/show_snackbar.dart';
 import 'package:fantavacanze_official/core/widgets/events/event_card.dart';
 import 'package:fantavacanze_official/core/widgets/media/video_thumbnail.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/event/event.dart';
@@ -12,13 +14,18 @@ import 'package:fantavacanze_official/features/league/domain/entities/league/lea
 import 'package:fantavacanze_official/features/league/domain/entities/rule/rule.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/team_participant.dart';
 import 'package:flutter/material.dart';
-import 'package:fantavacanze_official/core/utils/media/image_picker_util.dart';
 import 'package:image_picker/image_picker.dart' as image_picker;
 
 class AddMemoryBottomSheet extends StatefulWidget {
   final League league;
   final List<Event> events;
-  final Function(File, String, Event?, String?) onSave;
+  final void Function(
+    File mediaFile,
+    String text,
+    Event? event,
+    String? eventName,
+    bool isVideo,
+  ) onSave;
   final String currentUserId;
 
   const AddMemoryBottomSheet({
@@ -38,7 +45,6 @@ class _AddMemoryBottomSheetState extends State<AddMemoryBottomSheet> {
   File? _selectedMedia;
   bool _isVideo = false;
   Event? _selectedEvent;
-  bool _isLoading = false;
   bool _showEventSelection = false;
 
   late List<Event> _userEvents;
@@ -409,17 +415,14 @@ class _AddMemoryBottomSheetState extends State<AddMemoryBottomSheet> {
       return;
     }
 
-    setState(() {
-      _isLoading = true;
-    });
-
-    String? eventName = _selectedEvent?.name;
     widget.onSave(
       _selectedMedia!,
       _textController.text,
       _selectedEvent,
-      eventName,
+      _selectedEvent?.name,
+      _isVideo,
     );
+    Navigator.of(context).pop();
   }
 
   @override
@@ -765,7 +768,7 @@ class _AddMemoryBottomSheetState extends State<AddMemoryBottomSheet> {
                     color: ColorPalette.darkGrey,
                   ),
                   label: Text(
-                    'Collega Un Evento',
+                    'Collega Un Bonus/Malus',
                     style: TextStyle(
                       color: ColorPalette.darkGrey,
                       fontWeight: FontWeight.w400,
@@ -899,39 +902,27 @@ class _AddMemoryBottomSheetState extends State<AddMemoryBottomSheet> {
 
             const SizedBox(height: ThemeSizes.lg),
 
-            // Save button with enhanced styling
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 300),
+            SizedBox(
               height: 56,
               child: ElevatedButton(
-                onPressed: _isLoading ? null : _save,
+                onPressed: _save,
                 style: ElevatedButton.styleFrom(
                   shadowColor: context.primaryColor.withValues(alpha: 0.5),
                 ),
-                child: _isLoading
-                    ? SizedBox(
-                        width: 24,
-                        height: 24,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          valueColor:
-                              AlwaysStoppedAnimation<Color>(Colors.white),
-                        ),
-                      )
-                    : Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Icon(Icons.save_alt_rounded, size: 20),
-                          const SizedBox(width: ThemeSizes.sm),
-                          const Text(
-                            'Salva ricordo',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
+                child: const Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.save_alt_rounded, size: 20),
+                    SizedBox(width: ThemeSizes.sm),
+                    Text(
+                      'Salva ricordo',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
                       ),
+                    ),
+                  ],
+                ),
               ),
             ),
             const SizedBox(height: ThemeSizes.sm),
