@@ -57,6 +57,7 @@ Future<void> initDependencies() async {
     );
 
     _initAppStatus();
+    _initAppVersion();
     _initAuth();
     _initLeague();
     _initDailyChallenges();
@@ -117,13 +118,19 @@ Future<void> initDependencies() async {
       ..registerLazySingleton(
         () => ShareButtonAnimationCubit(),
       )
-      //6. app status cubit
+      //6. app version cubit
+      ..registerLazySingleton<AppVersionCubit>(
+        () => AppVersionCubit(
+          checkAppVersion: serviceLocator(),
+        ),
+      )
+      //7. app status cubit
       ..registerLazySingleton(
         () => AppStatusCubit(
           getAppStatus: serviceLocator(),
         ),
       )
-      //7. connection checker
+      //8. connection checker
       ..registerLazySingleton<ConnectionChecker>(
         () => ConnectionCheckerImpl(
           serviceLocator(),
@@ -276,6 +283,25 @@ void _initAppStatus() {
     ..registerFactory(
       () => GetAppStatus(
         appRepository: serviceLocator(),
+      ),
+    );
+}
+
+void _initAppVersion() {
+  serviceLocator
+    ..registerFactory<AppVersionRemoteDataSource>(
+      () => AppVersionRemoteDataSourceImpl(
+        supabaseClient: serviceLocator(),
+      ),
+    )
+    ..registerFactory<AppVersionRepository>(
+      () => AppVersionRepositoryImpl(
+        remoteDataSource: serviceLocator(),
+      ),
+    )
+    ..registerFactory(
+      () => CheckAppVersion(
+        appVersionRepository: serviceLocator(),
       ),
     );
 }

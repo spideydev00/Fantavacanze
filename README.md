@@ -24,17 +24,15 @@ Il progetto è implementato usando la **CLEAN Architecture**. Per riferimento gu
 
 ### State Management Globale (`lib/core/cubits/`)
 
-Sei cubits singleton gestiscono lo stato globale dell'app:
+Cubits singleton gestiscono lo stato globale dell'app:
 
 1. **`app_user/`**: Stato di autenticazione dell'utente corrente
 2. **`app_league/`**: Appartenenze alle leghe dell'utente
 3. **`app_navigation/`**: Gestione indice navigazione bottom
 4. **`app_theme/`**: Tema scuro/chiaro con persistenza SharedPreferences
-5. **`seasonal_event/`**: Gestione eventi stagionali e promozioni speciali
-
-**Cubits di Navigazione**:
-
-- `fs_navigation/` - Gestione navigazione specifica sezione Fantaserata
+5. **`app_status/`**: Flag manutenzione letto da Supabase (`application_status`)
+6. **`app_version/`**: Force update gate basato su `app_version_config` per piattaforma
+7. **`seasonal_event/`**: Gestione eventi stagionali e promozioni speciali
 
 ### Features Principali
 
@@ -55,14 +53,16 @@ Funzionalità core per gestire leghe competitive:
 - Gestione eventi, regole, ricordi e note
 - Sistema notifiche in tempo reale
 
-#### Fantaserata Feature (`lib/features/fantaserata/`)
+#### App Feature (`lib/features/app/`)
 
-Leghe temporanee giornaliere che si auto-distruggono alle 7:00:
+Gate globali a livello applicazione, controllati da Supabase:
 
-- Solo partecipanti individuali, nessuna squadra
-- Struttura semplificata per competizioni rapide
-- Leghe tematiche basate su tipo di venue (discoteca, bar, casa)
-- Foto vincitore come funzionalità unica
+- **App status**: schermata di manutenzione (`AppUnavailablePage`) attivabile
+  via flag su `application_status`
+- **Force update**: blocco aggiornamento (`ForceUpdatePage`) quando la versione
+  locale è inferiore a `min_supported_version` su `app_version_config`. Il
+  confronto usa `pub_semver`; il bottone "Aggiorna ora" apre lo store via
+  `url_launcher`
 
 #### Games Feature (`lib/features/games/`)
 
@@ -80,16 +80,23 @@ lib/
 │   ├── constants/           # Costanti per feature
 │   ├── cubits/             # State management globale
 │   ├── entities/           # Entità condivise
-│   ├── services/           # Servizi core (ads, GDPR, review)
+│   ├── services/           # Servizi core (ads, GDPR, review, share)
 │   ├── theme/              # Sistema temi e colori
 │   └── widgets/            # Componenti UI riutilizzabili
 ├── features/
+│   ├── app/                # Gate globali (manutenzione, force update)
 │   ├── auth/               # Autenticazione
-│   ├── league/             # Leghe principali
-│   ├── fantaserata/        # Leghe temporanee
+│   ├── league/             # Leghe e sfide giornaliere
 │   └── games/              # Giochi multiplayer
 └── init_dependencies/      # Dependency injection setup
 ```
+
+### Backend Supabase (`supabase/`, gitignored)
+
+Schemi tabelle in `supabase/schemas/`, funzioni RPC in `supabase/db_functions/`,
+trigger in `supabase/db_triggers/`. Le migrazioni / script da eseguire al
+prossimo deploy vivono in `supabase/to-do/[sottocartella]/` numerati per
+ordine di esecuzione e idempotenti.
 
 ## Il concept
 
@@ -102,8 +109,6 @@ L'idea è quella di creare un gioco per stimolare le interazioni sociali nella v
 - ✅ **Sezione Ricordi**: Ogni foto-ricordo sarà una testimonianza di un momento indimenticabile, inseribile all'interno di cartelle personalizzate. Supporta foto e video con gestione eventi collegati.
 
 - ✅ **Giochi alcolici**: Sfide e passatempi UNICI che renderanno ogni momento ancora più speciale. Include Truth or Dare, Word Bomb e Never Have I Ever con modalità multiplayer real-time.
-
-- 🆕 **Fantaserata**: Leghe temporanee giornaliere che si auto-distruggono ogni mattina alle 7:00. Perfette per competizioni veloci durante una serata in discoteca, bar o casa. Solo partecipanti individuali, senza squadre, per una competizione immediata e semplificata.
 
 - 🎉 **Eventi stagionali**: Contenuti speciali, promozioni e funzionalità a tempo limitato che rendono l'app sempre fresca e coinvolgente durante le festività e occasioni speciali.
 

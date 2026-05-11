@@ -6,6 +6,7 @@ import 'package:fantavacanze_official/core/cubits/app_navigation/app_navigation_
 import 'package:fantavacanze_official/core/cubits/app_status/app_status_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/app_theme/app_theme_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit.dart';
+import 'package:fantavacanze_official/core/cubits/app_version/app_version_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/notification_count/notification_count_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/share_button_animation/share_button_animation_cubit.dart';
 import 'package:fantavacanze_official/core/network/connection_checker.dart';
@@ -54,6 +55,9 @@ void main() async {
     runApp(
       MultiBlocProvider(
         providers: [
+          // App Version
+          BlocProvider(create: (_) => serviceLocator<AppVersionCubit>()),
+
           // App Status
           BlocProvider(create: (_) => serviceLocator<AppStatusCubit>()),
 
@@ -111,8 +115,11 @@ class _MyAppState extends State<MyApp> {
   Future<void> _initializeApp() async {
     final appUserCubit = context.read<AppUserCubit>();
     final appLeagueCubit = context.read<AppLeagueCubit>();
+    final appVersionCubit = context.read<AppVersionCubit>();
     final appStatusCubit = context.read<AppStatusCubit>();
     try {
+      await appVersionCubit.checkVersion();
+
       // Check availability flag stored on Supabase
       await appStatusCubit.fetchStatus();
 

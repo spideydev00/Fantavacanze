@@ -8,7 +8,9 @@
       "WebFetch(domain:github.com)",
       "Bash(gh api *)",
       "WebFetch(domain:raw.githubusercontent.com)",
-      "Bash(gh pr *)"
+      "Bash(gh pr *)",
+      "WebFetch(domain:appupgrade.dev)",
+      "WebFetch(domain:pro.codewithandrea.com)"
     ]
   }
 }

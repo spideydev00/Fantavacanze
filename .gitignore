@@ -54,6 +54,7 @@ app.*.map.json
 # Other
 terminal-commands.md
 project-structure.md
+previous-session.txt
 
 # Supabase
 /supabase

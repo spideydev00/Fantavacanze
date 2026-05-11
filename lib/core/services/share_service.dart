@@ -23,7 +23,7 @@ class ShareService {
   Future<void> shareImageBytes(
     Uint8List bytes, {
     required Rect? originRect,
-    String filename = 'Classifica Fantavacanze.png',
+    String filename = 'Classifica-Fantavacanze.png',
   }) async {
     await SharePlus.instance.share(
       ShareParams(

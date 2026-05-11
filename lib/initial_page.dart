@@ -2,9 +2,12 @@ import 'dart:async';
 
 import 'package:fantavacanze_official/core/cubits/app_status/app_status_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit.dart';
+import 'package:fantavacanze_official/core/cubits/app_version/app_version_cubit.dart';
 import 'package:fantavacanze_official/core/services/gdpr_service.dart';
 import 'package:fantavacanze_official/features/app/domain/entities/app_status.dart';
+import 'package:fantavacanze_official/features/app/domain/entities/app_version_config.dart';
 import 'package:fantavacanze_official/features/app/presentation/app_unavailable.dart';
+import 'package:fantavacanze_official/features/app/presentation/force_update_page.dart';
 import 'package:fantavacanze_official/features/auth/presentation/pages/gender_and_status_selection_page.dart';
 import 'package:fantavacanze_official/features/auth/presentation/pages/onboarding.dart';
 import 'package:fantavacanze_official/features/auth/presentation/pages/social_login.dart';
@@ -36,22 +39,30 @@ class _InitialPageState extends State<InitialPage> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<AppStatusCubit, AppStatusType>(
-      builder: (context, appStatus) {
-        if (appStatus == AppStatusType.unavailable) {
-          return const AppUnavailablePage();
+    return BlocBuilder<AppVersionCubit, AppVersionState>(
+      builder: (context, versionState) {
+        if (versionState.status == AppVersionStatus.forceUpdate) {
+          return ForceUpdatePage(storeUrl: versionState.storeUrl);
         }
 
-        return BlocBuilder<AppUserCubit, AppUserState>(
-          builder: (context, userState) {
-            if (userState is AppUserIsLoggedIn) {
-              return const DashboardScreen();
-            } else if (userState is AppUserNeedsOnboarding) {
-              return OnBoardingScreen();
-            } else if (userState is AppUserNeedsGenderOrStatus) {
-              return GenderAndStatusSelectionPage();
+        return BlocBuilder<AppStatusCubit, AppStatusType>(
+          builder: (context, appStatus) {
+            if (appStatus == AppStatusType.unavailable) {
+              return const AppUnavailablePage();
             }
-            return const SocialLoginPage();
+
+            return BlocBuilder<AppUserCubit, AppUserState>(
+              builder: (context, userState) {
+                if (userState is AppUserIsLoggedIn) {
+                  return const DashboardScreen();
+                } else if (userState is AppUserNeedsOnboarding) {
+                  return OnBoardingScreen();
+                } else if (userState is AppUserNeedsGenderOrStatus) {
+                  return GenderAndStatusSelectionPage();
+                }
+                return const SocialLoginPage();
+              },
+            );
           },
         );
       },

@@ -1,270 +1,303 @@
-# Recap sessione - Fantavacanze (08/05/2026)
+# Recap sessione - Fantavacanze (11/05/2026)
 
 ## 1. CONTESTO STRATEGICO DELLA SESSIONE
 
-Sessione di rifinitura sulla feature share classifica iniziata il 07/05.
-Stato all'inizio della sessione:
-- Commit `c8c3b2e` aveva gia' portato in main: cache reconcile + reactive
-  ConnectionChecker + daily challenge rejection flow.
-- Working tree dirty con la feature share leaderboard non ancora committata
-  (ShareService, ShareableLeaderboardCard, FAB share, DI, +screenshot dep).
+Sessione di consolidamento backend + nuova feature client. Due filoni
+indipendenti portati avanti in parallelo:
 
-Lavoro della sessione:
-1. Cap a N righe visibili nella ShareableLeaderboardCard + ellipsis row
-   (delegato a Codex via prompt strutturato).
-2. Sostituzione del FAB statico con bottone animato "Condividi sui social"
-   che collassa a icona dopo qualche secondo (replica del pattern di
-   `AnimatedFloatingActionButton` rimosso col fantaserata).
-3. Bug fix: animazione non partiva perche' IndexedStack monta tutti i tab
-   al boot e il timer scattava su un tab off-screen.
+1. **Unificazione daily challenges stagionali**: le due tabelle separate
+   `daily_challenges_winter` e `daily_challenges_summer` sono state fuse
+   in una sola `public.daily_challenges` con colonna `season` (enum
+   `season_t`). La RPC `get_user_daily_challenges` adesso sceglie le
+   sfide in base al mese corrente, eliminando la necessita' di cambiare
+   manualmente FK e funzione a ogni cambio di stagione.
+
+2. **Force update gate**: nuova feature client + backend per bloccare gli
+   utenti su versioni < `min_supported_version` letta da Supabase. Pattern
+   replicato 1:1 dal sistema `application_status` / `AppUnavailablePage`
+   gia' esistente, ma con tabella dedicata `app_version_config` per
+   piattaforma (android/ios).
+
+Stato all'inizio della sessione: working tree pulito (ultimo commit
+`d732b94` aveva chiuso la feature memory share/download).
 
 ## 2. MODIFICHE COMPLETATE
 
-### 2.1 Cap righe + ellipsis row in ShareableLeaderboardCard
+### 2.1 Unificazione daily_challenges stagionali
 
-Test manuale dell'utente con 12 partecipanti aveva mostrato bottom overflow.
+**Schema repo (committato in `supabase/schemas/`)**:
+- `daily_challenges.sql`: nuova tabella unificata, `season` di tipo
+  `public.season_t` (enum creato manualmente dall'utente).
+- `daily_challenges_winter.sql` / `daily_challenges_summer.sql`: da
+  rimuovere dal repo dopo il deploy (lo script `03_drop_legacy...`
+  cancella le tabelle dal DB, allora si possono cancellare anche i file).
 
-**Implementazione (Codex via prompt)** in
-`lib/features/league/presentation/pages/navigation/leaderboard/widgets/shareable_leaderboard_card.dart`:
-- Costante privata `static const int _maxVisibleRows = 8` (l'utente ha
-  tunato a 8; il prompt originale proponeva 9).
-- Loop iterazione cappa a `_maxVisibleRows`.
-- Nuovo widget `_ShareLeaderboardEllipsisRow` (stesso container/decoration
-  di `_ShareLeaderboardRow`): tre puntini centrati + label "+ N altri"
-  (singolare "+ 1 altro" se N == 1).
-- Inserito tra l'ultima riga partecipante e il footer, solo se
-  `participants.length > _maxVisibleRows`.
-- Footer e brand header invariati.
+**DB functions (committate in `supabase/db_functions/`)**:
+- `get_user_daily_challenges.sql` riscritta: legge da
+  `public.daily_challenges` filtrando per `season = v_current_season`
+  calcolata via `CASE WHEN EXTRACT(MONTH FROM CURRENT_DATE) BETWEEN 4 AND 9
+  THEN 'summer'::season_t ELSE 'winter'::season_t END` (aprile-settembre
+  = summer, ottobre-marzo = winter).
+- Anche il ramo "utente ha gia' sfide" e il JOIN sono stati ripuntati
+  alla tabella unificata.
 
-### 2.2 AnimatedShareButton + ShareButtonAnimationCubit
+**Script in `supabase/to-do/` (da eseguire al prossimo deploy)**:
+- `01_seed_daily_challenges.sql`: copia righe da `_winter`/`_summer` in
+  `daily_challenges` preservando gli `id` (idempotente, ON CONFLICT).
+- `02_swap_user_daily_challenges_fk.sql`: drop+add FK
+  `user_daily_challenges.challenge_id` -> `daily_challenges(id)`.
+- `04_replace_get_user_daily_challenges.sql`: nuova versione della RPC.
+- `03_drop_legacy_daily_challenges_tables.sql`: drop di `_winter` e
+  `_summer` (il numero 03 e' fuorviante: va eseguito DOPO il 04, perche'
+  la vecchia versione della RPC dipende ancora da `_winter`. README della
+  cartella documenta l'ordine reale: 01 -> 02 -> 04 -> 03).
+- `README.md` con dipendenze e nota su `season_t` (enum creato
+  manualmente dall'utente, fuori dagli script perche' lo aveva gia'
+  predisposto).
 
-**Goal**: sostituire il FAB statico circolare con un bottone che alla
-prima visita del tab Classifica appare espanso ("Condividi sui social"
-+ icona) e dopo un delay collassa in icona sola. Visite successive: parte
-gia' collassato.
+### 2.2 Force update gate (client + backend)
 
-Pattern replicato dal vecchio `AnimatedFloatingActionButton` (recuperato
-dal git tag `archive/fantaserata-before-removal` — il widget era usato sulla
-home con il fantaserata, rimosso assieme alla feature). Logica adattata e
-semplificata: niente swipe-to-hide, niente seasonal text variants.
+**Schema repo (committato in `supabase/schemas/`)**:
+- `app_version_config.sql`: nuova tabella con PK `platform`
+  (`public.app_platform_t` enum 'android' | 'ios'), `min_supported_version
+  text`, `store_url text`, `updated_at timestamptz default now()`. RLS
+  abilitata + policy SELECT pubblica.
 
-**Componenti creati**:
+**Trigger (committato in `supabase/db_triggers/`)**:
+- `set_updated_at_app_version_config.sql`: trigger BEFORE UPDATE che
+  invoca la funzione `public.set_updated_at()` gia' presente in repo (ma
+  fino a oggi non agganciata a nessuna tabella). Cosi' ogni UPDATE da
+  dashboard aggiorna automaticamente `updated_at`.
 
-`lib/core/cubits/share_button_animation/share_button_animation_cubit.dart`
-+ `share_button_animation_state.dart`:
-- Cubit lazy singleton in DI con `markAnimationAsPlayed()` /
-  `resetAnimation()` / getter `hasAnimationPlayed`.
-- Stato in-memory (non persistito): cold start dell'app → animazione
-  ricomincia. Coerente con la UX originale del fantaserata.
+**Script in `supabase/to-do/force_update/` (rimossa dopo l'esecuzione)**:
+- `01_create_app_version_config.sql`: CREATE enum + table + RLS + policy
+  (idempotenti).
+- `02_seed_app_version_config.sql`: seed delle due righe (android/ios)
+  con `min_supported_version = '1.1.4'` (la versione che ships questa
+  feature) e URL store:
+  - Android: `https://play.google.com/store/apps/details?id=com.spideyDev.fantavacanze`
+  - iOS: `https://apps.apple.com/it/app/id6747080566`
+- `README.md` con istruzioni per alzare la soglia ai deploy futuri.
 
-`lib/core/widgets/buttons/animated_share_button.dart`:
-- `StatefulWidget` con `SingleTickerProviderStateMixin`.
-- Larghezza animata 210 → 60 (height 60 fissa, borderRadius 30 = pill che
-  diventa cerchio).
-- Curve: `easeInOutCubic` per width, `Interval(0.0, 0.4, easeOut)` per
-  opacity testo.
-- **Tweak utente post-implementazione**: `_collapseDelay` da 5s a 4s,
-  `_animationDuration` da 800ms a 600ms.
-- Text collapse via `ClipRect(Align(widthFactor: opacity))` per
-  shrink-from-right naturale, icona resta centrata via `Row(MainAxisSize.min)`.
-- Loader durante share sostituisce solo l'icona (placeholder 24×24).
-- Gradient identico al vecchio FAB (primary 0.6 → primary x2 → primary 0.6).
-- `StadiumBorder` per InkWell ripple corretto in entrambi gli stati.
+**Script in `supabase/to-do/app_version_config_updated_at/`**:
+- `01_attach_set_updated_at_trigger.sql`: aggancia il trigger al DB.
+  Da eseguire una volta al deploy.
 
-**Parametri esposti**:
-- `onPressed`, `isLoading`, `label`, `icon` (default "Condividi sui social"
-  + `Icons.ios_share_outlined`).
-- `triggerOnNavIndex: int?` → vedi sezione 2.3.
+**Codice Flutter (nel commit)**:
 
-**DI + provider**:
-- `init_dependencies.main.dart`: `registerLazySingleton<ShareButtonAnimationCubit>`
-  subito dopo `NotificationCountCubit`.
-- `init_dependencies.dart`: import del cubit.
-- `main.dart`: `BlocProvider(create: (_) => serviceLocator<ShareButtonAnimationCubit>())`
-  nel MultiBlocProvider (per coerenza con gli altri global cubits, anche se
-  il widget accede via `serviceLocator` direttamente).
+Pattern di riferimento: feature `lib/features/app/` (gia' contenente la
+catena `AppStatus` per `AppUnavailablePage`). Nuova catena affiancata:
 
-**leaderboard_page.dart**: `_buildShareFab` ora ritorna `AnimatedShareButton`
-con `triggerOnNavIndex` calcolato dinamicamente:
-```dart
-final navIndex = participantNavbarItems
-    .indexWhere((item) => item.screen is LeaderboardPage);
-```
-Niente magic number: se i nav items vengono riordinati, l'index si
-ricalcola.
+- `lib/features/app/domain/entities/app_version_config.dart`: entity +
+  enum `AppVersionStatus { upToDate, forceUpdate }`.
+- `lib/features/app/domain/repository/app_version_repository.dart`.
+- `lib/features/app/domain/use_cases/check_app_version.dart`: legge
+  versione locale via `PackageInfo.fromPlatform().version`, chiama il
+  repo, confronta con `Version.parse(...)` (pacchetto `pub_semver`).
+  Failsafe triplice: `Left(Failure)` dal repo, throw del parser,
+  formato inatteso -> sempre fallback a `upToDate`. Espone
+  `AppVersionCheckResult { status, config? }` per dare alla UI lo
+  `store_url` da aprire.
+- `lib/features/app/data/models/app_version_config_model.dart`.
+- `lib/features/app/data/datasources/app_version_remote_data_source.dart`:
+  query filtrata per `platform = defaultTargetPlatform == TargetPlatform.iOS
+  ? 'ios' : 'android'`.
+- `lib/features/app/data/repository/app_version_repository_impl.dart`.
+- `lib/features/app/presentation/force_update_page.dart`: gemella di
+  `app_unavailable.dart` (stesso shell, logo, `PopScope canPop=false`).
+  Icona `Icons.system_update_alt_rounded`, titolo "Aggiornamento
+  richiesto", InfoContainer con messaggio, bottone "Aggiorna ora" che
+  apre `storeUrl` via `url_launcher` con `LaunchMode.externalApplication`.
+- `lib/core/cubits/app_version/app_version_cubit.dart`: singleton, stato
+  `AppVersionState(status, storeUrl?)`. Stato iniziale `upToDate` (failsafe).
 
-### 2.3 Bug: animazione non parte sul tab Classifica
+**DI**:
+- `init_dependencies.dart`: import della nuova catena.
+- `init_dependencies.main.dart`: registrazioni affiancate a quelle di
+  `AppStatus` (datasource/repo/usecase factory, cubit lazy singleton).
 
-**Sintomo**: utente apre il tab Classifica, vede subito il bottone
-collassato senza l'animazione iniziale.
+**Boot**:
+- `main.dart`: `BlocProvider(AppVersionCubit)` aggiunto al
+  MultiBlocProvider; chiamata `appVersionCubit.checkVersion()` in
+  `_initializeApp` PRIMA di `appStatusCubit.fetchStatus()`.
+- `initial_page.dart`: nuovo gate esterno `BlocBuilder<AppVersionCubit>`
+  che -> `ForceUpdatePage(storeUrl: ...)` se `status == forceUpdate`,
+  altrimenti delega al BlocBuilder esistente di `AppStatusCubit`.
 
-**Causa**: `dashboard.dart:343` usa `IndexedStack(children: screens)` per
-gestire la bottom navbar. IndexedStack costruisce TUTTI i figli al primo
-build → `LeaderboardPage.initState` (e quindi
-`AnimatedShareButton.initState`) parte all'avvio dell'app, mentre l'utente
-e' ancora sulla home. Il `Future.delayed(5s)` scatta in background,
-`markAnimationAsPlayed()` viene chiamato, e quando l'utente apre la
-classifica trova lo stato collassato.
+**Pubspec**:
+- Versione `1.1.3+14` -> `1.1.4+15` (questa e' la prima versione che
+  contiene il check force-update).
+- Aggiunti `url_launcher: ^6.3.1` e `pub_semver: ^2.1.4`.
+- `package_info_plus: ^9.0.1` gia' presente.
 
-Il `FloatingButtonAnimationCubit` originale non aveva questo problema
-perche' era sulla home (tab 0, sempre visibile al boot).
+### 2.3 Cleanup repo
 
-**Fix scelto** (BlocListener vs VisibilityDetector vs prop esterno → scelto
-il primo per zero-dep e logica self-contained):
-- Aggiunto parametro `triggerOnNavIndex: int?` al widget.
-- In `initState`: se settato e l'utente non e' gia' su quel tab, il widget
-  si iscrive a `AppNavigationCubit.stream` (via `serviceLocator`) invece
-  di partire subito.
-- Quando lo stream emette l'index target → `_scheduleCollapse()` parte e
-  la subscription viene cancellata (one-shot).
-- Flag `_animationScheduled` evita doppia schedulazione.
-- `dispose` cancella anche la subscription.
-
-Behavior atteso:
-- Cold start su home → AnimatedShareButton resta in attesa.
-- Utente naviga al tab Classifica per la prima volta → bottone espanso
-  visibile, dopo 4s collassa.
-- Utente esce e rientra → bottone gia' collassato (cubit ha stato in-memory).
-- Cold start successivo → ricomincia.
+- `.gitignore`: aggiunto `previous-session.txt` (ora gitignored, vive
+  come scratchpad locale).
+- `lib/features/app/presentation/app_unavailable.dart`: piccolo
+  riallineamento estetico per coerenza con la nuova `ForceUpdatePage`
+  (probabile minor edit dall'utente).
 
 ## 3. STATO WORKING TREE A FINE SESSIONE
 
-Lavoro NON ancora committato. Da committare in un singolo commit:
+Tutto il lavoro SQL e' fuori dal commit perche' `/supabase/` e'
+gitignored (gestito manualmente sul DB Supabase). Il commit include solo
+le modifiche Flutter.
 
 ```
 M  .claude/settings.local.json
-M  ios/Runner.xcodeproj/project.pbxproj                      [auto Xcode]
-M  lib/features/league/presentation/pages/navigation/homepage/home.dart
-   [asset add-event-winter.png → add-event-bg.jpg]
-M  lib/features/league/presentation/pages/navigation/leaderboard/leaderboard_page.dart
-   [share FAB → AnimatedShareButton + triggerOnNavIndex]
+M  .gitignore                              [+ previous-session.txt]
+M  lib/core/services/share_service.dart   [minor cleanup dall'utente]
+M  lib/features/app/presentation/app_unavailable.dart
 M  lib/init_dependencies/init_dependencies.dart
 M  lib/init_dependencies/init_dependencies.main.dart
-M  lib/main.dart                                             [+ BlocProvider]
-M  pubspec.yaml                                              [+ screenshot ^3.0.0]
+M  lib/initial_page.dart                  [gate force update]
+M  lib/main.dart                          [BlocProvider + checkVersion]
+M  pubspec.yaml                           [1.1.4+15, url_launcher, pub_semver]
 M  pubspec.lock
-M  previous-session.txt
 
-A  lib/core/cubits/share_button_animation/share_button_animation_cubit.dart
-A  lib/core/cubits/share_button_animation/share_button_animation_state.dart
-A  lib/core/services/share_service.dart
-A  lib/core/widgets/buttons/animated_share_button.dart
-A  lib/features/league/presentation/pages/navigation/leaderboard/widgets/shareable_leaderboard_card.dart
+A  lib/core/cubits/app_version/app_version_cubit.dart
+A  lib/core/cubits/app_version/app_version_state.dart
+A  lib/features/app/data/datasources/app_version_remote_data_source.dart
+A  lib/features/app/data/models/app_version_config_model.dart
+A  lib/features/app/data/repository/app_version_repository_impl.dart
+A  lib/features/app/domain/entities/app_version_config.dart
+A  lib/features/app/domain/repository/app_version_repository.dart
+A  lib/features/app/domain/use_cases/check_app_version.dart
+A  lib/features/app/presentation/force_update_page.dart
 ```
 
-Note:
-- Il file `share_subtitle_phrases.dart` menzionato nel recap del 07/05 non
-  esiste come file separato — le frasi sono inlined in
-  `shareable_leaderboard_card.dart` (probabile semplificazione manuale).
-- `tools/sql/reject_daily_challenge_set_is_rejected.sql` rimane fuori dal
-  commit (decisione di sezione 4.2).
-
-**Messaggio di commit proposto** (in linea con stile repo):
-
-```
-feat: :sparkles: leaderboard share with animated collapsible FAB
-
-- ShareService renders ShareableLeaderboardCard off-screen and opens
-  the native share sheet (screenshot ^3.0.0 + share_plus)
-- AnimatedShareButton starts expanded with "Condividi sui social" and
-  collapses to a circular icon after 4s; subsequent visits stay collapsed
-- ShareButtonAnimationCubit persists the "played" state per app session
-- nav-index trigger so the timer fires only when the leaderboard tab
-  becomes active (IndexedStack mounts every screen at app start)
-- home.dart: add-event asset switched from winter to default bg
-```
+**Messaggio di commit proposto**: vedi sezione 6.
 
 ## 4. DA FARE
 
-### 4.1 Test manuali ancora da fare
+### 4.1 Al prossimo deploy sugli store (1.1.4+15)
 
-- Cold start su home: aspettare alcuni secondi, poi navigare al tab
-  Classifica → bottone DEVE apparire espanso "Condividi sui social",
-  collassare dopo 4s.
-- Esci dal tab e rientra → bottone DEVE essere gia' collassato.
-- Cold start dell'app (kill + restart) → animazione DEVE ricominciare da
-  capo.
-- Tap sul bottone in stato espanso → share sheet si apre normalmente.
-- Tap sul bottone in stato collassato → idem.
-- Loader durante share: sostituisce icona, stato espanso/collassato resta.
-- Lega con > 8 partecipanti: ellipsis row visibile con "+ N altri".
-- Lega con esattamente 8 partecipanti: nessuna ellipsis row.
-- iPad: share sheet posizionato vicino al bottone (test
-  `sharePositionOrigin` invariato).
-- iOS: filename "Classifica Fantavacanze.png" sotto thumbnail.
+Eseguire MANUALMENTE sul DB Supabase, in ordine:
 
-### 4.2 Riallineamento file SQL reject_daily_challenge_set_is_rejected.sql
+**Force update**:
+1. `supabase/to-do/force_update/01_create_app_version_config.sql`
+2. `supabase/to-do/force_update/02_seed_app_version_config.sql`
+3. `supabase/to-do/app_version_config_updated_at/01_attach_set_updated_at_trigger.sql`
 
-Pendente dalla sessione 07/05. L'utente ha applicato manualmente sul DB:
-- WHERE su `id` (era `challenge_id`).
-- `SET is_pending_approval = false` aggiunto al SET.
+**Daily challenges unification** (puo' essere fatto in parallelo o
+successivamente; e' indipendente dal force update):
+1. `supabase/to-do/01_seed_daily_challenges.sql`
+2. `supabase/to-do/02_swap_user_daily_challenges_fk.sql`
+3. `supabase/to-do/04_replace_get_user_daily_challenges.sql`
+4. `supabase/to-do/03_drop_legacy_daily_challenges_tables.sql`
 
-Il file in `tools/sql/` ha ancora il commento "is_pending_approval resta
-true" e il SET con solo `is_rejected = true`. Da decidere se aggiornarlo
-per consistenza file-vs-DB.
+Dopo l'esecuzione:
+- Rimuovere dal repo `supabase/schemas/daily_challenges_winter.sql` e
+  `supabase/schemas/daily_challenges_summer.sql`.
+- Aggiornare il commento in `supabase/db_functions/reject_daily_challenge.sql`
+  (riga ~69 cita ancora `daily_challenges_winter`).
+- Aggiornare `supabase/schemas/user_daily_challenges.sql` (FK ora
+  punta a `daily_challenges(id)`).
 
-### 4.3 Nice-to-have rimandati
+### 4.2 Test manuali post-deploy force update
 
-- Realtime su events/leaderboard durante sessione live: scartato come
-  default (pull funziona bene). Da rivalutare solo se emerge frizione UX
-  reale.
-- `recheckNow()` su ConnectionChecker (probe forzata): non implementato
-  (YAGNI).
-- Custom `LPLinkMetadata` per share su iOS (header titolo + thumbnail
-  ricca): richiederebbe fork del plugin share_plus. Tracciato all'open
-  issue #1221.
-- Persistenza di `hasAnimationPlayed` in SharedPreferences per non rivedere
-  l'animazione ad ogni cold start: NON richiesto dall'utente, valutato
-  ma scartato (UX originale del fantaserata era anche in-memory).
+- Cold start con `min_supported_version = '9.9.9'` su una piattaforma ->
+  appare `ForceUpdatePage`, bottone "Aggiorna ora" apre lo store.
+- Cold start con `min_supported_version = '1.1.4'` -> niente blocco,
+  flusso normale.
+- Cold start offline -> niente blocco (failsafe upToDate).
+
+### 4.3 Quando si vuole forzare un update futuro
+
+Dalla dashboard Supabase: `UPDATE public.app_version_config SET
+min_supported_version = '<nuova>' WHERE platform = 'android'` (e idem
+per `ios`). Il trigger `set_updated_at_app_version_config` aggiorna
+`updated_at` automaticamente.
+
+NB: utenti gia' installati su versioni < 1.1.4 NON possono essere
+forzati retroattivamente (il check vive solo nel codice 1.1.4+). Per
+quella coda si puo' solo aspettare che aggiornino spontaneamente.
+
+### 4.4 Nice-to-have non implementati
+
+- Pacchetto `in_app_update` (Android nativo flow): scartato, complicava
+  per poco beneficio. Solo `url_launcher` -> store esterno.
+- Soft update (banner non bloccante) sopra `min_supported_version` ma
+  sotto `latest_version`: scartato in fase di analisi, l'utente ha
+  scelto solo force update.
 
 ## 5. NOTE DI CONTESTO PERSISTENTI
 
-- AdMob: `lib/core/services/ad_helper.dart` ha
-  `if (true) return testInterstitialAdUnitId` da rimuovere prima del deploy.
-  L'utente lo gestisce manualmente.
-- Android: `applicationIdSuffix ".debug"` in `android/app/build.gradle:65`
-  causa PRODUCT_NOT_FOUND su IAP debug (non critico, in release il package
-  e' giusto).
-- TODO Play Console: 16 KB page size entro 31/05/2026. Script
+- **AdMob**: `lib/core/services/ad_helper.dart` ha
+  `if (true) return testInterstitialAdUnitId` da rimuovere prima del
+  deploy. Gestito manualmente dall'utente.
+- **Android `applicationIdSuffix ".debug"`** in
+  `android/app/build.gradle:65` causa PRODUCT_NOT_FOUND su IAP debug.
+  Non critico, in release il package e' giusto.
+- **TODO Play Console**: 16 KB page size entro 31/05/2026. Script
   `tools/check_16kb_alignment.sh` non ancora eseguito.
-- RevenueCat Step 6 (sync `Purchases.logIn/logOut` con auth) opzionale, non
-  eseguito.
-- Errore Xcode `NOTIFY_DEBUGGER_ABOUT_RX_PAGES` al lancio: e' un breakpoint
-  intenzionale del Flutter engine su iOS 17+ per notificare LLDB delle
-  pagine RX della JIT. Innocuo, basta `Continue` (`^⌘Y`). Per silenziarlo
-  permanentemente: aggiungere a `~/.lldbinit-Xcode`:
+- **RevenueCat Step 6** (sync `Purchases.logIn/logOut` con auth)
+  opzionale, non eseguito.
+- **Errore Xcode `NOTIFY_DEBUGGER_ABOUT_RX_PAGES`**: breakpoint
+  intenzionale del Flutter engine su iOS 17+ per JIT RX pages. Innocuo,
+  basta `Continue` (`^⌘Y`). Per silenziarlo: aggiungere a
+  `~/.lldbinit-Xcode`:
   ```
   process handle SIGUSR1 -n true -p true -s false
   breakpoint set -n NOTIFY_DEBUGGER_ABOUT_RX_PAGES --auto-continue true
   ```
-- Git tag `archive/fantaserata-before-removal` (con trattini, non
+- **Git tag `archive/fantaserata-before-removal`** (trattini, non
   underscore): contiene il codice del fantaserata rimosso. Riferimento
-  utile per recuperare pattern (vedi `AnimatedFloatingActionButton` →
-  base per `AnimatedShareButton`). Comandi:
+  per recuperare pattern (es. `AnimatedFloatingActionButton`).
   - `git show archive/fantaserata-before-removal:path/to/file.dart`
   - `git ls-tree -r archive/fantaserata-before-removal`
-  - `git diff archive/fantaserata-before-removal HEAD -- path/`
+- **`/supabase` e' gitignored**: tutto il lavoro DB (schemas, db_functions,
+  db_triggers, to-do) vive nel repo locale ma fuori dal versioning Git.
+  Backup gestito separatamente.
+- **`previous-session.txt` e' gitignored**: scratchpad locale che
+  sopravvive ai commit, riassume sessione precedente per ripartire
+  rapidamente.
 
 ## 6. DECISIONI ARCHITETTURALI DI QUESTA SESSIONE
 
-- **AnimatedShareButton in `core/widgets/buttons/`** (non in
-  `features/league/...`): widget riusabile, default semantici (label e
-  icona) ma overridabili. Il caller passa `triggerOnNavIndex` se serve
-  aspettare un tab specifico. Trade-off: il widget conosce
-  `AppNavigationCubit` (dipendenza da core/cubit) — accettabile perche'
-  e' un cubit globale gia' usato in molti posti.
-- **Trigger via `BlocListener`/stream subscription a AppNavigationCubit**:
-  vs `VisibilityDetector` package. Scelto per zero-dep. Trade-off: se
-  domani il dashboard cambia da IndexedStack a PageView (lazy mounting),
-  questa logica diventa ridondante (ma non rompe). VisibilityDetector
-  sarebbe piu' robusto ma aggiunge una dep per un caso d'uso singolo.
-- **`hasAnimationPlayed` in-memory (cubit, non SharedPreferences)**:
-  coerente con il vecchio `FloatingButtonAnimationCubit`. Cold start
-  riproduce l'animazione, decisione UX dell'utente.
-- **Cap a 8 righe + ellipsis row vs scroll/scaling**: scelto cap fisso
-  per UX prevedibile sul share. Card di share sempre della stessa altezza
-  approssimativa indipendentemente dal numero partecipanti. Tunato a 8
-  dall'utente (prompt originale: 9).
-- **Calcolo dinamico `triggerOnNavIndex` via `indexWhere`** vs hardcode:
-  scelto dinamico per resilienza al riordino di `participantNavbarItems`.
-  Costo trascurabile (linear scan su una lista corta, una volta per build).
+- **Tabella `app_version_config` dedicata** (non estensione di
+  `application_status`): pulizia concettuale, "app unavailable" e "app
+  outdated" sono due assi indipendenti. Una riga per piattaforma con PK
+  su `platform`. Trade-off: tabella in piu', ma RLS / policy / trigger
+  isolati.
+- **Solo force update, niente soft prompt**: scelta UX dell'utente.
+  Riduce superficie di codice e UI a una sola pagina bloccante.
+- **`pub_semver` invece di confronto manuale**: pacchetto ufficiale Dart
+  team (~3KB), evita bug classici tipo `"1.1.99" > "1.2.0"` su confronto
+  string-based. `Version.parse` gestisce major/minor/patch in modo
+  gerarchico (vedi spiegazione nella conversazione).
+- **Failsafe triplice nel use case** (`Left`, throw del parser, formato
+  inatteso): tutti i percorsi di errore -> `upToDate`. Non bloccare mai
+  l'utente per un bug DB o per assenza di rete.
+- **Niente caching locale del version check**: deve essere online e
+  fresco a ogni avvio. Coerente con `AppStatus` che pure non cacha.
+- **Daily challenges unification con `season_t` enum** (non `text`):
+  coerenza con `target_gender` che e' gia' enum. L'utente l'ha creato
+  manualmente prima della sessione.
+- **Logica stagione client-agnostica**: dentro la RPC, basata su
+  `EXTRACT(MONTH FROM CURRENT_DATE)`. Niente parametro lato Dart,
+  niente service stagionale duplicato.
+- **Trigger BEFORE UPDATE per `updated_at`**: standard PG. La funzione
+  `set_updated_at()` esisteva da prima ma non era agganciata a nulla
+  ("Al momento non usata da nessuna tabella" nel suo commento). Ora ha
+  un primo utente.
+- **`/supabase/to-do/` come pattern persistente**: ogni nuovo cambio
+  schema/migrazione che richiede un'azione manuale al deploy va li',
+  numerato e idempotente. Documentato anche in `CLAUDE.md`.
+
+## 7. MESSAGGIO DI COMMIT PROPOSTO
+
+```
+feat: :sparkles: force update gate with min supported version per platform
+
+- New AppVersionCubit + check_app_version use case query Supabase
+  app_version_config table (platform PK, min_supported_version, store_url)
+- ForceUpdatePage blocks the app when local version < min_supported_version;
+  "Aggiorna ora" opens the platform store via url_launcher
+- pub_semver for proper SemVer comparison (handles 1.10.0 > 1.9.99)
+- Failsafe: network/DB errors or parser exceptions fall back to upToDate so
+  users are never blocked by transient failures
+- Version bump 1.1.3+14 -> 1.1.4+15 (first version shipping the check)
+- .gitignore: scratchpad previous-session.txt no longer tracked
+```

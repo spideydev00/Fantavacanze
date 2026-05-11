@@ -314,6 +314,38 @@ class ConnectionCheckerImpl implements ConnectionChecker {
 - Use `part` files for large dependency injection configurations
 - Constants organized by feature in `lib/core/constants/`
 
+### SQL File Organization
+
+Whenever you generate new SQL, place it in the matching `supabase/` folder
+based on what it is:
+
+- **Table schemas** (CREATE TABLE, enums, RLS policies on the table) →
+  `supabase/schemas/` as the "target state" of that object.
+- **RPC / PL/pgSQL functions** (CREATE OR REPLACE FUNCTION) →
+  `supabase/db_functions/`.
+- **Triggers** (CREATE TRIGGER) → `supabase/db_triggers/`.
+
+If the SQL is **not** the declarative final shape but something that has to
+run later against the live DB (data migrations, FK swaps, seeds, ALTER TABLE,
+DROP TABLE, trigger attachments, etc.), place it under
+`supabase/to-do/[descriptive_subfolder]/` with numeric prefixes
+(`01_*.sql`, `02_*.sql`, ...) reflecting execution order. These scripts are
+run manually on Supabase at the next deploy.
+
+Conventions for `to-do/` scripts:
+
+- Idempotent: use `CREATE ... IF NOT EXISTS`, `DROP ... IF EXISTS`,
+  `ON CONFLICT DO ...`, `DO $$ ... EXCEPTION WHEN duplicate_object THEN null
+  END $$;` for enums, etc., so they can be safely re-run.
+- Each subfolder should contain a short `README.md` explaining the goal and
+  the real execution order if the numeric prefix is misleading
+  (dependencies sometimes force `01 → 02 → 04 → 03`).
+- Italian comments, concise, no emoji, no accents — match the style of the
+  files already in `supabase/`.
+
+Note: `/supabase` is gitignored. These files live in the local repo but are
+not versioned via Git; backup is handled separately.
+
 ## Common Gotchas
 
 1. **Service Locator**: Always register dependencies before accessing with `serviceLocator<T>()`
