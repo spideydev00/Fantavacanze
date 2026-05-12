@@ -21,10 +21,12 @@ class UserProfileCard extends StatelessWidget {
       builder: (context, state) {
         String displayName = name ?? 'Utente';
         String email = '';
+        String? profileImageUrl;
 
         if (state is AppUserIsLoggedIn) {
           displayName = state.user.name;
           email = state.user.email;
+          profileImageUrl = state.user.profileImageUrl;
         }
 
         return Card(
@@ -40,17 +42,7 @@ class UserProfileCard extends StatelessWidget {
               padding: const EdgeInsets.all(ThemeSizes.md),
               child: Row(
                 children: [
-                  // Avatar Circle with Icon
-                  CircleAvatar(
-                    radius: 28,
-                    backgroundColor:
-                        context.primaryColor.withValues(alpha: 0.2),
-                    child: Icon(
-                      Icons.person,
-                      size: 32,
-                      color: context.primaryColor,
-                    ),
-                  ),
+                  _buildAvatar(context, displayName, profileImageUrl),
                   const SizedBox(width: ThemeSizes.md),
 
                   // User Info
@@ -93,6 +85,51 @@ class UserProfileCard extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+
+  Widget _buildAvatar(
+    BuildContext context,
+    String displayName,
+    String? profileImageUrl,
+  ) {
+    final hasImage = profileImageUrl != null && profileImageUrl.isNotEmpty;
+
+    return CircleAvatar(
+      radius: 28,
+      backgroundColor: context.primaryColor.withValues(alpha: 0.2),
+      child: ClipOval(
+        child: hasImage
+            ? Image.network(
+                profileImageUrl,
+                width: 56,
+                height: 56,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) =>
+                    _buildInitial(context, displayName),
+              )
+            : _buildInitial(context, displayName),
+      ),
+    );
+  }
+
+  Widget _buildInitial(BuildContext context, String displayName) {
+    final initial = displayName.trim().isNotEmpty
+        ? displayName.trim()[0].toUpperCase()
+        : 'U';
+
+    return SizedBox(
+      width: 56,
+      height: 56,
+      child: Center(
+        child: Text(
+          initial,
+          style: context.textTheme.titleLarge?.copyWith(
+            color: context.primaryColor,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
     );
   }
 }

@@ -892,6 +892,7 @@ class _AddMemoryBottomSheetState extends State<AddMemoryBottomSheet> {
 
                             return EventCard(
                               event: event,
+                              league: widget.league,
                               targetNameOverride: resolvedName,
                               onTap: () => _selectEvent(event),
                             );

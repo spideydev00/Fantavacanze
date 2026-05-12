@@ -1,4 +1,5 @@
 import 'package:fantavacanze_official/core/constants/constants.dart';
+import 'package:fantavacanze_official/core/cubits/app_league/app_league_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/app_navigation/app_navigation_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/app_theme/app_theme_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit.dart';
@@ -8,6 +9,7 @@ import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:fantavacanze_official/core/utils/show-snackbar-or-paywall/show_snackbar.dart';
 import 'package:fantavacanze_official/core/widgets/loader.dart';
+import 'package:fantavacanze_official/core/widgets/profile_image_avatar.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/league/league.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/team_participant.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc/league_bloc.dart';
@@ -667,8 +669,10 @@ class _ChooseTeamPageState extends State<ChooseTeamPage>
                           const SizedBox(height: 4),
                           Row(
                             children: [
-                              Icon(Icons.person,
-                                  size: 14, color: context.textSecondaryColor),
+                              _buildTeamMemberPreviewAvatar(
+                                context,
+                                participant,
+                              ),
                               const SizedBox(width: 4),
                               Text(
                                 '${participant.userIds.length} ${participant.userIds.length == 1 ? 'membro' : 'membri'}',
@@ -711,6 +715,49 @@ class _ChooseTeamPageState extends State<ChooseTeamPage>
         }
         return const SizedBox.shrink();
       },
+    );
+  }
+
+  Widget _buildTeamMemberPreviewAvatar(
+    BuildContext context,
+    TeamParticipant participant,
+  ) {
+    if (participant.members.isEmpty) {
+      return Icon(
+        Icons.person,
+        size: 14,
+        color: context.textSecondaryColor,
+      );
+    }
+
+    final member = participant.members.first;
+    final profileImageUrl =
+        context.watch<AppLeagueCubit>().getProfileImageFor(member.userId);
+
+    return ProfileImageAvatar(
+      imageUrl: profileImageUrl,
+      size: 18,
+      loaderColor: context.primaryColor,
+      decoration: BoxDecoration(
+        color: context.primaryColor.withValues(alpha: 0.12),
+        shape: BoxShape.circle,
+      ),
+      fallback: member.name.isNotEmpty
+          ? Center(
+              child: Text(
+                member.name[0].toUpperCase(),
+                style: TextStyle(
+                  color: context.primaryColor,
+                  fontSize: 10,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            )
+          : Icon(
+              Icons.person,
+              size: 14,
+              color: context.textSecondaryColor,
+            ),
     );
   }
 }

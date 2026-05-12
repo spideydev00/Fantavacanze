@@ -1048,7 +1048,9 @@ class _AddEventPageState extends State<AddEventPage> {
           showPoints: true,
           isFullWidth: true,
           subtitle: '${member['teamName']}',
-          avatarUrl: member['teamLogoUrl'],
+          avatarUrl: context
+              .watch<AppLeagueCubit>()
+              .getProfileImageFor(member['userId']),
           onTap: () {
             setState(() {
               if (isSelected) {
@@ -1101,6 +1103,8 @@ class _AddEventPageState extends State<AddEventPage> {
           points: participant.points,
           isSelected: isSelected,
           isFullWidth: true,
+          avatarUrl:
+              context.watch<AppLeagueCubit>().getProfileImageFor(participantId),
           onTap: () {
             setState(() {
               if (isSelected) {

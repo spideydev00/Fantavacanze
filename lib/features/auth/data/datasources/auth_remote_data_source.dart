@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:crypto/crypto.dart';
 import 'package:fantavacanze_official/core/errors/exceptions.dart';
@@ -36,6 +37,7 @@ abstract interface class AuthRemoteDataSource {
     required bool newValue,
   });
   Future<UserModel> updateDisplayName(String newName);
+  Future<UserModel> updateProfileImage(File imageFile);
 
   Future<void> updatePassword(
       String oldPassword, String newPassword, String captchaToken);
@@ -336,6 +338,46 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
             "Errore nel recuperare i dati dell'utente aggiornati");
       }
       return user;
+    } catch (e) {
+      throw ServerException(_extractErrorMessage(e));
+    }
+  }
+
+  // ------------------ UPDATE PROFILE IMAGE ------------------ //
+  @override
+  Future<UserModel> updateProfileImage(File imageFile) async {
+    try {
+      final session = currentSession;
+      if (session == null) {
+        throw ServerException('Nessuna sessione attiva');
+      }
+
+      final userId = session.user.id;
+      final storage = supabaseClient.storage.from('user-logos');
+
+      final existingFiles = await storage.list(path: userId);
+      if (existingFiles.isNotEmpty) {
+        final filesToRemove =
+            existingFiles.map((file) => '$userId/${file.name}').toList();
+
+        await storage.remove(filesToRemove);
+      }
+
+      final signedUrl = await _uploadMediaToStorage(
+        bucket: 'user-logos',
+        path: userId,
+        mediaFile: imageFile,
+        expiresIn: 60 * 60 * 24 * 365,
+      );
+
+      final response = await supabaseClient
+          .from('profiles')
+          .update({'profile_image_url': signedUrl})
+          .eq('id', userId)
+          .select()
+          .single();
+
+      return UserModel.fromJson(response).copyWith(email: session.user.email);
     } catch (e) {
       throw ServerException(_extractErrorMessage(e));
     }
@@ -668,6 +710,82 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       return user!;
     } catch (e) {
       throw ServerException(_extractErrorMessage(e));
+    }
+  }
+
+  Future<String> _uploadMediaToStorage({
+    required String bucket,
+    required String path,
+    required File mediaFile,
+    required int expiresIn,
+  }) async {
+    try {
+      final currentTime = DateTime.now().millisecondsSinceEpoch;
+      final fileExtension = _getFileExtension(mediaFile);
+      final contentType = _getContentTypeForExtension(fileExtension);
+      final fullFileName = '$currentTime$fileExtension';
+      final fullPath =
+          path.endsWith('/') ? '$path$fullFileName' : '$path/$fullFileName';
+
+      await supabaseClient.storage.from(bucket).upload(
+            fullPath,
+            mediaFile,
+            fileOptions: FileOptions(
+              cacheControl: '3600',
+              upsert: true,
+              contentType: contentType,
+            ),
+          );
+
+      return await supabaseClient.storage
+          .from(bucket)
+          .createSignedUrl(fullPath, expiresIn);
+    } catch (e) {
+      throw ServerException(_extractErrorMessage(e));
+    }
+  }
+
+  String _getFileExtension(File file) {
+    final fileName = file.path.toLowerCase();
+
+    if (fileName.endsWith('.mp4') || fileName.contains('video')) {
+      return '.mp4';
+    } else if (fileName.endsWith('.mov')) {
+      return '.mov';
+    } else if (fileName.endsWith('.avi')) {
+      return '.avi';
+    } else if (fileName.endsWith('.mkv')) {
+      return '.mkv';
+    } else if (fileName.endsWith('.png')) {
+      return '.png';
+    } else if (fileName.endsWith('.gif')) {
+      return '.gif';
+    } else if (fileName.endsWith('.jpeg')) {
+      return '.jpeg';
+    } else {
+      return '.jpg';
+    }
+  }
+
+  String _getContentTypeForExtension(String extension) {
+    switch (extension) {
+      case '.mp4':
+        return 'video/mp4';
+      case '.mov':
+        return 'video/quicktime';
+      case '.avi':
+        return 'video/x-msvideo';
+      case '.mkv':
+        return 'video/x-matroska';
+      case '.png':
+        return 'image/png';
+      case '.gif':
+        return 'image/gif';
+      case '.jpeg':
+      case '.jpg':
+        return 'image/jpeg';
+      default:
+        return 'application/octet-stream';
     }
   }
 }

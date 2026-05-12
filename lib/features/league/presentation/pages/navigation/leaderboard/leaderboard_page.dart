@@ -239,7 +239,6 @@ class _LeaderboardPageState extends State<LeaderboardPage>
             'points': member.points,
             'teamName': participant.name,
             'isCaptain': participant.captainId == member.userId,
-            'teamLogoUrl': participant.teamLogoUrl,
           });
         }
       }
@@ -280,6 +279,7 @@ class _LeaderboardPageState extends State<LeaderboardPage>
       itemCount: allMembers.length,
       itemBuilder: (context, index) {
         final member = allMembers[index];
+        final userId = member['userId'] as String;
         // Format points using our NumberFormatter
         final formattedPoints = NumberFormatter.formatPoints(member['points']);
 
@@ -293,7 +293,8 @@ class _LeaderboardPageState extends State<LeaderboardPage>
             showPoints: true,
             isFullWidth: true,
             subtitle: '${member['teamName']}',
-            avatarUrl: member['teamLogoUrl'],
+            avatarUrl:
+                context.watch<AppLeagueCubit>().getProfileImageFor(userId),
           ),
         );
       },

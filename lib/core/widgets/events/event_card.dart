@@ -1,11 +1,16 @@
+import 'package:fantavacanze_official/core/cubits/app_league/app_league_cubit.dart';
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/extensions/context_extension.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:fantavacanze_official/core/widgets/dialogs/confirmation_dialog.dart';
+import 'package:fantavacanze_official/core/widgets/profile_image_avatar.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/event/event.dart';
+import 'package:fantavacanze_official/features/league/domain/entities/league/league.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/rule/rule.dart';
+import 'package:fantavacanze_official/features/league/domain/entities/team_participant.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 
 class EventCard extends StatelessWidget {
@@ -18,6 +23,7 @@ class EventCard extends StatelessWidget {
   final bool showDetails;
   final bool allowDismiss;
   final String? targetNameOverride;
+  final League? league;
 
   const EventCard({
     super.key,
@@ -28,6 +34,7 @@ class EventCard extends StatelessWidget {
     this.showDetails = true,
     this.allowDismiss = false,
     this.targetNameOverride,
+    this.league,
   });
 
   @override
@@ -123,32 +130,11 @@ class EventCard extends StatelessWidget {
 
                 Row(
                   children: [
-                    // Modern event type indicator
-                    Container(
-                      padding: const EdgeInsets.all(ThemeSizes.sm),
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [
-                            primaryColor.withValues(alpha: 0.8),
-                            primaryColor,
-                          ],
-                        ),
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: primaryColor.withValues(alpha: 0.3),
-                            blurRadius: 8,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      child: Icon(
-                        isBonus ? Icons.arrow_upward : Icons.arrow_downward,
-                        color: Colors.white,
-                        size: 20,
-                      ),
+                    _buildTargetIndicator(
+                      context,
+                      isBonus: isBonus,
+                      primaryColor: primaryColor,
+                      targetName: targetName,
                     ),
                     const SizedBox(width: ThemeSizes.md),
 
@@ -305,5 +291,126 @@ class EventCard extends StatelessWidget {
     }
 
     return cardContent;
+  }
+
+  Widget _buildTargetIndicator(
+    BuildContext context, {
+    required bool isBonus,
+    required Color primaryColor,
+    required String targetName,
+  }) {
+    const circleSize = 42.0;
+    final avatarUrl = _resolveTargetAvatarUrl(context);
+    final targetKey = _targetKey();
+
+    return SizedBox(
+      width: 60,
+      height: 56,
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          Positioned(
+            left: 0,
+            bottom: 0,
+            child: Container(
+              width: circleSize,
+              height: circleSize,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    primaryColor.withValues(alpha: 0.8),
+                    primaryColor,
+                  ],
+                ),
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: primaryColor.withValues(alpha: 0.3),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Icon(
+                isBonus ? Icons.arrow_upward : Icons.arrow_downward,
+                color: Colors.white,
+                size: 20,
+              ),
+            ),
+          ),
+          Positioned(
+            left: 18,
+            top: 0,
+            child: ProfileImageAvatar(
+              imageUrl: avatarUrl,
+              size: circleSize,
+              loaderColor: primaryColor,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.white, width: 2),
+              ),
+              fallback: _buildTargetFallbackAvatar(targetKey, targetName),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTargetFallbackAvatar(String targetKey, String targetName) {
+    final fallbackText = targetName.trim().isNotEmpty ? targetName : targetKey;
+    final initial =
+        fallbackText.trim().isNotEmpty ? fallbackText.trim()[0].toUpperCase() : '?';
+
+    return Container(
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        gradient: ColorPalette.getGradientFromId(targetKey),
+        shape: BoxShape.circle,
+      ),
+      child: Text(
+        initial,
+        style: const TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.bold,
+          fontSize: 16,
+        ),
+      ),
+    );
+  }
+
+  String? _resolveTargetAvatarUrl(BuildContext context) {
+    switch (event.target.kind) {
+      case EventTargetKind.individual:
+        final userId = event.target.userId as String?;
+        return userId != null
+            ? context.watch<AppLeagueCubit>().getProfileImageFor(userId)
+            : null;
+      case EventTargetKind.teamMember:
+        final userId =
+            (event.target.memberId ?? event.target.userId) as String?;
+        return userId != null
+            ? context.watch<AppLeagueCubit>().getProfileImageFor(userId)
+            : null;
+      case EventTargetKind.team:
+        final teamName = event.target.teamName as String?;
+        if (teamName == null || league == null) return null;
+
+        for (final participant in league!.participants) {
+          if (participant is TeamParticipant && participant.name == teamName) {
+            return participant.teamLogoUrl;
+          }
+        }
+        return null;
+    }
+  }
+
+  String _targetKey() {
+    return event.target.memberId ??
+        event.target.userId ??
+        event.target.teamName ??
+        event.id;
   }
 }

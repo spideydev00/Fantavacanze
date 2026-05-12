@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:fantavacanze_official/core/errors/exceptions.dart';
 import 'package:fantavacanze_official/core/errors/failure.dart';
@@ -218,6 +219,21 @@ class AuthRepositoryImpl implements AuthRepository {
       }
 
       final user = await authRemoteDataSource.updateDisplayName(newName);
+      return right(user);
+    } on ServerException catch (e) {
+      return left(Failure(e.message));
+    }
+  }
+
+  @override
+  Future<Either<Failure, User>> updateProfileImage(File imageFile) async {
+    try {
+      if (!await connectionChecker.isConnected) {
+        return left(Failure(
+            "Nessuna connessione ad internet, riprova appena sarai connesso."));
+      }
+
+      final user = await authRemoteDataSource.updateProfileImage(imageFile);
       return right(user);
     } on ServerException catch (e) {
       return left(Failure(e.message));

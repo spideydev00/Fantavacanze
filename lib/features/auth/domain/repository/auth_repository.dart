@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:fantavacanze_official/core/errors/failure.dart';
 import 'package:fantavacanze_official/features/auth/domain/entities/user.dart';
@@ -34,6 +35,7 @@ abstract interface class AuthRepository {
 
   // Methods for user profile management
   Future<Either<Failure, User>> updateDisplayName(String newName);
+  Future<Either<Failure, User>> updateProfileImage(File imageFile);
 
   Future<Either<Failure, void>> updatePassword(
     String oldPassword,

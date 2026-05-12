@@ -1,10 +1,13 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:fantavacanze_official/core/cubits/app_league/app_league_cubit.dart';
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
+import 'package:fantavacanze_official/core/widgets/profile_image_avatar.dart';
 import 'package:fantavacanze_official/core/widgets/media/video_thumbnail.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/memory.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:shimmer/shimmer.dart';
 
@@ -113,23 +116,7 @@ class MemoryCard extends StatelessWidget {
                             ),
                           ],
                         ),
-                        child: CircleAvatar(
-                          radius: 16,
-                          backgroundColor:
-                              ColorPalette.getGradientFromId(memory.userId)
-                                  .colors
-                                  .first,
-                          child: Text(
-                            memory.participantName
-                                .substring(0, 1)
-                                .toUpperCase(),
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 14,
-                            ),
-                          ),
-                        ),
+                        child: _buildAuthorAvatar(context),
                       ),
                       const SizedBox(width: ThemeSizes.sm),
                       Expanded(
@@ -244,6 +231,36 @@ class MemoryCard extends StatelessWidget {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAuthorAvatar(BuildContext context) {
+    final profileImageUrl =
+        context.watch<AppLeagueCubit>().getProfileImageFor(memory.userId);
+
+    return ProfileImageAvatar(
+      imageUrl: profileImageUrl,
+      size: 32,
+      loaderColor: ColorPalette.info,
+      fallback: _buildAuthorFallback(),
+    );
+  }
+
+  Widget _buildAuthorFallback() {
+    return Container(
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        gradient: ColorPalette.getGradientFromId(memory.userId),
+        shape: BoxShape.circle,
+      ),
+      child: Text(
+        memory.participantName.substring(0, 1).toUpperCase(),
+        style: const TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.bold,
+          fontSize: 14,
         ),
       ),
     );

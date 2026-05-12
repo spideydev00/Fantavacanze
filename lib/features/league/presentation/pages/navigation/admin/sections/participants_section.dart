@@ -1,16 +1,18 @@
+import 'package:fantavacanze_official/core/cubits/app_league/app_league_cubit.dart';
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/extensions/context_extension.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
+import 'package:fantavacanze_official/core/widgets/dialogs/confirmation_dialog.dart';
+import 'package:fantavacanze_official/core/widgets/dialogs/operation_error_dialog.dart';
 import 'package:fantavacanze_official/core/widgets/icon_label.dart';
+import 'package:fantavacanze_official/core/widgets/profile_image_avatar.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/individual_participant.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/league/league.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/team_participant.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc/league_bloc.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc/league_event.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/admin/widgets/admin_section_card.dart';
-import 'package:fantavacanze_official/core/widgets/dialogs/confirmation_dialog.dart';
-import 'package:fantavacanze_official/core/widgets/dialogs/operation_error_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -350,8 +352,7 @@ class ParticipantsSectionState extends State<ParticipantsSection> {
                                         setState(() {
                                           if (value == true) {
                                             // If selecting first member, set this as the selected team and add it
-                                            _selectedTeamName ??=
-                                                team.name;
+                                            _selectedTeamName ??= team.name;
                                             if (!_selectedParticipantIds
                                                 .contains(userId)) {
                                               _selectedParticipantIds
@@ -378,32 +379,10 @@ class ParticipantsSectionState extends State<ParticipantsSection> {
                                       }
                                     : null, // Disable checkbox if team not selectable
                               )
-                            : Container(
-                                width: 40,
-                                height: 40,
-                                decoration: BoxDecoration(
-                                  color: isCaptain
-                                      ? context.primaryColor
-                                          .withValues(alpha: 0.2)
-                                      : context.secondaryBgColor,
-                                  shape: BoxShape.circle,
-                                  border: Border.all(
-                                    color: isCaptain
-                                        ? context.primaryColor
-                                        : context.borderColor
-                                            .withValues(alpha: 0.2),
-                                    width: 1,
-                                  ),
-                                ),
-                                child: Center(
-                                  child: Icon(
-                                    isCaptain ? Icons.shield : Icons.person,
-                                    color: isCaptain
-                                        ? context.primaryColor
-                                        : context.textSecondaryColor,
-                                    size: 20,
-                                  ),
-                                ),
+                            : _buildMemberProfileAvatar(
+                                context,
+                                userId: userId,
+                                isCaptain: isCaptain,
                               ),
                         title: Row(
                           children: [
@@ -553,27 +532,9 @@ class ParticipantsSectionState extends State<ParticipantsSection> {
                           });
                         },
                       )
-                    : Container(
-                        width: 40,
-                        height: 40,
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [
-                              context.primaryColor.withValues(alpha: 0.7),
-                              context.primaryColor,
-                            ],
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                          ),
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Center(
-                          child: Icon(
-                            Icons.person,
-                            color: Colors.white,
-                            size: 20,
-                          ),
-                        ),
+                    : _buildIndividualProfileAvatar(
+                        context,
+                        userId: userId,
                       ),
                 title: Row(
                   children: [
@@ -620,6 +581,106 @@ class ParticipantsSectionState extends State<ParticipantsSection> {
               ),
             );
           },
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMemberProfileAvatar(
+    BuildContext context, {
+    required String userId,
+    required bool isCaptain,
+  }) {
+    final profileImageUrl =
+        context.watch<AppLeagueCubit>().getProfileImageFor(userId);
+    final avatar = ProfileImageAvatar(
+      imageUrl: profileImageUrl,
+      size: 40,
+      loaderColor:
+          isCaptain ? context.primaryColor : context.textSecondaryColor,
+      decoration: BoxDecoration(
+        color: isCaptain
+            ? context.primaryColor.withValues(alpha: 0.2)
+            : context.secondaryBgColor,
+        shape: BoxShape.circle,
+        border: Border.all(
+          color: isCaptain
+              ? context.primaryColor
+              : context.borderColor.withValues(alpha: 0.2),
+          width: 1,
+        ),
+      ),
+      fallback: Center(
+        child: Icon(
+          Icons.person,
+          color: isCaptain ? context.primaryColor : context.textSecondaryColor,
+          size: 20,
+        ),
+      ),
+    );
+
+    if (!isCaptain) return avatar;
+
+    return SizedBox(
+      width: 40,
+      height: 40,
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          avatar,
+          Positioned(
+            right: -2,
+            bottom: -2,
+            child: Container(
+              width: 18,
+              height: 18,
+              decoration: BoxDecoration(
+                color: context.primaryColor,
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: context.bgColor,
+                  width: 2,
+                ),
+              ),
+              child: const Icon(
+                Icons.shield,
+                color: Colors.white,
+                size: 10,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildIndividualProfileAvatar(
+    BuildContext context, {
+    required String userId,
+  }) {
+    final profileImageUrl =
+        context.watch<AppLeagueCubit>().getProfileImageFor(userId);
+
+    return ProfileImageAvatar(
+      imageUrl: profileImageUrl,
+      size: 40,
+      loaderColor: Colors.white,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            context.primaryColor.withValues(alpha: 0.7),
+            context.primaryColor,
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        shape: BoxShape.circle,
+      ),
+      fallback: const Center(
+        child: Icon(
+          Icons.person,
+          color: Colors.white,
+          size: 20,
         ),
       ),
     );

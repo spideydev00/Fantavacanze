@@ -123,6 +123,24 @@ class LeagueRepositoryImpl implements LeagueRepository {
   }
 
   @override
+  Future<Either<Failure, Map<String, String?>>> getProfileImagesForUsers(
+    List<String> userIds,
+  ) async {
+    try {
+      if (!await connectionChecker.isConnected) {
+        return const Right({});
+      }
+
+      final profileImages =
+          await remoteDataSource.getProfileImagesForUsers(userIds);
+
+      return Right(profileImages);
+    } on ServerException catch (e) {
+      return Left(Failure(e.message));
+    }
+  }
+
+  @override
   Future<Either<Failure, void>> deleteLeague(
     String leagueId, {
     LeagueType? type,

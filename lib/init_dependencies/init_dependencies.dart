@@ -42,6 +42,7 @@ import 'package:fantavacanze_official/features/auth/domain/use-cases/update_disp
 import 'package:fantavacanze_official/features/auth/domain/use-cases/update_gender.dart';
 import 'package:fantavacanze_official/features/auth/domain/use-cases/update_is_single_status.dart';
 import 'package:fantavacanze_official/features/auth/domain/use-cases/update_password.dart';
+import 'package:fantavacanze_official/features/auth/domain/use-cases/update_profile_image.dart';
 import 'package:fantavacanze_official/features/auth/domain/use-cases/verify_otp.dart';
 import 'package:fantavacanze_official/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:fantavacanze_official/features/games/data/datasources/game_remote_data_source.dart';
@@ -112,6 +113,7 @@ import 'package:fantavacanze_official/features/league/domain/use_cases/remote/le
 import 'package:fantavacanze_official/features/league/domain/use_cases/remote/league/delete_league.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/remote/league/exit_league.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/remote/league/get_league.dart';
+import 'package:fantavacanze_official/features/league/domain/use_cases/remote/league/get_profile_images.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/remote/league/get_user_leagues.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/remote/league/join_league.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/remote/league/remove_participants.dart';

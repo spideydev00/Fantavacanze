@@ -69,6 +69,12 @@ class AuthUpdateIsSingleStatus extends AuthEvent {
   });
 }
 
+class UpdateProfileImageEvent extends AuthEvent {
+  final File imageFile;
+
+  UpdateProfileImageEvent({required this.imageFile});
+}
+
 // New events for password reset
 class AuthSendOtpEmail extends AuthEvent {
   final String email;

@@ -2,8 +2,11 @@ import 'package:equatable/equatable.dart';
 import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit.dart';
 import 'package:fantavacanze_official/core/use-case/usecase.dart';
 import 'package:fantavacanze_official/core/utils/dates-and-numbers/sort_by_date.dart';
+import 'package:fantavacanze_official/features/league/domain/entities/individual_participant.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/league/league.dart';
+import 'package:fantavacanze_official/features/league/domain/entities/team_participant.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/local/clear_local_cache.dart';
+import 'package:fantavacanze_official/features/league/domain/use_cases/remote/league/get_profile_images.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/remote/league/get_user_leagues.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -16,6 +19,7 @@ class AppLeagueCubit extends Cubit<AppLeagueState> {
   final SharedPreferences _prefs;
   final AppUserCubit _appUserCubit;
   final ClearLocalCache _clearLocalCache;
+  final GetProfileImages _getProfileImages;
 
   // Key for storing selected league ID in shared preferences
   static const String _selectedLeagueKey = 'selected_league_id';
@@ -25,10 +29,12 @@ class AppLeagueCubit extends Cubit<AppLeagueState> {
     required SharedPreferences prefs,
     required AppUserCubit appUserCubit,
     required ClearLocalCache clearLocalCache,
+    required GetProfileImages getProfileImages,
   })  : _getUserLeagues = getUserLeagues,
         _prefs = prefs,
         _appUserCubit = appUserCubit,
         _clearLocalCache = clearLocalCache,
+        _getProfileImages = getProfileImages,
         super(AppLeagueInitial());
 
   // -----------------------------------------
@@ -47,19 +53,19 @@ class AppLeagueCubit extends Cubit<AppLeagueState> {
 
     final res = await _getUserLeagues.call(NoParams());
 
-    res.fold(
-      (l) {
+    await res.fold(
+      (l) async {
         debugPrint(
             "🧊 AppLeagueCubit - Errore nell'ottenimento delle leghe - ${l.message}");
 
         emit(AppLeagueInitial());
       },
-      (leagues) {
+      (leagues) async {
         debugPrint("🧊 AppLeagueCubit - L'utente ha ${leagues.length} leghe");
         if (leagues.isEmpty) {
           emit(AppLeagueInitial());
         } else {
-          _emitAppLeagueExists(leagues);
+          await _emitAppLeagueExists(leagues);
         }
       },
     );
@@ -68,7 +74,7 @@ class AppLeagueCubit extends Cubit<AppLeagueState> {
   // ----------------------------------
   // U P D A T E S   T H E   S T A T E
   // ----------------------------------
-  void _emitAppLeagueExists(List<League> leagues) {
+  Future<void> _emitAppLeagueExists(List<League> leagues) async {
     if (leagues.isEmpty) {
       emit(AppLeagueInitial());
       return;
@@ -93,18 +99,24 @@ class AppLeagueCubit extends Cubit<AppLeagueState> {
 
     debugPrint(
         "🧊 AppLeagueCubit - Lega selezionata: ${selectedLeague.name} (ID: ${selectedLeague.id})");
-    emit(AppLeagueExists(leagues: leagues, selectedLeague: selectedLeague));
+    await _emitLeagueExistsWithProfileImages(
+      leagues: leagues,
+      selectedLeague: selectedLeague,
+    );
   }
 
   // ---------------------------------
   // S E L E C T S   A   L E A G U E
   // ---------------------------------
-  void selectLeague(League league) {
+  Future<void> selectLeague(League league) async {
     final currentState = state;
     if (currentState is AppLeagueExists) {
       // Save selection to SharedPreferences
       _prefs.setString(_selectedLeagueKey, league.id);
-      emit(currentState.copyWith(selectedLeague: league));
+      await _emitLeagueExistsWithProfileImages(
+        leagues: currentState.leagues,
+        selectedLeague: league,
+      );
 
       debugPrint("✅ AppLeagueCubit - Nuova lega selezionata: ${league.name}");
     }
@@ -113,7 +125,7 @@ class AppLeagueCubit extends Cubit<AppLeagueState> {
   // ---------------------------------
   // S E L E C T S   A   L E A G U E
   // ---------------------------------
-  void updateLeagues(League league) {
+  Future<void> updateLeagues(League league) async {
     if (state is AppLeagueExists) {
       // Create a new list with the updated league replacing the old one
       final currentState = state as AppLeagueExists;
@@ -123,7 +135,10 @@ class AppLeagueCubit extends Cubit<AppLeagueState> {
       }).toList();
 
       // Call the existing implementation which should include persistence code
-      emit(AppLeagueExists(leagues: updatedLeagues, selectedLeague: league));
+      await _emitLeagueExistsWithProfileImages(
+        leagues: updatedLeagues,
+        selectedLeague: league,
+      );
 
       _prefs.setString(_selectedLeagueKey, league.id);
 
@@ -144,7 +159,7 @@ class AppLeagueCubit extends Cubit<AppLeagueState> {
   }
 
   /// Removes a league by ID and selects the most recent remaining one (if any)
-  void removeLeagueById(String leagueId) {
+  Future<void> removeLeagueById(String leagueId) async {
     final currentState = state;
     if (currentState is! AppLeagueExists) {
       return;
@@ -164,10 +179,65 @@ class AppLeagueCubit extends Cubit<AppLeagueState> {
 
     _prefs.setString(_selectedLeagueKey, selected.id);
 
-    emit(AppLeagueExists(
+    await _emitLeagueExistsWithProfileImages(
       leagues: remainingLeagues,
       selectedLeague: selected,
-    ));
+    );
+  }
+
+  String? getProfileImageFor(String userId) {
+    final currentState = state;
+    if (currentState is! AppLeagueExists) return null;
+    return currentState.profileImagesByUserId[userId];
+  }
+
+  void updateOwnProfileImage(String userId, String? newUrl) {
+    final currentState = state;
+    if (currentState is! AppLeagueExists) return;
+
+    final updatedProfileImages = Map<String, String?>.from(
+      currentState.profileImagesByUserId,
+    );
+    updatedProfileImages[userId] =
+        newUrl != null && newUrl.isNotEmpty ? newUrl : null;
+
+    emit(currentState.copyWith(profileImagesByUserId: updatedProfileImages));
+  }
+
+  Future<void> _emitLeagueExistsWithProfileImages({
+    required List<League> leagues,
+    required League selectedLeague,
+  }) async {
+    final userIds = _extractParticipantUserIds(selectedLeague);
+    final result = await _getProfileImages(
+      GetProfileImagesParams(userIds: userIds),
+    );
+
+    result.fold(
+      (_) => emit(AppLeagueExists(
+        leagues: leagues,
+        selectedLeague: selectedLeague,
+      )),
+      (profileImagesByUserId) => emit(AppLeagueExists(
+        leagues: leagues,
+        selectedLeague: selectedLeague,
+        profileImagesByUserId: profileImagesByUserId,
+      )),
+    );
+  }
+
+  List<String> _extractParticipantUserIds(League league) {
+    final userIds = <String>{};
+
+    for (final participant in league.participants) {
+      if (participant is IndividualParticipant) {
+        userIds.add(participant.userId);
+      } else if (participant is TeamParticipant) {
+        userIds.addAll(participant.members.map((member) => member.userId));
+      }
+    }
+
+    return userIds.toList();
   }
 
   /// Clears all locally cached league data

@@ -1,7 +1,11 @@
-import 'package:flutter/material.dart';
+import 'package:fantavacanze_official/core/cubits/app_league/app_league_cubit.dart';
+import 'package:fantavacanze_official/core/theme/colors.dart';
+import 'package:fantavacanze_official/core/widgets/profile_image_avatar.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/individual_participant.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/participant.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/team_participant.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class ParticipantItem extends StatelessWidget {
   final Participant participant;
@@ -16,7 +20,7 @@ class ParticipantItem extends StatelessWidget {
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
       child: ListTile(
-        leading: _buildAvatar(),
+        leading: _buildAvatar(context),
         title: Text(participant.name),
         subtitle: _buildSubtitle(),
         trailing: _buildScoreBadge(),
@@ -24,9 +28,38 @@ class ParticipantItem extends StatelessWidget {
     );
   }
 
-  Widget _buildAvatar() {
+  Widget _buildAvatar(BuildContext context) {
     if (participant is IndividualParticipant) {
-      return SizedBox();
+      final individualParticipant = participant as IndividualParticipant;
+      final profileImageUrl = context
+          .watch<AppLeagueCubit>()
+          .getProfileImageFor(individualParticipant.userId);
+
+      return ProfileImageAvatar(
+        imageUrl: profileImageUrl,
+        size: 40,
+        loaderColor: Colors.white,
+        fallback: Container(
+          width: 40,
+          height: 40,
+          decoration: BoxDecoration(
+            gradient: ColorPalette.getGradientFromId(
+              individualParticipant.userId,
+            ),
+            shape: BoxShape.circle,
+          ),
+          alignment: Alignment.center,
+          child: Text(
+            individualParticipant.name.isNotEmpty
+                ? individualParticipant.name[0].toUpperCase()
+                : '?',
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+      );
     } else if (participant is TeamParticipant) {
       final teamParticipant = participant as TeamParticipant;
       final teamLogoUrl = teamParticipant.teamLogoUrl;

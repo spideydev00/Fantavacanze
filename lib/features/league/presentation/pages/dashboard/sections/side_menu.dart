@@ -14,6 +14,7 @@ import 'package:fantavacanze_official/core/extensions/context_extension.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:fantavacanze_official/core/widgets/become_premium_button.dart';
 import 'package:fantavacanze_official/core/widgets/divider.dart';
+import 'package:fantavacanze_official/core/widgets/profile_image_avatar.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc/league_bloc.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/dashboard/widgets/side_menu/league_dropdown.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/dashboard/widgets/side_menu/side_menu_navigation_asset.dart';
@@ -96,6 +97,7 @@ class _SideMenuState extends State<SideMenu> {
                               context,
                               state.user.name,
                               state.user.email,
+                              state.user.profileImageUrl,
                             );
                           }
                           return SizedBox();
@@ -288,7 +290,12 @@ class _SideMenuState extends State<SideMenu> {
   }
 }
 
-Widget _buildUserInfo(BuildContext context, String name, String email) {
+Widget _buildUserInfo(
+  BuildContext context,
+  String name,
+  String email,
+  String? profileImageUrl,
+) {
   return Row(
     crossAxisAlignment: CrossAxisAlignment.center,
     mainAxisAlignment: MainAxisAlignment.start,
@@ -299,11 +306,15 @@ Widget _buildUserInfo(BuildContext context, String name, String email) {
         child: Stack(
           alignment: Alignment.topCenter,
           children: [
-            // The avatar
-            CircleAvatar(
-              radius: ThemeSizes.avatarSize,
-              backgroundColor: context.primaryColor.withValues(alpha: 0.1),
-              child: Icon(
+            ProfileImageAvatar(
+              imageUrl: profileImageUrl,
+              size: ThemeSizes.avatarSize * 2,
+              loaderColor: context.primaryColor,
+              decoration: BoxDecoration(
+                color: context.primaryColor.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              fallback: Icon(
                 Icons.person,
                 size: ThemeSizes.avatarSize,
                 color: context.primaryColor,

@@ -99,6 +99,7 @@ class _EventsListWidgetState extends State<EventsListWidget> {
 
             return EventCard(
               event: event,
+              league: widget.league,
               targetNameOverride: resolvedName,
               onTap: widget.onEventTap != null
                   ? () => widget.onEventTap!(event)

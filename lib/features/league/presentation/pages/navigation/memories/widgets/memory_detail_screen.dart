@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dio/dio.dart';
+import 'package:fantavacanze_official/core/cubits/app_league/app_league_cubit.dart';
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
@@ -12,10 +13,12 @@ import 'package:fantavacanze_official/core/widgets/dialogs/confirmation_dialog.d
 import 'package:fantavacanze_official/core/widgets/dialogs/processing_dialog.dart';
 import 'package:fantavacanze_official/core/widgets/loader.dart';
 import 'package:fantavacanze_official/core/widgets/media/video_player.dart';
+import 'package:fantavacanze_official/core/widgets/profile_image_avatar.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/league/league.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/memory.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/rule/rule.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gallery_saver_plus/gallery_saver.dart';
 import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
@@ -455,20 +458,7 @@ class _MemoryDetailScreenState extends State<MemoryDetailScreen> {
                               ),
                             ],
                           ),
-                          child: CircleAvatar(
-                            radius: 24,
-                            backgroundColor: ColorPalette.getGradientFromId(
-                                    widget.memory.userId)
-                                .colors
-                                .first,
-                            child: Text(
-                              widget.memory.participantName[0].toUpperCase(),
-                              style: const TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 20),
-                            ),
-                          ),
+                          child: _buildAuthorAvatar(),
                         ),
                         const SizedBox(width: ThemeSizes.md),
                         Expanded(
@@ -579,6 +569,37 @@ class _MemoryDetailScreenState extends State<MemoryDetailScreen> {
   }
 
   // ------------------- MEDIA WIDGETS -------------------
+
+  Widget _buildAuthorAvatar() {
+    final profileImageUrl = context
+        .watch<AppLeagueCubit>()
+        .getProfileImageFor(widget.memory.userId);
+
+    return ProfileImageAvatar(
+      imageUrl: profileImageUrl,
+      size: 48,
+      loaderColor: ColorPalette.info,
+      fallback: _buildAuthorFallback(),
+    );
+  }
+
+  Widget _buildAuthorFallback() {
+    return Container(
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        gradient: ColorPalette.getGradientFromId(widget.memory.userId),
+        shape: BoxShape.circle,
+      ),
+      child: Text(
+        widget.memory.participantName[0].toUpperCase(),
+        style: const TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.bold,
+          fontSize: 20,
+        ),
+      ),
+    );
+  }
 
   Widget _buildVideoPlayer(BuildContext context) {
     return SizedBox.expand(

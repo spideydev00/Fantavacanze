@@ -108,6 +108,7 @@ Future<void> initDependencies() async {
           prefs: serviceLocator<SharedPreferences>(),
           appUserCubit: serviceLocator(),
           clearLocalCache: serviceLocator<ClearLocalCache>(),
+          getProfileImages: serviceLocator(),
         ),
       )
       //5. notification count cubit
@@ -353,6 +354,9 @@ void _initAuth() {
       () => UpdatePassword(authRepository: serviceLocator()),
     )
     ..registerFactory(
+      () => UpdateProfileImage(authRepository: serviceLocator()),
+    )
+    ..registerFactory(
       () => RemoveConsents(authRepository: serviceLocator()),
     )
     ..registerFactory(
@@ -397,6 +401,7 @@ void _initAuth() {
         updateConsents: serviceLocator(),
         updateGender: serviceLocator(),
         updateIsSingleStatus: serviceLocator(),
+        updateProfileImage: serviceLocator(),
         // Add the new use cases
         sendOtpEmail: serviceLocator(),
         verifyOtp: serviceLocator(),
@@ -443,6 +448,9 @@ void _initLeague() {
     )
     ..registerFactory(
       () => GetUserLeagues(leagueRepository: serviceLocator()),
+    )
+    ..registerFactory(
+      () => GetProfileImages(leagueRepository: serviceLocator()),
     )
     ..registerFactory(
       () => JoinLeague(leagueRepository: serviceLocator()),

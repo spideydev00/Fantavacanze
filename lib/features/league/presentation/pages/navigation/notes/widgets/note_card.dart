@@ -1,8 +1,11 @@
+import 'package:fantavacanze_official/core/cubits/app_league/app_league_cubit.dart';
 import 'package:fantavacanze_official/core/extensions/context_extension.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
+import 'package:fantavacanze_official/core/widgets/profile_image_avatar.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/note.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 
@@ -86,18 +89,7 @@ class NoteCard extends StatelessWidget {
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Container(
-                              padding: const EdgeInsets.all(6),
-                              decoration: BoxDecoration(
-                                color: Colors.white.withValues(alpha: 0.2),
-                                shape: BoxShape.circle,
-                              ),
-                              child: const Icon(
-                                Icons.group,
-                                size: 16,
-                                color: Colors.white,
-                              ),
-                            ),
+                            _buildNoteAvatar(context, note, 28),
                             const SizedBox(width: 8),
                             Flexible(
                               child: Text(
@@ -210,6 +202,8 @@ class NoteCard extends StatelessWidget {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
+                      _buildNoteAvatar(context, note, 36),
+                      const SizedBox(width: ThemeSizes.sm),
                       Expanded(
                         child: Text(
                           note.participantName,
@@ -290,6 +284,43 @@ class NoteCard extends StatelessWidget {
               ],
             ),
           ),
+        ),
+      ),
+    );
+  }
+
+  static Widget _buildNoteAvatar(
+    BuildContext context,
+    Note note,
+    double size,
+  ) {
+    final profileImageUrl =
+        context.watch<AppLeagueCubit>().getProfileImageFor(note.participantId);
+
+    return ProfileImageAvatar(
+      imageUrl: profileImageUrl,
+      size: size,
+      loaderColor: Colors.white,
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.2),
+        shape: BoxShape.circle,
+      ),
+      fallback: _buildNoteFallback(note, size),
+    );
+  }
+
+  static Widget _buildNoteFallback(Note note, double size) {
+    final initial = note.participantName.trim().isNotEmpty
+        ? note.participantName.trim()[0].toUpperCase()
+        : '?';
+
+    return Center(
+      child: Text(
+        initial,
+        style: TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.bold,
+          fontSize: size * 0.45,
         ),
       ),
     );

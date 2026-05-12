@@ -133,7 +133,7 @@ class _SignUpPageState extends State<SignUpPage> {
   Widget build(BuildContext context) {
     return EmptyBrandedPage(
       logoImagePath: "assets/images/logos/logo-neon.png",
-      bgImagePath: "assets/images/bg.png",
+      bgImagePath: "assets/images/bg-join-module.png",
       isBackNavigationActive: true,
       mainColumnAlignment: MainAxisAlignment.start,
       widgets: [

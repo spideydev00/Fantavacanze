@@ -33,6 +33,7 @@ abstract class LeagueRemoteDataSource {
   });
 
   Future<List<LeagueModel>> getUserLeagues();
+  Future<Map<String, String?>> getProfileImagesForUsers(List<String> userIds);
 
   Future<void> deleteLeague(
     String leagueId, {
@@ -302,6 +303,38 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
                 fallbackType: _inferLeagueTypeFromResponse(league),
               ))
           .toList();
+    });
+  }
+
+  @override
+  Future<Map<String, String?>> getProfileImagesForUsers(
+    List<String> userIds,
+  ) async {
+    return _tryDatabaseOperation(() async {
+      if (userIds.isEmpty) return {};
+
+      final uniqueUserIds = userIds.toSet().toList();
+      final response = await supabaseClient
+          .from('profiles')
+          .select('id, profile_image_url')
+          .inFilter('id', uniqueUserIds);
+
+      final profileImages = <String, String?>{
+        for (final userId in uniqueUserIds) userId: null,
+      };
+
+      for (final row in response) {
+        final id = row['id'] as String?;
+        if (id == null) continue;
+
+        final profileImageUrl = row['profile_image_url'] as String?;
+        profileImages[id] =
+            profileImageUrl != null && profileImageUrl.isNotEmpty
+                ? profileImageUrl
+                : null;
+      }
+
+      return profileImages;
     });
   }
 

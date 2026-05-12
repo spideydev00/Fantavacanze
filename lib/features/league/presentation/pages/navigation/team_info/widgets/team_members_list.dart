@@ -3,6 +3,7 @@ import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:fantavacanze_official/core/utils/show-snackbar-or-paywall/show_snackbar.dart';
+import 'package:fantavacanze_official/core/widgets/profile_image_avatar.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/team_participant.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc/league_bloc.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc/league_event.dart';
@@ -248,20 +249,10 @@ class TeamMembersListContent extends StatelessWidget {
                         width: 24, height: 24), // Spazio per allineamento
               ),
 
-            // Avatar
-            Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                color: isCurrentUser
-                    ? context.primaryColor.withValues(alpha: 0.2)
-                    : context.primaryColor.withValues(alpha: 0.1),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                Icons.person,
-                color: context.primaryColor,
-              ),
+            _buildMemberAvatar(
+              context,
+              userId: userId,
+              isCurrentUser: isCurrentUser,
             ),
             const SizedBox(width: ThemeSizes.md),
 
@@ -345,6 +336,32 @@ class TeamMembersListContent extends StatelessWidget {
               ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildMemberAvatar(
+    BuildContext context, {
+    required String userId,
+    required bool isCurrentUser,
+  }) {
+    final profileImageUrl =
+        context.watch<AppLeagueCubit>().getProfileImageFor(userId);
+    final decoration = BoxDecoration(
+      color: isCurrentUser
+          ? context.primaryColor.withValues(alpha: 0.2)
+          : context.primaryColor.withValues(alpha: 0.1),
+      shape: BoxShape.circle,
+    );
+
+    return ProfileImageAvatar(
+      imageUrl: profileImageUrl,
+      size: 40,
+      loaderColor: context.primaryColor,
+      decoration: decoration,
+      fallback: Icon(
+        Icons.person,
+        color: context.primaryColor,
       ),
     );
   }

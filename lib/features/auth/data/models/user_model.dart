@@ -14,6 +14,7 @@ class UserModel extends User {
     required super.isWordBombTrialAvailable,
     super.hasLeftReview,
     required super.sentimentalStatus,
+    super.profileImageUrl,
   });
 
   factory UserModel.fromJson(Map<String, dynamic> map) {
@@ -39,6 +40,7 @@ class UserModel extends User {
       isWordBombTrialAvailable: map['is_word_bomb_trial_available'] == true,
       hasLeftReview: map['has_left_review'] == true,
       sentimentalStatus: map['sentimental_status'],
+      profileImageUrl: map['profile_image_url'] as String?,
     );
   }
 
@@ -56,6 +58,7 @@ class UserModel extends User {
     bool? isWordBombTrialAvailable,
     bool? hasLeftReview,
     String? sentimentalStatus,
+    String? profileImageUrl,
   }) {
     return UserModel(
       id: id ?? this.id,
@@ -71,6 +74,7 @@ class UserModel extends User {
           isWordBombTrialAvailable ?? this.isWordBombTrialAvailable,
       hasLeftReview: hasLeftReview ?? this.hasLeftReview,
       sentimentalStatus: sentimentalStatus ?? this.sentimentalStatus,
+      profileImageUrl: profileImageUrl ?? this.profileImageUrl,
     );
   }
 }

@@ -10,6 +10,7 @@ import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:fantavacanze_official/core/utils/show-snackbar-or-paywall/show_snackbar.dart';
 import 'package:fantavacanze_official/core/utils/media/image_picker_util.dart';
 import 'package:fantavacanze_official/core/widgets/loader.dart';
+import 'package:fantavacanze_official/core/widgets/profile_image_avatar.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/individual_participant.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/league/league.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/participant.dart';
@@ -683,6 +684,9 @@ class _IndividualInfoState extends State<_IndividualInfo> {
   @override
   Widget build(BuildContext context) {
     final isCurrentUser = widget.userId == widget.participant.userId;
+    final profileImageUrl = context
+        .watch<AppLeagueCubit>()
+        .getProfileImageFor(widget.participant.userId);
 
     return Scaffold(
       backgroundColor: context.bgColor,
@@ -726,11 +730,16 @@ class _IndividualInfoState extends State<_IndividualInfo> {
                           ),
                         ],
                       ),
-                      child: const Center(
-                        child: Icon(
-                          Icons.person,
-                          size: 54,
-                          color: Colors.white,
+                      child: ProfileImageAvatar(
+                        imageUrl: profileImageUrl,
+                        size: 100,
+                        loaderColor: Colors.white,
+                        fallback: const Center(
+                          child: Icon(
+                            Icons.person,
+                            size: 54,
+                            color: Colors.white,
+                          ),
                         ),
                       ),
                     ),

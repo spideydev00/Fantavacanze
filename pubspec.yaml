@@ -131,7 +131,7 @@ flutter:
 
     # ===== BACKGROUNDS & GENERAL IMAGES =====
     - assets/images/bg.png
-    - assets/images/avatar.png
+    - assets/images/bg-join-module.png
     - assets/images/insert-name.jpg
     - assets/images/baddie-bg.jpg
     - assets/images/emotions-bg.jpg
@@ -142,6 +142,8 @@ flutter:
     - assets/images/about-us.jpg
     - assets/images/add-event-bg-fall-winter.png
     - assets/images/add-event-winter.png
+    - assets/images/boys_add_event.png
+    - assets/images/girls_add_event.png
 
     # ===== AUTHENTICATION ICONS =====
     - assets/images/otp-verification-icon.png

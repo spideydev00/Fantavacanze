@@ -13,6 +13,8 @@ final class AuthGoogleLoading extends AuthState {}
 final class AuthAppleLoading extends AuthState {}
 // for just one button
 
+final class AuthProfileImageLoading extends AuthState {}
+
 final class AuthFailure extends AuthState {
   final String message;
   final String operation;

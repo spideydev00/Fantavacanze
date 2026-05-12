@@ -30,8 +30,14 @@ class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final currentUser = context.read<AppUserCubit>().state;
+
     final currentUserId =
         currentUser is AppUserIsLoggedIn ? currentUser.user.id : null;
+
+    final gender =
+        currentUser is AppUserIsLoggedIn ? currentUser.user.gender : null;
+
+    final isFemale = gender == 'female';
 
     return Scaffold(
       body: BlocBuilder<AppLeagueCubit, AppLeagueState>(
@@ -43,11 +49,13 @@ class HomePage extends StatelessWidget {
               child: Column(
                 children: [
                   _buildParticipantContent(
-                      context,
-                      state.selectedLeague.admins.contains(currentUserId)
-                          ? true
-                          : false,
-                      state.selectedLeague),
+                    context,
+                    state.selectedLeague.admins.contains(currentUserId)
+                        ? true
+                        : false,
+                    state.selectedLeague,
+                    isFemale,
+                  ),
                   // _buildSeasonalTestForm(context),
                 ],
               ),
@@ -89,7 +97,7 @@ class HomePage extends StatelessWidget {
   }
 
   Widget _buildParticipantContent(
-      BuildContext context, bool isAdmin, League league) {
+      BuildContext context, bool isAdmin, League league, bool isFemale) {
     return Column(
       children: [
         DailyGoals(),
@@ -105,7 +113,7 @@ class HomePage extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 15),
-          _buildAdminActions(context),
+          _buildAdminActions(context, isFemale),
         ],
 
         // Latest events section
@@ -146,12 +154,14 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  Widget _buildAdminActions(BuildContext context) {
+  Widget _buildAdminActions(BuildContext context, bool isFemale) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: ThemeSizes.xl),
       child: AdminActionCard(
         title: 'Aggiungi un bonus / malus',
-        imagePath: 'assets/images/add-event-bg.jpg',
+        imagePath: isFemale
+            ? 'assets/images/girls_add_event.png'
+            : 'assets/images/boys_add_event.png',
         iconData: Icons.add,
         onTap: () => _navigateToAddEvent(context),
       ),
@@ -195,73 +205,6 @@ class HomePage extends StatelessWidget {
   Widget _buildArticles() {
     return ArticlesList(
       articles: [
-        ArticleData(
-          imagePath: 'assets/images/tutorial-1.png',
-          title: 'Come funziona il FantaSerata?',
-          readingTime: '3 minuti',
-          redirectPage: ArticlePage(
-            imagePath: 'assets/images/tutorial-1.png',
-            title: 'Come funziona il FantaSerata?',
-            author: 'Fantavacanze Team',
-            publishDate: '2025-10-02',
-            content: '''
-Benvenuto in FantaSerata, la modalità lampo di Fantavacanze pensata per una sola notte. Si gioca forte, si ride tanto… e alle 7:00 del mattino la lega si autodistrugge. Pronti a dare tutto entro l’alba?
-
-1. Leghe a Tempo: il brivido della mezzanotte\n
-FantaSerata funziona con leghe temporanee create al volo con gli amici.
-- Durata: dalla creazione fino alle 07:00 del giorno successivo. Poi *boom*: si chiude tutto, classifica compresa.
-- Tutti sono Admin: sì, proprio così. Ognuno può gestire regole, modificare obiettivi, approvare/eliminare eventi e invitare persone. Massima libertà = massima responsabilità.
-
-2. Il set base: Bonus, Malus e Obiettivi Speciali\n
-Ogni lega parte con tre blocchi già pronti:
-- 5 Bonus fissi (es. “Arrivo puntuale”, “Giro drink condiviso”, “DJ improvvisato”, “Nuova conoscenza”, “Ballata epica”).
-- 5 Malus fissi (es. “Ritardo da bradipo”, “Messaggi all’ex”, “Bicchiere rovesciato”, “Canzone stoppata”, “Selfie mosso”).
-- 3 Obiettivi Speciali: più “particolari”, più difficili… e valgono più punti. Ognuno di questi è refreshabile una sola volta se non ti convince (ne arriva un altro al suo posto).
-
-3. Obiettivi Extra: la fantasia al potere\n
-Oltre al set base, ogni utente può aggiungere obiettivi extra validi per tutta la lega. Esempi:
-- “Foto con sconosciuti a tema”, “Portare il gruppo in un locale nuovo”, “Indovinare la canzone in 3 secondi”.
-Suggerimento: descrivi bene come si completa e quanti punti vale per evitare discussioni a fine notte.
-
-4. Come si fanno punti (e come si approvano gli eventi)\n
-Nello specifico:
-- Quando completi un obiettivo, crei un evento dall’app.
-- Visto che tutti sono Admin, gli eventi possono essere approvati o eliminati da chiunque. Se vi fidate, approvate; se è un meme, via.
-- Ogni approvazione aggiorna in tempo reale la classifica.
-
-5. Classifica Live e Giornale Eventi\n
-Nella sezione FantaSerata puoi consultare:
-- Classifica aggiornata: vedi chi è in fuga, chi recupera e chi sta “gestendo”.
-- Giornale Eventi: lo stream di tutto ciò che succede nella lega. Se qualcosa è stato segnato con troppa fantasia… si può eliminare.
-
-6. Il Trofeo dell’Alba: foto del vincitore e condivisione\n
-Alle 07:00 la lega si chiude e proclama il vincitore.
-- Il vincitore può caricare una foto-trofeo (la “foto dell’alba”) e condividerla sui social direttamente dall’app.
-- La foto resta come memoria della serata (prima della *auto-distruzione* dei dettagli operativi).
-
-7. Serate Speciali: regole “uniche” che cambiano il gioco\n
-In alcuni periodi il FantaSerata attiva regole speciali a tema:
-- Serata di Halloween
-- Vigilia (24 dicembre)
-- Capodanno (31 dicembre)
-- Carnevale
-- Après-Ski (da dicembre a fine gennaio)
-
-8. Fair Play \n
-L'onestà è tutto! Mi raccomando:
-- Descrivi bene gli obiettivi extra (criteri chiari = meno discussioni).
-- In caso di dubbio, il Giornale Eventi è la verità storica: si guarda lì e si decide.
-- Ricorda: tutti Admin significa velocità, ma anche buon senso. L’obiettivo è divertirsi, non fare il VAR della movida.
-
-9. Pronti, via: crea la tua FantaSerata\n
-Che aspetti?
-- Crea la lega, invita gli amici, scegliete il tema (se festivo, attivate le regole speciali), puntate gli obiettivi… e correte verso l’alba.
-- Alle 07:00 si chiude: classifica finale, foto del vincitore, condivisione… e appuntamento alla prossima!
-
-Che vinca la notte più epica! 🌙✨
-    ''',
-          ),
-        ),
         ArticleData(
           imagePath: 'assets/images/tutorial.png',
           title: 'Come funziona il FantaVacanze?',

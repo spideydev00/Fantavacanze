@@ -13,6 +13,7 @@ class User extends Equatable {
   final bool isWordBombTrialAvailable;
   final bool hasLeftReview;
   final String? sentimentalStatus;
+  final String? profileImageUrl;
 
   const User({
     required this.id,
@@ -27,6 +28,7 @@ class User extends Equatable {
     required this.isWordBombTrialAvailable,
     this.hasLeftReview = false,
     required this.sentimentalStatus,
+    this.profileImageUrl,
   });
 
   User copyWith({
@@ -42,6 +44,7 @@ class User extends Equatable {
     bool? isWordBombTrialAvailable,
     bool? hasLeftReview,
     String? sentimentalStatus,
+    String? profileImageUrl,
   }) {
     return User(
       id: id ?? this.id,
@@ -57,6 +60,7 @@ class User extends Equatable {
           isWordBombTrialAvailable ?? this.isWordBombTrialAvailable,
       hasLeftReview: hasLeftReview ?? this.hasLeftReview,
       sentimentalStatus: sentimentalStatus ?? this.sentimentalStatus,
+      profileImageUrl: profileImageUrl ?? this.profileImageUrl,
     );
   }
 
@@ -74,5 +78,6 @@ class User extends Equatable {
         isWordBombTrialAvailable,
         hasLeftReview,
         sentimentalStatus,
+        profileImageUrl,
       ];
 }

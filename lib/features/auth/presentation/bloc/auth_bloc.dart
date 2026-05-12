@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:fantavacanze_official/core/cubits/app_league/app_league_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit.dart';
@@ -14,6 +15,7 @@ import 'package:fantavacanze_official/features/auth/domain/use-cases/send_otp_em
 import 'package:fantavacanze_official/features/auth/domain/use-cases/sign_out.dart';
 import 'package:fantavacanze_official/features/auth/domain/use-cases/update_consents.dart';
 import 'package:fantavacanze_official/features/auth/domain/use-cases/update_gender.dart';
+import 'package:fantavacanze_official/features/auth/domain/use-cases/update_profile_image.dart';
 import 'package:fantavacanze_official/features/auth/domain/use-cases/update_is_single_status.dart';
 import 'package:fantavacanze_official/features/auth/domain/use-cases/verify_otp.dart';
 import 'package:flutter/material.dart';
@@ -34,6 +36,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final UpdateConsents _updateConsents;
   final UpdateGender _updateGender;
   final UpdateIsSingleStatus _updateIsSingleStatus;
+  final UpdateProfileImage _updateProfileImage;
   // New use cases
   final SendOtpEmail _sendOtpEmail;
   final VerifyOtp _verifyOtp;
@@ -54,6 +57,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     required UpdateConsents updateConsents,
     required UpdateGender updateGender,
     required UpdateIsSingleStatus updateIsSingleStatus,
+    required UpdateProfileImage updateProfileImage,
     required SendOtpEmail sendOtpEmail,
     required VerifyOtp verifyOtp,
     required ResetPassword resetPassword,
@@ -68,6 +72,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         _updateConsents = updateConsents,
         _updateGender = updateGender,
         _updateIsSingleStatus = updateIsSingleStatus,
+        _updateProfileImage = updateProfileImage,
         _sendOtpEmail = sendOtpEmail,
         _verifyOtp = verifyOtp,
         _resetPassword = resetPassword,
@@ -84,6 +89,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<AuthUpdateConsents>(_onUpdateConsents);
     on<AuthUpdateGender>(_onUpdateGender);
     on<AuthUpdateIsSingleStatus>(_onUpdateIsSingleStatus);
+    on<UpdateProfileImageEvent>(_onUpdateProfileImage);
     // Register new event handlers
     on<AuthSendOtpEmail>(_onSendOtpEmail);
     on<AuthVerifyOtp>(_onVerifyOtp);
@@ -266,6 +272,25 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           emit(AuthFailure(failure.message, "update_is_single_status")),
       (user) {
         _emitAuthSuccess(user, emit);
+      },
+    );
+  }
+
+  Future<void> _onUpdateProfileImage(
+    UpdateProfileImageEvent event,
+    Emitter<AuthState> emit,
+  ) async {
+    emit(AuthProfileImageLoading());
+
+    final result = await _updateProfileImage.call(
+      UpdateProfileImageParams(imageFile: event.imageFile),
+    );
+
+    result.fold(
+      (failure) => emit(AuthFailure(failure.message, "update_profile_image")),
+      (user) {
+        _emitAuthSuccess(user, emit);
+        _appLeagueCubit.updateOwnProfileImage(user.id, user.profileImageUrl);
       },
     );
   }

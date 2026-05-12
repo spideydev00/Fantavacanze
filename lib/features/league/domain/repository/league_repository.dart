@@ -17,6 +17,9 @@ abstract class LeagueRepository {
   Future<Either<Failure, League>> getLeague(String leagueId);
 
   Future<Either<Failure, List<League>>> getUserLeagues();
+  Future<Either<Failure, Map<String, String?>>> getProfileImagesForUsers(
+    List<String> userIds,
+  );
 
   Future<Either<Failure, void>> deleteLeague(
     String leagueId, {
