@@ -63,6 +63,24 @@ abstract class RiveAssetState<T extends RiveAsset> extends State<T> {
   @override
   void didUpdateWidget(covariant T oldWidget) {
     super.didUpdateWidget(oldWidget);
+
+    // Se l'asset di origine cambia (es. switch di tema che cambia il path
+    // del .riv) il RiveWidgetController non puo' essere riusato: serve
+    // disporre il vecchio e ricaricare da capo.
+    final sourceChanged = widget.path != oldWidget.path ||
+        widget.artboard != oldWidget.artboard ||
+        widget.stateMachineName != oldWidget.stateMachineName;
+
+    if (sourceChanged) {
+      controller?.dispose();
+      riveFile?.dispose();
+      controller = null;
+      input = null;
+      riveFile = null;
+      _loadRiveFile();
+      return;
+    }
+
     if (widget.isActive != oldWidget.isActive) {
       input?.value = widget.isActive;
     }

@@ -837,19 +837,24 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
         eventName: eventName,
       );
 
-      // Efficiently add the new memory
-      final updatedMemories = [
-        ...league.memories.map((m) => m as MemoryModel),
-        memoryData,
-      ];
-
-      // Update in Supabase
-      return await _updateLeagueInDb(
-        leagueId: league.id,
-        type: league.type,
-        updateData: {
-          'memories': updatedMemories.map((m) => m.toJson()).toList()
+      final response = await supabaseClient.rpc(
+        'add_league_memory',
+        params: {
+          'p_league_id': league.id,
+          'p_league_type': league.type.name,
+          'p_memory': memoryData.toJson(),
         },
+      );
+
+      if (response == null) {
+        throw ServerException('Errore nell\'aggiunta del ricordo');
+      }
+
+      final normalized = Map<String, dynamic>.from(response as Map);
+
+      return _convertResponseToModel(
+        normalized,
+        fallbackType: league.type,
       );
     });
   }
@@ -885,17 +890,24 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
         url: memoryToRemove.mediaUrl,
       );
 
-      // Remove the memory efficiently
-      final updatedMemories = league.memories
-          .where((m) => (m as MemoryModel).id != memoryId)
-          .map((m) => (m as MemoryModel).toJson())
-          .toList();
+      final response = await supabaseClient.rpc(
+        'remove_league_memory',
+        params: {
+          'p_league_id': league.id,
+          'p_league_type': league.type.name,
+          'p_memory_id': memoryId,
+        },
+      );
 
-      // Update in Supabase
-      return await _updateLeagueInDb(
-        leagueId: league.id,
-        type: league.type,
-        updateData: {'memories': updatedMemories},
+      if (response == null) {
+        throw ServerException('Errore nella rimozione del ricordo');
+      }
+
+      final normalized = Map<String, dynamic>.from(response as Map);
+
+      return _convertResponseToModel(
+        normalized,
+        fallbackType: league.type,
       );
     });
   }

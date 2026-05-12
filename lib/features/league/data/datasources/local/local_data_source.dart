@@ -275,6 +275,8 @@ class LocalDataSourceImpl implements LocalDataSource {
         challenges.add(challenge);
       });
 
+      challenges.sort((a, b) => a.position.compareTo(b.position));
+
       return challenges;
     } catch (e) {
       throw CacheException('Errore nel recuperare le sfide: $e');

@@ -122,6 +122,8 @@ class DailyChallengesRemoteDataSourceImpl
           .map((json) => DailyChallengeModel.fromJson(json))
           .toList();
 
+      result.sort((a, b) => a.position.compareTo(b.position));
+
       return result;
     });
   }
@@ -262,14 +264,19 @@ class DailyChallengesRemoteDataSourceImpl
     return _tryDatabaseOperation(
       () async {
         // Update the challenge refresh status in the database
-        await supabaseClient
+        final response = await supabaseClient
             .from('user_daily_challenges')
             .update({
               'is_refreshed': isRefreshed,
               'refreshed_at': DateTime.now().toIso8601String(),
             })
             .eq('id', challengeId)
+            .eq('user_id', userId)
             .select();
+
+        if (response.isEmpty) {
+          throw ServerException('Sfida giornaliera non trovata');
+        }
       },
     );
   }

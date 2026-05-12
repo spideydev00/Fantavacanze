@@ -1,7 +1,7 @@
-import 'package:fantavacanze_official/core/constants/default_rule.dart';
+import 'package:fantavacanze_official/core/constants/rules/default_rule.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/rule/rule.dart';
 
-const List<DefaultRule> maleRules = [
+const List<DefaultRule> mixedRulesWinter = [
   DefaultRule(
     id: 1,
     name:
@@ -17,9 +17,9 @@ const List<DefaultRule> maleRules = [
   ),
   DefaultRule(
     id: 3,
-    name: "Offri un drink a una ragazza.",
+    name: "Scrocca un drink.",
     type: RuleType.bonus,
-    points: 3,
+    points: 4,
   ),
   DefaultRule(
     id: 4,
@@ -40,17 +40,21 @@ const List<DefaultRule> maleRules = [
     points: 6,
   ),
   DefaultRule(
-      id: 7, name: "Preliminari? (fatti).", type: RuleType.bonus, points: 10),
+    id: 7,
+    name: "Preliminari? (fatti).",
+    type: RuleType.bonus,
+    points: 10,
+  ),
   DefaultRule(
     id: 8,
     name:
-        "Cucina da mangiare per tutti lo “spuntino di mezzanotte” una volta finita la serata.",
+        "Cucina da mangiare per tutti lo \"spuntino di mezzanotte\" una volta finita la serata.",
     type: RuleType.bonus,
     points: 5,
   ),
   DefaultRule(
     id: 9,
-    name: "“Passa la notte” con una persona.",
+    name: "\"Passa la notte\" con una persona.",
     type: RuleType.bonus,
     points: 12,
   ),
@@ -70,7 +74,7 @@ const List<DefaultRule> maleRules = [
     id: 12,
     name: "Riesci a finire la serata in un after random.",
     type: RuleType.bonus,
-    points: 5,
+    points: 7,
   ),
   DefaultRule(
     id: 13,
@@ -86,9 +90,9 @@ const List<DefaultRule> maleRules = [
   ),
   DefaultRule(
     id: 15,
-    name: "Balli in mezzo alla pista con un gruppo di sconosciuti.",
+    name: "Esegui o ricevi un body shot.",
     type: RuleType.bonus,
-    points: 4,
+    points: 8,
   ),
   DefaultRule(
     id: 16,
@@ -114,6 +118,8 @@ const List<DefaultRule> maleRules = [
     type: RuleType.bonus,
     points: 5,
   ),
+
+  // Malus
   DefaultRule(
     id: 20,
     name: "Perdi portafoglio, telefono o documenti.",
@@ -152,7 +158,7 @@ const List<DefaultRule> maleRules = [
   ),
   DefaultRule(
     id: 26,
-    name: "Declini un after anche se tutti ci vanno.",
+    name: "Piangi in discoteca per un crollo emotivo alcolico.",
     type: RuleType.malus,
     points: -5,
   ),
@@ -176,7 +182,7 @@ const List<DefaultRule> maleRules = [
   ),
   DefaultRule(
     id: 30,
-    name: "Un evento inaspettato fa floppare “la nottata d’amore”.",
+    name: "Un evento inaspettato fa floppare \"la nottata d’amore\".",
     type: RuleType.malus,
     points: -5,
   ),

@@ -88,7 +88,7 @@ class _SocialLoginPageState extends State<SocialLoginPage> {
 
         return EmptyBrandedPage(
           logoImagePath: "assets/images/logos/logo-neon.png",
-          bgImagePath: "assets/images/bg.png",
+          bgImagePath: "assets/images/bg-join-module.png",
           mainColumnAlignment: MainAxisAlignment.spaceBetween,
           widgets: [
             Platform.isIOS

@@ -1,7 +1,5 @@
-import 'package:fantavacanze_official/core/constants/female_rules.dart';
 import 'package:fantavacanze_official/core/constants/game_mode.dart';
-import 'package:fantavacanze_official/core/constants/male_rules.dart';
-import 'package:fantavacanze_official/core/constants/mixed_rules.dart';
+import 'package:fantavacanze_official/core/constants/rules/seasonal_default_rules.dart';
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/extensions/context_extension.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
@@ -120,27 +118,8 @@ class _CreateLeaguePageState extends State<CreateLeaguePage> {
     });
 
     // Get rules from local constants instead of database
-    List<Rule> localRules = [];
-
-    switch (mode) {
-      case 'male':
-        localRules = maleRules.map((rule) => rule.toRule()).toList();
-        break;
-      case 'female':
-        localRules = femaleRules.map((rule) => rule.toRule()).toList();
-        break;
-      case 'mixed':
-        localRules = mixedRules.map((rule) => rule.toRule()).toList();
-        break;
-      case 'custom':
-        // Custom rules are empty by default
-        localRules = [];
-        break;
-      default:
-        // Default to mixed rules
-        localRules = mixedRules.map((rule) => rule.toRule()).toList();
-        break;
-    }
+    final localRules =
+        defaultRulesFor(mode).map((rule) => rule.toRule()).toList();
 
     // Update state with local rules
     setState(() {

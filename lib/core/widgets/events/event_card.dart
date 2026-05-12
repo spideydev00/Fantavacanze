@@ -408,6 +408,7 @@ class EventCard extends StatelessWidget {
         }
         return null;
     }
+    return null;
   }
 
   String _targetKey() {

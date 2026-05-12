@@ -1,5 +1,5 @@
-import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/extensions/context_extension.dart';
+import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:flutter/material.dart';
 
 class PromoText extends StatelessWidget {
@@ -16,7 +16,7 @@ class PromoText extends StatelessWidget {
         shadows: [
           const Shadow(
             color: ColorPalette.darkerGrey,
-            blurRadius: 55.0,
+            blurRadius: 15.0,
           ),
         ],
       ),

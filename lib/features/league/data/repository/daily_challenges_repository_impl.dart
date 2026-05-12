@@ -39,9 +39,13 @@ class DailyChallengesRepositoryImpl implements DailyChallengesRepository {
         // (admin potrebbe aver approvato/rifiutato dal suo dispositivo).
         final hasPendingApproval = cachedChallenges
             .any((c) => c.isPendingApproval && !c.isCompleted && !c.isRejected);
+        final hasInvalidCache = _hasInvalidDailyChallengeCache(
+          cachedChallenges,
+        );
 
         bool needsRefresh =
             now.isAfter(today7AM) && challenge.createdAt.isBefore(today7AM);
+        needsRefresh = needsRefresh || hasInvalidCache;
 
         if (!needsRefresh && !hasPendingApproval) {
           return Right(cachedChallenges);
@@ -95,7 +99,7 @@ class DailyChallengesRepositoryImpl implements DailyChallengesRepository {
         challengeId: challengeId,
         isUnlocked: isUnlocked,
         leagueId: leagueId,
-        primaryPosition: primaryPosition,
+        primaryPosition: _primaryPositionFor(primaryPosition),
       );
 
       // Update the challenges in the cache
@@ -103,12 +107,14 @@ class DailyChallengesRepositoryImpl implements DailyChallengesRepository {
           await localDataSource.getCachedDailyChallenges(leagueId);
 
       // Calculate substitute position
-      final substitutePosition = primaryPosition + 3;
+      final normalizedPrimaryPosition = _primaryPositionFor(primaryPosition);
+      final substitutePosition = normalizedPrimaryPosition + 3;
 
       // Update both the primary challenge by ID and any challenge at the substitute position
       final updatedChallenges = cachedChallenges.map((cachedChallenge) {
         // Update specific challenge by ID
-        if (cachedChallenge.id == challengeId) {
+        if (cachedChallenge.id == challengeId ||
+            cachedChallenge.position == normalizedPrimaryPosition) {
           return cachedChallenge.copyWith(isUnlocked: isUnlocked);
         }
 
@@ -281,5 +287,22 @@ class DailyChallengesRepositoryImpl implements DailyChallengesRepository {
     } on CacheException catch (e) {
       return Left(Failure('Errore nella cache: ${e.message}'));
     }
+  }
+
+  int _primaryPositionFor(int position) {
+    return position > 3 ? position - 3 : position;
+  }
+
+  bool _hasInvalidDailyChallengeCache(
+    List<DailyChallengeModel> challenges,
+  ) {
+    final positions = challenges.map((challenge) => challenge.position).toSet();
+    final hasInvalidBackupRefresh = challenges.any(
+      (challenge) => challenge.position > 3 && challenge.isRefreshed,
+    );
+
+    return challenges.length < 6 ||
+        positions.length != challenges.length ||
+        hasInvalidBackupRefresh;
   }
 }

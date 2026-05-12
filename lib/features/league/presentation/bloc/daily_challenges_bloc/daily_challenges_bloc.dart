@@ -223,16 +223,18 @@ class DailyChallengesBloc
     result.fold(
       (failure) => emit(DailyChallengesError(message: failure.message)),
       (_) {
+        final primaryPosition = _primaryPositionFor(event.challenge.position);
+        final substitutePosition = primaryPosition + 3;
+
         // Update the challenge as unlocked
         final updatedChallenge = event.challenge.copyWith(isUnlocked: true);
 
         // Update the challenges list with the unlocked challenge
         final updatedChallenges = currentState.challenges.map((c) {
           // Sblocca sia la sfida selezionata che la sua corrispondente sostitutiva
-          if (c.id == updatedChallenge.id) {
-            return updatedChallenge;
-          } else if (event.challenge.position <= 3 &&
-              c.position == event.challenge.position + 3) {
+          if (c.id == updatedChallenge.id ||
+              c.position == primaryPosition ||
+              c.position == substitutePosition) {
             return c.copyWith(isUnlocked: true);
           }
           // Lasciamo invariate le altre sfide
@@ -349,7 +351,7 @@ class DailyChallengesBloc
           ),
         );
       } else {
-        // Se l'utente non è più premium, blocca le sfide premium e ads
+        // Se l'utente non è più premium, blocca solo le sfide premium
         add(
           LockPremiumChallengesEvent(
             userId: userState.user.id,
@@ -449,14 +451,11 @@ class DailyChallengesBloc
 
     final currentState = state as DailyChallengesLoaded;
 
-    // Aggiorna lo stato bloccando le sfide premium e ads
+    // Aggiorna lo stato bloccando solo le sfide premium.
+    // Le sfide ads gia' sbloccate devono restare tali anche se AppUserCubit
+    // riemette uno stato non-premium.
     final updatedChallenges = currentState.challenges.map((challenge) {
-      // Blocca le sfide premium (posizione 3 e 6) e quelle ads (posizione 2 e 5)
-      // ma solo se non sono già state completate
-      if ((challenge.position == 2 ||
-              challenge.position == 3 ||
-              challenge.position == 5 ||
-              challenge.position == 6) &&
+      if ((challenge.position == 3 || challenge.position == 6) &&
           !challenge.isCompleted) {
         return challenge.copyWith(isUnlocked: false);
       }
@@ -471,6 +470,10 @@ class DailyChallengesBloc
       operation: 'premium_locked',
       operationAt: DateTime.now(),
     ));
+  }
+
+  int _primaryPositionFor(int position) {
+    return position > 3 ? position - 3 : position;
   }
 
   @override

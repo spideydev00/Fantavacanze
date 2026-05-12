@@ -7,7 +7,6 @@ import 'package:fantavacanze_official/core/errors/exceptions.dart';
 import 'package:fantavacanze_official/features/auth/data/models/user_model.dart';
 import 'package:fantavacanze_official/init_dependencies/init_dependencies.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
@@ -414,6 +413,25 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   @override
   Future<void> deleteAccount() async {
     try {
+      // Pulizia preventiva degli oggetti dell'utente nel bucket user-logos.
+      // Va fatta PRIMA della RPC: dopo la cancellazione di auth.users il
+      // JWT diventa invalido e le chiamate Storage falliscono con 401.
+      // Best-effort: se fallisce non blocca la cancellazione dell'account
+      // (al massimo restano file orfani in storage).
+      final userId = currentSession?.user.id;
+      if (userId != null) {
+        try {
+          final storage = supabaseClient.storage.from('user-logos');
+          final files = await storage.list(path: userId);
+          if (files.isNotEmpty) {
+            await storage
+                .remove(files.map((f) => '$userId/${f.name}').toList());
+          }
+        } catch (_) {
+          // Ignora: cleanup storage non bloccante
+        }
+      }
+
       await supabaseClient.rpc('delete_user_account');
       _tokenSubscription?.cancel();
     } catch (e) {
@@ -537,7 +555,6 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
 
       return firebaseMessaging.onTokenRefresh.listen((newToken) async {
         await updateFcmTokenManually(newToken);
-        debugPrint('🪙 FCM Token aggiornato: $newToken');
       });
     } catch (e) {
       throw ServerException(_extractErrorMessage(e));

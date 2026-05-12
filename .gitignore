@@ -55,6 +55,7 @@ app.*.map.json
 terminal-commands.md
 project-structure.md
 previous-session.txt
+TO-DO.md
 
 # Supabase
 /supabase

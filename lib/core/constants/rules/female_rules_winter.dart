@@ -1,7 +1,7 @@
-import 'package:fantavacanze_official/core/constants/default_rule.dart';
+import 'package:fantavacanze_official/core/constants/rules/default_rule.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/rule/rule.dart';
 
-const List<DefaultRule> femaleRules = [
+const List<DefaultRule> femaleRulesWinter = [
   DefaultRule(
     id: 1,
     name:

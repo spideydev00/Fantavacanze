@@ -36,7 +36,6 @@ class AppVersionRemoteDataSourceImpl implements AppVersionRemoteDataSource {
       return AppVersionConfigModel.fromJson(response);
     } catch (e) {
       final message = _extractErrorMessage(e);
-      debugPrint('Errore configurazione versione app: $message');
       throw ServerException(message);
     }
   }
