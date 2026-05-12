@@ -1,15 +1,17 @@
 import 'dart:async';
 import 'dart:io';
+
 import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit.dart';
 import 'package:fantavacanze_official/core/errors/exceptions.dart';
-import 'package:fantavacanze_official/features/league/data/models/individual_participant_model/individual_participant_model.dart';
 import 'package:fantavacanze_official/features/league/data/models/event_model/event_model.dart';
+import 'package:fantavacanze_official/features/league/data/models/individual_participant_model/individual_participant_model.dart';
 import 'package:fantavacanze_official/features/league/data/models/league_model/league_model.dart';
+import 'package:fantavacanze_official/features/league/data/models/member_profile_model/member_profile_model.dart';
 import 'package:fantavacanze_official/features/league/data/models/memory_model/memory_model.dart';
 import 'package:fantavacanze_official/features/league/data/models/participant_model/participant_model.dart';
 import 'package:fantavacanze_official/features/league/data/models/rule_model/rule_model.dart';
-import 'package:fantavacanze_official/features/league/data/models/team_participant_model/team_participant_model.dart';
 import 'package:fantavacanze_official/features/league/data/models/simple_participant_model/simple_participant_model.dart';
+import 'package:fantavacanze_official/features/league/data/models/team_participant_model/team_participant_model.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/event/event.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/league/league.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/rule/rule.dart';
@@ -33,7 +35,10 @@ abstract class LeagueRemoteDataSource {
   });
 
   Future<List<LeagueModel>> getUserLeagues();
-  Future<Map<String, String?>> getProfileImagesForUsers(List<String> userIds);
+
+  Future<List<MemberProfileModel>> getProfileImagesForUsers(
+    List<String> userIds,
+  );
 
   Future<void> deleteLeague(
     String leagueId, {
@@ -307,34 +312,32 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
   }
 
   @override
-  Future<Map<String, String?>> getProfileImagesForUsers(
+  Future<List<MemberProfileModel>> getProfileImagesForUsers(
     List<String> userIds,
   ) async {
     return _tryDatabaseOperation(() async {
-      if (userIds.isEmpty) return {};
+      if (userIds.isEmpty) return [];
 
       final uniqueUserIds = userIds.toSet().toList();
+
       final response = await supabaseClient
           .from('profiles')
           .select('id, profile_image_url')
           .inFilter('id', uniqueUserIds);
 
-      final profileImages = <String, String?>{
-        for (final userId in uniqueUserIds) userId: null,
+      final profilesByUserId = <String, MemberProfileModel>{
+        for (final userId in uniqueUserIds)
+          userId: MemberProfileModel(userId: userId),
       };
 
       for (final row in response) {
         final id = row['id'] as String?;
         if (id == null) continue;
 
-        final profileImageUrl = row['profile_image_url'] as String?;
-        profileImages[id] =
-            profileImageUrl != null && profileImageUrl.isNotEmpty
-                ? profileImageUrl
-                : null;
+        profilesByUserId[id] = MemberProfileModel.fromJson(row);
       }
 
-      return profileImages;
+      return profilesByUserId.values.toList();
     });
   }
 
@@ -1103,14 +1106,14 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
           path.endsWith('/') ? '$path$fullFileName' : '$path/$fullFileName';
 
       await supabaseClient.storage.from(bucket).upload(
-        fullPath,
-        mediaFile,
-        fileOptions: FileOptions(
-          cacheControl: '3600',
-          upsert: true,
-          contentType: contentType,
-        ),
-      );
+            fullPath,
+            mediaFile,
+            fileOptions: FileOptions(
+              cacheControl: '3600',
+              upsert: true,
+              contentType: contentType,
+            ),
+          );
 
       // Create a signed URL
       final signedUrl = await supabaseClient.storage

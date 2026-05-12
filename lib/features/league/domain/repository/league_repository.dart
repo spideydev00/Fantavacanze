@@ -1,6 +1,7 @@
 import 'package:fantavacanze_official/core/errors/failure.dart';
 import 'package:fantavacanze_official/features/league/data/models/note_model/note_model.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/league/league.dart';
+import 'package:fantavacanze_official/features/league/domain/entities/member_profile.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/note.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/rule/rule.dart';
 import 'package:fpdart/fpdart.dart';
@@ -17,7 +18,7 @@ abstract class LeagueRepository {
   Future<Either<Failure, League>> getLeague(String leagueId);
 
   Future<Either<Failure, List<League>>> getUserLeagues();
-  Future<Either<Failure, Map<String, String?>>> getProfileImagesForUsers(
+  Future<Either<Failure, List<MemberProfile>>> getProfileImagesForUsers(
     List<String> userIds,
   );
 

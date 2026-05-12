@@ -70,6 +70,7 @@ class _AdminSectionState extends State<AdminSection> {
             Center(
               child: Padding(
                 padding: const EdgeInsets.only(
+                  top: ThemeSizes.sm,
                   bottom: ThemeSizes.md,
                   left: ThemeSizes.md,
                   right: ThemeSizes.md,

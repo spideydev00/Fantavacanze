@@ -66,7 +66,7 @@ class AdminActionCard extends StatelessWidget {
                             begin: Alignment.centerLeft,
                             end: Alignment.centerRight,
                             colors: [
-                              Colors.black.withValues(alpha: 0.5),
+                              Colors.black.withValues(alpha: 0.6),
                               Colors.black.withValues(alpha: 0.4),
                             ],
                           ),

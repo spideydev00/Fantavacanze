@@ -9,6 +9,7 @@ import 'package:fantavacanze_official/features/league/data/models/league_model/l
 import 'package:fantavacanze_official/features/league/data/models/note_model/note_model.dart';
 import 'package:fantavacanze_official/features/league/data/models/rule_model/rule_model.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/league/league.dart';
+import 'package:fantavacanze_official/features/league/domain/entities/member_profile.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/note.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/rule/rule.dart';
 import 'package:fantavacanze_official/features/league/domain/repository/league_repository.dart';
@@ -123,18 +124,16 @@ class LeagueRepositoryImpl implements LeagueRepository {
   }
 
   @override
-  Future<Either<Failure, Map<String, String?>>> getProfileImagesForUsers(
+  Future<Either<Failure, List<MemberProfile>>> getProfileImagesForUsers(
     List<String> userIds,
   ) async {
     try {
-      if (!await connectionChecker.isConnected) {
-        return const Right({});
-      }
+      if (userIds.isEmpty) return const Right([]);
 
-      final profileImages =
+      final memberProfiles =
           await remoteDataSource.getProfileImagesForUsers(userIds);
 
-      return Right(profileImages);
+      return Right(memberProfiles);
     } on ServerException catch (e) {
       return Left(Failure(e.message));
     }

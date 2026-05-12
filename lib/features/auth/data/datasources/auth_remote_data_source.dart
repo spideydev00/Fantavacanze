@@ -348,6 +348,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   Future<UserModel> updateProfileImage(File imageFile) async {
     try {
       final session = currentSession;
+
       if (session == null) {
         throw ServerException('Nessuna sessione attiva');
       }
@@ -356,6 +357,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       final storage = supabaseClient.storage.from('user-logos');
 
       final existingFiles = await storage.list(path: userId);
+
       if (existingFiles.isNotEmpty) {
         final filesToRemove =
             existingFiles.map((file) => '$userId/${file.name}').toList();

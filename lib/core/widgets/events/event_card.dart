@@ -24,18 +24,19 @@ class EventCard extends StatelessWidget {
   final bool allowDismiss;
   final String? targetNameOverride;
   final League? league;
+  final Color? bgColor;
 
-  const EventCard({
-    super.key,
-    required this.event,
-    this.onTap,
-    this.onDismiss,
-    this.dateFormat,
-    this.showDetails = true,
-    this.allowDismiss = false,
-    this.targetNameOverride,
-    this.league,
-  });
+  const EventCard(
+      {super.key,
+      required this.event,
+      this.onTap,
+      this.onDismiss,
+      this.dateFormat,
+      this.showDetails = true,
+      this.allowDismiss = false,
+      this.targetNameOverride,
+      this.league,
+      this.bgColor});
 
   @override
   Widget build(BuildContext context) {
@@ -74,11 +75,13 @@ class EventCard extends StatelessWidget {
     // Define colors based on event type
     final Color primaryColor =
         isBonus ? ColorPalette.success : ColorPalette.error;
+
     final Color secondaryColor = context.secondaryBgColor;
 
     // Create gradient colors based on event type and theme
-    final Color gradientStart = secondaryColor;
-    final Color gradientEnd = secondaryColor.withValues(alpha: 0.8);
+    final Color gradientStart = bgColor ?? secondaryColor;
+    final Color gradientEnd = bgColor ?? secondaryColor.withValues(alpha: 0.8);
+
     final Color overlayColor = primaryColor.withValues(alpha: 0.05);
 
     Widget cardContent = Container(
@@ -299,7 +302,7 @@ class EventCard extends StatelessWidget {
     required Color primaryColor,
     required String targetName,
   }) {
-    const circleSize = 42.0;
+    const circleSize = 36.0;
     final avatarUrl = _resolveTargetAvatarUrl(context);
     final targetKey = _targetKey();
 
@@ -349,7 +352,6 @@ class EventCard extends StatelessWidget {
               loaderColor: primaryColor,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                border: Border.all(color: Colors.white, width: 2),
               ),
               fallback: _buildTargetFallbackAvatar(targetKey, targetName),
             ),
@@ -361,8 +363,9 @@ class EventCard extends StatelessWidget {
 
   Widget _buildTargetFallbackAvatar(String targetKey, String targetName) {
     final fallbackText = targetName.trim().isNotEmpty ? targetName : targetKey;
-    final initial =
-        fallbackText.trim().isNotEmpty ? fallbackText.trim()[0].toUpperCase() : '?';
+    final initial = fallbackText.trim().isNotEmpty
+        ? fallbackText.trim()[0].toUpperCase()
+        : '?';
 
     return Container(
       alignment: Alignment.center,

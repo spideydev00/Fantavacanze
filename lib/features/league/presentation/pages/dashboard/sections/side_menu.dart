@@ -154,7 +154,7 @@ class _SideMenuState extends State<SideMenu> {
     final navItems =
         hasLeagues ? participantNavbarItems : nonParticipantNavbarItems;
 
-    // 2. Controllo se l'utente è admin (solo haLeagues=true ha senso)
+    // 2. Controllo se l'utente è admin (solo hasLeagues=true ha senso)
     final bloc = context.read<LeagueBloc>();
     final bool userIsAdmin = hasLeagues && bloc.isAdmin();
 
@@ -229,8 +229,7 @@ class _SideMenuState extends State<SideMenu> {
     if (item.title == "Crea Lega" ||
         item.title == "Cerca Lega" ||
         item.title == "Bonus o Malus" ||
-        item.title == "Aggiungi Bonus/Malus" ||
-        item.title == "Admin") {
+        item.title == "Aggiungi Bonus/Malus") {
       Navigator.push(
         context,
         MaterialPageRoute(builder: (context) => item.screen),

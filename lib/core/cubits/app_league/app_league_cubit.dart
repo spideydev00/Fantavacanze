@@ -4,6 +4,7 @@ import 'package:fantavacanze_official/core/use-case/usecase.dart';
 import 'package:fantavacanze_official/core/utils/dates-and-numbers/sort_by_date.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/individual_participant.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/league/league.dart';
+import 'package:fantavacanze_official/features/league/domain/entities/member_profile.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/team_participant.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/local/clear_local_cache.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/remote/league/get_profile_images.dart';
@@ -99,6 +100,7 @@ class AppLeagueCubit extends Cubit<AppLeagueState> {
 
     debugPrint(
         "🧊 AppLeagueCubit - Lega selezionata: ${selectedLeague.name} (ID: ${selectedLeague.id})");
+
     await _emitLeagueExistsWithProfileImages(
       leagues: leagues,
       selectedLeague: selectedLeague,
@@ -188,20 +190,23 @@ class AppLeagueCubit extends Cubit<AppLeagueState> {
   String? getProfileImageFor(String userId) {
     final currentState = state;
     if (currentState is! AppLeagueExists) return null;
-    return currentState.profileImagesByUserId[userId];
+    return currentState.memberProfiles[userId]?.profileImageUrl;
   }
 
   void updateOwnProfileImage(String userId, String? newUrl) {
     final currentState = state;
     if (currentState is! AppLeagueExists) return;
 
-    final updatedProfileImages = Map<String, String?>.from(
-      currentState.profileImagesByUserId,
+    final updatedMemberProfiles = Map<String, MemberProfile>.from(
+      currentState.memberProfiles,
     );
-    updatedProfileImages[userId] =
-        newUrl != null && newUrl.isNotEmpty ? newUrl : null;
 
-    emit(currentState.copyWith(profileImagesByUserId: updatedProfileImages));
+    updatedMemberProfiles[userId] = MemberProfile(
+      userId: userId,
+      profileImageUrl: newUrl != null && newUrl.isNotEmpty ? newUrl : null,
+    );
+
+    emit(currentState.copyWith(memberProfiles: updatedMemberProfiles));
   }
 
   Future<void> _emitLeagueExistsWithProfileImages({
@@ -209,20 +214,29 @@ class AppLeagueCubit extends Cubit<AppLeagueState> {
     required League selectedLeague,
   }) async {
     final userIds = _extractParticipantUserIds(selectedLeague);
+
     final result = await _getProfileImages(
       GetProfileImagesParams(userIds: userIds),
     );
 
     result.fold(
-      (_) => emit(AppLeagueExists(
-        leagues: leagues,
-        selectedLeague: selectedLeague,
-      )),
-      (profileImagesByUserId) => emit(AppLeagueExists(
-        leagues: leagues,
-        selectedLeague: selectedLeague,
-        profileImagesByUserId: profileImagesByUserId,
-      )),
+      (_) {
+        emit(AppLeagueExists(
+          leagues: leagues,
+          selectedLeague: selectedLeague,
+        ));
+      },
+      (memberProfiles) {
+        emit(
+          AppLeagueExists(
+            leagues: leagues,
+            selectedLeague: selectedLeague,
+            memberProfiles: {
+              for (final profile in memberProfiles) profile.userId: profile,
+            },
+          ),
+        );
+      },
     );
   }
 

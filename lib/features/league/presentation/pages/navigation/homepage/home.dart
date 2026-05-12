@@ -158,7 +158,7 @@ class HomePage extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: ThemeSizes.xl),
       child: AdminActionCard(
-        title: 'Aggiungi un bonus / malus',
+        title: 'Aggiungi \n Bonus o Malus',
         imagePath: isFemale
             ? 'assets/images/girls_add_event.png'
             : 'assets/images/boys_add_event.png',

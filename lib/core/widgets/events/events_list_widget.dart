@@ -1,13 +1,13 @@
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/extensions/context_extension.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
+import 'package:fantavacanze_official/core/utils/in-game/event_finder.dart';
 import 'package:fantavacanze_official/core/utils/in-game/participant_name_resolver.dart';
+import 'package:fantavacanze_official/core/widgets/empty_state.dart';
+import 'package:fantavacanze_official/core/widgets/events/event_card.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/event/event.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/league/league.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/participant.dart';
-import 'package:fantavacanze_official/core/utils/in-game/event_finder.dart';
-import 'package:fantavacanze_official/core/widgets/events/event_card.dart';
-import 'package:fantavacanze_official/core/widgets/empty_state.dart';
 import 'package:flutter/material.dart';
 
 class EventsListWidget extends StatefulWidget {
@@ -32,20 +32,22 @@ class EventsListWidget extends StatefulWidget {
   /// Whether to allow dismissing of events
   final bool allowDismiss;
 
+  final Color? bgColor;
+
   /// Callback when an event is dismissed
   final Function(Event event)? onEventDismiss;
 
-  const EventsListWidget({
-    super.key,
-    required this.league,
-    this.participant,
-    this.onEventTap,
-    this.title,
-    this.showAllEvents = false,
-    this.padding = const EdgeInsets.symmetric(horizontal: 16.0),
-    this.allowDismiss = false,
-    this.onEventDismiss,
-  });
+  const EventsListWidget(
+      {super.key,
+      required this.league,
+      this.participant,
+      this.onEventTap,
+      this.title,
+      this.showAllEvents = false,
+      this.padding = const EdgeInsets.symmetric(horizontal: 16.0),
+      this.allowDismiss = false,
+      this.onEventDismiss,
+      this.bgColor});
 
   @override
   State<EventsListWidget> createState() => _EventsListWidgetState();
@@ -91,26 +93,35 @@ class _EventsListWidgetState extends State<EventsListWidget> {
             ),
 
           // Events list
-          ...displayEvents.map((event) {
+          ...displayEvents.asMap().entries.map((entry) {
+            final int index = entry.key;
+            final Event event = entry.value;
+
             // Pre-resolve the participant name for display
             String resolvedName =
                 ParticipantNameResolver.resolveParticipantName(
                     event, widget.league);
 
-            return EventCard(
-              event: event,
-              league: widget.league,
-              targetNameOverride: resolvedName,
-              onTap: widget.onEventTap != null
-                  ? () => widget.onEventTap!(event)
-                  : null,
-              showDetails: true,
-              allowDismiss: widget.allowDismiss,
-              onDismiss: widget.onEventDismiss != null
-                  ? () {
-                      widget.onEventDismiss!(event);
-                    }
-                  : null,
+            return Padding(
+              padding: index == 0
+                  ? const EdgeInsets.only(top: ThemeSizes.md)
+                  : const EdgeInsets.only(top: 0),
+              child: EventCard(
+                event: event,
+                league: widget.league,
+                targetNameOverride: resolvedName,
+                onTap: widget.onEventTap != null
+                    ? () => widget.onEventTap!(event)
+                    : null,
+                showDetails: true,
+                allowDismiss: widget.allowDismiss,
+                onDismiss: widget.onEventDismiss != null
+                    ? () {
+                        widget.onEventDismiss!(event);
+                      }
+                    : null,
+                bgColor: widget.bgColor,
+              ),
             );
           }),
 

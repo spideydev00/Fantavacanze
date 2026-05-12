@@ -78,6 +78,15 @@ class _LeagueInfoSectionState extends State<LeagueInfoSection> {
           ),
           child: Column(
             children: [
+              Divider(
+                  color: context.borderColor.withValues(alpha: 0.1), height: 1),
+              _buildInfoItem(
+                icon: Icons.key,
+                title: 'Codice invito',
+                value: widget.league.inviteCode,
+                onCopyPressed: () => _copyToClipboard(widget.league.inviteCode),
+                isCopied: _inviteCodeCopied,
+              ),
               _buildNameItem(),
               Divider(
                   color: context.borderColor.withValues(alpha: 0.1), height: 1),
@@ -92,15 +101,6 @@ class _LeagueInfoSectionState extends State<LeagueInfoSection> {
                 value: widget.league.type == LeagueType.team
                     ? 'A squadre'
                     : 'Individuale',
-              ),
-              Divider(
-                  color: context.borderColor.withValues(alpha: 0.1), height: 1),
-              _buildInfoItem(
-                icon: Icons.key,
-                title: 'Codice invito',
-                value: widget.league.inviteCode,
-                onCopyPressed: () => _copyToClipboard(widget.league.inviteCode),
-                isCopied: _inviteCodeCopied,
               ),
               Divider(
                   color: context.borderColor.withValues(alpha: 0.1), height: 1),

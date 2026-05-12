@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fantavacanze_official/core/cubits/app_league/app_league_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/app_navigation/app_navigation_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit.dart';
@@ -7,8 +8,10 @@ import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/extensions/context_extension.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
-import 'package:fantavacanze_official/core/utils/show-snackbar-or-paywall/show_snackbar.dart';
 import 'package:fantavacanze_official/core/utils/media/image_picker_util.dart';
+import 'package:fantavacanze_official/core/utils/show-snackbar-or-paywall/show_snackbar.dart';
+import 'package:fantavacanze_official/core/widgets/dialogs/confirmation_dialog.dart';
+import 'package:fantavacanze_official/core/widgets/events/events_list_widget.dart';
 import 'package:fantavacanze_official/core/widgets/loader.dart';
 import 'package:fantavacanze_official/core/widgets/profile_image_avatar.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/individual_participant.dart';
@@ -18,7 +21,6 @@ import 'package:fantavacanze_official/features/league/domain/entities/team_parti
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc/league_bloc.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc/league_event.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc/league_state.dart';
-import 'package:fantavacanze_official/core/widgets/dialogs/confirmation_dialog.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/team_info/widgets/leave_league_button.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/team_info/widgets/score_card.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/team_info/widgets/section_card.dart';
@@ -26,8 +28,6 @@ import 'package:fantavacanze_official/features/league/presentation/pages/navigat
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/team_info/widgets/team_members_list.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:cached_network_image/cached_network_image.dart';
-import 'package:fantavacanze_official/core/widgets/events/events_list_widget.dart';
 
 class TeamInfoPage extends StatelessWidget {
   static Route get route =>
@@ -528,6 +528,7 @@ class _TeamBasedInfoState extends State<_TeamBasedInfo>
                     child: EventsListWidget(
                       league: widget.league,
                       participant: widget.team,
+                      bgColor: context.bgColor,
                     ),
                   ),
 
@@ -853,6 +854,7 @@ class _IndividualInfoState extends State<_IndividualInfo> {
                   child: EventsListWidget(
                     league: widget.league,
                     participant: widget.participant,
+                    bgColor: context.bgColor,
                   ),
                 ),
 
