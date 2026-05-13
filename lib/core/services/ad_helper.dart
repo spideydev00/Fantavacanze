@@ -28,8 +28,8 @@ class AdHelper {
   static const Duration _drinkGamesSessionDuration = Duration(minutes: 15);
   DateTime? _drinkGamesSessionExpiry;
 
-  // Test Ad Unit IDs - Use these during development
-  static bool get _useTestAds => true;
+  //FIXME: remove test adds
+  static bool get _useTestAds => false;
 
   static String get testInterstitialAdUnitId {
     return 'ca-app-pub-3940256099942544/1033173712';
@@ -45,6 +45,7 @@ class AdHelper {
       // Change to a proper environment check later
       return testInterstitialAdUnitId;
     }
+
     if (Platform.isAndroid) return AppSecrets.androidInterstitialAdUnitId;
     if (Platform.isIOS) return AppSecrets.iosInterstitialAdUnitId;
     throw UnsupportedError('Unsupported platform');
