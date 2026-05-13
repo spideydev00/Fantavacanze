@@ -57,64 +57,82 @@ class _AdminPageState extends State<AdminPage> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocListener<LeagueBloc, LeagueState>(
-      listener: (context, state) {
-        if (state is LeagueLoading) {
-          setState(() {
-            _isLoading = true;
-          });
-        } else {
-          setState(() {
-            _isLoading = false;
-          });
-
-          if (state is LeagueError) {
-            showSnackBar(state.message, color: ColorPalette.error);
-          } else if (state is AdminOperationSuccess) {
-            _currentLeague = state.league;
-
-            String message = '';
-            switch (state.operation) {
-              case 'add_administrators':
-                message = 'Amministratori aggiunti con successo';
-                break;
-              case 'remove_administrators':
-                message = 'Amministratori rimossi con successo';
-                break;
-              case 'remove_participants':
-                message = 'Partecipanti rimossi con successo';
-                break;
-              case 'update_league_info':
-                message = 'Informazioni lega aggiornate con successo';
-                break;
-              default:
-                message = 'Operazione completata con successo';
+    return MultiBlocListener(
+      listeners: [
+        BlocListener<AppLeagueCubit, AppLeagueState>(
+          listener: (context, state) {
+            if (state is AppLeagueExists) {
+              if (_currentLeague == state.selectedLeague) return;
+              setState(() {
+                _currentLeague = state.selectedLeague;
+              });
+            } else if (_currentLeague != null) {
+              setState(() {
+                _currentLeague = null;
+              });
             }
+          },
+        ),
+        BlocListener<LeagueBloc, LeagueState>(
+          listener: (context, state) {
+            if (state is LeagueLoading) {
+              setState(() {
+                _isLoading = true;
+              });
+            } else {
+              setState(() {
+                _isLoading = false;
+              });
 
-            showSnackBar(message, color: ColorPalette.success);
+              if (state is LeagueError) {
+                showSnackBar(state.message, color: ColorPalette.error);
+              } else if (state is AdminOperationSuccess) {
+                _currentLeague = state.league;
 
-            // Update any child state if needed
-            if (state.operation == 'remove_participants') {
-              _participantsKey.currentState?.clearSelection();
+                String message = '';
+                switch (state.operation) {
+                  case 'add_administrators':
+                    message = 'Amministratori aggiunti con successo';
+                    break;
+                  case 'remove_administrators':
+                    message = 'Amministratori rimossi con successo';
+                    break;
+                  case 'remove_participants':
+                    message = 'Partecipanti rimossi con successo';
+                    break;
+                  case 'update_league_info':
+                    message = 'Informazioni lega aggiornate con successo';
+                    break;
+                  default:
+                    message = 'Operazione completata con successo';
+                }
+
+                showSnackBar(message, color: ColorPalette.success);
+
+                // Update any child state if needed
+                if (state.operation == 'remove_participants') {
+                  _participantsKey.currentState?.clearSelection();
+                }
+              } else if (state is LeagueSuccess) {
+                if (state.operation == 'add_event') {
+                  showSnackBar('Evento aggiunto con successo',
+                      color: ColorPalette.success);
+                }
+              } else if (state is DeleteLeagueSuccess) {
+                // Chiudi qualsiasi dialog e la pagina Admin tornando alla root (Dashboard)
+                Navigator.of(context).popUntil((route) => route.isFirst);
+                // Vai alla Home tab
+                context.read<AppNavigationCubit>().setIndex(0);
+                // Mostra conferma
+                showSnackBar(
+                  'Lega eliminata con successo',
+                  color: ColorPalette.success,
+                );
+              }
             }
-          } else if (state is LeagueSuccess) {
-            if (state.operation == 'add_event') {
-              showSnackBar('Evento aggiunto con successo',
-                  color: ColorPalette.success);
-            }
-          } else if (state is DeleteLeagueSuccess) {
-            // Chiudi qualsiasi dialog e la pagina Admin tornando alla root (Dashboard)
-            Navigator.of(context).popUntil((route) => route.isFirst);
-            // Vai alla Home tab
-            context.read<AppNavigationCubit>().setIndex(0);
-            // Mostra conferma
-            showSnackBar(
-              'Lega eliminata con successo',
-              color: ColorPalette.success,
-            );
-          }
-        }
-      },
+          },
+        ),
+      ],
       child: Scaffold(
         backgroundColor: context.bgColor,
         appBar: AppBar(

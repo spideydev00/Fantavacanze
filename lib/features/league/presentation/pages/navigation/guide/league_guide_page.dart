@@ -54,7 +54,7 @@ class LeagueGuidePage extends StatelessWidget {
             const SizedBox(height: ThemeSizes.md),
             _GuideInfoCard(
               icon: Icons.people_rounded,
-              color: ColorPalette.premiumUser,
+              color: context.primaryColor,
               title: 'Lega a squadre o individuale',
               children: const [
                 'Una lega a squadre è composta da diversi team, ognuno con un numero diverso di componenti.',
@@ -65,7 +65,7 @@ class LeagueGuidePage extends StatelessWidget {
             const SizedBox(height: ThemeSizes.xl),
             _GuideInfoCard(
               icon: Icons.admin_panel_settings_rounded,
-              color: context.primaryColor,
+              color: ColorPalette.premiumUser,
               title: 'Admin, bonus e malus',
               children: const [
                 'Solo gli admin della lega possono aggiungere bonus e malus.',

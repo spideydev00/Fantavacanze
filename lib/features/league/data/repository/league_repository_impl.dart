@@ -104,18 +104,19 @@ class LeagueRepositoryImpl implements LeagueRepository {
   @override
   Future<Either<Failure, List<League>>> getUserLeagues() async {
     try {
-      if (!await connectionChecker.isConnected) {
-        // Return cached leagues when offline
-        final cachedLeagues = await localDataSource.getCachedLeagues();
-        return Right(cachedLeagues);
+      try {
+        // Prefer server truth. The first connectivity probe at cold start can
+        // be unreliable, so the remote call is the real online check here.
+        final leagues = await remoteDataSource.getUserLeagues();
+        await localDataSource.cacheLeagues(leagues);
+
+        return Right(leagues);
+      } on ServerException {
+        // Fall through to cache when the remote source is actually unavailable.
       }
 
-      // Get from remote and cache
-      final leagues = await remoteDataSource.getUserLeagues();
-
-      await localDataSource.cacheLeagues(leagues);
-
-      return Right(leagues);
+      final cachedLeagues = await localDataSource.getCachedLeagues();
+      return Right(cachedLeagues);
     } on ServerException catch (e) {
       return Left(Failure(e.message));
     } on CacheException catch (e) {
