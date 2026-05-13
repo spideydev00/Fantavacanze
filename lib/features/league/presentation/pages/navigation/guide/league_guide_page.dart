@@ -51,7 +51,7 @@ class LeagueGuidePage extends StatelessWidget {
                 color: context.textSecondaryColor,
               ),
             ),
-            const SizedBox(height: ThemeSizes.md),
+            const SizedBox(height: ThemeSizes.xl),
             _GuideInfoCard(
               icon: Icons.people_rounded,
               color: context.primaryColor,
@@ -62,7 +62,7 @@ class LeagueGuidePage extends StatelessWidget {
                 'CONSIGLIO: Se volete includere anche amiche (o amici) che non partono con voi, quelli che restano a casa creano la lega e le squadre (così da esserne capitani), e voi vi unite al loro team (possono anche fare un\'asta per prendervi). Loro vedranno gli obiettivi che fate e la classifica aggiornata.',
               ],
             ),
-            const SizedBox(height: ThemeSizes.xl),
+            const SizedBox(height: ThemeSizes.md),
             _GuideInfoCard(
               icon: Icons.admin_panel_settings_rounded,
               color: ColorPalette.premiumUser,
@@ -104,7 +104,7 @@ class LeagueGuidePage extends StatelessWidget {
               children: const [
                 'In "Regole" puoi vedere bonus e malus attivi nella lega.',
                 '"La Mia Squadra" raccoglie dati, membri e informazioni della tua squadra (intesa anche come utente individuale).',
-                '"Note" serve per appunti condivisi, mentre "Ricordi" raccoglie foto e momenti della vacanza.',
+                '"Note" serve per annotare ciò che viene fatto, se non si ha subito tempo per assegnarlo.',
               ],
             ),
             const SizedBox(height: ThemeSizes.md),

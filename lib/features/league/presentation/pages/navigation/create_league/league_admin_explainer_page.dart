@@ -29,6 +29,7 @@ class _LeagueAdminExplainerPageState extends State<LeagueAdminExplainerPage> {
 
   void _goHome() {
     context.read<AppNavigationCubit>().setIndex(0);
+
     Navigator.of(context).popUntil((route) => route.isFirst);
   }
 

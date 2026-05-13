@@ -1,13 +1,13 @@
-import 'package:fantavacanze_official/core/widgets/buttons/modern_icon_button.dart';
-import 'package:flutter/material.dart';
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/extensions/context_extension.dart';
-import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
-import 'package:fantavacanze_official/features/league/domain/entities/league/league.dart';
+import 'package:fantavacanze_official/core/theme/sizes.dart';
+import 'package:fantavacanze_official/core/widgets/buttons/modern_icon_button.dart';
 import 'package:fantavacanze_official/core/widgets/info_container.dart';
+import 'package:fantavacanze_official/features/league/domain/entities/league/league.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/create_league/league_admin_explainer_page.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/create_league/widgets/invite_code_card.dart';
+import 'package:flutter/material.dart';
 
 class LeagueCreatedPage extends StatefulWidget {
   final League league;
@@ -144,8 +144,11 @@ class _LeagueCreatedPageState extends State<LeagueCreatedPage>
                   onTap: () {
                     Navigator.pushReplacement(
                       context,
-                      MaterialPageRoute(
-                        builder: (_) => const LeagueAdminExplainerPage(),
+                      PageRouteBuilder(
+                        pageBuilder: (_, __, ___) =>
+                            const LeagueAdminExplainerPage(),
+                        transitionDuration: Duration.zero,
+                        reverseTransitionDuration: Duration.zero,
                       ),
                     );
                   },
