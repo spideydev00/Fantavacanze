@@ -31,7 +31,7 @@ class AppRemoteDataSourceImpl implements AppRemoteDataSource {
 
       return AppStatusModel.fromJson(response);
     } catch (e) {
-      throw ServerException(e.toString());
+      throw ServerException(_extractErrorMessage(e));
     }
   }
 }
