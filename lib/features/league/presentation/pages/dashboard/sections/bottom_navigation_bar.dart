@@ -106,9 +106,11 @@ Widget _buildResponsiveNavbarRow(
   return LayoutBuilder(
     builder: (context, constraints) {
       final itemWidth = constraints.maxWidth / elements;
+
       final iconSize = (itemWidth * 0.3)
-          .clamp(ThemeSizes.iconSm, ThemeSizes.iconXl)
+          .clamp(ThemeSizes.iconSm, ThemeSizes.iconMd)
           .toDouble();
+
       final horizontalPadding =
           (itemWidth * 0.08).clamp(ThemeSizes.xs, ThemeSizes.sm).toDouble();
 
