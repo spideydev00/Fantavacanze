@@ -19,6 +19,7 @@ class CustomBottomNavigationBar extends StatelessWidget {
     return BlocBuilder<AppThemeCubit, AppThemeState>(
       builder: (context, state) {
         return Container(
+          width: double.infinity,
           color: state.themeMode == ThemeMode.dark
               ? Colors.transparent
               : context.secondaryBgColor,
@@ -33,6 +34,7 @@ class CustomBottomNavigationBar extends StatelessWidget {
                 builder: (context, state) {
                   if (state is AppLeagueExists) {
                     final isAdmin = context.read<LeagueBloc>().isAdmin();
+
                     final visibleItems = participantNavbarItems
                         .where((item) => !item.isAdminOnly || isAdmin)
                         .take(maxSlots)
@@ -41,9 +43,9 @@ class CustomBottomNavigationBar extends StatelessWidget {
                         .map((item) => participantNavbarItems.indexOf(item))
                         .toList();
 
-                    return _buildFixedWidthNavbarRow(
+                    return _buildResponsiveNavbarRow(
                       visibleItems.length,
-                      (index) {
+                      (index, iconSize) {
                         final item = visibleItems[index];
                         final originalIndex = originalIndices[index];
 
@@ -53,6 +55,8 @@ class CustomBottomNavigationBar extends StatelessWidget {
                                   ? item.darkSvgIcon
                                   : item.lightSvgIcon,
                           title: item.title,
+                          height: iconSize,
+                          width: iconSize,
                           isActive: selectedIndex == originalIndex,
                           onTap: () {
                             context
@@ -64,16 +68,18 @@ class CustomBottomNavigationBar extends StatelessWidget {
                     );
                   }
 
-                  // For non-participants, use the same fixed-width layout
-                  return _buildFixedWidthNavbarRow(
+                  // For non-participants, use the same responsive layout
+                  return _buildResponsiveNavbarRow(
                     2,
-                    (index) {
+                    (index, iconSize) {
                       return BottomNavigationAsset(
                         svgIcon:
                             context.read<AppThemeCubit>().isDarkMode(context)
                                 ? nonParticipantNavbarItems[index].darkSvgIcon
                                 : nonParticipantNavbarItems[index].lightSvgIcon,
                         title: nonParticipantNavbarItems[index].title,
+                        height: iconSize,
+                        width: iconSize,
                         isActive: selectedIndex == index,
                         onTap: () {
                           context.read<AppNavigationCubit>().setIndex(index);
@@ -91,23 +97,36 @@ class CustomBottomNavigationBar extends StatelessWidget {
   }
 }
 
-// New fixed-width layout function to ensure equal spacing
-Widget _buildFixedWidthNavbarRow(
+Widget _buildResponsiveNavbarRow(
   int elements,
-  Widget Function(int) generator,
+  Widget Function(int index, double iconSize) generator,
 ) {
-  final itemWidth = elements >= maxSlots ? 75.0 : 85.0;
+  if (elements == 0) return const SizedBox.shrink();
 
-  return Row(
-    mainAxisAlignment: MainAxisAlignment.center,
-    crossAxisAlignment: CrossAxisAlignment.end,
-    children: List.generate(elements, (index) {
-      // Wrap each navigation item in a fixed-width container
-      return Container(
-        width: itemWidth,
-        margin: const EdgeInsets.symmetric(horizontal: ThemeSizes.sm),
-        child: generator(index),
+  return LayoutBuilder(
+    builder: (context, constraints) {
+      final itemWidth = constraints.maxWidth / elements;
+      final iconSize = (itemWidth * 0.3)
+          .clamp(ThemeSizes.iconSm, ThemeSizes.iconXl)
+          .toDouble();
+      final horizontalPadding =
+          (itemWidth * 0.08).clamp(ThemeSizes.xs, ThemeSizes.sm).toDouble();
+
+      return Row(
+        mainAxisSize: MainAxisSize.max,
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: List.generate(elements, (index) {
+          return Expanded(
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+              child: SizedBox(
+                width: double.infinity,
+                child: generator(index, iconSize),
+              ),
+            ),
+          );
+        }),
       );
-    }),
+    },
   );
 }

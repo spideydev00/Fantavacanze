@@ -4,6 +4,7 @@ import 'package:fantavacanze_official/features/league/presentation/pages/navigat
 // import 'package:fantavacanze_official/features/games/presentation/pages/quick_challenge.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/create_league/create_league_page.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/events/add_event_page.dart';
+import 'package:fantavacanze_official/features/league/presentation/pages/navigation/guide/league_guide_page.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/homepage/home.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/join_league/search_league_page.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/leaderboard/leaderboard_page.dart';
@@ -141,6 +142,14 @@ List<NavigationItem> participantNavbarItems = [
     darkSvgIcon: 'assets/images/icons/homepage_icons/notes-icon.svg',
     lightSvgIcon: 'assets/images/icons/homepage_icons/notes-icon-dark.svg',
     screen: const NotesPage(),
+    subsection: "Naviga",
+  ),
+  NavigationItem(
+    title: "Tutorial",
+    darkSvgIcon: 'assets/images/icons/homepage_icons/question-mark-icon.svg',
+    lightSvgIcon:
+        'assets/images/icons/homepage_icons/question-mark-icon-dark.svg',
+    screen: const LeagueGuidePage(),
     subsection: "Naviga",
   ),
   NavigationItem(

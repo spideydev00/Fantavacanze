@@ -5,6 +5,8 @@ import 'package:fantavacanze_official/core/extensions/context_extension.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:fantavacanze_official/core/utils/show-snackbar-or-paywall/show_snackbar.dart';
+import 'package:fantavacanze_official/core/widgets/buttons/danger_action_button.dart';
+import 'package:fantavacanze_official/core/widgets/dialogs/confirmation_dialog.dart';
 import 'package:fantavacanze_official/core/widgets/divider.dart';
 import 'package:fantavacanze_official/core/widgets/loader.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/league/league.dart';
@@ -15,10 +17,8 @@ import 'package:fantavacanze_official/features/league/presentation/pages/navigat
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/admin/sections/league_info_section.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/admin/sections/participants_section.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/events/add_event_page.dart';
-import 'package:fantavacanze_official/core/widgets/dialogs/confirmation_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:fantavacanze_official/core/widgets/buttons/danger_action_button.dart';
 
 class AdminPage extends StatefulWidget {
   static const String routeName = '/admin';
@@ -118,10 +118,12 @@ class _AdminPageState extends State<AdminPage> {
       child: Scaffold(
         backgroundColor: context.bgColor,
         appBar: AppBar(
-          title: Text(
-            'Admin',
-            style: context.textTheme.titleMedium!.copyWith(
-              fontWeight: FontWeight.bold,
+          title: Center(
+            child: Text(
+              'Admin',
+              style: context.textTheme.titleMedium!.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
           elevation: 0,

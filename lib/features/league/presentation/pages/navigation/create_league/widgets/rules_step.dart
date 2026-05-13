@@ -1,12 +1,12 @@
 import 'package:fantavacanze_official/core/constants/game_mode.dart';
-import 'package:fantavacanze_official/core/widgets/loader.dart';
-import 'package:flutter/material.dart';
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/extensions/context_extension.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
+import 'package:fantavacanze_official/core/widgets/loader.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/rule/rule.dart';
-import 'package:fantavacanze_official/features/league/presentation/pages/navigation/rules/widgets/rule_item.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/create_league/widgets/game_mode_selector.dart';
+import 'package:fantavacanze_official/features/league/presentation/pages/navigation/rules/widgets/rule_item.dart';
+import 'package:flutter/material.dart';
 
 class RulesStep extends StatelessWidget {
   final GameMode selectedRuleMode;
@@ -132,7 +132,7 @@ class RulesStep extends StatelessWidget {
           ),
           const SizedBox(height: ThemeSizes.sm),
           Text(
-            'Clicca sul pulsante + per aggiungere regole alla tua lega.',
+            'Clicca sul pulsante + per aggiungere regole alla tua lega. Ti consigliamo di assegnare punteggi tra 2 e 15 per la migliore esperienza utente possibile.',
             style: TextStyle(
               color: context.textSecondaryColor,
             ),

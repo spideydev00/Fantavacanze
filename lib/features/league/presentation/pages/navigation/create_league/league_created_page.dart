@@ -6,6 +6,7 @@ import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/league/league.dart';
 import 'package:fantavacanze_official/core/widgets/info_container.dart';
+import 'package:fantavacanze_official/features/league/presentation/pages/navigation/create_league/league_admin_explainer_page.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/create_league/widgets/invite_code_card.dart';
 
 class LeagueCreatedPage extends StatefulWidget {
@@ -136,12 +137,17 @@ class _LeagueCreatedPageState extends State<LeagueCreatedPage>
 
                 // "How to invite friends" - Using the extracted info container
 
-                // Home navigation icon button at the bottom
+                // Continue to the admin permissions explanation
                 ModernIconButton(
-                  icon: Icons.home,
-                  text: 'Torna alla home',
+                  icon: Icons.arrow_forward_rounded,
+                  text: 'Continua',
                   onTap: () {
-                    Navigator.of(context).popUntil((route) => route.isFirst);
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const LeagueAdminExplainerPage(),
+                      ),
+                    );
                   },
                 ),
 
