@@ -29,7 +29,7 @@ class AdHelper {
   DateTime? _drinkGamesSessionExpiry;
 
   //FIXME: remove test adds
-  static bool get _useTestAds => false;
+  static bool get _useTestAds => true;
 
   static String get testInterstitialAdUnitId {
     return 'ca-app-pub-3940256099942544/1033173712';
