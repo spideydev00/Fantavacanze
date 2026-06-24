@@ -214,6 +214,7 @@ class _TeamBasedInfoState extends State<_TeamBasedInfo>
 
     final imageFile = await ImagePickerUtil.pickImage(
       context: context,
+      preset: MediaPreset.avatar,
       enableCropping: true,
       isCircular: true,
       aspectRatio: 1.0,

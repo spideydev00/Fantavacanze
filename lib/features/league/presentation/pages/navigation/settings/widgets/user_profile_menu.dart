@@ -386,6 +386,7 @@ class UserProfileMenu extends StatelessWidget {
   ) async {
     final imageFile = await ImagePickerUtil.pickImage(
       context: context,
+      preset: MediaPreset.avatar,
       enableCropping: true,
       isCircular: true,
       aspectRatio: 1.0,

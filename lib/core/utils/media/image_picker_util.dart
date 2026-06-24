@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:fantavacanze_official/core/cubits/app_theme/app_theme_cubit.dart';
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
+import 'package:fantavacanze_official/core/utils/media/media_size_guard.dart';
 import 'package:fantavacanze_official/core/utils/show-snackbar-or-paywall/show_snackbar.dart';
 import 'package:fantavacanze_official/core/widgets/dialogs/processing_dialog.dart';
 import 'package:flutter/foundation.dart';
@@ -12,12 +13,37 @@ import 'package:image/image.dart' as img;
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:video_compress/video_compress.dart';
+
+enum MediaPreset {
+  avatar(
+    maxLongSide: 640,
+    jpegQuality: 88,
+    sizeType: MediaSizeType.avatar,
+  ),
+  memory(
+    maxLongSide: 2048,
+    jpegQuality: 88,
+    sizeType: MediaSizeType.memoryPhoto,
+  );
+
+  const MediaPreset({
+    required this.maxLongSide,
+    required this.jpegQuality,
+    required this.sizeType,
+  });
+
+  final int maxLongSide;
+  final int jpegQuality;
+  final MediaSizeType sizeType;
+}
 
 class ImagePickerUtil {
   static final ImagePicker _picker = ImagePicker();
 
   static Future<File?> pickImage({
     required BuildContext context,
+    required MediaPreset preset,
     bool enableCropping = true,
     bool isCircular = false,
     double? aspectRatio,
@@ -35,11 +61,20 @@ class ImagePickerUtil {
 
       File imageFile = File(pickedFile.path);
 
-      if (source == ImageSource.camera) {
-        // Bake EXIF orientation and mirror front-camera shots to match the preview the user saw on iOS. Blocca la UI durante l'attesa.
-        imageFile = context.mounted
-            ? await _normalizeWithDialog(context, imageFile)
-            : await _normalizeAndMaybeFlipFromCamera(imageFile);
+      final shouldFlipFrontCamera = source == ImageSource.camera;
+      if (shouldFlipFrontCamera && context.mounted) {
+        imageFile = await _processImageWithDialog(
+          context,
+          imageFile,
+          preset,
+          shouldFlipFrontCamera: true,
+        );
+      } else {
+        imageFile = await _processPickedImage(
+          imageFile,
+          preset,
+          shouldFlipFrontCamera: shouldFlipFrontCamera,
+        );
       }
 
       if (enableCropping && context.mounted) {
@@ -48,11 +83,19 @@ class ImagePickerUtil {
           imageFile: imageFile,
           isCircular: isCircular,
           aspectRatio: aspectRatio,
+          jpegQuality: preset.jpegQuality,
         );
 
         if (croppedFile == null) return null;
         imageFile = croppedFile;
       }
+
+      final isValidSize = await guardMediaSize(
+        file: imageFile,
+        type: preset.sizeType,
+        onTooLarge: showSnackBar,
+      );
+      if (!isValidSize) return null;
 
       return imageFile;
     } catch (e) {
@@ -78,7 +121,30 @@ class ImagePickerUtil {
 
       if (pickedFile == null) return null;
 
-      return File(pickedFile.path);
+      final compressed = await VideoCompress.compressVideo(
+        pickedFile.path,
+        quality: VideoQuality.Res1280x720Quality,
+        deleteOrigin: false,
+        includeAudio: true,
+      );
+
+      final compressedPath = compressed?.path;
+      if (compressedPath == null) {
+        showSnackBar(
+          'Si è verificato un errore durante la compressione del video',
+        );
+        return null;
+      }
+
+      final videoFile = File(compressedPath);
+      final isValidSize = await guardMediaSize(
+        file: videoFile,
+        type: MediaSizeType.memoryVideo,
+        onTooLarge: showSnackBar,
+      );
+      if (!isValidSize) return null;
+
+      return videoFile;
     } catch (e) {
       if (context.mounted) {
         showSnackBar(
@@ -95,6 +161,7 @@ class ImagePickerUtil {
     required File imageFile,
     bool isCircular = false,
     double? aspectRatio,
+    required int jpegQuality,
   }) async {
     final theme = context.read<AppThemeCubit>().state.themeMode;
     final isDarkMode = theme == ThemeMode.dark;
@@ -104,6 +171,8 @@ class ImagePickerUtil {
       aspectRatio: aspectRatio != null
           ? CropAspectRatio(ratioX: aspectRatio, ratioY: 1)
           : null,
+      compressFormat: ImageCompressFormat.jpg,
+      compressQuality: jpegQuality,
       uiSettings: [
         AndroidUiSettings(
           toolbarTitle: 'Ritaglia immagine',
@@ -127,12 +196,18 @@ class ImagePickerUtil {
     return File(croppedFile.path);
   }
 
-  static Future<File> _normalizeWithDialog(
+  static Future<File> _processImageWithDialog(
     BuildContext context,
     File sourceFile,
-  ) async {
+    MediaPreset preset, {
+    required bool shouldFlipFrontCamera,
+  }) async {
     if (!context.mounted) {
-      return _normalizeAndMaybeFlipFromCamera(sourceFile);
+      return _processPickedImage(
+        sourceFile,
+        preset,
+        shouldFlipFrontCamera: shouldFlipFrontCamera,
+      );
     }
 
     final notifier = ValueNotifier<ProcessingState>(
@@ -155,7 +230,11 @@ class ImagePickerUtil {
     );
 
     try {
-      return await _normalizeAndMaybeFlipFromCamera(sourceFile);
+      return await _processPickedImage(
+        sourceFile,
+        preset,
+        shouldFlipFrontCamera: shouldFlipFrontCamera,
+      );
     } finally {
       final navigator = dialogNavigator;
       if (navigator != null && navigator.canPop()) {
@@ -165,33 +244,66 @@ class ImagePickerUtil {
     }
   }
 
-  static Future<File> _normalizeAndMaybeFlipFromCamera(File sourceFile) async {
+  static Future<File> _processPickedImage(
+    File sourceFile,
+    MediaPreset preset, {
+    required bool shouldFlipFrontCamera,
+  }) async {
     try {
       final bytes = await sourceFile.readAsBytes();
 
-      final normalized = await compute(_normalizeImageInIsolate, bytes);
-      if (normalized == null) return sourceFile;
+      final processed = await _resizeAndCompress(
+        bytes,
+        preset,
+        shouldFlipFrontCamera: shouldFlipFrontCamera,
+      );
+      if (processed == null) return sourceFile;
 
       final tempDir = await getTemporaryDirectory();
       final timestamp = DateTime.now().millisecondsSinceEpoch;
       final outFile = File('${tempDir.path}/picked_$timestamp.jpg');
-      await outFile.writeAsBytes(normalized, flush: true);
+      await outFile.writeAsBytes(processed, flush: true);
       return outFile;
     } catch (e) {
-      debugPrint('Image normalization failed: $e');
+      debugPrint('Image processing failed: $e');
       return sourceFile;
     }
   }
+
+  static Future<Uint8List?> _resizeAndCompress(
+    Uint8List bytes,
+    MediaPreset preset, {
+    required bool shouldFlipFrontCamera,
+  }) {
+    return compute(
+      _resizeAndCompressInIsolate,
+      (
+        bytes: bytes,
+        maxLongSide: preset.maxLongSide,
+        jpegQuality: preset.jpegQuality,
+        shouldFlipFrontCamera: shouldFlipFrontCamera,
+      ),
+    );
+  }
 }
 
-Uint8List? _normalizeImageInIsolate(Uint8List bytes) {
+typedef _ResizeAndCompressInput = ({
+  Uint8List bytes,
+  int maxLongSide,
+  int jpegQuality,
+  bool shouldFlipFrontCamera,
+});
+
+Uint8List? _resizeAndCompressInIsolate(_ResizeAndCompressInput input) {
+  final bytes = input.bytes;
   final decoded = img.decodeImage(bytes);
   if (decoded == null) return null;
 
   // Detect LensModel before transforms; bake orientation before front-camera mirror.
   final lensModelTag = decoded.exif.exifIfd[0xA434];
   final lensModel = lensModelTag?.toString().toLowerCase() ?? '';
-  final isFrontCamera = lensModel.contains('front');
+  final isFrontCamera =
+      input.shouldFlipFrontCamera && lensModel.contains('front');
 
   var processed = img.bakeOrientation(decoded);
 
@@ -199,5 +311,15 @@ Uint8List? _normalizeImageInIsolate(Uint8List bytes) {
     processed = img.flipHorizontal(processed);
   }
 
-  return Uint8List.fromList(img.encodeJpg(processed, quality: 85));
+  final longSide =
+      processed.width > processed.height ? processed.width : processed.height;
+  if (longSide > input.maxLongSide) {
+    processed = processed.width >= processed.height
+        ? img.copyResize(processed, width: input.maxLongSide)
+        : img.copyResize(processed, height: input.maxLongSide);
+  }
+
+  return Uint8List.fromList(
+    img.encodeJpg(processed, quality: input.jpegQuality),
+  );
 }

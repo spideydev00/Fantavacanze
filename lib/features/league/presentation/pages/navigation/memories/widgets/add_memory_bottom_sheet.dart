@@ -90,6 +90,7 @@ class _AddMemoryBottomSheetState extends State<AddMemoryBottomSheet> {
   Future<void> _pickImage(MediaSourceType source) async {
     final imageFile = await ImagePickerUtil.pickImage(
       context: context,
+      preset: MediaPreset.memory,
       enableCropping: true,
       source: source == MediaSourceType.camera
           ? image_picker.ImageSource.camera

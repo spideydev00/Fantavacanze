@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit.dart';
 import 'package:fantavacanze_official/core/errors/exceptions.dart';
+import 'package:fantavacanze_official/core/utils/media/media_size_guard.dart';
 import 'package:fantavacanze_official/features/league/data/models/event_model/event_model.dart';
 import 'package:fantavacanze_official/features/league/data/models/individual_participant_model/individual_participant_model.dart';
 import 'package:fantavacanze_official/features/league/data/models/league_model/league_model.dart';
@@ -1022,6 +1023,9 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
         bucket: 'memories',
         path: path,
         mediaFile: mediaFile,
+        sizeType: _isVideoFile(mediaFile)
+            ? MediaSizeType.memoryVideo
+            : MediaSizeType.memoryPhoto,
         expiresIn: 60 * 60 * 24 * 365,
       );
     });
@@ -1053,6 +1057,7 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
         bucket: 'team-logos',
         path: path,
         mediaFile: imageFile,
+        sizeType: MediaSizeType.avatar,
         expiresIn: 60 * 60 * 24 * 365,
       );
     });
@@ -1104,9 +1109,18 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
     required String bucket,
     required String path,
     required File mediaFile,
+    required MediaSizeType sizeType,
     required int expiresIn,
   }) async {
     try {
+      final isValidSize = await guardMediaSize(
+        file: mediaFile,
+        type: sizeType,
+      );
+      if (!isValidSize) {
+        throw ServerException(mediaSizeErrorMessage(sizeType));
+      }
+
       final currentTime = DateTime.now().millisecondsSinceEpoch;
 
       // Determine file extension and content type from the file name.
@@ -1121,7 +1135,7 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
             fullPath,
             mediaFile,
             fileOptions: FileOptions(
-              cacheControl: '3600',
+              cacheControl: '31536000',
               upsert: true,
               contentType: contentType,
             ),
@@ -1136,6 +1150,14 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
     } catch (e) {
       throw ServerException(_extractErrorMessage(e));
     }
+  }
+
+  bool _isVideoFile(File file) {
+    final extension = _getFileExtension(file);
+    return extension == '.mp4' ||
+        extension == '.mov' ||
+        extension == '.avi' ||
+        extension == '.mkv';
   }
 
   /// Determines file extension from file path or content

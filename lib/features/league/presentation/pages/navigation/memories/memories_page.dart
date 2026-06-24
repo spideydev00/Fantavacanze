@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'dart:io';
+
 import 'package:fantavacanze_official/core/constants/constants.dart';
 import 'package:fantavacanze_official/core/cubits/app_league/app_league_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit.dart';
@@ -23,6 +25,7 @@ import 'package:fantavacanze_official/features/league/presentation/pages/navigat
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+import 'package:video_compress/video_compress.dart';
 
 class MemoriesPage extends StatefulWidget {
   static Route get route =>
@@ -50,6 +53,7 @@ class _MemoriesPageState extends State<MemoriesPage>
   String _pendingMemoryText = '';
   String? _pendingEventId;
   String? _pendingEventName;
+  bool _pendingMemoryIsVideo = false;
 
   @override
   bool get wantKeepAlive => true;
@@ -99,6 +103,7 @@ class _MemoriesPageState extends State<MemoriesPage>
     _pendingMemoryText = text;
     _pendingEventId = event?.id;
     _pendingEventName = eventName;
+    _pendingMemoryIsVideo = isVideo;
     final leagueId = _currentLeague!.id;
 
     final firstMessage = isVideo
@@ -142,6 +147,16 @@ class _MemoriesPageState extends State<MemoriesPage>
     _uploadNotifier = null;
   }
 
+  Future<void> _clearVideoCompressCacheIfNeeded() async {
+    if (!_pendingMemoryIsVideo) return;
+
+    try {
+      await VideoCompress.deleteAllCache();
+    } catch (e) {
+      debugPrint('Pulizia cache video non riuscita: $e');
+    }
+  }
+
   @override
   void dispose() {
     _uploadNotifier?.dispose();
@@ -171,8 +186,10 @@ class _MemoriesPageState extends State<MemoriesPage>
       listener: (context, state) {
         if (state is LeagueError) {
           _closeUploadDialog();
+          _pendingMemoryIsVideo = false;
           showSnackBar(state.message, color: ColorPalette.error);
         } else if (state is ImageUploadSuccess) {
+          unawaited(_clearVideoCompressCacheIfNeeded());
           _uploadNotifier?.value =
               const ProcessingState('Salvataggio del ricordo...');
           if (_currentLeague != null && _currentUserId != null) {
@@ -191,6 +208,7 @@ class _MemoriesPageState extends State<MemoriesPage>
           _pendingMemoryText = '';
           _pendingEventId = null;
           _pendingEventName = null;
+          _pendingMemoryIsVideo = false;
           showSnackBar(
             'Ricordo aggiunto con successo!',
             color: ColorPalette.success,

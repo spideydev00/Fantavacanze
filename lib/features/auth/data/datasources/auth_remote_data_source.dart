@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:crypto/crypto.dart';
 import 'package:fantavacanze_official/core/errors/exceptions.dart';
+import 'package:fantavacanze_official/core/utils/media/media_size_guard.dart';
 import 'package:fantavacanze_official/features/auth/data/models/user_model.dart';
 import 'package:fantavacanze_official/init_dependencies/init_dependencies.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -739,6 +740,14 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     required int expiresIn,
   }) async {
     try {
+      final isValidSize = await guardMediaSize(
+        file: mediaFile,
+        type: MediaSizeType.avatar,
+      );
+      if (!isValidSize) {
+        throw ServerException(mediaSizeErrorMessage(MediaSizeType.avatar));
+      }
+
       final currentTime = DateTime.now().millisecondsSinceEpoch;
       final fileExtension = _getFileExtension(mediaFile);
       final contentType = _getContentTypeForExtension(fileExtension);
@@ -750,7 +759,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
             fullPath,
             mediaFile,
             fileOptions: FileOptions(
-              cacheControl: '3600',
+              cacheControl: '31536000',
               upsert: true,
               contentType: contentType,
             ),
