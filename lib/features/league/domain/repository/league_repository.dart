@@ -4,6 +4,9 @@ import 'package:fantavacanze_official/features/league/domain/entities/league/lea
 import 'package:fantavacanze_official/features/league/domain/entities/member_profile.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/note.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/rule/rule.dart';
+import 'package:fantavacanze_official/features/league/domain/entities/partner/partner_catalog.dart';
+import 'package:fantavacanze_official/features/league/domain/entities/partner/partner_search_result.dart';
+import 'package:fantavacanze_official/features/league/domain/entities/partner/general_ranking_entry.dart';
 import 'package:fpdart/fpdart.dart';
 import 'dart:io';
 
@@ -140,4 +143,31 @@ abstract class LeagueRepository {
     String? name,
     String? description,
   });
+
+  Future<Either<Failure, PartnerCatalog>> getPartnerDestinations(
+    String partnerSlug,
+  );
+
+  Future<Either<Failure, League>> createPartnerLeague({
+    required String userName,
+    required String destinationId,
+    required String name,
+    required String password,
+    String? description,
+  });
+
+  Future<Either<Failure, PartnerSearchResult>> searchPartnerLeague({
+    required String inviteCode,
+    required String password,
+  });
+
+  Future<Either<Failure, League>> joinPartnerLeague({
+    required String userName,
+    required String inviteCode,
+    required String password,
+  });
+
+  Future<Either<Failure, List<GeneralRankingEntry>>> getPartnerGeneralRanking(
+    String leagueId,
+  );
 }

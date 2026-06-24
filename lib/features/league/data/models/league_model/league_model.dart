@@ -57,6 +57,18 @@ class LeagueModel extends League {
   @override
   LeagueType get type => super.type;
 
+  @HiveField(11)
+  @override
+  String? get partner => super.partner;
+
+  @HiveField(12)
+  @override
+  String? get partnerDestinationId => super.partnerDestinationId;
+
+  @HiveField(13)
+  @override
+  String? get partnerRoundId => super.partnerRoundId;
+
   const LeagueModel({
     required super.id,
     required super.name,
@@ -69,6 +81,9 @@ class LeagueModel extends League {
     required super.admins,
     required super.inviteCode,
     required super.type,
+    super.partner,
+    super.partnerDestinationId,
+    super.partnerRoundId,
   });
 
   factory LeagueModel.fromJson(Map<String, dynamic> json) {
@@ -115,6 +130,9 @@ class LeagueModel extends League {
           .toList(),
       type: leagueType,
       inviteCode: inviteCode,
+      partner: json['partner'] as String?,
+      partnerDestinationId: (json['partner_destination_id'] ?? json['partnerDestinationId']) as String?,
+      partnerRoundId: (json['partner_round_id'] ?? json['partnerRoundId']) as String?,
     );
   }
 
@@ -134,6 +152,9 @@ class LeagueModel extends League {
           memories.map((memory) => (memory as MemoryModel).toJson()).toList(),
       'type': type.name,
       'invite_code': inviteCode,
+      'partner': partner,
+      'partner_destination_id': partnerDestinationId,
+      'partner_round_id': partnerRoundId,
     };
   }
 
@@ -149,6 +170,9 @@ class LeagueModel extends League {
     List<Memory>? memories,
     LeagueType? type,
     String? inviteCode,
+    String? partner,
+    String? partnerDestinationId,
+    String? partnerRoundId,
   }) {
     return LeagueModel(
       id: id ?? this.id,
@@ -162,6 +186,9 @@ class LeagueModel extends League {
       memories: memories ?? this.memories,
       type: type ?? this.type,
       inviteCode: inviteCode ?? this.inviteCode,
+      partner: partner ?? this.partner,
+      partnerDestinationId: partnerDestinationId ?? this.partnerDestinationId,
+      partnerRoundId: partnerRoundId ?? this.partnerRoundId,
     );
   }
 }

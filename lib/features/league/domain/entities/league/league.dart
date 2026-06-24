@@ -29,6 +29,9 @@ class League {
   final List<Memory> memories;
   final LeagueType type;
   final String inviteCode;
+  final String? partner;
+  final String? partnerDestinationId;
+  final String? partnerRoundId;
 
   const League({
     required this.id,
@@ -42,5 +45,8 @@ class League {
     required this.memories,
     required this.type,
     required this.inviteCode,
+    this.partner,
+    this.partnerDestinationId,
+    this.partnerRoundId,
   });
 }

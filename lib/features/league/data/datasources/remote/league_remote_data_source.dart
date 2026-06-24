@@ -13,9 +13,14 @@ import 'package:fantavacanze_official/features/league/data/models/participant_mo
 import 'package:fantavacanze_official/features/league/data/models/rule_model/rule_model.dart';
 import 'package:fantavacanze_official/features/league/data/models/simple_participant_model/simple_participant_model.dart';
 import 'package:fantavacanze_official/features/league/data/models/team_participant_model/team_participant_model.dart';
+import 'package:fantavacanze_official/features/league/data/models/partner/partner_model.dart';
+import 'package:fantavacanze_official/features/league/data/models/partner/partner_destination_model.dart';
+import 'package:fantavacanze_official/features/league/data/models/partner/general_ranking_entry_model.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/event/event.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/league/league.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/rule/rule.dart';
+import 'package:fantavacanze_official/features/league/domain/entities/partner/partner_catalog.dart';
+import 'package:fantavacanze_official/features/league/domain/entities/partner/partner_search_result.dart';
 import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:uuid/uuid.dart';
@@ -156,7 +161,32 @@ abstract class LeagueRemoteDataSource {
     required String teamName,
     required String logoUrl,
   });
+
+  // =====================================================================
+  // PARTNER OPERATIONS
+  // =====================================================================
+  Future<PartnerCatalog> getPartnerDestinations(String partnerSlug);
+
+  Future<LeagueModel> createPartnerLeague({
+    required String destinationId,
+    required String name,
+    required String password,
+    String? description,
+  });
+
+  Future<PartnerSearchResult> searchPartnerLeague({
+    required String inviteCode,
+    required String password,
+  });
+
+  Future<LeagueModel> joinPartnerLeague({
+    required String inviteCode,
+    required String password,
+  });
+
+  Future<List<GeneralRankingEntryModel>> getPartnerGeneralRanking(String leagueId);
 }
+
 
 class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
   final SupabaseClient supabaseClient;
@@ -1645,4 +1675,165 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
       }
     }
   }
+
+  @override
+  Future<PartnerCatalog> getPartnerDestinations(String partnerSlug) async {
+    return _tryDatabaseOperation(() async {
+      _checkAuthentication();
+      final response = await supabaseClient.rpc(
+        'get_partner_destinations',
+        params: {'p_partner_slug': partnerSlug},
+      );
+
+      final result = Map<String, dynamic>.from(response as Map);
+      if (result['status'] != 'found') {
+        throw ServerException('Partner non trovato');
+      }
+
+      final partner = PartnerModel.fromJson(
+        Map<String, dynamic>.from(result['partner'] as Map),
+      );
+
+      final destinations = (result['destinations'] as List<dynamic>?)
+              ?.map((e) => PartnerDestinationModel.fromJson(
+                    Map<String, dynamic>.from(e as Map),
+                  ))
+              .toList() ??
+          [];
+
+      return PartnerCatalog(
+        partner: partner,
+        destinations: destinations,
+      );
+    });
+  }
+
+  @override
+  Future<LeagueModel> createPartnerLeague({
+    required String destinationId,
+    required String name,
+    required String password,
+    String? description,
+  }) async {
+    return _tryDatabaseOperation(() async {
+      _checkAuthentication();
+      final userName = _getCurrentUserName();
+
+      final response = await supabaseClient.rpc(
+        'create_partner_league',
+        params: {
+          'p_user_name': userName,
+          'p_destination_id': destinationId,
+          'p_name': name,
+          'p_password': password,
+          'p_description': description,
+        },
+      );
+
+      final result = Map<String, dynamic>.from(response as Map);
+      if (result['status'] != 'created') {
+        throw ServerException('Risposta inattesa dal server');
+      }
+
+      return _convertResponseToModel(
+        Map<String, dynamic>.from(result['league'] as Map),
+        fallbackType: LeagueType.individual,
+      );
+    });
+  }
+
+  @override
+  Future<PartnerSearchResult> searchPartnerLeague({
+    required String inviteCode,
+    required String password,
+  }) async {
+    return _tryDatabaseOperation(() async {
+      _checkAuthentication();
+
+      final response = await supabaseClient.rpc(
+        'search_partner_league',
+        params: {
+          'p_invite_code': inviteCode,
+          'p_password': password,
+        },
+      );
+
+      final result = Map<String, dynamic>.from(response as Map);
+      final status = result['status'] as String?;
+
+      switch (status) {
+        case 'not_found':
+          return const PartnerSearchResult(status: PartnerSearchStatus.notFound);
+        case 'wrong_password':
+          return const PartnerSearchResult(status: PartnerSearchStatus.wrongPassword);
+        case 'found':
+          final leagueMap = Map<String, dynamic>.from(result['league'] as Map);
+          return PartnerSearchResult(
+            status: PartnerSearchStatus.found,
+            league: _convertResponseToModel(
+              leagueMap,
+              fallbackType: LeagueType.individual,
+            ),
+            destinationName: leagueMap['destination_name'] as String?,
+            roundName: leagueMap['round_name'] as String?,
+          );
+        default:
+          throw ServerException('Risposta inattesa dal server');
+      }
+    });
+  }
+
+  @override
+  Future<LeagueModel> joinPartnerLeague({
+    required String inviteCode,
+    required String password,
+  }) async {
+    return _tryDatabaseOperation(() async {
+      _checkAuthentication();
+      final userName = _getCurrentUserName();
+
+      final response = await supabaseClient.rpc(
+        'join_partner_league',
+        params: {
+          'p_user_name': userName,
+          'p_invite_code': inviteCode,
+          'p_password': password,
+        },
+      );
+
+      final result = Map<String, dynamic>.from(response as Map);
+      if (result['status'] != 'joined') {
+        throw ServerException('Risposta inattesa dal server');
+      }
+
+      return _convertResponseToModel(
+        Map<String, dynamic>.from(result['league'] as Map),
+        fallbackType: LeagueType.individual,
+      );
+    });
+  }
+
+  @override
+  Future<List<GeneralRankingEntryModel>> getPartnerGeneralRanking(
+    String leagueId,
+  ) async {
+    return _tryDatabaseOperation(() async {
+      _checkAuthentication();
+
+      final response = await supabaseClient.rpc(
+        'get_partner_general_ranking',
+        params: {'p_league_id': leagueId},
+      );
+
+      final result = Map<String, dynamic>.from(response as Map);
+      final entriesJson = result['entries'] as List<dynamic>? ?? [];
+
+      return entriesJson
+          .map((e) => GeneralRankingEntryModel.fromJson(
+                Map<String, dynamic>.from(e as Map),
+              ))
+          .toList();
+    });
+  }
 }
+

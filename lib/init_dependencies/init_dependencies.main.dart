@@ -518,6 +518,22 @@ void _initLeague() {
     ..registerFactory(
       () => ClearLocalCache(leagueRepository: serviceLocator()),
     )
+    // partner collaborations use cases
+    ..registerFactory(
+      () => GetPartnerDestinations(leagueRepository: serviceLocator()),
+    )
+    ..registerFactory(
+      () => CreatePartnerLeague(leagueRepository: serviceLocator()),
+    )
+    ..registerFactory(
+      () => SearchPartnerLeague(leagueRepository: serviceLocator()),
+    )
+    ..registerFactory(
+      () => JoinPartnerLeague(leagueRepository: serviceLocator()),
+    )
+    ..registerFactory(
+      () => GetPartnerGeneralRanking(leagueRepository: serviceLocator()),
+    )
     // bloc
     ..registerFactory(
       () => LeagueBloc(

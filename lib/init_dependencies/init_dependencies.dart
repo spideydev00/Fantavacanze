@@ -139,6 +139,11 @@ import 'package:fantavacanze_official/features/league/domain/use_cases/remote/su
 import 'package:fantavacanze_official/features/league/domain/use_cases/remote/subscription/get_products.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/remote/subscription/purchase_product.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/remote/subscription/restore_purchases.dart';
+import 'package:fantavacanze_official/features/league/domain/use_cases/remote/partner/get_partner_destinations.dart';
+import 'package:fantavacanze_official/features/league/domain/use_cases/remote/partner/create_partner_league.dart';
+import 'package:fantavacanze_official/features/league/domain/use_cases/remote/partner/search_partner_league.dart';
+import 'package:fantavacanze_official/features/league/domain/use_cases/remote/partner/join_partner_league.dart';
+import 'package:fantavacanze_official/features/league/domain/use_cases/remote/partner/get_partner_general_ranking.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/daily_challenges_bloc/daily_challenges_bloc.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc/league_bloc.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/notifications_bloc/notifications_bloc.dart';

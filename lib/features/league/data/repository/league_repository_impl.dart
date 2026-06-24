@@ -12,6 +12,9 @@ import 'package:fantavacanze_official/features/league/domain/entities/league/lea
 import 'package:fantavacanze_official/features/league/domain/entities/member_profile.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/note.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/rule/rule.dart';
+import 'package:fantavacanze_official/features/league/domain/entities/partner/partner_catalog.dart';
+import 'package:fantavacanze_official/features/league/domain/entities/partner/partner_search_result.dart';
+import 'package:fantavacanze_official/features/league/domain/entities/partner/general_ranking_entry.dart';
 import 'package:fantavacanze_official/features/league/domain/repository/league_repository.dart';
 import 'package:fpdart/fpdart.dart';
 
@@ -770,6 +773,117 @@ class LeagueRepositoryImpl implements LeagueRepository {
       return Left(Failure(e.message));
     } on CacheException catch (e) {
       return Left(Failure('Errore nella cache: ${e.message}'));
+    }
+  }
+
+  @override
+  Future<Either<Failure, PartnerCatalog>> getPartnerDestinations(
+    String partnerSlug,
+  ) async {
+    try {
+      if (!await connectionChecker.isConnected) {
+        return Left(
+          Failure("Nessuna connessione ad internet, riprova appena sarai connesso."),
+        );
+      }
+      final catalog = await remoteDataSource.getPartnerDestinations(partnerSlug);
+      return Right(catalog);
+    } on ServerException catch (e) {
+      return Left(Failure(e.message));
+    }
+  }
+
+  @override
+  Future<Either<Failure, League>> createPartnerLeague({
+    required String userName,
+    required String destinationId,
+    required String name,
+    required String password,
+    String? description,
+  }) async {
+    try {
+      if (!await connectionChecker.isConnected) {
+        return Left(
+          Failure("Nessuna connessione ad internet, riprova appena sarai connesso."),
+        );
+      }
+      final league = await remoteDataSource.createPartnerLeague(
+        destinationId: destinationId,
+        name: name,
+        password: password,
+        description: description,
+      );
+
+      await localDataSource.cacheLeague(league);
+      return Right(league);
+    } on ServerException catch (e) {
+      return Left(Failure(e.message));
+    } on CacheException catch (e) {
+      return Left(Failure('Errore nella cache: ${e.message}'));
+    }
+  }
+
+  @override
+  Future<Either<Failure, PartnerSearchResult>> searchPartnerLeague({
+    required String inviteCode,
+    required String password,
+  }) async {
+    try {
+      if (!await connectionChecker.isConnected) {
+        return Left(
+          Failure("Nessuna connessione ad internet, riprova appena sarai connesso."),
+        );
+      }
+      final result = await remoteDataSource.searchPartnerLeague(
+        inviteCode: inviteCode,
+        password: password,
+      );
+      return Right(result);
+    } on ServerException catch (e) {
+      return Left(Failure(e.message));
+    }
+  }
+
+  @override
+  Future<Either<Failure, League>> joinPartnerLeague({
+    required String userName,
+    required String inviteCode,
+    required String password,
+  }) async {
+    try {
+      if (!await connectionChecker.isConnected) {
+        return Left(
+          Failure("Nessuna connessione ad internet, riprova appena sarai connesso."),
+        );
+      }
+      final league = await remoteDataSource.joinPartnerLeague(
+        inviteCode: inviteCode,
+        password: password,
+      );
+
+      await localDataSource.cacheLeague(league);
+      return Right(league);
+    } on ServerException catch (e) {
+      return Left(Failure(e.message));
+    } on CacheException catch (e) {
+      return Left(Failure('Errore nella cache: ${e.message}'));
+    }
+  }
+
+  @override
+  Future<Either<Failure, List<GeneralRankingEntry>>> getPartnerGeneralRanking(
+    String leagueId,
+  ) async {
+    try {
+      if (!await connectionChecker.isConnected) {
+        return Left(
+          Failure("Nessuna connessione ad internet, riprova appena sarai connesso."),
+        );
+      }
+      final ranking = await remoteDataSource.getPartnerGeneralRanking(leagueId);
+      return Right(ranking);
+    } on ServerException catch (e) {
+      return Left(Failure(e.message));
     }
   }
 }
