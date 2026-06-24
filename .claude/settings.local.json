@@ -10,7 +10,23 @@
       "WebFetch(domain:raw.githubusercontent.com)",
       "Bash(gh pr *)",
       "WebFetch(domain:appupgrade.dev)",
-      "WebFetch(domain:pro.codewithandrea.com)"
+      "WebFetch(domain:pro.codewithandrea.com)",
+      "Bash(grep -rhA1 \"\\\\.rpc\\(\" lib --include=\"*.dart\")",
+      "Bash(grep -nA1 \"\\\\.rpc\\(\" lib/features/league/data/datasources/remote/daily_challenges_remote_data_source.dart)",
+      "Bash(mkdir -p \"/Volumes/External Drive/Files/Work/Codes/flutter_projects/fantavacanze_official/.claude/skills/clean-architecture\")",
+      "Bash(mkdir -p \"/Volumes/External Drive/Files/Work/Codes/flutter_projects/fantavacanze_official/.claude/skills/bloc\")",
+      "Bash(mkdir -p \"/Volumes/External Drive/Files/Work/Codes/flutter_projects/fantavacanze_official/.claude/skills/firebase-messaging\")",
+      "Bash(mkdir -p \"/Volumes/External Drive/Files/Work/Codes/flutter_projects/fantavacanze_official/.claude/skills/code-review\")",
+      "Bash(mkdir -p \"/Volumes/External Drive/Files/Work/Codes/flutter_projects/fantavacanze_official/.claude/skills/testing\")",
+      "Bash(cp /Users/alex/flutter-ai-rules/skills/dart-3-updates/SKILL.md '/Volumes/External Drive/Files/Work/Codes/flutter_projects/fantavacanze_official/.claude/skills/dart-3-updates/SKILL.md')",
+      "Bash(cp /Users/alex/flutter-ai-rules/skills/flutter-errors/SKILL.md '/Volumes/External Drive/Files/Work/Codes/flutter_projects/fantavacanze_official/.claude/skills/flutter-errors/SKILL.md')",
+      "Bash(cp /Users/alex/flutter-ai-rules/skills/mocktail/SKILL.md '/Volumes/External Drive/Files/Work/Codes/flutter_projects/fantavacanze_official/.claude/skills/mocktail/SKILL.md')",
+      "mcp__supabase__get_advisors",
+      "mcp__supabase__execute_sql",
+      "Bash(cd *)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(echo \"=== EXIT $? ===\")"
     ]
   }
 }

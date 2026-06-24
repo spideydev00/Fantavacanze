@@ -1,361 +1,162 @@
-# Fantavacanze - AI Assistant Instructions
+# Fantavacanze - Claude Instructions
 
-## Project Overview
+## Project overview
 
-Fantavacanze is a competitive social gaming Flutter app using **Clean Architecture** with Supabase backend, Firebase messaging, and offline-first caching. The app enables users to create/join leagues, complete daily challenges, and play real-time multiplayer games.
+Fantavacanze is a competitive social gaming Flutter app built with Clean Architecture.
+The app lets users create or join leagues, complete challenges, manage scores, receive notifications, and interact with real-time or offline-first features.
 
-## Architecture & Core Patterns
+The backend is based mainly on Supabase. Firebase is used for push notifications. Hive is used for local/offline caching.
 
-### Clean Architecture Structure
+## Tech stack
 
-- **Data Layer**: `lib/features/[feature]/data/` - models, repositories, datasources
-- **Domain Layer**: `lib/features/[feature]/domain/` - entities, use cases, repository interfaces
-- **Presentation Layer**: `lib/features/[feature]/presentation/` - UI, BLoC, pages
+* Flutter / Dart
+* Clean Architecture
+* flutter_bloc for state management
+* get_it for dependency injection
+* fpdart for Either-based error handling
+* Supabase for auth, database, RPCs, storage, and realtime features (incl. realtime multiplayer games)
+* Firebase Cloud Messaging for push notifications (sent server-side via Supabase Edge Functions)
+* Hive for local caching
+* internet_connection_checker_plus for network checks
+* bloc_test + mocktail for tests (no code generation for mocks)
 
-### Key Dependencies & Patterns
+## Architecture rules
 
-- **State Management**: `flutter_bloc` with global cubits in `lib/core/cubits/`
-- **Dependency Injection**: `get_it` service locator pattern in `lib/init_dependencies/init_dependencies.main.dart`
-- **Functional Programming**: `fpdart` for `Either<Failure, Success>` return types
-- **Local Storage**: `hive` boxes for offline-first caching strategy
-- **Network**: `internet_connection_checker_plus` to determine cache vs remote data
+The project follows feature-based Clean Architecture. Features: `auth`, `league` (the core), `games`, `app`, `blog`.
 
-### Use Case Pattern
+Typical structure:
 
-All business logic follows the UseCase pattern defined in `lib/core/use-case/usecase.dart`:
-
-```dart
-abstract interface class Usecase<SuccessType, Params> {
-  Future<Either<Failure, SuccessType>> call(Params params);
-}
+```txt
+lib/features/[feature]/
+  data/
+    datasources/
+      remote/
+      local/                     # only if offline-first
+    models/
+      [entity]_model/
+    repository/
+  domain/
+    entities/
+    repository/
+    use_cases/
+      remote/
+      local/
+  presentation/
+    bloc/
+      [feature]_bloc/            # blocs are grouped per concern
+    pages/
 ```
 
-## Critical Development Workflows
+See `.claude/skills/clean-architecture/SKILL.md` for the full pattern, and `docs/ai/` for feature deep-dives.
 
-### Dependency Registration
+Core shared logic lives in:
 
-All dependencies must be registered in `lib/init_dependencies/init_dependencies.main.dart`:
-
-1. DataSources (remote/local) as factories
-2. Repositories as factories
-3. Use cases as factories
-4. BLoCs as factories
-5. Global cubits as singletons
-
-### Adding New Features
-
-1. Create feature folder structure under `lib/features/[feature_name]/`
-2. Define entities in `domain/entities/`
-3. Create repository interface in `domain/repository/`
-4. Implement data models extending entities in `data/models/`
-5. Implement remote/local datasources in `data/datasources/`
-6. Implement repository in `data/repository/`
-7. Create use cases in `domain/use_cases/`
-8. Register all dependencies in `init_dependencies.main.dart`
-9. Create BLoC in `presentation/bloc/`
-10. Build UI in `presentation/pages/`
-
-### Caching Strategy
-
-All data operations follow offline-first pattern using `lib/core/network/connection_checker.dart`:
-
-- Check local cache first via `LocalDataSource`
-- If network available and cache empty/stale, fetch from remote
-- Always cache successful remote responses
-- Use `ConnectionChecker` to determine data source
-
-**Daily Challenges Cache Logic**:
-
-```dart
-// In lib/features/league/data/repository/league_repository_impl.dart
-getDailyChallenges() {
-  // 1. Try cache first
-  final cached = await localDataSource.getCachedDailyChallenges();
-
-  // 2. If cache needs refresh, call remote
-  if (needsRefresh) {
-    final remote = await remoteDataSource.getDailyChallenges();
-    await localDataSource.cacheDailyChallenges(remote);
-  }
-
-  return cached;
-}
+```txt
+lib/core/
+lib/init_dependencies/
 ```
 
-## Feature Deep Dive
+Keep the existing architecture consistent. Do not introduce alternative patterns unless explicitly requested.
 
-### Auth Feature (`lib/features/auth/`)
+## Development rules
 
-Complete authentication system following Clean Architecture:
+* Reuse existing patterns before creating new ones.
+* Keep entities pure and free from serialization logic.
+* Put JSON serialization in data models.
+* Repository methods should return `Either<Failure, Success>`.
+* Remote datasources may throw `ServerException`.
+* Local datasources may throw `CacheException`.
+* Register all new datasources, repositories, use cases, BLoCs, and cubits in `lib/init_dependencies/init_dependencies.main.dart`.
+* Use feature BLoCs as factories and global cubits as lazy singletons, following the current setup (known exception: `AuthBloc` is a lazy singleton because auth state is app-global).
+* Do not add new dependencies unless needed.
+* Do not make large unrelated refactors during focused tasks.
+* Do not commit secrets, API keys, or Supabase credentials.
 
-**Data Layer**:
+## Common commands
 
-- `lib/features/auth/data/datasources/auth_remote_data_source.dart` handles Supabase OAuth (Google/Apple) and email/password
-- `lib/features/auth/data/models/user_model.dart` extends domain `User` entity with serialization methods
-- `lib/features/auth/data/repository/auth_repository_impl.dart` uses `ConnectionChecker` for offline/online handling
-
-**Domain Layer**:
-
-- Pure `lib/features/auth/domain/entities/user.dart` entity without serialization logic
-- `lib/features/auth/domain/repository/auth_repository.dart` interface defines contract
-- Individual use cases in `lib/features/auth/domain/use-cases/` like `get_current_user.dart` implement `Usecase<Success, Params>`
-
-**Presentation Layer**:
-
-- `lib/features/auth/presentation/bloc/auth_bloc.dart` manages authentication state with events/states pattern
-- UI theming via `lib/core/extensions/context_extension.dart`, `lib/core/extensions/colors_extension.dart`, `lib/core/theme/sizes.dart`
-- Global state sync: `_emitAuthSuccess()` updates `AppUserCubit` for app-wide user state
-
-**Key Pages**:
-
-- `lib/features/auth/presentation/pages/onboarding.dart` - Initial app onboarding
-- `lib/features/auth/presentation/pages/social_login.dart` - OAuth authentication
-- `lib/features/auth/presentation/pages/standard_login.dart` - Email/password login
-- `lib/features/auth/presentation/pages/signup.dart` - Account creation
-
-**Initialization Flow**:
-
-```dart
-// lib/main.dart startup
-Future<void> _initializeApp() async {
-  await context.read<AppUserCubit>().getCurrentUser();
-}
+```bash
+flutter pub get
+flutter analyze
+flutter test
+dart run build_runner build --delete-conflicting-outputs
 ```
 
-### League Feature (`lib/features/league/`)
+Run `build_runner` after changing generated models or files that rely on generated code.
 
-Core feature managing competitive leagues with complex domain models:
+## Offline-first and caching
 
-**Key Models & Relationships**:
+The app uses an offline-first approach.
 
-- `lib/features/league/data/models/league_model/league_model.dart`: Central entity containing all other objects, created by admin
-- `lib/features/league/data/models/participant_model/participant_model.dart`: Base class for:
-  - `lib/features/league/data/models/individual_participant_model/individual_participant_model.dart`: Solo competitors
-  - `lib/features/league/data/models/team_participant_model/team_participant_model.dart`: Groups with `SimpleParticipantModel` members + captain
-- `lib/features/league/data/models/event_model/event_model.dart`: Scoring objectives based on rules or manual admin input
-- `lib/features/league/data/models/rule_model/rule_model.dart`: League-specific scoring rules set during creation
-- `lib/features/league/data/models/memory_model/memory_model.dart`: Photo memories in `lib/features/league/presentation/pages/navigation/memories/memories_page.dart`
-- `lib/features/league/data/models/note_model/note_model.dart`: Personal reminders cached locally via Hive
+When working on repository logic:
 
-**Daily Challenges System**:
-Complex workflow involving multiple components in `lib/features/league/domain/use_cases/remote/daily_challenges/`:
+* check local cache when appropriate
+* use `ConnectionChecker` before remote operations
+* cache successful remote responses when relevant
+* preserve existing Hive box conventions
 
-1. **Generation**: Daily at 7:00 AM, `user_daily_challenges` table reset
-   - 6 challenges per user (3 primary + 3 backup)
-   - Premium users see all, free users see 1
-   - Generated on-demand via RPC `get_daily_challenges`
+## Supabase and SQL rules
 
-2. **Completion Flow**:
+When generating SQL, place files according to their purpose:
 
-   ```dart
-   // lib/features/league/domain/use_cases/remote/daily_challenges/mark_challenge_as_completed.dart
-   markChallengeAsCompleted() {
-     if (user.isAdmin) {
-       // Direct event creation
-     } else {
-       // Send notification to admins for approval
-       // Set is_pending_approval = true
-     }
-   }
-   ```
-
-3. **Admin Approval System**:
-   - Non-admin completions trigger `lib/features/league/domain/use_cases/remote/notifications/send_challenge_notification.dart`
-   - Supabase webhook calls `supabase/functions/daily-challenge-notification/index.ts`
-   - FCM pushes to all league admins
-   - Admins can use `lib/features/league/domain/use_cases/remote/daily_challenges/approve_daily_challenge.dart` or `reject_daily_challenge.dart`
-
-4. **Refresh Mechanism**:
-   - Each challenge can be refreshed once (swapped with backup)
-   - `lib/features/league/domain/use_cases/remote/daily_challenges/update_challenge_refresh_status.dart` manages state transitions
-
-**Key Pages**:
-
-- `lib/features/league/presentation/pages/dashboard/sections/dashboard.dart` - App shell with navigation
-- `lib/features/league/presentation/pages/navigation/homepage/home.dart` - Main dashboard
-- `lib/features/league/presentation/pages/navigation/create_league/create_league_page.dart` - League creation
-- `lib/features/league/presentation/pages/navigation/leaderboard/leaderboard_page.dart` - Standings
-- `lib/features/league/presentation/pages/navigation/admin/admin_page.dart` - Admin controls
-
-**Navigation Architecture**:
-
-```dart
-// lib/features/league/presentation/pages/dashboard/sections/dashboard.dart - App shell with navigation
-BlocBuilder<AppNavigationCubit, int>(
-  builder: (context, selectedIndex) {
-    final navItems = hasLeagues ? participantNavbarItems : nonParticipantNavbarItems;
-    // Dynamic navigation based on league membership
-  }
-)
+```txt
+supabase/schemas/         table schemas, enums, RLS policies
+supabase/db_functions/    RPC and PL/pgSQL functions
+supabase/db_triggers/     triggers
+supabase/rls/             row level security policies for given tables
+supabase/buckets/         buckets' rls
+supabase/edge_functions/  edge functions     
 ```
+Before performing database operations always ask to the user. Each time something changes in the database update the corresponding code in /supabase.
 
-### Core Global State (`lib/core/cubits/`)
+## MCP usage
 
-Five singleton cubits manage app-wide state:
+* Use Context7 when implementation depends on library or framework details.
+* Use Supabase MCP before changing database, auth, storage, RPC, or realtime-related code.
+* Use GitHub MCP when repository history, issues, branches, or PR context is useful.
+* Treat Supabase data carefully. Prefer read-only inspection unless a write operation is explicitly requested.
 
-1. **`lib/core/cubits/app_user/app_user_cubit.dart`**: Current user authentication state
-2. **`lib/core/cubits/app_league/app_league_cubit.dart`**: User's league memberships, loaded after auth
-3. **`lib/core/cubits/app_navigation/app_navigation_cubit.dart`**: Bottom navigation index management
-4. **`lib/core/cubits/app_theme/app_theme_cubit.dart`**: Dark/light theme with SharedPreferences persistence
-5. **`lib/core/cubits/seasonal_event/seasonal_event_cubit.dart`**: Special seasonal events and promotions management
+## Workflow
 
-**Additional Utilities**:
+You are an architect, so your job is to:
 
-- `lib/core/cubits/floating_button_animation/floating_button_animation_cubit.dart` - FAB animations
-- `lib/core/cubits/notification_count/notification_count_cubit.dart` - Notification badge counts
+* inspect the existing implementation
+* identify the related feature/layer
+* follow current naming and file organization
+* create a clear prompt for codex to implement the required modification (always include expected output)
 
-### Seasonal Events System (`lib/core/cubits/seasonal_event/`)
+After receiveing the output you will have to:
 
-Manages special events, promotions, and seasonal content:
+* summarize what changed
+* mention affected files
+* run relevant checks when possible
+* call out anything that still needs manual verification
 
-**Core Service** (`lib/core/services/seasonal_event_service.dart`):
+## Skills
 
-- Handles seasonal promotions and special events
-- Integrates with app theming and content delivery
-- Manages time-based event activation/deactivation
+Project-specific skills live in `.claude/skills/`. They are auto-loaded; invoke the relevant one before starting matching work.
 
-**Use Cases**:
+| Skill | Use it when |
+|---|---|
+| [clean-architecture](.claude/skills/clean-architecture/SKILL.md) | Creating a feature, adding a use case/entity/repository/datasource, wiring `get_it` DI, deciding which layer owns logic, or implementing offline-first caching. |
+| [bloc](.claude/skills/bloc/SKILL.md) | Creating a Cubit/Bloc, modeling state, naming events/states, wiring `BlocBuilder`/`BlocListener`, or folding `Either` results in a bloc. |
+| [testing](.claude/skills/testing/SKILL.md) | Writing or reviewing unit tests, use case tests, repository tests, or `bloc_test` cases. |
+| [mocktail](.claude/skills/mocktail/SKILL.md) | Creating mocks/fakes, stubbing, verifying interactions, or registering fallback values in tests. |
+| [code-review](.claude/skills/code-review/SKILL.md) | Reviewing a PR, branch, or diff against the project checklist (CA boundaries, `Either`, DI, Italian strings, Supabase/Firebase split). |
+| [effective-dart](.claude/skills/effective-dart/SKILL.md) | Writing or refactoring Dart for idiomatic style, naming, type annotations, or comment discipline. |
+| [dart-3-updates](.claude/skills/dart-3-updates/SKILL.md) | Writing/refactoring `switch` or `if-else` chains, patterns, sealed classes, records, or destructuring. |
+| [firebase-messaging](.claude/skills/firebase-messaging/SKILL.md) | Handling FCM permissions, tokens, foreground/background/terminated messages, or notification tap routing (client-side only; sending is server-side via Supabase Edge Functions). |
+| [flutter-errors](.claude/skills/flutter-errors/SKILL.md) | Diagnosing layout/scroll/`setState`-during-build runtime errors (RenderFlex overflow, unbounded constraints, etc.). |
 
-- Holiday-themed UI modifications
-- Special promotional content
-- Time-limited features activation
-- Seasonal rule sets for leagues
+## Additional documentation
 
-## Key Integration Points
+For deeper project context, consult the documentation files under `docs/ai/` when relevant.
 
-### Authentication Flow
-
-- Supabase Auth handles OAuth (Google/Apple) and email/password
-- User state managed by `AppUserCubit` singleton
-- FCM token automatically synced on auth state changes
-- RevenueCat integration for premium subscriptions via `lib/features/league/domain/use_cases/remote/subscription/`
-
-### Real-time Features
-
-- **Notifications**: Firebase FCM + Supabase realtime subscriptions
-- **Games**: Supabase realtime for multiplayer lobby/game sessions with live player updates
-- **Daily Challenges**: Server-side functions trigger push notifications
-- **Game Synchronization**: Real-time state updates for timers, turns, and player actions
-- **Seasonal Events**: Time-based content delivery and feature activation
-
-### Data Synchronization
-
-- **Hive Boxes**: Used by `lib/features/league/data/datasources/local/local_data_source.dart`
-  - `leaguesBox`, `rulesBox`, `notesBox`, `challengesBox`, `notificationsBox`
-- **Cache Management**: Automatic cleanup of old notifications (max 100 cached)
-- **Offline Support**: All core features work offline with cached data
-
-### UI Components & Theming
-
-- **Core Widgets**: `lib/core/widgets/` - Reusable UI components
-- **Theme System**: `lib/core/theme/` - Colors, sizes, and theme definitions
-- **Extensions**: `lib/core/extensions/` - Context and color extensions
-- **Navigation**: `lib/core/constants/navigation_items.dart` - App navigation structure
-
-### Error Handling & Utilities
-
-- **Errors**: `lib/core/errors/` - Exception and failure handling
-- **Utils**: `lib/core/utils/` - Helper functions for dates, media, routing, etc.
-- **Services**: `lib/core/services/` - Ad management, GDPR, reviews
-
-## Project-Specific Conventions
-
-### UserModel Structure
-
-Located in `lib/features/auth/data/models/user_model.dart`:
-
-```dart
-const UserModel({
-  required super.id,
-  required super.email,
-  required super.name,
-  super.isPremium = false,
-  required super.isOnboarded,
-  required super.isAdult,
-  required super.isTermsAccepted,
-});
-```
-
-### Connection Checker Pattern
-
-All repositories use consistent offline/online handling via `lib/core/network/connection_checker.dart`:
-
-```dart
-abstract interface class ConnectionChecker {
-  Future<bool> get isConnected;
-}
-
-class ConnectionCheckerImpl implements ConnectionChecker {
-  final InternetConnection internetConnection;
-
-  @override
-  Future<bool> get isConnected async =>
-    await internetConnection.hasInternetAccess;
-}
-```
-
-### Error Handling
-
-- All repository methods return `Either<Failure, Success>` using types from `lib/core/errors/`
-- Remote datasources throw `ServerException`
-- Local datasources throw `CacheException`
-- Use `_tryDatabaseOperation()` wrapper for consistent error handling
-
-### BLoC Event Naming
-
-- `Get[Entity]Event` for data fetching
-- `[Action][Entity]Event` for mutations (e.g., `CreateLeagueEvent`, `UpdateLeagueEvent`)
-- State classes follow `[Entity]Loading/Loaded/Error` pattern
-
-### File Organization
-
-- Models use `.fromJson()/.toJson()` for Supabase serialization
-- Entities are pure domain objects without serialization
-- Use `part` files for large dependency injection configurations
-- Constants organized by feature in `lib/core/constants/`
-
-### SQL File Organization
-
-Whenever you generate new SQL, place it in the matching `supabase/` folder
-based on what it is:
-
-- **Table schemas** (CREATE TABLE, enums, RLS policies on the table) →
-  `supabase/schemas/` as the "target state" of that object.
-- **RPC / PL/pgSQL functions** (CREATE OR REPLACE FUNCTION) →
-  `supabase/db_functions/`.
-- **Triggers** (CREATE TRIGGER) → `supabase/db_triggers/`.
-
-If the SQL is **not** the declarative final shape but something that has to
-run later against the live DB (data migrations, FK swaps, seeds, ALTER TABLE,
-DROP TABLE, trigger attachments, etc.), place it under
-`supabase/to-do/[descriptive_subfolder]/` with numeric prefixes
-(`01_*.sql`, `02_*.sql`, ...) reflecting execution order. These scripts are
-run manually on Supabase at the next deploy.
-
-Conventions for `to-do/` scripts:
-
-- Idempotent: use `CREATE ... IF NOT EXISTS`, `DROP ... IF EXISTS`,
-  `ON CONFLICT DO ...`, `DO $$ ... EXCEPTION WHEN duplicate_object THEN null
-  END $$;` for enums, etc., so they can be safely re-run.
-- Each subfolder should contain a short `README.md` explaining the goal and
-  the real execution order if the numeric prefix is misleading
-  (dependencies sometimes force `01 → 02 → 04 → 03`).
-- Italian comments, concise, no emoji, no accents — match the style of the
-  files already in `supabase/`.
-
-Note: `/supabase` is gitignored. These files live in the local repo but are
-not versioned via Git; backup is handled separately.
-
-## Common Gotchas
-
-1. **Service Locator**: Always register dependencies before accessing with `serviceLocator<T>()`
-2. **Hive Initialization**: Ensure `_initializeHive()` completes before using boxes
-3. **BLoC Dependencies**: Cubits are singletons, BLoCs are factories for proper lifecycle
-4. **Firebase Setup**: Both Firebase AND Supabase are used - Firebase for FCM, Supabase for data
-5. **Connection Handling**: Always check `connectionChecker.isConnected` before remote operations
-6. **Italian Localization**: UI text and error messages are in Italian
-7. **Constants Organization**: Feature-specific constants are in `lib/core/constants/[feature]/`
-8. **Model Generation**: Remember to run `build_runner` after modifying models with `.g.dart` files
-9. **Seasonal Events**: Consider seasonal event state when displaying time-sensitive content
-
-Focus on maintaining the established patterns rather than introducing new approaches. The codebase prioritizes consistency and follows proven Clean Architecture principles throughout.
+| Document | Covers |
+|---|---|
+| [docs/ai/architecture.md](docs/ai/architecture.md) | Layers, feature list (`auth`, `league`, `games`, `app`, `blog`), use case pattern, DI, global cubits. |
+| [docs/ai/features/auth.md](docs/ai/features/auth.md) | Auth feature: `User`/`UserModel` fields, use cases, pages, FCM token sync, `AppUserCubit`. |
+| [docs/ai/features/league.md](docs/ai/features/league.md) | League feature: models, pages, the 4 BLoCs, navigation shell, subscriptions. |
+| [docs/ai/daily-challenges.md](docs/ai/daily-challenges.md) | Daily challenges: generation, `is_unlocked`/positions, premium/free, refresh, admin approval, RPCs/edge functions. |
+| [docs/ai/supabase.md](docs/ai/supabase.md) | Backend map: tables, enums, RPCs (client vs internal), triggers, edge functions, RLS, buckets, client integration. |
+| [docs/ai/caching.md](docs/ai/caching.md) | Offline-first flow, `ConnectionChecker`, Hive boxes and their stored types, notification cache caps. |
+| [docs/ai/gotchas.md](docs/ai/gotchas.md) | Recurring pitfalls checklist (DI, Hive init, CA boundaries, Italian strings, no seasonal cubit, SQL folders). |
