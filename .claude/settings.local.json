@@ -28,7 +28,16 @@
       "Bash(git commit -m ' *)",
       "Bash(echo \"=== EXIT $? ===\")",
       "Bash(ls CLAUDE.md CLAUDE.MD)",
-      "Bash(grep -n \"flutter-errors\\\\|flutter-ui-ux\\\\|flutter-expert\\\\|flutter-responsive\\\\|\\\\.claude/skills\" CLAUDE.md)"
+      "Bash(grep -n \"flutter-errors\\\\|flutter-ui-ux\\\\|flutter-expert\\\\|flutter-responsive\\\\|\\\\.claude/skills\" CLAUDE.md)",
+      "Bash(python3 -)",
+      "Bash(rm -f supabase/rls/partner_rounds/select_rls.sql supabase/rls/partner_destinations/select_rls.sql)",
+      "Bash(rmdir supabase/rls/partner_rounds supabase/rls/partner_destinations)",
+      "Bash(awk '/LeagueModel _convertResponseToModel/{f=1} f{print NR\": \"$0} /^  }$/{if\\(f\\){exit}}' lib/features/league/data/datasources/remote/league_remote_data_source.dart)",
+      "Bash(grep -nA15 \"dev_dependencies:\" pubspec.yaml)",
+      "Bash(flutter test *)",
+      "Bash(sed -n '1,40p' AGENTS.md)",
+      "Bash(grep -in \"skill\" AGENTS.md GEMINI.md)",
+      "Bash(git commit *)"
     ]
   }
 }
