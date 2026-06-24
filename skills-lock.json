@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "skills": {
+    "flutter-expert": {
+      "source": "smithery.ai",
+      "sourceType": "well-known",
+      "computedHash": "e28eee451a918cfa15e89627fde48838dc63bf2a72d51b2af12ccc419fd7968b"
+    },
+    "flutter-ui-ux": {
+      "source": "smithery.ai",
+      "sourceType": "well-known",
+      "computedHash": "a0fc21d9328f80ab16c3e3463a12f4fd86462bc6370fe0ea016dc06ae1616654"
+    }
+  }
+}
