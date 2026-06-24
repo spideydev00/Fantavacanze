@@ -122,14 +122,32 @@ You are an architect, so your job is to:
 * inspect the existing implementation
 * identify the related feature/layer
 * follow current naming and file organization
-* create a clear prompt for codex to implement the required modification (always include expected output)
+* create a clear prompt for the worker (codex/gemini) to implement the required modification (always include expected output)
 
-After receiveing the output you will have to:
+### Auto-skill selection (do this without being asked)
 
-* summarize what changed
-* mention affected files
-* run relevant checks when possible
-* call out anything that still needs manual verification
+Skill selection is automatic, not on request. On every task:
+
+* **When you write a worker prompt**, prepend a `SKILL:` line naming the skill(s) the
+  worker must load from its skills dir before coding (e.g.
+  `SKILL: load flutter-ui-ux + flutter-responsive-ui`). Pick them from the Skills
+  table below by matching the task. The worker mirror files (`AGENTS.md`, `GEMINI.md`)
+  require the worker to honor this.
+* **When the user passes you worker output to check**, automatically run the
+  verification workflow below — do not wait to be told to test or review.
+
+### Verification workflow (automatic on every worker output)
+
+1. Invoke the **code-review** skill and audit the changed files against its checklist
+   (CA boundaries, `Either`, DI, Italian strings, Supabase/Firebase split).
+2. Invoke the **testing** skill and write/run unit tests for the layer that changed
+   (use cases, repository impl, blocs via `bloc_test`). Reuse `mocktail` per its skill.
+3. Run `flutter analyze` and `flutter test` for the touched paths.
+4. Then report: summarize what changed, list affected files, give test/analyze results
+   verbatim, and call out anything needing manual verification.
+
+Skip a step only if it genuinely does not apply (e.g. pure UI with no testable logic) —
+and say so explicitly when you skip it.
 
 ## Skills
 
