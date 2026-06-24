@@ -39,6 +39,7 @@ class DailyChallengesRepositoryImpl implements DailyChallengesRepository {
         // (admin potrebbe aver approvato/rifiutato dal suo dispositivo).
         final hasPendingApproval = cachedChallenges
             .any((c) => c.isPendingApproval && !c.isCompleted && !c.isRejected);
+            
         final hasInvalidCache = _hasInvalidDailyChallengeCache(
           cachedChallenges,
         );
