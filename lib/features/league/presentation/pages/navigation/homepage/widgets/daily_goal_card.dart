@@ -177,27 +177,43 @@ class _DailyGoalCardState extends State<DailyGoalCard>
           );
         },
       ),
+      // ponytail: glassmorphism sperimentale (NON committare finché non validato)
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: ThemeSizes.lg),
         constraints: const BoxConstraints(minHeight: 60),
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [widget.startColor, widget.endColor],
-          ),
+        child: ClipRRect(
           borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusMd),
-          boxShadow: [
-            BoxShadow(
-              color: widget.endColor.withValues(alpha: 0.3),
-              blurRadius: 8,
-              offset: const Offset(0, 4),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    widget.startColor.withValues(alpha: 0.38),
+                    widget.endColor.withValues(alpha: 0.26),
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusMd),
+                border: Border.all(
+                  color: Colors.white.withValues(alpha: 0.25),
+                  width: 1.2,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: widget.endColor.withValues(alpha: 0.2),
+                    blurRadius: 12,
+                    offset: const Offset(0, 6),
+                  ),
+                ],
+              ),
+              child: Material(
+                color: Colors.transparent,
+                child: _buildUnlockedContent(context),
+              ),
             ),
-          ],
-        ),
-        child: Material(
-          color: Colors.transparent,
-          child: _buildUnlockedContent(context),
+          ),
         ),
       ),
     );
