@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:fantavacanze_official/core/constants/game_mode.dart';
 import 'package:fantavacanze_official/core/constants/rules/seasonal_default_rules.dart';
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
@@ -8,14 +10,17 @@ import 'package:fantavacanze_official/core/utils/show-snackbar-or-paywall/show_s
 import 'package:fantavacanze_official/core/widgets/dialogs/form_dialog.dart';
 import 'package:fantavacanze_official/core/widgets/rules/type_selector.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/league/league.dart';
+import 'package:fantavacanze_official/features/league/domain/entities/partner/partner_destination.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/rule/rule.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc/league_bloc.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc/league_event.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc/league_state.dart';
+import 'package:fantavacanze_official/features/league/presentation/bloc/partner_bloc/partner_cubit.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/create_league/league_created_page.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/create_league/widgets/basic_info_step.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/create_league/widgets/rules_step.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/create_league/widgets/team_type_step.dart';
+import 'package:fantavacanze_official/init_dependencies/init_dependencies.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -34,6 +39,8 @@ class CreateLeaguePage extends StatefulWidget {
 }
 
 class _CreateLeaguePageState extends State<CreateLeaguePage> {
+  static const String _packagePartnerSlug = 'b-eazy';
+
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _descriptionController = TextEditingController();
@@ -44,6 +51,11 @@ class _CreateLeaguePageState extends State<CreateLeaguePage> {
   GameMode _selectedRuleMode = GameMode.allTogether;
   bool _isLoadingRules = false;
   bool _rulesLoaded = false;
+  late final PartnerCubit _partnerCubit;
+  StreamSubscription<PartnerState>? _partnerSubscription;
+  List<PartnerDestination> _packageDestinations = [];
+  bool _isLoadingPackageDestinations = false;
+  String? _selectedPartnerDestinationId;
 
   // Maps to store rules locally for each mode
   final Map<String, List<Rule>> _cachedRules = {
@@ -60,6 +72,10 @@ class _CreateLeaguePageState extends State<CreateLeaguePage> {
   @override
   void initState() {
     super.initState();
+    _partnerCubit = serviceLocator<PartnerCubit>();
+    _partnerSubscription = _partnerCubit.stream.listen(_handlePartnerState);
+    _partnerCubit.loadDestinations(_packagePartnerSlug);
+
     // Load mixed mode rules by default
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadPredefinedRules(_selectedRuleMode.apiMode);
@@ -73,9 +89,26 @@ class _CreateLeaguePageState extends State<CreateLeaguePage> {
   void dispose() {
     _nameController.dispose();
     _descriptionController.dispose();
+    _partnerSubscription?.cancel();
+    _partnerCubit.close();
     _scrollController.removeListener(_scrollListener);
     _scrollController.dispose();
     super.dispose();
+  }
+
+  void _handlePartnerState(PartnerState state) {
+    if (!mounted) return;
+
+    if (state is PartnerLoading) {
+      setState(() => _isLoadingPackageDestinations = true);
+    } else if (state is PartnerDestinationsLoaded) {
+      setState(() {
+        _isLoadingPackageDestinations = false;
+        _packageDestinations = state.catalog.destinations;
+      });
+    } else if (state is PartnerFailure) {
+      setState(() => _isLoadingPackageDestinations = false);
+    }
   }
 
   void _scrollListener() {
@@ -158,9 +191,7 @@ class _CreateLeaguePageState extends State<CreateLeaguePage> {
                 _rules.add(newRule);
               }
 
-              // Update the cache for the current mode
-              String currentModeKey = _selectedRuleMode.apiMode;
-              _cachedRules[currentModeKey] = List<Rule>.from(_rules);
+              _cacheCurrentRuleModeRules();
             });
           },
         );
@@ -239,9 +270,7 @@ class _CreateLeaguePageState extends State<CreateLeaguePage> {
                   createdAt: rule.createdAt,
                 );
 
-                // Update the cache for the current mode
-                String currentModeKey = _selectedRuleMode.apiMode;
-                _cachedRules[currentModeKey] = List<Rule>.from(_rules);
+                _cacheCurrentRuleModeRules();
               });
 
               Navigator.pop(context);
@@ -256,10 +285,15 @@ class _CreateLeaguePageState extends State<CreateLeaguePage> {
     setState(() {
       _rules.removeAt(index);
 
-      // Update the cache for the current mode
-      String currentModeKey = _selectedRuleMode.apiMode;
-      _cachedRules[currentModeKey] = List<Rule>.from(_rules);
+      _cacheCurrentRuleModeRules();
     });
+  }
+
+  void _cacheCurrentRuleModeRules() {
+    if (_selectedPartnerDestinationId != null) return;
+
+    final currentModeKey = _selectedRuleMode.apiMode;
+    _cachedRules[currentModeKey] = List<Rule>.from(_rules);
   }
 
   void _submitForm() {
@@ -325,10 +359,20 @@ class _CreateLeaguePageState extends State<CreateLeaguePage> {
                 description: _descriptionController.text.trim(),
                 type: _leagueType,
                 rules: _rules,
+                partnerDestinationId: _selectedPartnerDestinationId,
               ),
             );
       }
     }
+  }
+
+  void _handlePartnerDestinationSelected(PartnerDestination destination) {
+    setState(() {
+      _selectedPartnerDestinationId = destination.id;
+      _rules = List<Rule>.from(destination.rules);
+      _rulesLoaded = true;
+      _isLoadingRules = false;
+    });
   }
 
   void _handleRuleModeChanged(GameMode mode) {
@@ -336,13 +380,14 @@ class _CreateLeaguePageState extends State<CreateLeaguePage> {
     String currentModeKey = _selectedRuleMode.apiMode;
 
     // Save current rules to cache
-    if (_rules.isNotEmpty) {
+    if (_rules.isNotEmpty && _selectedPartnerDestinationId == null) {
       _cachedRules[currentModeKey] = List<Rule>.from(_rules);
     }
 
     // Set new mode and clear rules
     setState(() {
       _selectedRuleMode = mode;
+      _selectedPartnerDestinationId = null;
       _rules = [];
       _rulesLoaded = false;
     });
@@ -539,6 +584,14 @@ class _CreateLeaguePageState extends State<CreateLeaguePage> {
                           onAddRule: _addRule,
                           onEditRule: _editRule,
                           onRemoveRule: _removeRule,
+                          packagePartnerSlug: _packagePartnerSlug,
+                          packageDestinations: _packageDestinations,
+                          isLoadingPackageDestinations:
+                              _isLoadingPackageDestinations,
+                          selectedPartnerDestinationId:
+                              _selectedPartnerDestinationId,
+                          onPartnerDestinationSelected:
+                              _handlePartnerDestinationSelected,
                         ),
                         isActive: _currentStep >= 2,
                         state: _currentStep == 2

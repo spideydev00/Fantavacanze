@@ -3,6 +3,7 @@ import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/extensions/context_extension.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:fantavacanze_official/core/widgets/loader.dart';
+import 'package:fantavacanze_official/features/league/domain/entities/partner/partner_destination.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/rule/rule.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/create_league/widgets/game_mode_selector.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/rules/widgets/rule_item.dart';
@@ -18,6 +19,11 @@ class RulesStep extends StatelessWidget {
   final Function(int) onEditRule;
   final Function(int) onRemoveRule;
   final ScrollController? scrollController;
+  final String packagePartnerSlug;
+  final List<PartnerDestination> packageDestinations;
+  final bool isLoadingPackageDestinations;
+  final String? selectedPartnerDestinationId;
+  final ValueChanged<PartnerDestination> onPartnerDestinationSelected;
 
   const RulesStep({
     super.key,
@@ -29,6 +35,11 @@ class RulesStep extends StatelessWidget {
     required this.onAddRule,
     required this.onEditRule,
     required this.onRemoveRule,
+    required this.packagePartnerSlug,
+    required this.packageDestinations,
+    required this.isLoadingPackageDestinations,
+    required this.selectedPartnerDestinationId,
+    required this.onPartnerDestinationSelected,
     this.scrollController,
   });
 
@@ -51,6 +62,17 @@ class RulesStep extends StatelessWidget {
             isLoading: isLoadingRules,
             onModeChanged: onRuleModeChanged,
           ),
+          if (isLoadingPackageDestinations ||
+              packageDestinations.isNotEmpty) ...[
+            const SizedBox(height: ThemeSizes.lg),
+            _PackageDestinationsSection(
+              partnerSlug: packagePartnerSlug,
+              destinations: packageDestinations,
+              isLoading: isLoadingPackageDestinations,
+              selectedDestinationId: selectedPartnerDestinationId,
+              onDestinationSelected: onPartnerDestinationSelected,
+            ),
+          ],
           const SizedBox(height: ThemeSizes.lg),
           if (isLoadingRules)
             _buildLoadingIndicator(context)
@@ -155,6 +177,166 @@ class RulesStep extends StatelessWidget {
           onDelete: () => onRemoveRule(index),
         );
       },
+    );
+  }
+}
+
+class _PackageDestinationsSection extends StatelessWidget {
+  final String partnerSlug;
+  final List<PartnerDestination> destinations;
+  final bool isLoading;
+  final String? selectedDestinationId;
+  final ValueChanged<PartnerDestination> onDestinationSelected;
+
+  const _PackageDestinationsSection({
+    required this.partnerSlug,
+    required this.destinations,
+    required this.isLoading,
+    required this.selectedDestinationId,
+    required this.onDestinationSelected,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final brandColor = context.brandPrimaryColor(partnerSlug);
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(ThemeSizes.md),
+      decoration: BoxDecoration(
+        color: context.secondaryBgColor,
+        borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusLg),
+        border: Border.all(color: brandColor.withValues(alpha: 0.28)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                Icons.business_center_outlined,
+                color: brandColor,
+                size: ThemeSizes.iconSm,
+              ),
+              const SizedBox(width: ThemeSizes.sm),
+              Expanded(
+                child: Text(
+                  'Pacchetti partner',
+                  style: context.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: ThemeSizes.xs),
+          Text(
+            'Seleziona un pacchetto per partire dalle sue regole, poi modificale liberamente.',
+            style: context.textTheme.bodySmall?.copyWith(
+              color: context.textSecondaryColor,
+            ),
+          ),
+          const SizedBox(height: ThemeSizes.md),
+          if (isLoading)
+            Center(child: Loader(color: brandColor))
+          else
+            for (final destination in destinations)
+              _PackageDestinationTile(
+                destination: destination,
+                color: brandColor,
+                selected: destination.id == selectedDestinationId,
+                onTap: () => onDestinationSelected(destination),
+              ),
+        ],
+      ),
+    );
+  }
+}
+
+class _PackageDestinationTile extends StatelessWidget {
+  final PartnerDestination destination;
+  final Color color;
+  final bool selected;
+  final VoidCallback onTap;
+
+  const _PackageDestinationTile({
+    required this.destination,
+    required this.color,
+    required this.selected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: ThemeSizes.sm),
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusMd),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusMd),
+          child: Container(
+            padding: const EdgeInsets.all(ThemeSizes.md),
+            decoration: BoxDecoration(
+              color: selected
+                  ? color.withValues(alpha: 0.14)
+                  : context.bgColor.withValues(alpha: 0.7),
+              borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusMd),
+              border: Border.all(
+                color: selected
+                    ? color.withValues(alpha: 0.7)
+                    : context.borderColor,
+              ),
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  selected
+                      ? Icons.check_circle_rounded
+                      : Icons.radio_button_unchecked_rounded,
+                  color: selected ? color : context.textSecondaryColor,
+                ),
+                const SizedBox(width: ThemeSizes.md),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        destination.name,
+                        style: context.textTheme.bodyLarge?.copyWith(
+                          color: context.textPrimaryColor,
+                          fontWeight:
+                              selected ? FontWeight.bold : FontWeight.w600,
+                        ),
+                      ),
+                      if (destination.description != null) ...[
+                        const SizedBox(height: ThemeSizes.xs),
+                        Text(
+                          destination.description!,
+                          style: context.textTheme.bodySmall?.copyWith(
+                            color: context.textSecondaryColor,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+                const SizedBox(width: ThemeSizes.sm),
+                Text(
+                  '${destination.rules.length} regole',
+                  style: context.textTheme.labelMedium?.copyWith(
+                    color: color,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
