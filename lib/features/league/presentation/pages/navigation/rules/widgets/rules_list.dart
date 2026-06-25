@@ -30,6 +30,9 @@ class RulesList extends StatelessWidget {
   /// Whether the user is an admin (affects available actions)
   final bool isAdmin;
 
+  /// Whether rules are visible but cannot be edited.
+  final bool isReadOnly;
+
   /// The league these rules belong to
   final League league;
 
@@ -46,6 +49,7 @@ class RulesList extends StatelessWidget {
     required this.isBonus,
     required this.isAdmin,
     required this.league,
+    this.isReadOnly = false,
     this.onAddPressed,
     this.onDeleteRule,
   });
@@ -54,6 +58,7 @@ class RulesList extends StatelessWidget {
   Widget build(BuildContext context) {
     // Determine the appropriate color based on rule type
     final color = isBonus ? ColorPalette.success : ColorPalette.error;
+    final canEdit = isAdmin && !isReadOnly;
 
     // Show empty state if no rules
     if (rules.isEmpty) {
@@ -61,9 +66,9 @@ class RulesList extends StatelessWidget {
         message: emptyMessage,
         color: color,
         isBonus: isBonus,
-        isAdmin: isAdmin,
+        isAdmin: canEdit,
         league: league,
-        onAddPressed: onAddPressed ?? showAddRuleDialog,
+        onAddPressed: canEdit ? onAddPressed ?? showAddRuleDialog : null,
       );
     }
 
@@ -94,8 +99,8 @@ class RulesList extends StatelessWidget {
                   child: RuleItem(
                     rule: rule,
                     onEdit:
-                        isAdmin ? () => _editRule(context, rule, league) : null,
-                    onDelete: isAdmin
+                        canEdit ? () => _editRule(context, rule, league) : null,
+                    onDelete: canEdit
                         ? () => onDeleteRule != null
                             ? onDeleteRule!(context, league, rule)
                             : _deleteRule(context, rule, league)

@@ -54,6 +54,8 @@ class _RulesPageState extends State<RulesPage>
             if (state is AppLeagueExists) {
               final league = state.selectedLeague;
               final isAdmin = context.read<LeagueBloc>().isAdmin();
+              final isReadOnly =
+                  league.partner != null && league.partnerRoundId != null;
 
               // Explicitly filter rules by their exact RuleType
               final bonusRules = league.rules
@@ -109,6 +111,7 @@ class _RulesPageState extends State<RulesPage>
                             emptyMessage: 'Nessuna regola bonus disponibile',
                             isBonus: true,
                             isAdmin: isAdmin,
+                            isReadOnly: isReadOnly,
                             league: league,
                             onAddPressed: _addRuleDirectly,
                             onDeleteRule: _showDeleteRuleConfirmation,
@@ -120,6 +123,7 @@ class _RulesPageState extends State<RulesPage>
                             emptyMessage: 'Nessuna regola malus disponibile',
                             isBonus: false,
                             isAdmin: isAdmin,
+                            isReadOnly: isReadOnly,
                             league: league,
                             onAddPressed: _addRuleDirectly,
                             onDeleteRule: _showDeleteRuleConfirmation,
@@ -129,7 +133,7 @@ class _RulesPageState extends State<RulesPage>
                     ),
                   ],
                 ),
-                floatingActionButton: isAdmin
+                floatingActionButton: isAdmin && !isReadOnly
                     ? ValueListenableBuilder<double>(
                         valueListenable: _fabAnimationValue,
                         builder: (context, value, child) {
