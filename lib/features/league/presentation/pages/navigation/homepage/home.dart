@@ -20,6 +20,7 @@ import 'package:fantavacanze_official/features/league/presentation/pages/navigat
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/homepage/widgets/admin_action_card.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/homepage/widgets/articles_list.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/homepage/widgets/daily_goals.dart';
+import 'package:fantavacanze_official/features/league/presentation/pages/navigation/homepage/widgets/partner_entry_section.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/join_league/search_league_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -50,9 +51,7 @@ class HomePage extends StatelessWidget {
                 children: [
                   _buildParticipantContent(
                     context,
-                    state.selectedLeague.admins.contains(currentUserId)
-                        ? true
-                        : false,
+                    state.selectedLeague.admins.contains(currentUserId),
                     state.selectedLeague,
                     isFemale,
                   ),
@@ -85,6 +84,8 @@ class HomePage extends StatelessWidget {
         ),
         const SizedBox(height: 25),
         _buildActionButtons(context),
+        const SizedBox(height: 25),
+        const PartnerEntrySection(),
         const SizedBox(height: 25),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: ThemeSizes.xl),
