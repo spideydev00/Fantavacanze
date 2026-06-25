@@ -1,4 +1,5 @@
 import 'package:fantavacanze_official/core/cubits/app_theme/app_theme_cubit.dart';
+import 'package:fantavacanze_official/core/theme/brand_theme.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -26,4 +27,15 @@ extension ThemeColorsExtension on BuildContext {
 
   /// Border colors
   Color get borderColor => ColorPalette.borderColor(_currentThemeMode);
+
+  Color brandPrimaryColor(String? slug) {
+    final brand = BrandThemes.of(slug);
+    if (brand == null) return primaryColor;
+    return brand.primary(_currentThemeMode);
+  }
+
+  Color brandForegroundColor(String? slug) {
+    final brand = BrandThemes.of(slug);
+    return brand?.foreground ?? textPrimaryColor;
+  }
 }
