@@ -58,7 +58,7 @@ lib/init_dependencies/
 
 Keep the existing architecture consistent. Do not introduce alternative patterns unless explicitly requested.
 
-## Development rules
+## Orchestration rules
 
 * Reuse existing patterns before creating new ones.
 * Keep entities pure and free from serialization logic.
@@ -69,7 +69,7 @@ Keep the existing architecture consistent. Do not introduce alternative patterns
 * Register all new datasources, repositories, use cases, BLoCs, and cubits in `lib/init_dependencies/init_dependencies.main.dart`.
 * Use feature BLoCs as factories and global cubits as lazy singletons, following the current setup (known exception: `AuthBloc` is a lazy singleton because auth state is app-global).
 * Do not add new dependencies unless needed.
-* Do not make large unrelated refactors during focused tasks.
+* Do not propose large unrelated refactors during focused tasks.
 * Do not commit secrets, API keys, or Supabase credentials.
 
 ## Common commands
@@ -122,7 +122,7 @@ You are an architect, so your job is to:
 * inspect the existing implementation
 * identify the related feature/layer
 * follow current naming and file organization
-* create a clear prompt for the worker (codex/gemini) to implement the required modification (always include expected output)
+* use superpowers plugin to identify the best possible implementation path
 
 ### Auto-skill selection (do this without being asked)
 
