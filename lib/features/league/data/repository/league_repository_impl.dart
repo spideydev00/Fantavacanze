@@ -35,6 +35,7 @@ class LeagueRepositoryImpl implements LeagueRepository {
     String? description,
     required LeagueType type,
     required List<Rule> rules,
+    String? partnerDestinationId,
   }) async {
     try {
       if (!await connectionChecker.isConnected) {
@@ -59,6 +60,7 @@ class LeagueRepositoryImpl implements LeagueRepository {
         description: description ?? "",
         type: type,
         rules: ruleModels,
+        partnerDestinationId: partnerDestinationId,
       );
 
       await localDataSource.cacheLeague(league);
@@ -783,10 +785,12 @@ class LeagueRepositoryImpl implements LeagueRepository {
     try {
       if (!await connectionChecker.isConnected) {
         return Left(
-          Failure("Nessuna connessione ad internet, riprova appena sarai connesso."),
+          Failure(
+              "Nessuna connessione ad internet, riprova appena sarai connesso."),
         );
       }
-      final catalog = await remoteDataSource.getPartnerDestinations(partnerSlug);
+      final catalog =
+          await remoteDataSource.getPartnerDestinations(partnerSlug);
       return Right(catalog);
     } on ServerException catch (e) {
       return Left(Failure(e.message));
@@ -804,7 +808,8 @@ class LeagueRepositoryImpl implements LeagueRepository {
     try {
       if (!await connectionChecker.isConnected) {
         return Left(
-          Failure("Nessuna connessione ad internet, riprova appena sarai connesso."),
+          Failure(
+              "Nessuna connessione ad internet, riprova appena sarai connesso."),
         );
       }
       final league = await remoteDataSource.createPartnerLeague(
@@ -831,7 +836,8 @@ class LeagueRepositoryImpl implements LeagueRepository {
     try {
       if (!await connectionChecker.isConnected) {
         return Left(
-          Failure("Nessuna connessione ad internet, riprova appena sarai connesso."),
+          Failure(
+              "Nessuna connessione ad internet, riprova appena sarai connesso."),
         );
       }
       final result = await remoteDataSource.searchPartnerLeague(
@@ -853,7 +859,8 @@ class LeagueRepositoryImpl implements LeagueRepository {
     try {
       if (!await connectionChecker.isConnected) {
         return Left(
-          Failure("Nessuna connessione ad internet, riprova appena sarai connesso."),
+          Failure(
+              "Nessuna connessione ad internet, riprova appena sarai connesso."),
         );
       }
       final league = await remoteDataSource.joinPartnerLeague(
@@ -877,7 +884,8 @@ class LeagueRepositoryImpl implements LeagueRepository {
     try {
       if (!await connectionChecker.isConnected) {
         return Left(
-          Failure("Nessuna connessione ad internet, riprova appena sarai connesso."),
+          Failure(
+              "Nessuna connessione ad internet, riprova appena sarai connesso."),
         );
       }
       final ranking = await remoteDataSource.getPartnerGeneralRanking(leagueId);

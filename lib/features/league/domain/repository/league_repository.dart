@@ -16,6 +16,7 @@ abstract class LeagueRepository {
     String? description,
     required LeagueType type,
     required List<Rule> rules,
+    String? partnerDestinationId,
   });
 
   Future<Either<Failure, League>> getLeague(String leagueId);

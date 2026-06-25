@@ -16,16 +16,24 @@ class CreateLeagueEvent extends LeagueEvent {
   final String? description;
   final LeagueType type;
   final List<Rule> rules;
+  final String? partnerDestinationId;
 
   const CreateLeagueEvent({
     required this.name,
     this.description,
     required this.type,
     required this.rules,
+    this.partnerDestinationId,
   });
 
   @override
-  List<Object?> get props => [name, description, type, rules];
+  List<Object?> get props => [
+        name,
+        description,
+        type,
+        rules,
+        partnerDestinationId,
+      ];
 }
 
 class GetLeagueEvent extends LeagueEvent {

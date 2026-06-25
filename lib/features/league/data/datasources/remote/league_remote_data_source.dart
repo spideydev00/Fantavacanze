@@ -34,6 +34,7 @@ abstract class LeagueRemoteDataSource {
     required String? description,
     required LeagueType type,
     required List<RuleModel> rules,
+    String? partnerDestinationId,
   });
   Future<LeagueModel> getLeague(
     String leagueId, {
@@ -184,9 +185,9 @@ abstract class LeagueRemoteDataSource {
     required String password,
   });
 
-  Future<List<GeneralRankingEntryModel>> getPartnerGeneralRanking(String leagueId);
+  Future<List<GeneralRankingEntryModel>> getPartnerGeneralRanking(
+      String leagueId);
 }
-
 
 class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
   final SupabaseClient supabaseClient;
@@ -267,49 +268,68 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
     required String? description,
     required LeagueType type,
     required List<RuleModel> rules,
+    String? partnerDestinationId,
   }) async {
     return _tryDatabaseOperation(() async {
-      final String leagueId = uuid.v4();
-      final String inviteCode = uuid.v4().substring(0, 10);
-
-      final table = _tableForType(type);
-
-      // Get creator info
       final creatorId = _checkAuthentication();
       final creatorName = _getCurrentUserName();
-
-      // Create initial participant
-      final initialParticipant = _createInitialParticipant(
-        type: type,
-        creatorId: creatorId,
-        creatorName: creatorName,
-      );
 
       // Normalize rule points to ensure malus values are negative
       final normalizedRules =
           rules.map((rule) => _normalizeRulePoints(rule)).toList();
 
-      // Create league data using models directly
-      final leagueData = {
-        'id': leagueId,
-        'invite_code': inviteCode,
-        'admins': [creatorId],
-        'name': name,
-        'description': description,
-        'created_at': DateTime.now().toIso8601String(),
-        'rules': normalizedRules.map((rule) => rule.toJson()).toList(),
-        'participants': [initialParticipant.toJson()],
-        'events': [],
-        'memories': [],
-      };
+      if (partnerDestinationId == null) {
+        final leagueId = uuid.v4();
+        final inviteCode = uuid.v4().substring(0, 10);
+        final table = _tableForType(type);
+        final initialParticipant = _createInitialParticipant(
+          type: type,
+          creatorId: creatorId,
+          creatorName: creatorName,
+        );
 
-      await supabaseClient.from(table).insert(leagueData);
+        final leagueData = {
+          'id': leagueId,
+          'invite_code': inviteCode,
+          'admins': [creatorId],
+          'name': name,
+          'description': description,
+          'created_at': DateTime.now().toIso8601String(),
+          'rules': normalizedRules.map((rule) => rule.toJson()).toList(),
+          'participants': [initialParticipant.toJson()],
+          'events': [],
+          'memories': [],
+        };
 
-      // Get the created league
-      final response =
-          await supabaseClient.from(table).select().eq('id', leagueId).single();
+        await supabaseClient.from(table).insert(leagueData);
 
-      return _convertResponseToModel(response, fallbackType: type);
+        final response = await supabaseClient
+            .from(table)
+            .select()
+            .eq('id', leagueId)
+            .single();
+
+        return _convertResponseToModel(response, fallbackType: type);
+      }
+
+      final response = await supabaseClient.rpc(
+        'create_league',
+        params: {
+          'p_user_name': creatorName,
+          'p_name': name,
+          'p_description': description,
+          'p_type': type.name,
+          'p_rules': normalizedRules.map((rule) => rule.toJson()).toList(),
+          'p_partner_destination_id': partnerDestinationId,
+        },
+      );
+
+      final result = Map<String, dynamic>.from(response as Map);
+      final leagueJson = result['league'] is Map
+          ? Map<String, dynamic>.from(result['league'] as Map)
+          : result;
+
+      return _convertResponseToModel(leagueJson, fallbackType: type);
     });
   }
 
@@ -1448,7 +1468,7 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
     return type == LeagueType.team ? 'team_leagues' : 'individual_leagues';
   }
 
-  /// Creates an initial participant when creating a league
+  /// Creates an initial participant when creating a league.
   ParticipantModel _createInitialParticipant({
     required LeagueType type,
     required String creatorId,
@@ -1458,7 +1478,10 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
       return TeamParticipantModel(
         members: [
           SimpleParticipantModel(
-              userId: creatorId, name: creatorName, points: 0),
+            userId: creatorId,
+            name: creatorName,
+            points: 0,
+          ),
         ],
         captainId: creatorId,
         name: 'Team di $creatorName',
@@ -1467,15 +1490,15 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
         bonusTotal: 0,
         teamLogoUrl: null,
       );
-    } else {
-      return IndividualParticipantModel(
-        userId: creatorId,
-        name: creatorName,
-        points: 0,
-        malusTotal: 0,
-        bonusTotal: 0,
-      );
     }
+
+    return IndividualParticipantModel(
+      userId: creatorId,
+      name: creatorName,
+      points: 0,
+      malusTotal: 0,
+      bonusTotal: 0,
+    );
   }
 
   /// Finds team index by name with result object
@@ -1763,9 +1786,11 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
 
       switch (status) {
         case 'not_found':
-          return const PartnerSearchResult(status: PartnerSearchStatus.notFound);
+          return const PartnerSearchResult(
+              status: PartnerSearchStatus.notFound);
         case 'wrong_password':
-          return const PartnerSearchResult(status: PartnerSearchStatus.wrongPassword);
+          return const PartnerSearchResult(
+              status: PartnerSearchStatus.wrongPassword);
         case 'found':
           final leagueMap = Map<String, dynamic>.from(result['league'] as Map);
           return PartnerSearchResult(
@@ -1836,4 +1861,3 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
     });
   }
 }
-

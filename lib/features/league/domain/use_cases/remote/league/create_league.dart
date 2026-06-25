@@ -18,6 +18,7 @@ class CreateLeague implements Usecase<League, CreateLeagueParams> {
       description: params.description,
       type: params.type,
       rules: params.rules,
+      partnerDestinationId: params.partnerDestinationId,
     );
   }
 }
@@ -28,11 +29,13 @@ class CreateLeagueParams {
   final String? description;
   final LeagueType type;
   final List<Rule> rules;
+  final String? partnerDestinationId;
 
   const CreateLeagueParams({
     required this.name,
     this.description,
     required this.type,
     required this.rules,
+    this.partnerDestinationId,
   });
 }

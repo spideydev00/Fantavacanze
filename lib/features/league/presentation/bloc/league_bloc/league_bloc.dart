@@ -142,6 +142,7 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
         description: event.description ?? "",
         type: event.type,
         rules: event.rules,
+        partnerDestinationId: event.partnerDestinationId,
       ),
     );
 

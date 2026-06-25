@@ -3,7 +3,9 @@ import 'package:fantavacanze_official/core/network/connection_checker.dart';
 import 'package:fantavacanze_official/features/league/data/datasources/local/local_data_source.dart';
 import 'package:fantavacanze_official/features/league/data/datasources/remote/league_remote_data_source.dart';
 import 'package:fantavacanze_official/features/league/data/models/league_model/league_model.dart';
+import 'package:fantavacanze_official/features/league/data/models/rule_model/rule_model.dart';
 import 'package:fantavacanze_official/features/league/data/repository/league_repository_impl.dart';
+import 'package:fantavacanze_official/features/league/domain/entities/league/league.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/partner/partner_search_result.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -24,7 +26,11 @@ void main() {
   late MockConnectionChecker connection;
   late LeagueRepositoryImpl repository;
 
-  setUpAll(() => registerFallbackValue(FakeLeagueModel()));
+  setUpAll(() {
+    registerFallbackValue(FakeLeagueModel());
+    registerFallbackValue(LeagueType.individual);
+    registerFallbackValue(<RuleModel>[]);
+  });
 
   setUp(() {
     remote = MockRemoteDataSource();
@@ -39,6 +45,36 @@ void main() {
     when(() => local.cacheLeague(any())).thenAnswer((_) async {});
   });
 
+  group('createLeague', () {
+    test('passes partnerDestinationId to the remote datasource', () async {
+      when(() => remote.createLeague(
+            name: any(named: 'name'),
+            description: any(named: 'description'),
+            type: any(named: 'type'),
+            rules: any(named: 'rules'),
+            partnerDestinationId: any(named: 'partnerDestinationId'),
+          )).thenAnswer((_) async => tPartnerLeagueModel);
+
+      final result = await repository.createLeague(
+        name: 'Lega B-Eazy',
+        description: 'Package partner',
+        type: tPartnerLeagueModel.type,
+        rules: const [],
+        partnerDestinationId: 'dest-package-1',
+      );
+
+      expect(result.isRight(), true);
+      verify(() => remote.createLeague(
+            name: 'Lega B-Eazy',
+            description: 'Package partner',
+            type: tPartnerLeagueModel.type,
+            rules: any(named: 'rules'),
+            partnerDestinationId: 'dest-package-1',
+          )).called(1);
+      verify(() => local.cacheLeague(tPartnerLeagueModel)).called(1);
+    });
+  });
+
   group('getPartnerDestinations', () {
     test('returns Right(catalog) when connected and remote succeeds', () async {
       when(() => remote.getPartnerDestinations('invibe'))
@@ -47,8 +83,8 @@ void main() {
       final result = await repository.getPartnerDestinations('invibe');
 
       expect(result.isRight(), true);
-      result.match((_) => fail('expected Right'),
-          (c) => expect(c, tPartnerCatalog));
+      result.match(
+          (_) => fail('expected Right'), (c) => expect(c, tPartnerCatalog));
     });
 
     test('returns Left when offline (no remote call)', () async {
@@ -155,8 +191,8 @@ void main() {
 
       final result = await repository.getPartnerGeneralRanking('league-1');
 
-      result.match((_) => fail('expected Right'),
-          (list) => expect(list.length, 2));
+      result.match(
+          (_) => fail('expected Right'), (list) => expect(list.length, 2));
     });
 
     test('maps ServerException to Left(Failure)', () async {
