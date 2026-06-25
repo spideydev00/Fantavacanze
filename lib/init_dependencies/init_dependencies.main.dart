@@ -536,6 +536,16 @@ void _initLeague() {
     )
     // bloc
     ..registerFactory(
+      () => PartnerCubit(
+        getPartnerDestinations: serviceLocator(),
+        createPartnerLeague: serviceLocator(),
+        searchPartnerLeague: serviceLocator(),
+        joinPartnerLeague: serviceLocator(),
+        getPartnerGeneralRanking: serviceLocator(),
+        appLeagueCubit: serviceLocator(),
+      ),
+    )
+    ..registerFactory(
       () => LeagueBloc(
         createLeague: serviceLocator(),
         getLeague: serviceLocator(),
