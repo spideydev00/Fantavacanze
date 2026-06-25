@@ -96,6 +96,9 @@ class _CreatePartnerLeaguePageState extends State<CreatePartnerLeaguePage> {
                             onTap: () {
                               setState(() {
                                 _selectedDestination = destination;
+                                if (!destination.requiresPassword) {
+                                  _passwordController.clear();
+                                }
                               });
                             },
                           ),
@@ -110,6 +113,8 @@ class _CreatePartnerLeaguePageState extends State<CreatePartnerLeaguePage> {
                             nameController: _nameController,
                             descriptionController: _descriptionController,
                             passwordController: _passwordController,
+                            requiresPassword:
+                                _selectedDestination!.requiresPassword,
                           ),
                           const SizedBox(height: ThemeSizes.lg),
                           ElevatedButton.icon(
@@ -162,7 +167,9 @@ class _CreatePartnerLeaguePageState extends State<CreatePartnerLeaguePage> {
           userName: userState.user.name,
           destinationId: destination.id,
           name: _nameController.text.trim(),
-          password: _passwordController.text.trim(),
+          password: destination.requiresPassword
+              ? _passwordController.text.trim()
+              : '',
           description: description.isEmpty ? null : description,
         );
   }
@@ -298,11 +305,13 @@ class _LeagueForm extends StatelessWidget {
   final TextEditingController nameController;
   final TextEditingController descriptionController;
   final TextEditingController passwordController;
+  final bool requiresPassword;
 
   const _LeagueForm({
     required this.nameController,
     required this.descriptionController,
     required this.passwordController,
+    required this.requiresPassword,
   });
 
   @override
@@ -331,21 +340,23 @@ class _LeagueForm extends StatelessWidget {
           ),
           maxLines: 2,
         ),
-        const SizedBox(height: ThemeSizes.md),
-        TextFormField(
-          controller: passwordController,
-          decoration: const InputDecoration(
-            labelText: 'Parola d’ordine',
-            prefixIcon: Icon(Icons.lock_outline),
+        if (requiresPassword) ...[
+          const SizedBox(height: ThemeSizes.md),
+          TextFormField(
+            controller: passwordController,
+            decoration: const InputDecoration(
+              labelText: 'Parola d’ordine',
+              prefixIcon: Icon(Icons.lock_outline),
+            ),
+            obscureText: true,
+            validator: (value) {
+              if (value == null || value.trim().isEmpty) {
+                return 'Inserisci la parola d’ordine';
+              }
+              return null;
+            },
           ),
-          obscureText: true,
-          validator: (value) {
-            if (value == null || value.trim().isEmpty) {
-              return 'Inserisci la parola d’ordine';
-            }
-            return null;
-          },
-        ),
+        ],
       ],
     );
   }

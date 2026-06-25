@@ -10,6 +10,7 @@ class PartnerDestination {
   final List<Rule> rules;
   final String? imageUrl;
   final PartnerRound? activeRound;
+  final bool requiresPassword;
 
   const PartnerDestination({
     required this.id,
@@ -18,5 +19,6 @@ class PartnerDestination {
     required this.rules,
     this.imageUrl,
     this.activeRound,
+    this.requiresPassword = false,
   });
 }

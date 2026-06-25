@@ -9,11 +9,13 @@ class PartnerSearchResult {
   final League? league;
   final String? destinationName;
   final String? roundName;
+  final bool requiresPassword;
 
   const PartnerSearchResult({
     required this.status,
     this.league,
     this.destinationName,
     this.roundName,
+    this.requiresPassword = false,
   });
 }

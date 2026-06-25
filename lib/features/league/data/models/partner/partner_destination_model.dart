@@ -10,6 +10,7 @@ class PartnerDestinationModel extends PartnerDestination {
     required super.rules,
     super.imageUrl,
     super.activeRound,
+    super.requiresPassword,
   });
 
   factory PartnerDestinationModel.fromJson(Map<String, dynamic> json) {
@@ -30,6 +31,9 @@ class PartnerDestinationModel extends PartnerDestination {
       rules: rulesList,
       imageUrl: (json['image_url'] ?? json['imageUrl']) as String?,
       activeRound: activeRoundModel,
+      requiresPassword:
+          (json['requires_password'] ?? json['requiresPassword']) as bool? ??
+              false,
     );
   }
 
@@ -43,6 +47,7 @@ class PartnerDestinationModel extends PartnerDestination {
       'active_round': activeRound != null
           ? (activeRound as PartnerRoundModel).toJson()
           : null,
+      'requires_password': requiresPassword,
     };
   }
 }

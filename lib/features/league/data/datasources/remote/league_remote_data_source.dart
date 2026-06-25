@@ -16,6 +16,7 @@ import 'package:fantavacanze_official/features/league/data/models/team_participa
 import 'package:fantavacanze_official/features/league/data/models/partner/partner_model.dart';
 import 'package:fantavacanze_official/features/league/data/models/partner/partner_destination_model.dart';
 import 'package:fantavacanze_official/features/league/data/models/partner/general_ranking_entry_model.dart';
+import 'package:fantavacanze_official/features/league/data/models/partner/partner_search_result_model.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/event/event.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/league/league.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/rule/rule.dart';
@@ -1786,21 +1787,17 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
 
       switch (status) {
         case 'not_found':
-          return const PartnerSearchResult(
-              status: PartnerSearchStatus.notFound);
+          return PartnerSearchResultModel.fromJson(result);
         case 'wrong_password':
-          return const PartnerSearchResult(
-              status: PartnerSearchStatus.wrongPassword);
+          return PartnerSearchResultModel.fromJson(result);
         case 'found':
           final leagueMap = Map<String, dynamic>.from(result['league'] as Map);
-          return PartnerSearchResult(
-            status: PartnerSearchStatus.found,
+          return PartnerSearchResultModel.fromJson(
+            result,
             league: _convertResponseToModel(
               leagueMap,
               fallbackType: LeagueType.individual,
             ),
-            destinationName: leagueMap['destination_name'] as String?,
-            roundName: leagueMap['round_name'] as String?,
           );
         default:
           throw ServerException('Risposta inattesa dal server');

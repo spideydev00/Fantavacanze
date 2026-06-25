@@ -29,6 +29,7 @@ class _SearchPartnerLeaguePageState extends State<SearchPartnerLeaguePage> {
   final _inviteCodeController = TextEditingController();
   final _passwordController = TextEditingController();
   PartnerSearchResult? _result;
+  bool _requiresPassword = false;
 
   @override
   void dispose() {
@@ -56,6 +57,10 @@ class _SearchPartnerLeaguePageState extends State<SearchPartnerLeaguePage> {
             } else if (state is PartnerSearchLoaded) {
               setState(() {
                 _result = state.result;
+                _requiresPassword = state.result.requiresPassword;
+                if (!_requiresPassword) {
+                  _passwordController.clear();
+                }
               });
             } else if (state is PartnerLeagueReady) {
               Navigator.pushReplacement(
@@ -80,8 +85,9 @@ class _SearchPartnerLeaguePageState extends State<SearchPartnerLeaguePage> {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       InfoBanner(
-                        message:
-                            'Inserisci codice invito e parola d’ordine della lega partner.',
+                        message: _requiresPassword
+                            ? 'Inserisci codice invito e parola d’ordine della lega partner.'
+                            : 'Inserisci il codice invito della lega partner.',
                         color: brandColor,
                         icon: Icons.lock_open_outlined,
                       ),
@@ -95,16 +101,18 @@ class _SearchPartnerLeaguePageState extends State<SearchPartnerLeaguePage> {
                         ),
                         textInputAction: TextInputAction.next,
                       ),
-                      const SizedBox(height: ThemeSizes.md),
-                      TextField(
-                        controller: _passwordController,
-                        decoration: const InputDecoration(
-                          labelText: 'Parola d’ordine',
-                          prefixIcon: Icon(Icons.lock_outline),
+                      if (_requiresPassword) ...[
+                        const SizedBox(height: ThemeSizes.md),
+                        TextField(
+                          controller: _passwordController,
+                          decoration: const InputDecoration(
+                            labelText: 'Parola d’ordine',
+                            prefixIcon: Icon(Icons.lock_outline),
+                          ),
+                          obscureText: true,
+                          onSubmitted: (_) => _search(),
                         ),
-                        obscureText: true,
-                        onSubmitted: (_) => _search(),
-                      ),
+                      ],
                       const SizedBox(height: ThemeSizes.lg),
                       ElevatedButton.icon(
                         onPressed: isLoading ? null : _search,
@@ -143,9 +151,17 @@ class _SearchPartnerLeaguePageState extends State<SearchPartnerLeaguePage> {
     final inviteCode = _inviteCodeController.text.trim();
     final password = _passwordController.text.trim();
 
-    if (inviteCode.isEmpty || password.isEmpty) {
+    if (inviteCode.isEmpty) {
       showSnackBar(
-        'Inserisci codice invito e parola d’ordine.',
+        'Inserisci il codice invito.',
+        color: ColorPalette.warning,
+      );
+      return;
+    }
+
+    if (_requiresPassword && password.isEmpty) {
+      showSnackBar(
+        'Inserisci la parola d’ordine.',
         color: ColorPalette.warning,
       );
       return;
@@ -153,7 +169,7 @@ class _SearchPartnerLeaguePageState extends State<SearchPartnerLeaguePage> {
 
     context.read<PartnerCubit>().searchLeague(
           inviteCode: inviteCode,
-          password: password,
+          password: _requiresPassword ? password : '',
         );
   }
 
@@ -163,11 +179,18 @@ class _SearchPartnerLeaguePageState extends State<SearchPartnerLeaguePage> {
       showSnackBar('Devi effettuare l’accesso per unirti alla lega.');
       return;
     }
+    if (_requiresPassword && _passwordController.text.trim().isEmpty) {
+      showSnackBar(
+        'Inserisci la parola d’ordine.',
+        color: ColorPalette.warning,
+      );
+      return;
+    }
 
     context.read<PartnerCubit>().joinLeague(
           userName: userState.user.name,
           inviteCode: _inviteCodeController.text.trim(),
-          password: _passwordController.text.trim(),
+          password: _requiresPassword ? _passwordController.text.trim() : '',
         );
   }
 
