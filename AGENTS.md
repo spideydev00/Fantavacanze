@@ -1,4 +1,4 @@
-# Fantavacanze - Claude Instructions
+# Fantavacanze - Codex Instructions
 
 ## Project overview
 
@@ -47,7 +47,7 @@ lib/features/[feature]/
     pages/
 ```
 
-See `.claude/skills/clean-architecture/SKILL.md` for the full pattern, and `docs/ai/` for feature deep-dives.
+See `.codex/skills/clean-architecture/SKILL.md` for the full pattern, and `docs/ai/` for feature deep-dives.
 
 Core shared logic lives in:
 
@@ -114,26 +114,30 @@ You are a worker, so your job is to implement the detailed plan I'm passing you.
 
 Before writing any code, do this in order:
 
-1. If the prompt has a `SKILL:` line, load every skill it names from `.claude/skills/<name>/SKILL.md` and follow it.
+1. If the prompt has a `SKILL:` line, load every skill it names from `.codex/skills/<name>/SKILL.md` and follow it.
 2. Whether or not a `SKILL:` line is present, map the task to the Skills table below and load any other matching skill — skill selection is mandatory, not optional.
 3. Implement following those skills' rules (Clean Architecture, `Either`, Italian strings, etc.).
 4. In your final output, state which skill(s) you applied.
 
 ## Skills
 
-Project-specific skills live in `.claude/skills/`. Loading the matching skill before coding is **mandatory** — match the task to the table and follow that `SKILL.md`.
+Project-specific skills live in `.codex/skills/`. Loading the matching skill before coding is **mandatory** — match the task to the table and follow that `SKILL.md`.
 
 | Skill | Use it when |
 |---|---|
-| [clean-architecture](.claude/skills/clean-architecture/SKILL.md) | Creating a feature, adding a use case/entity/repository/datasource, wiring `get_it` DI, deciding which layer owns logic, or implementing offline-first caching. |
-| [bloc](.claude/skills/bloc/SKILL.md) | Creating a Cubit/Bloc, modeling state, naming events/states, wiring `BlocBuilder`/`BlocListener`, or folding `Either` results in a bloc. |
-| [testing](.claude/skills/testing/SKILL.md) | Writing or reviewing unit tests, use case tests, repository tests, or `bloc_test` cases. |
-| [mocktail](.claude/skills/mocktail/SKILL.md) | Creating mocks/fakes, stubbing, verifying interactions, or registering fallback values in tests. |
-| [code-review](.claude/skills/code-review/SKILL.md) | Reviewing a PR, branch, or diff against the project checklist (CA boundaries, `Either`, DI, Italian strings, Supabase/Firebase split). |
-| [effective-dart](.claude/skills/effective-dart/SKILL.md) | Writing or refactoring Dart for idiomatic style, naming, type annotations, or comment discipline. |
-| [dart-3-updates](.claude/skills/dart-3-updates/SKILL.md) | Writing/refactoring `switch` or `if-else` chains, patterns, sealed classes, records, or destructuring. |
-| [firebase-messaging](.claude/skills/firebase-messaging/SKILL.md) | Handling FCM permissions, tokens, foreground/background/terminated messages, or notification tap routing (client-side only; sending is server-side via Supabase Edge Functions). |
-| [flutter-errors](.claude/skills/flutter-errors/SKILL.md) | Diagnosing layout/scroll/`setState`-during-build runtime errors (RenderFlex overflow, unbounded constraints, etc.). |
+| [fantavacanze-dev-orchestrator](.codex/skills/fantavacanze-dev-orchestrator/SKILL.md) | Coordinating non-trivial or multi-step development tasks, routing to project skills, preserving `_workspace` handoffs, or validating/reviewing a broad change. |
+| [harness](.codex/skills/harness/SKILL.md) | Designing portable, repo-local agent harnesses with reusable skills, team specs, and deterministic handoff artifacts. |
+| [clean-architecture](.codex/skills/clean-architecture/SKILL.md) | Creating a feature, adding a use case/entity/repository/datasource, wiring `get_it` DI, deciding which layer owns logic, or implementing offline-first caching. |
+| [bloc](.codex/skills/bloc/SKILL.md) | Creating a Cubit/Bloc, modeling state, naming events/states, wiring `BlocBuilder`/`BlocListener`, or folding `Either` results in a bloc. |
+| [testing](.codex/skills/testing/SKILL.md) | Writing or reviewing unit tests, use case tests, repository tests, or `bloc_test` cases. |
+| [mocktail](.codex/skills/mocktail/SKILL.md) | Creating mocks/fakes, stubbing, verifying interactions, or registering fallback values in tests. |
+| [code-review](.codex/skills/code-review/SKILL.md) | Reviewing a PR, branch, or diff against the project checklist (CA boundaries, `Either`, DI, Italian strings, Supabase/Firebase split). |
+| [effective-dart](.codex/skills/effective-dart/SKILL.md) | Writing or refactoring Dart for idiomatic style, naming, type annotations, or comment discipline. |
+| [dart-3-updates](.codex/skills/dart-3-updates/SKILL.md) | Writing/refactoring `switch` or `if-else` chains, patterns, sealed classes, records, or destructuring. |
+| [firebase-messaging](.codex/skills/firebase-messaging/SKILL.md) | Handling FCM permissions, tokens, foreground/background/terminated messages, or notification tap routing (client-side only; sending is server-side via Supabase Edge Functions). |
+| [flutter-errors](.codex/skills/flutter-errors/SKILL.md) | Diagnosing layout/scroll/`setState`-during-build runtime errors (RenderFlex overflow, unbounded constraints, etc.). |
+| [flutter-ui-ux](.codex/skills/flutter-ui-ux/SKILL.md) | Building a screen or widget, theming with the app color/size system, adding animations, or extracting a reusable widget into `core/widgets` (bloc-driven, Italian copy). |
+| [flutter-responsive-ui](.codex/skills/flutter-responsive-ui/SKILL.md) | Making a layout adapt across phone sizes/tablet, avoiding overflow on small devices, or constraining content width on large ones (`LayoutBuilder`, `Expanded`, `ThemeSizes`). |
 
 ## Additional documentation
 

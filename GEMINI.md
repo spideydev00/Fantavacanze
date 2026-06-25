@@ -1,4 +1,4 @@
-# Fantavacanze - Claude Instructions
+# Fantavacanze - Gemini Instructions
 
 ## Project overview
 
@@ -134,6 +134,8 @@ Project-specific skills live in `.gemini/skills/`. Loading the matching skill be
 | [dart-3-updates](.gemini/skills/dart-3-updates/SKILL.md) | Writing/refactoring `switch` or `if-else` chains, patterns, sealed classes, records, or destructuring. |
 | [firebase-messaging](.gemini/skills/firebase-messaging/SKILL.md) | Handling FCM permissions, tokens, foreground/background/terminated messages, or notification tap routing (client-side only; sending is server-side via Supabase Edge Functions). |
 | [flutter-errors](.gemini/skills/flutter-errors/SKILL.md) | Diagnosing layout/scroll/`setState`-during-build runtime errors (RenderFlex overflow, unbounded constraints, etc.). |
+| [flutter-ui-ux](.gemini/skills/flutter-ui-ux/SKILL.md) | Building a screen or widget, theming with the app color/size system, adding animations, or extracting a reusable widget into `core/widgets` (bloc-driven, Italian copy). |
+| [flutter-responsive-ui](.gemini/skills/flutter-responsive-ui/SKILL.md) | Making a layout adapt across phone sizes/tablet, avoiding overflow on small devices, or constraining content width on large ones (`LayoutBuilder`, `Expanded`, `ThemeSizes`). |
 
 ## Additional documentation
 
