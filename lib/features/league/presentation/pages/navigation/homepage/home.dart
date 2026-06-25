@@ -21,6 +21,7 @@ import 'package:fantavacanze_official/features/league/presentation/pages/navigat
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/homepage/widgets/articles_list.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/homepage/widgets/daily_goals.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/homepage/widgets/partner_entry_section.dart';
+import 'package:fantavacanze_official/features/league/presentation/pages/navigation/homepage/widgets/partner_fab.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/join_league/search_league_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -40,38 +41,33 @@ class HomePage extends StatelessWidget {
 
     final isFemale = gender == 'female';
 
-    return Scaffold(
-      body: BlocBuilder<AppLeagueCubit, AppLeagueState>(
-        builder: (context, state) {
-          // User has leagues and a selected league
-          if (state is AppLeagueExists) {
-            return SingleChildScrollView(
-              physics: const ClampingScrollPhysics(),
-              child: Column(
-                children: [
-                  _buildParticipantContent(
-                    context,
-                    state.selectedLeague.admins.contains(currentUserId),
-                    state.selectedLeague,
-                    isFemale,
-                  ),
-                  // _buildSeasonalTestForm(context),
-                ],
-              ),
-            );
-          }
+    return BlocBuilder<AppLeagueCubit, AppLeagueState>(
+      builder: (context, state) {
+        final selectedLeague =
+            state is AppLeagueExists ? state.selectedLeague : null;
 
-          return SingleChildScrollView(
+        return Scaffold(
+          floatingActionButton:
+              selectedLeague != null ? const PartnerFab() : null,
+          body: SingleChildScrollView(
             physics: const ClampingScrollPhysics(),
             child: Column(
               children: [
-                _buildNonParticipantContent(context),
+                if (selectedLeague != null)
+                  _buildParticipantContent(
+                    context,
+                    selectedLeague.admins.contains(currentUserId),
+                    selectedLeague,
+                    isFemale,
+                  )
+                else
+                  _buildNonParticipantContent(context),
                 // _buildSeasonalTestForm(context),
               ],
             ),
-          );
-        },
-      ),
+          ),
+        );
+      },
     );
   }
 
