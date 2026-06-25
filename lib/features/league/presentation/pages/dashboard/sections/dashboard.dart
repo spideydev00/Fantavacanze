@@ -10,6 +10,7 @@ import 'package:fantavacanze_official/core/cubits/notification_count/notificatio
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/services/ad_helper.dart';
 import 'package:fantavacanze_official/core/services/review_service.dart';
+import 'package:fantavacanze_official/core/theme/brand_assets.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:fantavacanze_official/core/widgets/dialogs/notification_dialog.dart';
 import 'package:fantavacanze_official/core/widgets/notification_badge.dart';
@@ -396,12 +397,37 @@ class _DashboardScreenState extends State<DashboardScreen>
   Widget _buildLogo(BuildContext context) {
     final isTablet = MediaQuery.of(context).size.shortestSide >= 600;
     final widthFactor = isTablet ? 0.20 : 0.25; //after fall go back to 0.3
+    final logoWidth = Constants.getWidth(context) * widthFactor;
+    final appLogoPath = context.read<AppThemeCubit>().isDarkMode(context)
+        ? 'assets/images/logos/logo-neon.png'
+        : 'assets/images/logos/logo-naked.png';
 
-    return Image.asset(
-      context.read<AppThemeCubit>().isDarkMode(context)
-          ? 'assets/images/logos/logo-neon.png'
-          : 'assets/images/logos/logo-naked.png',
-      width: Constants.getWidth(context) * widthFactor,
+    return BlocBuilder<AppLeagueCubit, AppLeagueState>(
+      builder: (context, leagueState) {
+        final partnerLogo = leagueState is AppLeagueExists
+            ? BrandAssets.logoFor(leagueState.selectedLeague.partner)
+            : null;
+
+        final appLogo = Image.asset(appLogoPath, width: logoWidth);
+
+        if (partnerLogo == null) return appLogo;
+
+        return FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              appLogo,
+              const SizedBox(width: ThemeSizes.sm),
+              Image.asset(
+                partnerLogo,
+                height: isTablet ? 36 : 28,
+                errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }
