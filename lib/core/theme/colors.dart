@@ -349,6 +349,21 @@ class ColorPalette {
     return challengeGradients[index % challengeGradients.length];
   }
 
+  /// Gradiente (2 stop) per le daily challenge derivato da [base]: tre tonalità
+  /// diverse dello STESSO colore (index 0=chiara, 1=media, 2=scura). Passando
+  /// `context.primaryColor` si adatta automaticamente a default/package/travel.
+  static List<Color> challengeGradientFor(Color base, int index) {
+    final hsl = HSLColor.fromColor(base);
+    // saturazione minima così le tonalità non sbiadiscono su colori poco saturi
+    final sat = hsl.saturation.clamp(0.40, 1.0);
+    const starts = [0.58, 0.48, 0.40];
+    const ends = [0.46, 0.36, 0.28];
+    final i = index % 3;
+    HSLColor shade(double l) =>
+        hsl.withSaturation(sat).withLightness(l.clamp(0.0, 1.0));
+    return [shade(starts[i]).toColor(), shade(ends[i]).toColor()];
+  }
+
   /// Get a note gradient based on a string ID for consistency
   static LinearGradient getGradientFromId(String id) {
     final index = id.hashCode.abs() % noteGradients.length;
