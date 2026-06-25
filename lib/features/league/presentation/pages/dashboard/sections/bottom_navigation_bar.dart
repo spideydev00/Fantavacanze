@@ -10,6 +10,7 @@ import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc/league_bloc.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/dashboard/widgets/bottom_navbar/bottom_navigation_asset.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/partner/partner_dashboard_page.dart';
+import 'package:fantavacanze_official/features/league/presentation/pages/navigation/partner/partner_thank_you_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -18,7 +19,6 @@ const int maxSlots = 4;
 // >= altezza naturale di BottomNavigationAsset con margine per text scaling.
 const double _barHeight = 64;
 const double _notchRadius = 38;
-const String _partnerSlug = 'invibe';
 
 class CustomBottomNavigationBar extends StatelessWidget {
   const CustomBottomNavigationBar({super.key});
@@ -94,10 +94,12 @@ class CustomBottomNavigationBar extends StatelessWidget {
                           insetRadius: _notchRadius,
                         ),
                       ),
-                      // FAB InVibe nel notch centrale.
-                      const Center(
+                      Center(
                         heightFactor: 0.6,
-                        child: _InvibeFab(),
+                        child: _PartnerFab(
+                          leagueState: leagueState,
+                          isDark: isDark,
+                        ),
                       ),
                       Positioned.fill(
                         child: Align(
@@ -140,25 +142,41 @@ class CustomBottomNavigationBar extends StatelessWidget {
   }
 }
 
-/// FAB centrale: mostra il logo InVibe su sfondo scuro e porta alla pagina di
-/// creazione/unione lega InVibe.
-class _InvibeFab extends StatelessWidget {
-  const _InvibeFab();
+class _PartnerFab extends StatelessWidget {
+  final AppLeagueState leagueState;
+  final bool isDark;
+
+  const _PartnerFab({
+    required this.leagueState,
+    required this.isDark,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final state = leagueState;
+    final hasLeague = state is AppLeagueExists;
+    final partner =
+        state is AppLeagueExists ? state.selectedLeague.partner : null;
+    final fabSlug = partner == 'b-eazy' ? 'b-eazy' : 'invibe';
     final logo = BrandAssets.logoFor(
-      _partnerSlug,
-      isDark: context.read<AppThemeCubit>().isDarkMode(context),
+      fabSlug,
+      isDark: isDark,
     );
 
+    void onTap() {
+      if (!hasLeague) {
+        Navigator.push(context, PartnerDashboardPage.route('invibe'));
+        return;
+      }
+      Navigator.push(context, PartnerThankYouPage.route(fabSlug));
+    }
+
     return FloatingActionButton(
-      heroTag: 'invibe-fab',
+      heroTag: 'partner-fab',
       shape: const CircleBorder(),
       backgroundColor: ColorPalette.black,
       elevation: 2,
-      onPressed: () =>
-          Navigator.push(context, PartnerDashboardPage.route(_partnerSlug)),
+      onPressed: onTap,
       child: logo == null
           ? const Icon(Icons.travel_explore_rounded, color: Colors.white)
           : Padding(
