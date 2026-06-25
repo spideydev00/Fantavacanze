@@ -21,7 +21,6 @@ import 'package:fantavacanze_official/features/league/presentation/pages/navigat
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/homepage/widgets/articles_list.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/homepage/widgets/daily_goals.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/homepage/widgets/partner_entry_section.dart';
-import 'package:fantavacanze_official/features/league/presentation/pages/navigation/homepage/widgets/partner_fab.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/join_league/search_league_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -47,8 +46,6 @@ class HomePage extends StatelessWidget {
             state is AppLeagueExists ? state.selectedLeague : null;
 
         return Scaffold(
-          floatingActionButton:
-              selectedLeague != null ? const PartnerFab() : null,
           body: SingleChildScrollView(
             physics: const ClampingScrollPhysics(),
             child: Column(
