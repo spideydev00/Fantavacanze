@@ -6,7 +6,7 @@ Future<void> initDependencies() async {
   try {
     // SUPABASE
     final supabase = await Supabase.initialize(
-      anonKey: AppSecrets.supabaseKey,
+      publishableKey: AppSecrets.supabaseKey,
       url: AppSecrets.supabaseUrl,
     );
 
