@@ -107,6 +107,10 @@ class _SideMenuState extends State<SideMenu> {
                       BlocBuilder<AppLeagueCubit, AppLeagueState>(
                         builder: (context, leagueState) {
                           final hasLeagues = leagueState is AppLeagueExists;
+                          final hasPartnerRound = leagueState is AppLeagueExists
+                              ? leagueState.selectedLeague.partnerRoundId !=
+                                  null
+                              : false;
                           return BlocBuilder<AppNavigationCubit, int>(
                             builder: (context, selectedIndex) {
                               return Column(
@@ -114,6 +118,7 @@ class _SideMenuState extends State<SideMenu> {
                                   context: context,
                                   selectedIndex: selectedIndex,
                                   hasLeagues: hasLeagues,
+                                  hasPartnerRound: hasPartnerRound,
                                 ),
                               );
                             },
@@ -149,6 +154,7 @@ class _SideMenuState extends State<SideMenu> {
     required BuildContext context,
     required int selectedIndex,
     required bool hasLeagues,
+    required bool hasPartnerRound,
   }) {
     // 1. Prendo l'elenco base degli item
     final navItems =
@@ -166,9 +172,10 @@ class _SideMenuState extends State<SideMenu> {
     // 4. Filtra fuori gli item riservati agli admin se non è admin
     final itemsToShow = navItems
         .where((item) =>
-            !item.isAdminOnly || // tutti gli standard…
-            (item.isAdminOnly &&
-                userIsAdmin)) // …e solo gli admin-only se userIsAdmin
+            (!item.isAdminOnly || // tutti gli standard…
+                (item.isAdminOnly &&
+                    userIsAdmin)) && // …e solo gli admin-only se userIsAdmin
+            (!item.requiresPartnerRound || hasPartnerRound))
         .toList();
 
     // 5. Raggruppo per sottosezione
@@ -229,7 +236,8 @@ class _SideMenuState extends State<SideMenu> {
     if (item.title == "Crea Lega" ||
         item.title == "Cerca Lega" ||
         item.title == "Bonus o Malus" ||
-        item.title == "Aggiungi Bonus/Malus") {
+        item.title == "Aggiungi Bonus/Malus" ||
+        item.title == "Classifica Generale") {
       Navigator.push(
         context,
         MaterialPageRoute(builder: (context) => item.screen),

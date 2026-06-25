@@ -7,6 +7,7 @@ class NavigationItem {
   final Widget screen;
   final String subsection;
   final bool isAdminOnly;
+  final bool requiresPartnerRound;
 
   const NavigationItem({
     required this.title,
@@ -15,5 +16,6 @@ class NavigationItem {
     required this.screen,
     required this.subsection,
     this.isAdminOnly = false,
+    this.requiresPartnerRound = false,
   });
 }

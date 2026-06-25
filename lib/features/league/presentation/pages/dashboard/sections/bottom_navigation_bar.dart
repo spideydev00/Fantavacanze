@@ -34,9 +34,15 @@ class CustomBottomNavigationBar extends StatelessWidget {
                 builder: (context, state) {
                   if (state is AppLeagueExists) {
                     final isAdmin = context.read<LeagueBloc>().isAdmin();
+                    final hasPartnerRound =
+                        state.selectedLeague.partnerRoundId != null;
 
                     final visibleItems = participantNavbarItems
-                        .where((item) => !item.isAdminOnly || isAdmin)
+                        .where(
+                          (item) =>
+                              (!item.isAdminOnly || isAdmin) &&
+                              (!item.requiresPartnerRound || hasPartnerRound),
+                        )
                         .take(maxSlots)
                         .toList();
                     final originalIndices = visibleItems

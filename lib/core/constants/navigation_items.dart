@@ -10,6 +10,7 @@ import 'package:fantavacanze_official/features/league/presentation/pages/navigat
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/leaderboard/leaderboard_page.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/memories/memories_page.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/notes/notes_page.dart';
+import 'package:fantavacanze_official/features/league/presentation/pages/navigation/partner/general_ranking_page.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/rules/rules_page.dart';
 // import 'package:fantavacanze_official/features/league/presentation/pages/navigation/smash_or_pass/smash_or_pass.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/team_info/team_info_page.dart';
@@ -122,6 +123,14 @@ List<NavigationItem> participantNavbarItems = [
     lightSvgIcon: 'assets/images/icons/homepage_icons/rules-icon-dark.svg',
     screen: const RulesPage(),
     subsection: "Naviga",
+  ),
+  NavigationItem(
+    title: "Classifica Generale",
+    darkSvgIcon: 'assets/images/icons/homepage_icons/rankings-icon.svg',
+    lightSvgIcon: 'assets/images/icons/homepage_icons/rankings-icon-dark.svg',
+    screen: const GeneralRankingPage(),
+    subsection: "Naviga",
+    requiresPartnerRound: true,
   ),
   NavigationItem(
     title: "La Mia Squadra",
