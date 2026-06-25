@@ -119,6 +119,15 @@ Before writing any code, do this in order:
 3. Implement following those skills' rules (Clean Architecture, `Either`, Italian strings, etc.).
 4. In your final output, state which skill(s) you applied.
 
+### Plan-driven execution (`docs/superpowers/`)
+
+Detailed implementation plans live in `docs/superpowers/plans/`. When a prompt points you at one of these files:
+
+* Treat each `## Task N` heading as a **separate, self-contained unit of work**. Implement **only the single task** named in the prompt — never run multiple tasks in one pass, even if they look related, sequential, or trivial.
+* Each task carries its own `SKILL:` line — load exactly those skills (plus any matching the Skills table) before coding.
+* Follow the task's Steps in order (TDD where present: failing test → implement → passing test → commit). Honour the task's `Files`, `Interfaces`, and `Acceptance criteria` verbatim, and respect the plan's `## Global Constraints`.
+* Stop at the end of the task, after its commit. Do **not** start the next task — the architect reviews and tests your output first, then sends the next task as a new prompt.
+
 ## Skills
 
 Project-specific skills live in `.gemini/skills/`. Loading the matching skill before coding is **mandatory** — match the task to the table and follow that `SKILL.md`.
