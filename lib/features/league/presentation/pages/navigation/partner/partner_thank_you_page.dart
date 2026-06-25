@@ -24,9 +24,6 @@ class PartnerThankYouPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = context.read<AppThemeCubit>().isDarkMode(context);
     final brandColor = context.brandPrimaryColor(slug);
-    final appLogo = isDark
-        ? 'assets/images/logos/logo-neon.png'
-        : 'assets/images/logos/logo-naked.png';
     final partnerLogo = BrandAssets.logoFor(slug, isDark: isDark);
     final content = _content(slug);
 
@@ -45,13 +42,7 @@ class PartnerThankYouPage extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Image.asset(
-                    appLogo,
-                    height: ThemeSizes.imageThumbSize,
-                    fit: BoxFit.contain,
-                  ),
                   if (partnerLogo != null) ...[
-                    const SizedBox(height: ThemeSizes.lg),
                     Image.asset(
                       partnerLogo,
                       height: ThemeSizes.imageThumbSizeLg,

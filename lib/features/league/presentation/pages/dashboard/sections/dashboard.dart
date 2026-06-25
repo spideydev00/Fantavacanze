@@ -418,17 +418,10 @@ class _DashboardScreenState extends State<DashboardScreen>
 
         return FittedBox(
           fit: BoxFit.scaleDown,
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              appLogo,
-              const SizedBox(width: ThemeSizes.sm),
-              Image.asset(
-                partnerLogo,
-                height: isTablet ? 36 : 28,
-                errorBuilder: (_, __, ___) => const SizedBox.shrink(),
-              ),
-            ],
+          child: Image.asset(
+            partnerLogo,
+            height: isTablet ? 36 : 28,
+            errorBuilder: (_, __, ___) => appLogo,
           ),
         );
       },
