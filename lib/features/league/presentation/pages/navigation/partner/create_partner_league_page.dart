@@ -1,3 +1,4 @@
+import 'package:fantavacanze_official/core/cubits/app_navigation/app_navigation_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit.dart';
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/extensions/context_extension.dart';
@@ -9,7 +10,6 @@ import 'package:fantavacanze_official/features/league/domain/entities/partner/pa
 import 'package:fantavacanze_official/features/league/domain/entities/partner/partner_destination.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/rule/rule.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/partner_bloc/partner_cubit.dart';
-import 'package:fantavacanze_official/features/league/presentation/pages/navigation/partner/partner_league_dashboard_page.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/partner/widgets/destination_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -58,13 +58,11 @@ class _CreatePartnerLeaguePageState extends State<CreatePartnerLeaguePage> {
             if (state is PartnerFailure) {
               showSnackBar(state.message);
             } else if (state is PartnerLeagueReady) {
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => PartnerLeagueDashboardPage(
-                    league: state.league,
-                  ),
-                ),
+              context.read<AppNavigationCubit>().setIndex(0);
+              Navigator.of(context).popUntil((route) => route.isFirst);
+              showSnackBar(
+                'Lega creata con successo',
+                color: ColorPalette.success,
               );
             }
           },
