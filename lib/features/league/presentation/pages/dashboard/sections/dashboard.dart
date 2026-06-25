@@ -399,6 +399,7 @@ class _DashboardScreenState extends State<DashboardScreen>
     final widthFactor = isTablet ? 0.20 : 0.25; //after fall go back to 0.3
     final logoWidth = Constants.getWidth(context) * widthFactor;
     final isDark = context.read<AppThemeCubit>().isDarkMode(context);
+    
     final appLogoPath = isDark
         ? 'assets/images/logos/logo-neon.png'
         : 'assets/images/logos/logo-naked.png';
@@ -420,7 +421,7 @@ class _DashboardScreenState extends State<DashboardScreen>
           fit: BoxFit.scaleDown,
           child: Image.asset(
             partnerLogo,
-            height: isTablet ? 36 : 28,
+            width: logoWidth,
             errorBuilder: (_, __, ___) => appLogo,
           ),
         );
