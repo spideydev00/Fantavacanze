@@ -10,7 +10,7 @@ void main() {
       expect(theme, isNotNull);
       expect(theme!.slug, 'invibe');
       expect(theme.primary(ThemeMode.dark), const Color(0xFF6AC5E6));
-      expect(theme.primary(ThemeMode.light), const Color(0xFF57B2CA));
+      expect(theme.primary(ThemeMode.light), const Color(0xFF3E94AC));
     });
 
     test('ritorna il colore foreground/social di b-eazy', () {

@@ -26,7 +26,7 @@ class BrandThemes {
     'invibe': BrandTheme(
       slug: 'invibe',
       primaryDark: Color(0xFF6AC5E6),
-      primaryLight: Color(0xFF57B2CA),
+      primaryLight: Color(0xFF3E94AC),
     ),
     'b-eazy': BrandTheme(
       slug: 'b-eazy',
