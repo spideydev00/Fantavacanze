@@ -1,7 +1,9 @@
 import 'package:fantavacanze_official/core/constants/constants.dart';
+import 'package:fantavacanze_official/core/cubits/app_league/app_league_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/app_theme/app_theme_cubit.dart';
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/extensions/context_extension.dart';
+import 'package:fantavacanze_official/core/theme/brand_theme.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:flutter/material.dart';
@@ -43,6 +45,9 @@ class AppTheme {
   static ThemeData getTheme(BuildContext context) {
     final cubit = context.read<AppThemeCubit>();
     final isDark = cubit.isDarkMode(context);
+    final mode = isDark ? ThemeMode.dark : ThemeMode.light;
+    final brand = BrandThemes.of(_selectedPartnerSlug(context));
+    final primary = brand?.primary(mode) ?? ColorPalette.primary(mode);
 
     final baseTheme = isDark ? ThemeData.dark() : ThemeData.light();
 
@@ -51,7 +56,7 @@ class AppTheme {
       // GLOBAL COLOR SCHEME
       colorScheme: ColorScheme(
         brightness: isDark ? Brightness.dark : Brightness.light,
-        primary: context.primaryColor,
+        primary: primary,
         onPrimary: ColorPalette.white,
         secondary: context.secondaryColor,
         onSecondary: ColorPalette.white,
@@ -62,11 +67,11 @@ class AppTheme {
       ),
 
       // Additional theming to ensure consistent colors across components
-      primaryColor: context.primaryColor,
+      primaryColor: primary,
       canvasColor: context.secondaryBgColor, // This affects Stepper background
       /* ---------------------------------------------------------------- */
       tabBarTheme: TabBarThemeData(
-        indicatorColor: context.primaryColor,
+        indicatorColor: primary,
       ),
       // BOTTOM SHEET THEME
       bottomSheetTheme: BottomSheetThemeData(
@@ -106,13 +111,13 @@ class AppTheme {
       switchTheme: SwitchThemeData(
         thumbColor: WidgetStateProperty.resolveWith<Color>((states) {
           if (states.contains(WidgetState.selected)) {
-            return context.primaryColor;
+            return primary;
           }
           return isDark ? ColorPalette.grey : ColorPalette.white;
         }),
         trackColor: WidgetStateProperty.resolveWith<Color>((states) {
           if (states.contains(WidgetState.selected)) {
-            return context.primaryColor.withValues(alpha: 0.5);
+            return primary.withValues(alpha: 0.5);
           }
           return isDark ? ColorPalette.darkerGrey : ColorPalette.grey;
         }),
@@ -144,7 +149,7 @@ class AppTheme {
       //ELEVATED BUTTON
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor: context.primaryColor,
+          backgroundColor: primary,
           foregroundColor: ColorPalette.textPrimary(ThemeMode.dark),
           //button padding
           padding: const EdgeInsets.all(ThemeSizes.md),
@@ -170,9 +175,9 @@ class AppTheme {
       //OUTLINED BUTTON
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
-          foregroundColor: context.primaryColor,
+          foregroundColor: primary,
           side: BorderSide(
-            color: context.primaryColor,
+            color: primary,
             width: 1.5,
           ),
           padding: const EdgeInsets.all(ThemeSizes.md),
@@ -190,7 +195,7 @@ class AppTheme {
 
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
-          foregroundColor: context.primaryColor,
+          foregroundColor: primary,
           textStyle: context.textTheme.bodyLarge!.copyWith(
             fontSize: 17,
             fontWeight: FontWeight.w500,
@@ -203,7 +208,7 @@ class AppTheme {
       /* ---------------------------------------------------------------- */
       //FLOATING BUTTON
       floatingActionButtonTheme: FloatingActionButtonThemeData(
-        backgroundColor: context.primaryColor,
+        backgroundColor: primary,
         shape: const CircleBorder(),
         elevation: 2,
       ),
@@ -225,6 +230,11 @@ class AppTheme {
         isDark ? ThemeData.dark().textTheme : ThemeData.light().textTheme,
       ),
     );
+  }
+
+  static String? _selectedPartnerSlug(BuildContext context) {
+    final state = context.read<AppLeagueCubit>().state;
+    return state is AppLeagueExists ? state.selectedLeague.partner : null;
   }
 
   //getLightTheme

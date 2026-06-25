@@ -3,6 +3,7 @@ import 'package:fantavacanze_official/core/cubits/app_league/app_league_cubit.da
 import 'package:fantavacanze_official/core/cubits/app_theme/app_theme_cubit.dart';
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
+import 'package:fantavacanze_official/core/theme/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -16,63 +17,92 @@ class MockAppThemeCubit extends MockCubit<AppThemeState>
 class MockAppLeagueCubit extends MockCubit<AppLeagueState>
     implements AppLeagueCubit {}
 
-void main() {
-  late MockAppThemeCubit themeCubit;
-  late MockAppLeagueCubit leagueCubit;
+class _FakeBuildContext extends Fake implements BuildContext {}
 
-  setUp(() {
-    themeCubit = MockAppThemeCubit();
-    leagueCubit = MockAppLeagueCubit();
-    when(() => themeCubit.state).thenReturn(AppThemeState(ThemeMode.dark));
+void main() {
+  late MockAppThemeCubit theme;
+  late MockAppLeagueCubit league;
+
+  setUpAll(() {
+    registerFallbackValue(_FakeBuildContext());
   });
 
-  Future<Color> resolvePrimary(
-    WidgetTester tester,
-    AppLeagueState leagueState,
-  ) async {
-    when(() => leagueCubit.state).thenReturn(leagueState);
-    late Color resolved;
+  setUp(() {
+    theme = MockAppThemeCubit();
+    league = MockAppLeagueCubit();
 
-    await tester.pumpWidget(
-      MultiBlocProvider(
-        providers: [
-          BlocProvider<AppThemeCubit>.value(value: themeCubit),
-          BlocProvider<AppLeagueCubit>.value(value: leagueCubit),
-        ],
-        child: Builder(
-          builder: (context) {
-            resolved = context.primaryColor;
-            return const SizedBox.shrink();
-          },
-        ),
-      ),
-    );
-
-    return resolved;
-  }
+    when(() => theme.state).thenReturn(AppThemeState(ThemeMode.dark));
+    when(() => theme.isDarkMode(any())).thenReturn(true);
+    when(() => league.state).thenReturn(AppLeagueInitial());
+  });
 
   group('ThemeColorsExtension.primaryColor', () {
-    testWidgets(
-      'usa il brand quando la lega selezionata e InVibe',
-      (tester) async {
-        final state = AppLeagueExists(
-          leagues: [tPartnerLeagueModel],
-          selectedLeague: tPartnerLeagueModel,
-        );
+    testWidgets('proviene dal tema', (tester) async {
+      const sentinel = Color(0xFF123456);
+      late Color resolved;
 
-        final color = await resolvePrimary(tester, state);
+      await tester.pumpWidget(
+        MultiBlocProvider(
+          providers: [
+            BlocProvider<AppThemeCubit>.value(value: theme),
+            BlocProvider<AppLeagueCubit>.value(value: league),
+          ],
+          child: MaterialApp(
+            theme: ThemeData(
+              colorScheme: const ColorScheme.light(primary: sentinel),
+            ),
+            home: Builder(
+              builder: (context) {
+                resolved = context.primaryColor;
+                return const SizedBox.shrink();
+              },
+            ),
+          ),
+        ),
+      );
 
-        expect(color, const Color(0xFF6AC5E6));
-      },
-    );
+      expect(resolved, sentinel);
+    });
 
-    testWidgets(
-      'usa il primary app quando non c e una lega partner',
-      (tester) async {
-        final color = await resolvePrimary(tester, AppLeagueInitial());
+    Future<Color> themePrimary(
+      WidgetTester tester,
+      AppLeagueState state,
+    ) async {
+      when(() => league.state).thenReturn(state);
+      late Color resolved;
 
-        expect(color, ColorPalette.primary(ThemeMode.dark));
-      },
-    );
+      await tester.pumpWidget(
+        MultiBlocProvider(
+          providers: [
+            BlocProvider<AppThemeCubit>.value(value: theme),
+            BlocProvider<AppLeagueCubit>.value(value: league),
+          ],
+          child: Builder(
+            builder: (context) {
+              resolved = AppTheme.getTheme(context).colorScheme.primary;
+              return const SizedBox.shrink();
+            },
+          ),
+        ),
+      );
+
+      return resolved;
+    }
+
+    testWidgets('il tema usa il brand-primary InVibe', (tester) async {
+      final state = AppLeagueExists(
+        leagues: const [],
+        selectedLeague: makePartnerLeague(partner: 'invibe'),
+      );
+
+      expect(await themePrimary(tester, state), const Color(0xFF6AC5E6));
+    });
+
+    testWidgets('il tema usa il default senza lega partner', (tester) async {
+      expect(
+        await themePrimary(tester, AppLeagueInitial()),
+        ColorPalette.primary(ThemeMode.dark),
+      );
+    });
   });
 }

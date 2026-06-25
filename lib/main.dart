@@ -206,28 +206,32 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return BlocBuilder<AppThemeCubit, AppThemeState>(
       builder: (context, state) {
-        return MaterialApp(
-          showSemanticsDebugger: false,
-          navigatorKey: navigatorKey,
-          scaffoldMessengerKey: messengerKey,
-          title: 'Fantavacanze',
-          home: const InitialPage(),
-          themeMode: state.themeMode,
-          theme: AppTheme.getLightTheme(context),
-          darkTheme: AppTheme.getDarkTheme(context),
-          debugShowCheckedModeBanner: false,
-          localizationsDelegates: const [
-            GlobalMaterialLocalizations.delegate,
-            GlobalWidgetsLocalizations.delegate,
-            GlobalCupertinoLocalizations.delegate,
-          ],
-          supportedLocales: const [
-            Locale('it', 'IT'),
-          ],
-          locale: const Locale(
-            'it',
-            'IT',
-          ),
+        return BlocBuilder<AppLeagueCubit, AppLeagueState>(
+          builder: (context, _) {
+            return MaterialApp(
+              showSemanticsDebugger: false,
+              navigatorKey: navigatorKey,
+              scaffoldMessengerKey: messengerKey,
+              title: 'Fantavacanze',
+              home: const InitialPage(),
+              themeMode: state.themeMode,
+              theme: AppTheme.getLightTheme(context),
+              darkTheme: AppTheme.getDarkTheme(context),
+              debugShowCheckedModeBanner: false,
+              localizationsDelegates: const [
+                GlobalMaterialLocalizations.delegate,
+                GlobalWidgetsLocalizations.delegate,
+                GlobalCupertinoLocalizations.delegate,
+              ],
+              supportedLocales: const [
+                Locale('it', 'IT'),
+              ],
+              locale: const Locale(
+                'it',
+                'IT',
+              ),
+            );
+          },
         );
       },
     );

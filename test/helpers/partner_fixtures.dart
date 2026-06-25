@@ -27,6 +27,10 @@ final tPartnerLeagueModel = LeagueModel(
   partnerRoundId: 'round-1',
 );
 
+LeagueModel makePartnerLeague({required String partner}) {
+  return tPartnerLeagueModel.copyWith(partner: partner);
+}
+
 final tPartnerRound = PartnerRound(
   id: 'round-1',
   name: 'Turno 1 · Luglio',

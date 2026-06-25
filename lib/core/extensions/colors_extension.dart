@@ -1,4 +1,3 @@
-import 'package:fantavacanze_official/core/cubits/app_league/app_league_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/app_theme/app_theme_cubit.dart';
 import 'package:fantavacanze_official/core/theme/brand_theme.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
@@ -12,14 +11,7 @@ extension ThemeColorsExtension on BuildContext {
   }
 
   /// App theme colors
-  Color get primaryColor {
-    final leagueState = read<AppLeagueCubit>().state;
-    if (leagueState is AppLeagueExists) {
-      final brand = BrandThemes.of(leagueState.selectedLeague.partner);
-      if (brand != null) return brand.primary(_currentThemeMode);
-    }
-    return ColorPalette.primary(_currentThemeMode);
-  }
+  Color get primaryColor => Theme.of(this).colorScheme.primary;
 
   Color get secondaryColor => ColorPalette.secondary(_currentThemeMode);
   Color get ternaryColor => ColorPalette.ternary(_currentThemeMode);
