@@ -398,14 +398,18 @@ class _DashboardScreenState extends State<DashboardScreen>
     final isTablet = MediaQuery.of(context).size.shortestSide >= 600;
     final widthFactor = isTablet ? 0.20 : 0.25; //after fall go back to 0.3
     final logoWidth = Constants.getWidth(context) * widthFactor;
-    final appLogoPath = context.read<AppThemeCubit>().isDarkMode(context)
+    final isDark = context.read<AppThemeCubit>().isDarkMode(context);
+    final appLogoPath = isDark
         ? 'assets/images/logos/logo-neon.png'
         : 'assets/images/logos/logo-naked.png';
 
     return BlocBuilder<AppLeagueCubit, AppLeagueState>(
       builder: (context, leagueState) {
         final partnerLogo = leagueState is AppLeagueExists
-            ? BrandAssets.logoFor(leagueState.selectedLeague.partner)
+            ? BrandAssets.logoFor(
+                leagueState.selectedLeague.partner,
+                isDark: isDark,
+              )
             : null;
 
         final appLogo = Image.asset(appLogoPath, width: logoWidth);

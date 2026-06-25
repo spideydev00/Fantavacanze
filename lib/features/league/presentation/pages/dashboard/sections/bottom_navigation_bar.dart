@@ -147,7 +147,10 @@ class _InvibeFab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final logo = BrandAssets.logoFor(_partnerSlug);
+    final logo = BrandAssets.logoFor(
+      _partnerSlug,
+      isDark: context.read<AppThemeCubit>().isDarkMode(context),
+    );
 
     return FloatingActionButton(
       heroTag: 'invibe-fab',

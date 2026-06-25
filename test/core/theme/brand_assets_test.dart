@@ -3,13 +3,31 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   group('BrandAssets.logoFor', () {
-    test('ritorna null per slug null o sconosciuto', () {
-      expect(BrandAssets.logoFor(null), isNull);
-      expect(BrandAssets.logoFor('sconosciuto'), isNull);
+    test('InVibe: variante dark/light', () {
+      expect(
+        BrandAssets.logoFor('invibe', isDark: true),
+        'assets/images/logos/invibe-logo.png',
+      );
+      expect(
+        BrandAssets.logoFor('invibe', isDark: false),
+        'assets/images/logos/logo-invibe-naked.png',
+      );
     });
 
-    test('ritorna null per InVibe finche asset non e registrato', () {
-      expect(BrandAssets.logoFor('invibe'), isNull);
+    test('b-eazy: variante dark/light', () {
+      expect(
+        BrandAssets.logoFor('b-eazy', isDark: true),
+        'assets/images/logos/b-eazy.png',
+      );
+      expect(
+        BrandAssets.logoFor('b-eazy', isDark: false),
+        'assets/images/logos/b-eazy-naked.png',
+      );
+    });
+
+    test('null o slug sconosciuto -> null', () {
+      expect(BrandAssets.logoFor(null, isDark: true), isNull);
+      expect(BrandAssets.logoFor('sconosciuto', isDark: false), isNull);
     });
   });
 }

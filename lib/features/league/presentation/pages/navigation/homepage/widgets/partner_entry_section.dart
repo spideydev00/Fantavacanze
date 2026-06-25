@@ -1,3 +1,4 @@
+import 'package:fantavacanze_official/core/cubits/app_theme/app_theme_cubit.dart';
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/extensions/context_extension.dart';
 import 'package:fantavacanze_official/core/theme/brand_assets.dart';
@@ -5,6 +6,7 @@ import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:fantavacanze_official/core/widgets/divider.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/partner/partner_dashboard_page.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class PartnerEntrySection extends StatelessWidget {
   static const String _partnerSlug = 'invibe';
@@ -55,7 +57,10 @@ class _PartnerCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final logo = BrandAssets.logoFor(PartnerEntrySection._partnerSlug);
+    final logo = BrandAssets.logoFor(
+      PartnerEntrySection._partnerSlug,
+      isDark: context.read<AppThemeCubit>().isDarkMode(context),
+    );
 
     return Material(
       color: Colors.transparent,
