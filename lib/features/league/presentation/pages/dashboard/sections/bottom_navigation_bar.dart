@@ -15,7 +15,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 const int maxSlots = 4;
 
-const double _barHeight = 58;
+// >= altezza naturale di BottomNavigationAsset con margine per text scaling.
+const double _barHeight = 64;
 const double _notchRadius = 38;
 const String _partnerSlug = 'invibe';
 
@@ -98,28 +99,32 @@ class CustomBottomNavigationBar extends StatelessWidget {
                         heightFactor: 0.6,
                         child: _InvibeFab(),
                       ),
-                      SizedBox(
-                        height: _barHeight,
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: ThemeSizes.xs,
-                          ),
-                          child: Row(
-                            children: [
-                              ...List.generate(
-                                leftItems.length,
-                                (i) => Expanded(
-                                  child: asset(leftItems[i], leftIdx[i]),
+                      Positioned.fill(
+                        child: Align(
+                          alignment: Alignment.bottomCenter,
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: ThemeSizes.xs,
+                              vertical: ThemeSizes.xs,
+                            ),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                ...List.generate(
+                                  leftItems.length,
+                                  (i) => Expanded(
+                                    child: asset(leftItems[i], leftIdx[i]),
+                                  ),
                                 ),
-                              ),
-                              const SizedBox(width: _notchRadius * 2),
-                              ...List.generate(
-                                rightItems.length,
-                                (i) => Expanded(
-                                  child: asset(rightItems[i], rightIdx[i]),
+                                const SizedBox(width: _notchRadius * 2),
+                                ...List.generate(
+                                  rightItems.length,
+                                  (i) => Expanded(
+                                    child: asset(rightItems[i], rightIdx[i]),
+                                  ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         ),
                       ),
