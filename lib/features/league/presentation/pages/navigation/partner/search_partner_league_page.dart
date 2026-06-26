@@ -1,10 +1,14 @@
+import 'package:fantavacanze_official/core/cubits/app_league/app_league_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/app_navigation/app_navigation_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit.dart';
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/extensions/context_extension.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
+import 'package:fantavacanze_official/core/theme/theme.dart';
 import 'package:fantavacanze_official/core/utils/show-snackbar-or-paywall/show_snackbar.dart';
+import 'package:fantavacanze_official/core/widgets/ambient_glow.dart';
+import 'package:fantavacanze_official/core/widgets/dialogs/confirmation_dialog.dart';
 import 'package:fantavacanze_official/core/widgets/info_banner.dart';
 import 'package:fantavacanze_official/core/widgets/loader.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/partner/partner_search_result.dart';
@@ -13,12 +17,20 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class SearchPartnerLeaguePage extends StatefulWidget {
+  static const String _slug = 'invibe';
+
   final String partnerSlug;
 
   const SearchPartnerLeaguePage({
     super.key,
     required this.partnerSlug,
   });
+
+  static Route route({String partnerSlug = _slug}) {
+    return MaterialPageRoute(
+      builder: (_) => SearchPartnerLeaguePage(partnerSlug: partnerSlug),
+    );
+  }
 
   @override
   State<SearchPartnerLeaguePage> createState() =>
@@ -28,8 +40,6 @@ class SearchPartnerLeaguePage extends StatefulWidget {
 class _SearchPartnerLeaguePageState extends State<SearchPartnerLeaguePage> {
   final _inviteCodeController = TextEditingController();
   final _passwordController = TextEditingController();
-  PartnerSearchResult? _result;
-  bool _requiresPassword = false;
 
   @override
   void dispose() {
@@ -40,108 +50,134 @@ class _SearchPartnerLeaguePageState extends State<SearchPartnerLeaguePage> {
 
   @override
   Widget build(BuildContext context) {
-    final brandColor = context.brandPrimaryColor(widget.partnerSlug);
-    final expectedPrefix = _prefixFor(widget.partnerSlug);
-
-    return Scaffold(
-      backgroundColor: context.bgColor,
-      appBar: AppBar(
-        title: const Text('Cerca Lega Partner'),
-        centerTitle: true,
+    return Theme(
+      data: AppTheme.getTheme(
+        context,
+        partnerSlugOverride: SearchPartnerLeaguePage._slug,
       ),
-      body: SafeArea(
-        child: BlocConsumer<PartnerCubit, PartnerState>(
-          listener: (context, state) {
-            if (state is PartnerFailure) {
-              showSnackBar(state.message);
-            } else if (state is PartnerSearchLoaded) {
-              setState(() {
-                _result = state.result;
-                _requiresPassword = state.result.requiresPassword;
-                if (!_requiresPassword) {
-                  _passwordController.clear();
-                }
-              });
-            } else if (state is PartnerLeagueReady) {
-              context.read<AppNavigationCubit>().setIndex(0);
-              Navigator.of(context).popUntil((route) => route.isFirst);
-              showSnackBar(
-                'Sei entrato nella lega',
-                color: ColorPalette.success,
-              );
-            }
-          },
-          builder: (context, state) {
-            final isLoading = state is PartnerLoading;
-
-            return SingleChildScrollView(
-              padding: const EdgeInsets.all(ThemeSizes.lg),
-              child: Center(
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 520),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      InfoBanner(
-                        message: _requiresPassword
-                            ? 'Inserisci codice invito e parola d’ordine della lega partner.'
-                            : 'Inserisci il codice invito della lega partner.',
-                        color: brandColor,
-                        icon: Icons.lock_open_outlined,
-                      ),
-                      const SizedBox(height: ThemeSizes.md),
-                      TextField(
-                        controller: _inviteCodeController,
-                        decoration: InputDecoration(
-                          labelText: 'Codice invito',
-                          hintText: 'Esempio: ${expectedPrefix}ABC123',
-                          prefixIcon: const Icon(Icons.code),
-                        ),
-                        textInputAction: TextInputAction.next,
-                      ),
-                      if (_requiresPassword) ...[
-                        const SizedBox(height: ThemeSizes.md),
-                        TextField(
-                          controller: _passwordController,
-                          decoration: const InputDecoration(
-                            labelText: 'Parola d’ordine',
-                            prefixIcon: Icon(Icons.lock_outline),
-                          ),
-                          obscureText: true,
-                          onSubmitted: (_) => _search(),
-                        ),
-                      ],
-                      const SizedBox(height: ThemeSizes.lg),
-                      ElevatedButton.icon(
-                        onPressed: isLoading ? null : _search,
-                        icon: isLoading
-                            ? SizedBox(
-                                width: ThemeSizes.iconSm,
-                                height: ThemeSizes.iconSm,
-                                child: Loader(color: context.textPrimaryColor),
-                              )
-                            : const Icon(Icons.search_rounded),
-                        label: Text(
-                          isLoading ? 'Ricerca in corso...' : 'Cerca Lega',
-                        ),
-                      ),
-                      const SizedBox(height: ThemeSizes.lg),
-                      if (_result != null)
-                        _SearchResultCard(
-                          result: _result!,
-                          brandColor: brandColor,
-                          isLoading: isLoading,
-                          onJoin: _join,
-                        ),
-                    ],
-                  ),
-                ),
+      child: Builder(
+        builder: (context) => Scaffold(
+          extendBodyBehindAppBar: true,
+          backgroundColor: context.bgColor,
+          appBar: AppBar(
+            title: Text(
+              'Unisciti a una lega',
+              style: context.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.bold,
               ),
-            );
-          },
+            ),
+            centerTitle: true,
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            scrolledUnderElevation: 0,
+            surfaceTintColor: Colors.transparent,
+          ),
+          body: AmbientGlow(
+            child: SafeArea(
+              child: BlocConsumer<PartnerCubit, PartnerState>(
+                listener: _onPartnerState,
+                builder: (context, state) {
+                  final isLoading = state is PartnerLoading;
+                  final expectedPrefix = _prefixFor(widget.partnerSlug);
+
+                  return SingleChildScrollView(
+                    padding: const EdgeInsets.all(ThemeSizes.lg),
+                    child: Center(
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 520),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            InfoBanner(
+                              message:
+                                  'Inserisci codice invito e parola d’ordine InVibe.',
+                              color: context.brandColor,
+                              icon: Icons.lock_open_outlined,
+                            ),
+                            const SizedBox(height: ThemeSizes.md),
+                            TextField(
+                              controller: _inviteCodeController,
+                              decoration: InputDecoration(
+                                labelText: 'Codice Invito',
+                                hintText: 'Esempio: ${expectedPrefix}ABC123',
+                                prefixIcon: const Icon(Icons.code),
+                                filled: true,
+                                fillColor: context.secondaryBgColor,
+                              ),
+                              textInputAction: TextInputAction.next,
+                            ),
+                            const SizedBox(height: ThemeSizes.md),
+                            TextField(
+                              controller: _passwordController,
+                              decoration: InputDecoration(
+                                labelText: 'Parola d’ordine InVibe',
+                                prefixIcon: const Icon(Icons.lock_outline),
+                                filled: true,
+                                fillColor: context.secondaryBgColor,
+                              ),
+                              obscureText: true,
+                              textInputAction: TextInputAction.done,
+                              onSubmitted: (_) => _search(),
+                            ),
+                            const SizedBox(height: ThemeSizes.lg),
+                            ElevatedButton.icon(
+                              onPressed: isLoading ? null : _search,
+                              icon: isLoading
+                                  ? SizedBox(
+                                      width: ThemeSizes.iconSm,
+                                      height: ThemeSizes.iconSm,
+                                      child: Loader(
+                                        color: context.textPrimaryColor,
+                                      ),
+                                    )
+                                  : const Icon(Icons.login_rounded),
+                              label: Text(
+                                isLoading
+                                    ? 'Ricerca in corso...'
+                                    : 'Cerca / Unisciti',
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ),
         ),
       ),
     );
+  }
+
+  void _onPartnerState(BuildContext context, PartnerState state) {
+    if (state is PartnerFailure) {
+      showSnackBar(state.message);
+      return;
+    }
+
+    if (state is PartnerSearchLoaded) {
+      switch (state.result.status) {
+        case PartnerSearchStatus.notFound:
+          showSnackBar('Lega non trovata', color: ColorPalette.warning);
+        case PartnerSearchStatus.wrongPassword:
+          showSnackBar('Parola d’ordine errata', color: ColorPalette.error);
+        case PartnerSearchStatus.found:
+          _showFoundConfirmation(state.result);
+      }
+      return;
+    }
+
+    if (state is PartnerLeagueReady) {
+      context.read<AppLeagueCubit>().selectLeague(state.league);
+      context.read<AppNavigationCubit>().setIndex(0);
+      Navigator.of(context).popUntil((route) => route.isFirst);
+      showSnackBar(
+        'Sei entrato nella lega',
+        color: ColorPalette.success,
+      );
+    }
   }
 
   void _search() {
@@ -150,16 +186,13 @@ class _SearchPartnerLeaguePageState extends State<SearchPartnerLeaguePage> {
     final password = _passwordController.text.trim();
 
     if (inviteCode.isEmpty) {
-      showSnackBar(
-        'Inserisci il codice invito.',
-        color: ColorPalette.warning,
-      );
+      showSnackBar('Inserisci il codice invito.', color: ColorPalette.warning);
       return;
     }
 
-    if (_requiresPassword && password.isEmpty) {
+    if (password.isEmpty) {
       showSnackBar(
-        'Inserisci la parola d’ordine.',
+        'Inserisci la parola d’ordine InVibe.',
         color: ColorPalette.warning,
       );
       return;
@@ -167,8 +200,32 @@ class _SearchPartnerLeaguePageState extends State<SearchPartnerLeaguePage> {
 
     context.read<PartnerCubit>().searchLeague(
           inviteCode: inviteCode,
-          password: _requiresPassword ? password : '',
+          password: password,
         );
+  }
+
+  void _showFoundConfirmation(PartnerSearchResult result) {
+    final league = result.league;
+    final leagueName = league?.name ?? 'questa lega';
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) => ConfirmationDialog(
+        title: 'Lega trovata',
+        message: 'Vuoi unirti a "$leagueName"?',
+        confirmText: 'Unisciti',
+        cancelText: 'Annulla',
+        icon: Icons.groups_rounded,
+        iconColor: context.brandColor,
+        additionalContent: _ResultDetails(result: result),
+        onCancel: () => Navigator.of(dialogContext).pop(),
+        onConfirm: () {
+          Navigator.of(dialogContext).pop();
+          _join();
+        },
+      ),
+    );
   }
 
   void _join() {
@@ -177,18 +234,11 @@ class _SearchPartnerLeaguePageState extends State<SearchPartnerLeaguePage> {
       showSnackBar('Devi effettuare l’accesso per unirti alla lega.');
       return;
     }
-    if (_requiresPassword && _passwordController.text.trim().isEmpty) {
-      showSnackBar(
-        'Inserisci la parola d’ordine.',
-        color: ColorPalette.warning,
-      );
-      return;
-    }
 
     context.read<PartnerCubit>().joinLeague(
           userName: userState.user.name,
           inviteCode: _inviteCodeController.text.trim(),
-          password: _requiresPassword ? _passwordController.text.trim() : '',
+          password: _passwordController.text.trim(),
         );
   }
 
@@ -201,155 +251,38 @@ class _SearchPartnerLeaguePageState extends State<SearchPartnerLeaguePage> {
   }
 }
 
-class _SearchResultCard extends StatelessWidget {
+class _ResultDetails extends StatelessWidget {
   final PartnerSearchResult result;
-  final Color brandColor;
-  final bool isLoading;
-  final VoidCallback onJoin;
 
-  const _SearchResultCard({
-    required this.result,
-    required this.brandColor,
-    required this.isLoading,
-    required this.onJoin,
-  });
+  const _ResultDetails({required this.result});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(ThemeSizes.lg),
-      decoration: BoxDecoration(
-        color: context.secondaryBgColor,
-        borderRadius: BorderRadius.circular(ThemeSizes.cardRadiusLg),
-        border: Border.all(color: brandColor.withValues(alpha: 0.3)),
-      ),
-      child: switch (result.status) {
-        PartnerSearchStatus.found => _FoundLeague(
-            result: result,
-            brandColor: brandColor,
-            isLoading: isLoading,
-            onJoin: onJoin,
-          ),
-        PartnerSearchStatus.notFound => _StatusMessage(
-            icon: Icons.search_off,
-            title: 'Nessuna lega trovata',
-            message: 'Nessuna lega trovata con questo codice.',
-            color: ColorPalette.warning,
-          ),
-        PartnerSearchStatus.wrongPassword => _StatusMessage(
-            icon: Icons.lock_outline,
-            title: 'Parola d’ordine errata',
-            message: 'Controlla la parola d’ordine e riprova.',
-            color: ColorPalette.error,
-          ),
-      },
-    );
-  }
-}
+    if (result.destinationName == null && result.roundName == null) {
+      return const SizedBox.shrink();
+    }
 
-class _FoundLeague extends StatelessWidget {
-  final PartnerSearchResult result;
-  final Color brandColor;
-  final bool isLoading;
-  final VoidCallback onJoin;
-
-  const _FoundLeague({
-    required this.result,
-    required this.brandColor,
-    required this.isLoading,
-    required this.onJoin,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final league = result.league;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _StatusMessage(
-          icon: Icons.check_circle_outline,
-          title: 'Lega trovata',
-          message: league?.name ?? 'Puoi unirti a questa lega partner.',
-          color: brandColor,
-        ),
-        if (result.destinationName != null) ...[
-          const SizedBox(height: ThemeSizes.sm),
-          Text(
-            'Destinazione: ${result.destinationName}',
-            style: context.textTheme.bodyMedium,
-          ),
-        ],
-        if (result.roundName != null) ...[
-          const SizedBox(height: ThemeSizes.xs),
-          Text(
-            'Turno: ${result.roundName}',
-            style: context.textTheme.bodyMedium?.copyWith(
-              color: context.textSecondaryColor,
+    return Padding(
+      padding: const EdgeInsets.only(top: ThemeSizes.md),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (result.destinationName != null)
+            Text(
+              'Destinazione: ${result.destinationName}',
+              style: context.textTheme.bodyMedium,
             ),
-          ),
+          if (result.roundName != null) ...[
+            const SizedBox(height: ThemeSizes.xs),
+            Text(
+              'Turno: ${result.roundName}',
+              style: context.textTheme.bodyMedium?.copyWith(
+                color: context.textSecondaryColor,
+              ),
+            ),
+          ],
         ],
-        const SizedBox(height: ThemeSizes.lg),
-        SizedBox(
-          width: double.infinity,
-          child: ElevatedButton.icon(
-            onPressed: isLoading ? null : onJoin,
-            icon: isLoading
-                ? SizedBox(
-                    width: ThemeSizes.iconSm,
-                    height: ThemeSizes.iconSm,
-                    child: Loader(color: context.textPrimaryColor),
-                  )
-                : const Icon(Icons.login_rounded),
-            label: Text(isLoading ? 'Unione in corso...' : 'Unisciti'),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _StatusMessage extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final String message;
-  final Color color;
-
-  const _StatusMessage({
-    required this.icon,
-    required this.title,
-    required this.message,
-    required this.color,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Icon(icon, color: color, size: ThemeSizes.iconMd),
-        const SizedBox(width: ThemeSizes.md),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                title,
-                style: context.textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: ThemeSizes.xs),
-              Text(
-                message,
-                style: context.textTheme.bodyMedium?.copyWith(
-                  color: context.textSecondaryColor,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
+      ),
     );
   }
 }
