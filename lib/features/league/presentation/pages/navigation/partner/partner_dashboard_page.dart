@@ -61,39 +61,41 @@ class _PartnerDashboardView extends StatelessWidget {
             surfaceTintColor: Colors.transparent,
           ),
           body: AmbientGlow(
-            child: SafeArea(
-              child: BlocBuilder<PartnerCubit, PartnerState>(
-                builder: (context, state) {
-                  return switch (state) {
-                    PartnerInitial() || PartnerLoading() => Center(
-                        child: SizedBox(
-                          width: ThemeSizes.loadingIndicatorSize,
-                          height: ThemeSizes.loadingIndicatorSize,
-                          child: Loader(color: context.brandColor),
+            child: SizedBox.expand(
+              child: SafeArea(
+                child: BlocBuilder<PartnerCubit, PartnerState>(
+                  builder: (context, state) {
+                    return switch (state) {
+                      PartnerInitial() || PartnerLoading() => Center(
+                          child: SizedBox(
+                            width: ThemeSizes.loadingIndicatorSize,
+                            height: ThemeSizes.loadingIndicatorSize,
+                            child: Loader(color: context.brandColor),
+                          ),
                         ),
-                      ),
-                    PartnerFailure(:final message) => EmptyState(
-                        icon: Icons.error_outline,
-                        title: 'Impossibile caricare il partner',
-                        subtitle: message,
-                        action: ElevatedButton(
-                          onPressed: () => context
-                              .read<PartnerCubit>()
-                              .loadDestinations(partnerSlug),
-                          child: const Text('Riprova'),
+                      PartnerFailure(:final message) => EmptyState(
+                          icon: Icons.error_outline,
+                          title: 'Impossibile caricare il partner',
+                          subtitle: message,
+                          action: ElevatedButton(
+                            onPressed: () => context
+                                .read<PartnerCubit>()
+                                .loadDestinations(partnerSlug),
+                            child: const Text('Riprova'),
+                          ),
                         ),
-                      ),
-                    PartnerDestinationsLoaded(:final catalog) =>
-                      _LoadedDashboard(
-                        catalog: catalog,
-                      ),
-                    _ => EmptyState(
-                        icon: Icons.handshake_outlined,
-                        title: 'Partner non disponibile',
-                        subtitle: 'Torna indietro e riprova tra poco.',
-                      ),
-                  };
-                },
+                      PartnerDestinationsLoaded(:final catalog) =>
+                        _LoadedDashboard(
+                          catalog: catalog,
+                        ),
+                      _ => EmptyState(
+                          icon: Icons.handshake_outlined,
+                          title: 'Partner non disponibile',
+                          subtitle: 'Torna indietro e riprova tra poco.',
+                        ),
+                    };
+                  },
+                ),
               ),
             ),
           ),

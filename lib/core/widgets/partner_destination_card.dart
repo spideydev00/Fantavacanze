@@ -13,6 +13,7 @@ class PartnerDestinationCard extends StatelessWidget {
   final bool? selected;
   final VoidCallback onTap;
   final Widget? trailing;
+  final String? tagLabel;
 
   const PartnerDestinationCard({
     super.key,
@@ -23,6 +24,7 @@ class PartnerDestinationCard extends StatelessWidget {
     this.imageUrl,
     this.selected,
     this.trailing,
+    this.tagLabel,
   });
 
   static const double _imageHeight = 140;
@@ -79,6 +81,13 @@ class PartnerDestinationCard extends StatelessWidget {
                           ],
                         ],
                       ),
+                      if (tagLabel != null) ...[
+                        const SizedBox(height: ThemeSizes.sm),
+                        _DestinationTag(
+                          label: tagLabel!,
+                          color: accentColor,
+                        ),
+                      ],
                       if (description != null) ...[
                         const SizedBox(height: ThemeSizes.xs),
                         Text(
@@ -125,6 +134,48 @@ class PartnerDestinationCard extends StatelessWidget {
         child: Center(child: Loader(color: accentColor)),
       ),
       errorWidget: (context, _, __) => placeholder,
+    );
+  }
+}
+
+class _DestinationTag extends StatelessWidget {
+  final String label;
+  final Color color;
+
+  const _DestinationTag({
+    required this.label,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: ThemeSizes.sm,
+        vertical: ThemeSizes.xs,
+      ),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusMd),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            Icons.calendar_month_rounded,
+            color: color,
+            size: ThemeSizes.iconSm * 0.65,
+          ),
+          const SizedBox(width: ThemeSizes.xs),
+          Text(
+            label,
+            style: context.textTheme.labelMedium?.copyWith(
+              color: color,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

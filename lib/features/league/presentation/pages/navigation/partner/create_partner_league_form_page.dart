@@ -97,15 +97,37 @@ class _CreatePartnerLeagueFormPageState
             scrolledUnderElevation: 0,
             surfaceTintColor: Colors.transparent,
           ),
+          floatingActionButton: BlocBuilder<PartnerCubit, PartnerState>(
+            builder: (context, state) {
+              final isLoading = state is PartnerLoading;
+
+              return ElevatedButton.icon(
+                onPressed: isLoading ? null : _submit,
+                icon: isLoading
+                    ? SizedBox(
+                        width: ThemeSizes.iconSm,
+                        height: ThemeSizes.iconSm,
+                        child: Loader(color: context.textPrimaryColor),
+                      )
+                    : const Icon(Icons.check_circle_outline),
+                label: Text(
+                  isLoading ? 'Creazione...' : 'Crea Lega',
+                ),
+              );
+            },
+          ),
           body: AmbientGlow(
             child: SafeArea(
               child: BlocConsumer<PartnerCubit, PartnerState>(
                 listener: _onPartnerState,
                 builder: (context, state) {
-                  final isLoading = state is PartnerLoading;
-
                   return SingleChildScrollView(
-                    padding: const EdgeInsets.all(ThemeSizes.lg),
+                    padding: const EdgeInsets.fromLTRB(
+                      ThemeSizes.lg,
+                      ThemeSizes.lg,
+                      ThemeSizes.lg,
+                      ThemeSizes.xxl * 2,
+                    ),
                     child: Center(
                       child: ConstrainedBox(
                         constraints: const BoxConstraints(maxWidth: 560),
@@ -131,24 +153,6 @@ class _CreatePartnerLeagueFormPageState
                               ),
                               const SizedBox(height: ThemeSizes.lg),
                               _RulesPreview(destination: widget.destination),
-                              const SizedBox(height: ThemeSizes.lg),
-                              ElevatedButton.icon(
-                                onPressed: isLoading ? null : _submit,
-                                icon: isLoading
-                                    ? SizedBox(
-                                        width: ThemeSizes.iconSm,
-                                        height: ThemeSizes.iconSm,
-                                        child: Loader(
-                                          color: context.textPrimaryColor,
-                                        ),
-                                      )
-                                    : const Icon(Icons.check_circle_outline),
-                                label: Text(
-                                  isLoading
-                                      ? 'Creazione in corso...'
-                                      : 'Crea Lega',
-                                ),
-                              ),
                             ],
                           ),
                         ),

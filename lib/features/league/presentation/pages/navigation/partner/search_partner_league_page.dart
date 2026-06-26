@@ -73,76 +73,78 @@ class _SearchPartnerLeaguePageState extends State<SearchPartnerLeaguePage> {
             surfaceTintColor: Colors.transparent,
           ),
           body: AmbientGlow(
-            child: SafeArea(
-              child: BlocConsumer<PartnerCubit, PartnerState>(
-                listener: _onPartnerState,
-                builder: (context, state) {
-                  final isLoading = state is PartnerLoading;
-                  final expectedPrefix = _prefixFor(widget.partnerSlug);
+            child: SizedBox.expand(
+              child: SafeArea(
+                child: BlocConsumer<PartnerCubit, PartnerState>(
+                  listener: _onPartnerState,
+                  builder: (context, state) {
+                    final isLoading = state is PartnerLoading;
+                    final expectedPrefix = _prefixFor(widget.partnerSlug);
 
-                  return SingleChildScrollView(
-                    padding: const EdgeInsets.all(ThemeSizes.lg),
-                    child: Center(
-                      child: ConstrainedBox(
-                        constraints: const BoxConstraints(maxWidth: 520),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            InfoBanner(
-                              message:
-                                  'Inserisci codice invito e parola d’ordine InVibe.',
-                              color: context.brandColor,
-                              icon: Icons.lock_open_outlined,
-                            ),
-                            const SizedBox(height: ThemeSizes.md),
-                            TextField(
-                              controller: _inviteCodeController,
-                              decoration: InputDecoration(
-                                labelText: 'Codice Invito',
-                                hintText: 'Esempio: ${expectedPrefix}ABC123',
-                                prefixIcon: const Icon(Icons.code),
-                                filled: true,
-                                fillColor: context.secondaryBgColor,
+                    return SingleChildScrollView(
+                      padding: const EdgeInsets.all(ThemeSizes.lg),
+                      child: Center(
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(maxWidth: 520),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              InfoBanner(
+                                message:
+                                    'Inserisci codice invito e parola d’ordine InVibe.',
+                                color: context.brandColor,
+                                icon: Icons.lock_open_outlined,
                               ),
-                              textInputAction: TextInputAction.next,
-                            ),
-                            const SizedBox(height: ThemeSizes.md),
-                            TextField(
-                              controller: _passwordController,
-                              decoration: InputDecoration(
-                                labelText: 'Parola d’ordine InVibe',
-                                prefixIcon: const Icon(Icons.lock_outline),
-                                filled: true,
-                                fillColor: context.secondaryBgColor,
+                              const SizedBox(height: ThemeSizes.md),
+                              TextField(
+                                controller: _inviteCodeController,
+                                decoration: InputDecoration(
+                                  labelText: 'Codice Invito',
+                                  hintText: 'Esempio: ${expectedPrefix}ABC123',
+                                  prefixIcon: const Icon(Icons.code),
+                                  filled: true,
+                                  fillColor: context.secondaryBgColor,
+                                ),
+                                textInputAction: TextInputAction.next,
                               ),
-                              obscureText: true,
-                              textInputAction: TextInputAction.done,
-                              onSubmitted: (_) => _search(),
-                            ),
-                            const SizedBox(height: ThemeSizes.lg),
-                            ElevatedButton.icon(
-                              onPressed: isLoading ? null : _search,
-                              icon: isLoading
-                                  ? SizedBox(
-                                      width: ThemeSizes.iconSm,
-                                      height: ThemeSizes.iconSm,
-                                      child: Loader(
-                                        color: context.textPrimaryColor,
-                                      ),
-                                    )
-                                  : const Icon(Icons.login_rounded),
-                              label: Text(
-                                isLoading
-                                    ? 'Ricerca in corso...'
-                                    : 'Cerca / Unisciti',
+                              const SizedBox(height: ThemeSizes.md),
+                              TextField(
+                                controller: _passwordController,
+                                decoration: InputDecoration(
+                                  labelText: 'Parola d’ordine InVibe',
+                                  prefixIcon: const Icon(Icons.lock_outline),
+                                  filled: true,
+                                  fillColor: context.secondaryBgColor,
+                                ),
+                                obscureText: true,
+                                textInputAction: TextInputAction.done,
+                                onSubmitted: (_) => _search(),
                               ),
-                            ),
-                          ],
+                              const SizedBox(height: ThemeSizes.lg),
+                              ElevatedButton.icon(
+                                onPressed: isLoading ? null : _search,
+                                icon: isLoading
+                                    ? SizedBox(
+                                        width: ThemeSizes.iconSm,
+                                        height: ThemeSizes.iconSm,
+                                        child: Loader(
+                                          color: context.textPrimaryColor,
+                                        ),
+                                      )
+                                    : const Icon(Icons.login_rounded),
+                                label: Text(
+                                  isLoading
+                                      ? 'Ricerca in corso...'
+                                      : 'Cerca / Unisciti',
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
-                    ),
-                  );
-                },
+                    );
+                  },
+                ),
               ),
             ),
           ),

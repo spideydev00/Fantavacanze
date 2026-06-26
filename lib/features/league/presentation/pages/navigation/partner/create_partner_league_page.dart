@@ -71,6 +71,7 @@ class CreatePartnerLeaguePage extends StatelessWidget {
                             description: destination.description,
                             imageUrl: destination.imageUrl,
                             accentColor: context.brandColor,
+                            tagLabel: _roundDateLabel(destination),
                             selected: null,
                             trailing: Icon(
                               Icons.chevron_right_rounded,
@@ -88,6 +89,20 @@ class CreatePartnerLeaguePage extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  String? _roundDateLabel(PartnerDestination destination) {
+    final round = destination.activeRound;
+    if (round == null) return null;
+    final start = _formatDate(round.startDate);
+    final end = round.endDate == null ? null : _formatDate(round.endDate!);
+    return end == null ? 'Turno dal $start' : 'Turno $start - $end';
+  }
+
+  String _formatDate(DateTime date) {
+    final day = date.day.toString().padLeft(2, '0');
+    final month = date.month.toString().padLeft(2, '0');
+    return '$day/$month';
   }
 
   void _openForm(BuildContext context, PartnerDestination destination) {
