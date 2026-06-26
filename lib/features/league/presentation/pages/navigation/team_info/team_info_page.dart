@@ -21,7 +21,6 @@ import 'package:fantavacanze_official/features/league/domain/entities/team_parti
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc/league_bloc.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc/league_event.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc/league_state.dart';
-import 'package:fantavacanze_official/features/league/presentation/pages/navigation/team_info/widgets/leave_league_button.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/team_info/widgets/score_card.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/team_info/widgets/section_card.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/team_info/widgets/stat_card.dart';
@@ -540,11 +539,13 @@ class _TeamBasedInfoState extends State<_TeamBasedInfo>
                       horizontal: ThemeSizes.lg,
                       vertical: ThemeSizes.md,
                     ),
-                    child: LeaveLeagueButton(
+                    child: ElevatedButton.icon(
                       onPressed: () => _showExitConfirmationDialog(
                         context,
                         widget.league,
                       ),
+                      label: Text("Lascia la lega"),
+                      icon: Icon(Icons.exit_to_app),
                     ),
                   ),
                   const SizedBox(height: ThemeSizes.lg),
@@ -867,11 +868,13 @@ class _IndividualInfoState extends State<_IndividualInfo> {
                       horizontal: ThemeSizes.lg,
                       vertical: ThemeSizes.md,
                     ),
-                    child: LeaveLeagueButton(
+                    child: ElevatedButton.icon(
                       onPressed: () => _showExitConfirmationDialog(
                         context,
                         widget.league,
                       ),
+                      label: Text("Lascia la lega"),
+                      icon: Icon(Icons.exit_to_app),
                     ),
                   ),
                 ],
