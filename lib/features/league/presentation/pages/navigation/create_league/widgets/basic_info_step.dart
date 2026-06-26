@@ -56,14 +56,7 @@ class BasicInfoStep extends StatelessWidget {
         decoration: InputDecoration(
           labelText: 'Nome Lega',
           hintText: 'es. Fanta Marbella',
-          prefixIcon: Icon(
-            Icons.text_fields_rounded,
-            color: context.secondaryColor,
-          ),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusLg),
-            borderSide: BorderSide.none,
-          ),
+          prefixIcon: const Icon(Icons.text_fields_rounded),
           filled: true,
           fillColor: context.secondaryBgColor,
         ),
@@ -90,11 +83,7 @@ class BasicInfoStep extends StatelessWidget {
         decoration: InputDecoration(
           labelText: 'Motto',
           hintText: 'Hai un motto? Scrivilo qui!',
-          prefixIcon: Icon(Icons.whatshot, color: context.secondaryColor),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusLg),
-            borderSide: BorderSide.none,
-          ),
+          prefixIcon: const Icon(Icons.whatshot),
           filled: true,
           fillColor: context.secondaryBgColor,
         ),
