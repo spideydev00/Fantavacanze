@@ -336,6 +336,7 @@ class _AddEventPageState extends State<AddEventPage> {
         }
       },
       child: Scaffold(
+        extendBodyBehindAppBar: true,
         appBar: widget.showAppBar
             ? AppBar(
                 title: Text(
@@ -343,6 +344,8 @@ class _AddEventPageState extends State<AddEventPage> {
                   style: context.textTheme.titleMedium!
                       .copyWith(fontWeight: FontWeight.bold),
                 ),
+                backgroundColor: Colors.transparent,
+                scrolledUnderElevation: 0,
                 centerTitle: true,
               )
             : null,
@@ -359,121 +362,138 @@ class _AddEventPageState extends State<AddEventPage> {
   }
 
   Widget _buildUnauthorizedView() {
-    return Center(
-      child: InfoContainer(
-        icon: Icons.admin_panel_settings,
-        title: 'Accesso Non Autorizzato',
-        message: 'Solo gli amministratori possono aggiungere eventi',
-        color: context.primaryColor.withValues(alpha: 0.5),
+    return SafeArea(
+      child: Center(
+        child: InfoContainer(
+          icon: Icons.admin_panel_settings,
+          title: 'Accesso Non Autorizzato',
+          message: 'Solo gli amministratori possono aggiungere eventi',
+          color: context.primaryColor.withValues(alpha: 0.5),
+        ),
       ),
     );
   }
 
   Widget _buildNoLeagueView() {
-    return Center(
-      child: InfoContainer(
-        icon: Icons.warning_amber_rounded,
-        title: 'Nessuna Lega Selezionata',
-        message: 'Seleziona una lega prima di aggiungere un evento',
-        color: ColorPalette.warning.withValues(alpha: 0.5),
+    return SafeArea(
+      child: Center(
+        child: InfoContainer(
+          icon: Icons.warning_amber_rounded,
+          title: 'Nessuna Lega Selezionata',
+          message: 'Seleziona una lega prima di aggiungere un evento',
+          color: ColorPalette.warning.withValues(alpha: 0.5),
+        ),
       ),
     );
   }
 
   Widget _buildEventCreationStepper(League league) {
-    return Form(
-      key: _formKey,
-      child: Column(
-        children: [
-          Expanded(
-            child: Theme(
-              data: Theme.of(context).copyWith(
-                canvasColor: Colors.transparent,
-                colorScheme: context.colorScheme.copyWith(
-                  surface: Colors.transparent,
+    return SafeArea(
+      child: Form(
+        key: _formKey,
+        child: Column(
+          children: [
+            Expanded(
+              child: Theme(
+                data: Theme.of(context).copyWith(
+                  canvasColor: Colors.transparent,
+                  colorScheme: context.colorScheme.copyWith(
+                    surface: Colors.transparent,
+                  ),
+                ),
+                child: Stepper(
+                  margin: EdgeInsets.zero,
+                  type: StepperType.horizontal,
+                  connectorThickness: 0,
+                  elevation: 0,
+                  currentStep: _currentStep,
+                  onStepTapped: _onStepTapped,
+                  onStepContinue: () {
+                    if (_currentStep < 2) {
+                      if (!_validateStep(_currentStep)) {
+                        return;
+                      }
+                      setState(() {
+                        _currentStep++;
+                      });
+                    } else {
+                      _submitEvent();
+                    }
+                  },
+                  onStepCancel: () {
+                    if (_currentStep > 0) {
+                      setState(() {
+                        _currentStep--;
+                      });
+                    }
+                  },
+                  steps: [
+                    Step(
+                      title: Text(
+                        'Fonte',
+                        style: context.textTheme.labelLarge,
+                      ),
+                      stepStyle: StepStyle(color: context.leagueAccentColor),
+                      content: _buildSourceSelectionStep(),
+                      isActive: _currentStep >= 0,
+                      state: _currentStep > 0
+                          ? StepState.complete
+                          : StepState.editing,
+                    ),
+                    Step(
+                      title: Text(
+                        'Dettagli',
+                        style: context.textTheme.labelLarge,
+                      ),
+                      stepStyle: _currentStep < 1
+                          ? StepStyle(
+                              color: context.secondaryBgColor,
+                              indexStyle: TextStyle(
+                                color: context.textPrimaryColor,
+                              ),
+                            )
+                          : StepStyle(color: context.leagueAccentColor),
+                      content: _buildEventDetailsStep(),
+                      isActive: _currentStep >= 1,
+                      state: _currentStep > 1
+                          ? StepState.complete
+                          : (_currentStep == 1
+                              ? StepState.editing
+                              : StepState.indexed),
+                    ),
+                    Step(
+                      title: Text(
+                        'Assegna',
+                        style: context.textTheme.labelLarge,
+                      ),
+                      stepStyle: _currentStep < 2
+                          ? StepStyle(
+                              color: context.secondaryBgColor,
+                              indexStyle: TextStyle(
+                                color: context.textPrimaryColor,
+                              ),
+                            )
+                          : StepStyle(color: context.leagueAccentColor),
+                      content: _buildAssignEventStep(league),
+                      isActive: _currentStep >= 2,
+                      state: _currentStep == 2
+                          ? StepState.editing
+                          : StepState.indexed,
+                    ),
+                  ],
+                  controlsBuilder: _buildStepperControls,
                 ),
               ),
-              child: Stepper(
-                margin: EdgeInsets.zero,
-                type: StepperType.horizontal,
-                connectorThickness: 0,
-                elevation: 0,
-                currentStep: _currentStep,
-                onStepTapped: _onStepTapped,
-                onStepContinue: () {
-                  if (_currentStep < 2) {
-                    if (!_validateStep(_currentStep)) {
-                      return;
-                    }
-                    setState(() {
-                      _currentStep++;
-                    });
-                  } else {
-                    _submitEvent();
-                  }
-                },
-                onStepCancel: () {
-                  if (_currentStep > 0) {
-                    setState(() {
-                      _currentStep--;
-                    });
-                  }
-                },
-                steps: [
-                  Step(
-                    title: Text(
-                      'Fonte',
-                      style: context.textTheme.labelLarge,
-                    ),
-                    content: _buildSourceSelectionStep(),
-                    isActive: _currentStep >= 0,
-                    state: _currentStep > 0
-                        ? StepState.complete
-                        : StepState.editing,
-                  ),
-                  Step(
-                    title: Text(
-                      'Dettagli',
-                      style: context.textTheme.labelLarge,
-                    ),
-                    stepStyle: _currentStep < 1
-                        ? StepStyle(color: context.secondaryBgColor)
-                        : null,
-                    content: _buildEventDetailsStep(),
-                    isActive: _currentStep >= 1,
-                    state: _currentStep > 1
-                        ? StepState.complete
-                        : (_currentStep == 1
-                            ? StepState.editing
-                            : StepState.indexed),
-                  ),
-                  Step(
-                    title: Text(
-                      'Assegna',
-                      style: context.textTheme.labelLarge,
-                    ),
-                    stepStyle: _currentStep < 2
-                        ? StepStyle(color: context.secondaryBgColor)
-                        : null,
-                    content: _buildAssignEventStep(league),
-                    isActive: _currentStep >= 2,
-                    state: _currentStep == 2
-                        ? StepState.editing
-                        : StepState.indexed,
-                  ),
-                ],
-                controlsBuilder: _buildStepperControls,
-              ),
             ),
-          ),
-          if (_isSubmitting)
-            SizedBox(
-              height: Constants.getHeight(context) * 0.1,
-              child: Loader(
-                color: ColorPalette.success,
-              ),
-            )
-        ],
+            if (_isSubmitting)
+              SizedBox(
+                height: Constants.getHeight(context) * 0.1,
+                child: Loader(
+                  color: ColorPalette.success,
+                ),
+              )
+          ],
+        ),
       ),
     );
   }
@@ -734,10 +754,7 @@ class _AddEventPageState extends State<AddEventPage> {
               hintText: 'Inserisci il nome dell\'evento',
               filled: true,
               fillColor: context.secondaryBgColor,
-              prefixIcon: Icon(
-                Icons.title,
-                color: context.secondaryColor,
-              ),
+              prefixIcon: const Icon(Icons.title),
             ),
             validator: (value) {
               if (value == null || value.trim().isEmpty) {
@@ -811,10 +828,7 @@ class _AddEventPageState extends State<AddEventPage> {
               hintText: 'Inserisci una descrizione',
               filled: true,
               fillColor: context.secondaryBgColor,
-              prefixIcon: Icon(
-                Icons.description,
-                color: context.secondaryColor,
-              ),
+              prefixIcon: const Icon(Icons.description),
             ),
             maxLines: 3,
           ),

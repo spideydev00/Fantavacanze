@@ -488,6 +488,7 @@ class _CreateLeaguePageState extends State<CreateLeaguePage> {
       },
       builder: (context, state) {
         return Scaffold(
+          extendBodyBehindAppBar: true,
           appBar: AppBar(
             title: Text(
               'Crea Lega',
@@ -499,6 +500,8 @@ class _CreateLeaguePageState extends State<CreateLeaguePage> {
             leading: BackButton(
               onPressed: Navigator.of(context).pop,
             ),
+            backgroundColor: Colors.transparent,
+            scrolledUnderElevation: 0,
           ),
           body: Theme(
             data: AppTheme.getTheme(
@@ -510,255 +513,270 @@ class _CreateLeaguePageState extends State<CreateLeaguePage> {
             child: Builder(
               builder: (context) {
                 return AmbientGlow(
-                  child: Column(
-                    children: [
-                      Expanded(
-                        child: Theme(
-                          data: Theme.of(context).copyWith(
-                            canvasColor: Colors.transparent,
-                            colorScheme: context.colorScheme.copyWith(
-                              surface: Colors.transparent,
+                  child: SafeArea(
+                    child: Column(
+                      children: [
+                        Expanded(
+                          child: Theme(
+                            data: Theme.of(context).copyWith(
+                              canvasColor: Colors.transparent,
+                              colorScheme: context.colorScheme.copyWith(
+                                surface: Colors.transparent,
+                              ),
                             ),
-                          ),
-                          child: Stepper(
-                            margin: EdgeInsets.zero,
-                            type: StepperType.horizontal,
-                            connectorThickness: 0,
-                            elevation: 0,
-                            currentStep: _currentStep,
-                            onStepTapped: _onStepTapped,
-                            onStepContinue: () {
-                              if (_currentStep < 2) {
-                                if (_currentStep == 0) {
-                                  if (_nameController.text.trim().isEmpty) {
-                                    showSnackBar(
-                                      "Compila tutti i campi obbligatori!",
-                                      color: ColorPalette.warning,
-                                    );
-                                    return;
+                            child: Stepper(
+                              margin: EdgeInsets.zero,
+                              type: StepperType.horizontal,
+                              connectorThickness: 0,
+                              elevation: 0,
+                              currentStep: _currentStep,
+                              onStepTapped: _onStepTapped,
+                              onStepContinue: () {
+                                if (_currentStep < 2) {
+                                  if (_currentStep == 0) {
+                                    if (_nameController.text.trim().isEmpty) {
+                                      showSnackBar(
+                                        "Compila tutti i campi obbligatori!",
+                                        color: ColorPalette.warning,
+                                      );
+                                      return;
+                                    }
                                   }
+                                  setState(() {
+                                    _currentStep++;
+                                  });
+                                } else {
+                                  _submitForm();
                                 }
-                                setState(() {
-                                  _currentStep++;
-                                });
-                              } else {
-                                _submitForm();
-                              }
-                            },
-                            onStepCancel: () {
-                              if (_currentStep > 0) {
-                                setState(() {
-                                  _currentStep--;
-                                });
-                              }
-                            },
-                            steps: [
-                              Step(
-                                title: Text(
-                                  'Informazioni',
-                                  style: context.textTheme.labelLarge,
+                              },
+                              onStepCancel: () {
+                                if (_currentStep > 0) {
+                                  setState(() {
+                                    _currentStep--;
+                                  });
+                                }
+                              },
+                              steps: [
+                                Step(
+                                  title: Text(
+                                    'Informazioni',
+                                    style: context.textTheme.labelLarge,
+                                  ),
+                                  stepStyle: StepStyle(
+                                      color: context.leagueAccentColor),
+                                  content: BasicInfoStep(
+                                    nameController: _nameController,
+                                    descriptionController:
+                                        _descriptionController,
+                                    formKey: _formKey,
+                                  ),
+                                  isActive: _currentStep >= 0,
+                                  state: _currentStep > 0
+                                      ? StepState.complete
+                                      : (_currentStep == 0
+                                          ? StepState.editing
+                                          : StepState.indexed),
                                 ),
-                                stepStyle:
-                                    StepStyle(color: context.leagueAccentColor),
-                                content: BasicInfoStep(
-                                  nameController: _nameController,
-                                  descriptionController: _descriptionController,
-                                  formKey: _formKey,
-                                ),
-                                isActive: _currentStep >= 0,
-                                state: _currentStep > 0
-                                    ? StepState.complete
-                                    : (_currentStep == 0
-                                        ? StepState.editing
-                                        : StepState.indexed),
-                              ),
-                              Step(
-                                title: Text(
-                                  'Tipo',
-                                  style: context.textTheme.labelLarge,
-                                ),
-                                stepStyle: _currentStep < 1
-                                    ? StepStyle(color: context.secondaryBgColor)
-                                    : StepStyle(
-                                        color: context.leagueAccentColor),
-                                content: TeamTypeStep(
-                                    leagueType: _leagueType,
-                                    onTeamTypeChanged: (value) {
-                                      setState(() {
-                                        _leagueType = value;
-                                      });
-                                    }),
-                                isActive: _currentStep >= 1,
-                                state: _currentStep > 1
-                                    ? StepState.complete
-                                    : (_currentStep == 1
-                                        ? StepState.editing
-                                        : StepState.indexed),
-                              ),
-                              Step(
-                                title: Text('Regole',
-                                    style: context.textTheme.labelLarge),
-                                stepStyle: _currentStep < 2
-                                    ? StepStyle(color: context.secondaryBgColor)
-                                    : StepStyle(
-                                        color: context.leagueAccentColor),
-                                content: RulesStep(
-                                  scrollController: _scrollController,
-                                  selectedRuleMode:
-                                      _selectedPartnerDestinationId != null
-                                          ? null
-                                          : _selectedRuleMode,
-                                  isLoadingRules: _isLoadingRules,
-                                  rulesLoaded: _rulesLoaded,
-                                  rules: _rules,
-                                  onRuleModeChanged: _handleRuleModeChanged,
-                                  onAddRule: _addRule,
-                                  onEditRule: _editRule,
-                                  onRemoveRule: _removeRule,
-                                  packagePartnerSlug: _packagePartnerSlug,
-                                  packageDestinations: _packageDestinations,
-                                  isLoadingPackageDestinations:
-                                      _isLoadingPackageDestinations,
-                                  selectedPartnerDestinationId:
-                                      _selectedPartnerDestinationId,
-                                  onPartnerDestinationSelected:
-                                      _handlePartnerDestinationSelected,
-                                ),
-                                isActive: _currentStep >= 2,
-                                state: _currentStep == 2
-                                    ? StepState.editing
-                                    : StepState.indexed,
-                              ),
-                            ],
-                            controlsBuilder: (context, details) {
-                              if (_currentStep == 2) {
-                                return const SizedBox.shrink();
-                              }
-
-                              return Padding(
-                                padding:
-                                    const EdgeInsets.only(top: ThemeSizes.lg),
-                                child: Row(
-                                  children: [
-                                    if (_currentStep > 0)
-                                      Expanded(
-                                        flex: 3,
-                                        child: OutlinedButton(
-                                          onPressed: () {
-                                            details.onStepCancel?.call();
-                                          },
-                                          child: const Text('Indietro'),
-                                        ),
-                                      ),
-                                    if (_currentStep > 0)
-                                      const SizedBox(width: ThemeSizes.sm),
-                                    Expanded(
-                                      flex: 4,
-                                      child: ElevatedButton(
-                                        onPressed: _isCreating
-                                            ? null
-                                            : () {
-                                                FocusManager
-                                                    .instance.primaryFocus
-                                                    ?.unfocus();
-
-                                                details.onStepContinue?.call();
-                                              },
-                                        style: ElevatedButton.styleFrom(
-                                          fixedSize: null,
-                                          padding: const EdgeInsets.symmetric(
-                                            vertical: ThemeSizes.md,
-                                            horizontal: ThemeSizes.sm,
+                                Step(
+                                  title: Text(
+                                    'Tipo',
+                                    style: context.textTheme.labelLarge,
+                                  ),
+                                  stepStyle: _currentStep < 1
+                                      ? StepStyle(
+                                          color: context.secondaryBgColor,
+                                          indexStyle: TextStyle(
+                                            color: context.textPrimaryColor,
                                           ),
-                                        ),
-                                        child: Text(
-                                          _isCreating
-                                              ? 'Creazione in corso...'
-                                              : _currentStep < 2
-                                                  ? 'Continua'
-                                                  : 'Crea Lega',
-                                        ),
-                                      ),
-                                    ),
-                                  ],
+                                        )
+                                      : StepStyle(
+                                          color: context.leagueAccentColor),
+                                  content: TeamTypeStep(
+                                      leagueType: _leagueType,
+                                      onTeamTypeChanged: (value) {
+                                        setState(() {
+                                          _leagueType = value;
+                                        });
+                                      }),
+                                  isActive: _currentStep >= 1,
+                                  state: _currentStep > 1
+                                      ? StepState.complete
+                                      : (_currentStep == 1
+                                          ? StepState.editing
+                                          : StepState.indexed),
                                 ),
-                              );
-                            },
-                          ),
-                        ),
-                      ),
-                      if (_currentStep == 2)
-                        AnimatedOpacity(
-                          opacity: _areButtonsVisible ? 1.0 : 0.0,
-                          duration: const Duration(milliseconds: 200),
-                          child: AnimatedContainer(
-                            duration: const Duration(milliseconds: 200),
-                            height: _areButtonsVisible ? 80 : 0,
-                            margin: EdgeInsets.only(
-                              bottom: MediaQuery.of(context).padding.bottom > 0
-                                  ? MediaQuery.of(context).padding.bottom
-                                  : ThemeSizes.md,
-                            ),
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: ThemeSizes.md,
-                              vertical: ThemeSizes.sm,
-                            ),
-                            // decoration: BoxDecoration(
-                            //   color: context.bgColor.withValues(alpha: 0.35),
-                            //   boxShadow: [
-                            //     BoxShadow(
-                            //       color: Colors.black.withAlpha(25),
-                            //       blurRadius: 4,
-                            //       offset: const Offset(0, -2),
-                            //     ),
-                            //   ],
-                            // ),
-                            child: Row(
-                              children: [
-                                Expanded(
-                                  flex: 3,
-                                  child: OutlinedButton(
-                                    onPressed: () {
-                                      setState(() {
-                                        _currentStep--;
-                                      });
-                                    },
-                                    child: const Text('Indietro'),
+                                Step(
+                                  title: Text('Regole',
+                                      style: context.textTheme.labelLarge),
+                                  stepStyle: _currentStep < 2
+                                      ? StepStyle(
+                                          color: context.secondaryBgColor,
+                                          indexStyle: TextStyle(
+                                            color: context.textPrimaryColor,
+                                          ),
+                                        )
+                                      : StepStyle(
+                                          color: context.leagueAccentColor),
+                                  content: RulesStep(
+                                    scrollController: _scrollController,
+                                    selectedRuleMode:
+                                        _selectedPartnerDestinationId != null
+                                            ? null
+                                            : _selectedRuleMode,
+                                    isLoadingRules: _isLoadingRules,
+                                    rulesLoaded: _rulesLoaded,
+                                    rules: _rules,
+                                    onRuleModeChanged: _handleRuleModeChanged,
+                                    onAddRule: _addRule,
+                                    onEditRule: _editRule,
+                                    onRemoveRule: _removeRule,
+                                    packagePartnerSlug: _packagePartnerSlug,
+                                    packageDestinations: _packageDestinations,
+                                    isLoadingPackageDestinations:
+                                        _isLoadingPackageDestinations,
+                                    selectedPartnerDestinationId:
+                                        _selectedPartnerDestinationId,
+                                    onPartnerDestinationSelected:
+                                        _handlePartnerDestinationSelected,
                                   ),
-                                ),
-                                const SizedBox(width: ThemeSizes.sm),
-                                Expanded(
-                                  flex: 4,
-                                  child: ElevatedButton(
-                                    onPressed: _isCreating
-                                        ? null
-                                        : () {
-                                            _submitForm();
-                                          },
-                                    style: ElevatedButton.styleFrom(
-                                      fixedSize: null,
-                                      padding: const EdgeInsets.symmetric(
-                                        vertical: ThemeSizes.md,
-                                        horizontal: ThemeSizes.sm,
-                                      ),
-                                      textStyle: context.textTheme.labelLarge
-                                          ?.copyWith(
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                    child: Text(
-                                      _isCreating
-                                          ? 'Creazione in corso...'
-                                          : 'Crea Lega',
-                                    ),
-                                  ),
+                                  isActive: _currentStep >= 2,
+                                  state: _currentStep == 2
+                                      ? StepState.editing
+                                      : StepState.indexed,
                                 ),
                               ],
+                              controlsBuilder: (context, details) {
+                                if (_currentStep == 2) {
+                                  return const SizedBox.shrink();
+                                }
+
+                                return Padding(
+                                  padding:
+                                      const EdgeInsets.only(top: ThemeSizes.lg),
+                                  child: Row(
+                                    children: [
+                                      if (_currentStep > 0)
+                                        Expanded(
+                                          flex: 3,
+                                          child: OutlinedButton(
+                                            onPressed: () {
+                                              details.onStepCancel?.call();
+                                            },
+                                            child: const Text('Indietro'),
+                                          ),
+                                        ),
+                                      if (_currentStep > 0)
+                                        const SizedBox(width: ThemeSizes.sm),
+                                      Expanded(
+                                        flex: 4,
+                                        child: ElevatedButton(
+                                          onPressed: _isCreating
+                                              ? null
+                                              : () {
+                                                  FocusManager
+                                                      .instance.primaryFocus
+                                                      ?.unfocus();
+
+                                                  details.onStepContinue
+                                                      ?.call();
+                                                },
+                                          style: ElevatedButton.styleFrom(
+                                            fixedSize: null,
+                                            padding: const EdgeInsets.symmetric(
+                                              vertical: ThemeSizes.md,
+                                              horizontal: ThemeSizes.sm,
+                                            ),
+                                          ),
+                                          child: Text(
+                                            _isCreating
+                                                ? 'Creazione in corso...'
+                                                : _currentStep < 2
+                                                    ? 'Continua'
+                                                    : 'Crea Lega',
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              },
                             ),
                           ),
                         ),
-                    ],
+                        if (_currentStep == 2)
+                          AnimatedOpacity(
+                            opacity: _areButtonsVisible ? 1.0 : 0.0,
+                            duration: const Duration(milliseconds: 200),
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 200),
+                              height: _areButtonsVisible ? 80 : 0,
+                              margin: EdgeInsets.only(
+                                bottom:
+                                    MediaQuery.of(context).padding.bottom > 0
+                                        ? MediaQuery.of(context).padding.bottom
+                                        : ThemeSizes.md,
+                              ),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: ThemeSizes.md,
+                                vertical: ThemeSizes.sm,
+                              ),
+                              // decoration: BoxDecoration(
+                              //   color: context.bgColor.withValues(alpha: 0.35),
+                              //   boxShadow: [
+                              //     BoxShadow(
+                              //       color: Colors.black.withAlpha(25),
+                              //       blurRadius: 4,
+                              //       offset: const Offset(0, -2),
+                              //     ),
+                              //   ],
+                              // ),
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    flex: 3,
+                                    child: OutlinedButton(
+                                      onPressed: () {
+                                        setState(() {
+                                          _currentStep--;
+                                        });
+                                      },
+                                      child: const Text('Indietro'),
+                                    ),
+                                  ),
+                                  const SizedBox(width: ThemeSizes.sm),
+                                  Expanded(
+                                    flex: 4,
+                                    child: ElevatedButton(
+                                      onPressed: _isCreating
+                                          ? null
+                                          : () {
+                                              _submitForm();
+                                            },
+                                      style: ElevatedButton.styleFrom(
+                                        fixedSize: null,
+                                        padding: const EdgeInsets.symmetric(
+                                          vertical: ThemeSizes.md,
+                                          horizontal: ThemeSizes.sm,
+                                        ),
+                                        textStyle: context.textTheme.labelLarge
+                                            ?.copyWith(
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                      child: Text(
+                                        _isCreating
+                                            ? 'Creazione in corso...'
+                                            : 'Crea Lega',
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
                   ),
                 );
               },
