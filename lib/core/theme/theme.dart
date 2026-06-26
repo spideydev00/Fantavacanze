@@ -148,46 +148,89 @@ class AppTheme {
       /* ---------------------------------------------------------------- */
       //ELEVATED BUTTON
       elevatedButtonTheme: ElevatedButtonThemeData(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: primary,
-          foregroundColor: ColorPalette.textPrimary(ThemeMode.dark),
-          //button padding
-          padding: const EdgeInsets.all(ThemeSizes.md),
-          //button text
-          textStyle: fontFamily(
-            fontSize: ThemeSizes.fontSizeMd,
-            fontWeight: FontWeight.w600,
+        style: ButtonStyle(
+          // Glass: fill translucido brand-aware con stati piu' marcati al tocco.
+          backgroundColor: WidgetStateProperty.resolveWith<Color>((states) {
+            if (states.contains(WidgetState.disabled)) {
+              return primary.withValues(alpha: 0.10);
+            }
+            if (states.contains(WidgetState.pressed)) {
+              return primary.withValues(alpha: 0.42);
+            }
+            return primary.withValues(alpha: 0.26);
+          }),
+          foregroundColor: WidgetStateProperty.all(
+            ColorPalette.textPrimary(ThemeMode.dark),
           ),
-          //button size
-          fixedSize: Size.fromWidth(
-            Constants.getWidth(context) * 0.75,
+          overlayColor: WidgetStateProperty.all(
+            ColorPalette.white.withValues(alpha: 0.12),
           ),
-          shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.all(
-              Radius.circular(ThemeSizes.borderRadiusLg),
+          // Bordo chiaro "vetro".
+          side: WidgetStateProperty.all(
+            BorderSide(
+              color: ColorPalette.white.withValues(alpha: 0.25),
+              width: 1.2,
             ),
           ),
-          elevation: 2,
+          padding: WidgetStateProperty.all(
+            const EdgeInsets.all(ThemeSizes.md),
+          ),
+          textStyle: WidgetStateProperty.all(
+            fontFamily(
+              fontSize: ThemeSizes.fontSizeMd,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          fixedSize: WidgetStateProperty.all(
+            Size.fromWidth(Constants.getWidth(context) * 0.75),
+          ),
+          shape: WidgetStateProperty.all(
+            const RoundedRectangleBorder(
+              borderRadius: BorderRadius.all(
+                Radius.circular(ThemeSizes.borderRadiusLg),
+              ),
+            ),
+          ),
+          elevation: WidgetStateProperty.all(0),
+          shadowColor: WidgetStateProperty.all(Colors.transparent),
         ),
       ),
 
       /* ---------------------------------------------------------------- */
       //OUTLINED BUTTON
       outlinedButtonTheme: OutlinedButtonThemeData(
-        style: OutlinedButton.styleFrom(
-          foregroundColor: primary,
-          side: BorderSide(
-            color: primary,
-            width: 1.5,
+        style: ButtonStyle(
+          // Glass: bordo brand + velo di fill translucido.
+          backgroundColor: WidgetStateProperty.resolveWith<Color>((states) {
+            if (states.contains(WidgetState.pressed)) {
+              return primary.withValues(alpha: 0.18);
+            }
+            return primary.withValues(alpha: 0.08);
+          }),
+          foregroundColor: WidgetStateProperty.all(primary),
+          overlayColor: WidgetStateProperty.all(
+            primary.withValues(alpha: 0.10),
           ),
-          padding: const EdgeInsets.all(ThemeSizes.md),
-          textStyle: fontFamily(
-            fontSize: ThemeSizes.fontSizeMd,
-            fontWeight: FontWeight.w600,
+          side: WidgetStateProperty.all(
+            BorderSide(
+              color: primary.withValues(alpha: 0.55),
+              width: 1.5,
+            ),
           ),
-          shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.all(
-              Radius.circular(ThemeSizes.borderRadiusLg),
+          padding: WidgetStateProperty.all(
+            const EdgeInsets.all(ThemeSizes.md),
+          ),
+          textStyle: WidgetStateProperty.all(
+            fontFamily(
+              fontSize: ThemeSizes.fontSizeMd,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          shape: WidgetStateProperty.all(
+            const RoundedRectangleBorder(
+              borderRadius: BorderRadius.all(
+                Radius.circular(ThemeSizes.borderRadiusLg),
+              ),
             ),
           ),
         ),
