@@ -1,12 +1,16 @@
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/extensions/context_extension.dart';
+import 'package:fantavacanze_official/core/theme/theme.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
+import 'package:fantavacanze_official/core/widgets/ambient_glow.dart';
 import 'package:fantavacanze_official/core/widgets/empty_state.dart';
 import 'package:fantavacanze_official/core/widgets/info_container.dart';
 import 'package:fantavacanze_official/core/widgets/loader.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/partner/partner_catalog.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/partner_bloc/partner_cubit.dart';
-import 'package:fantavacanze_official/features/league/presentation/pages/navigation/partner/widgets/partner_entry_card.dart';
+import 'package:fantavacanze_official/features/league/presentation/pages/navigation/homepage/widgets/action_card.dart';
+import 'package:fantavacanze_official/features/league/presentation/pages/navigation/partner/create_partner_league_page.dart';
+import 'package:fantavacanze_official/features/league/presentation/pages/navigation/partner/search_partner_league_page.dart';
 import 'package:fantavacanze_official/init_dependencies/init_dependencies.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -42,45 +46,57 @@ class _PartnerDashboardView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: context.bgColor,
-      appBar: AppBar(
-        title: Text('Partner', style: context.textTheme.bodyLarge),
-        centerTitle: true,
-      ),
-      body: SafeArea(
-        child: BlocBuilder<PartnerCubit, PartnerState>(
-          builder: (context, state) {
-            return switch (state) {
-              PartnerInitial() || PartnerLoading() => Center(
-                  child: SizedBox(
-                    width: ThemeSizes.loadingIndicatorSize,
-                    height: ThemeSizes.loadingIndicatorSize,
-                    child:
-                        Loader(color: context.brandPrimaryColor(partnerSlug)),
-                  ),
-                ),
-              PartnerFailure(:final message) => EmptyState(
-                  icon: Icons.error_outline,
-                  title: 'Impossibile caricare il partner',
-                  subtitle: message,
-                  action: ElevatedButton(
-                    onPressed: () => context
-                        .read<PartnerCubit>()
-                        .loadDestinations(partnerSlug),
-                    child: const Text('Riprova'),
-                  ),
-                ),
-              PartnerDestinationsLoaded(:final catalog) => _LoadedDashboard(
-                  catalog: catalog,
-                ),
-              _ => EmptyState(
-                  icon: Icons.handshake_outlined,
-                  title: 'Partner non disponibile',
-                  subtitle: 'Torna indietro e riprova tra poco.',
-                ),
-            };
-          },
+    return Theme(
+      data: AppTheme.getTheme(context, partnerSlugOverride: 'invibe'),
+      child: Builder(
+        builder: (context) => Scaffold(
+          extendBodyBehindAppBar: true,
+          backgroundColor: context.bgColor,
+          appBar: AppBar(
+            title: Text('Partner', style: context.textTheme.bodyLarge),
+            centerTitle: true,
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            scrolledUnderElevation: 0,
+            surfaceTintColor: Colors.transparent,
+          ),
+          body: AmbientGlow(
+            child: SafeArea(
+              child: BlocBuilder<PartnerCubit, PartnerState>(
+                builder: (context, state) {
+                  return switch (state) {
+                    PartnerInitial() || PartnerLoading() => Center(
+                        child: SizedBox(
+                          width: ThemeSizes.loadingIndicatorSize,
+                          height: ThemeSizes.loadingIndicatorSize,
+                          child: Loader(color: context.brandColor),
+                        ),
+                      ),
+                    PartnerFailure(:final message) => EmptyState(
+                        icon: Icons.error_outline,
+                        title: 'Impossibile caricare il partner',
+                        subtitle: message,
+                        action: ElevatedButton(
+                          onPressed: () => context
+                              .read<PartnerCubit>()
+                              .loadDestinations(partnerSlug),
+                          child: const Text('Riprova'),
+                        ),
+                      ),
+                    PartnerDestinationsLoaded(:final catalog) =>
+                      _LoadedDashboard(
+                        catalog: catalog,
+                      ),
+                    _ => EmptyState(
+                        icon: Icons.handshake_outlined,
+                        title: 'Partner non disponibile',
+                        subtitle: 'Torna indietro e riprova tra poco.',
+                      ),
+                  };
+                },
+              ),
+            ),
+          ),
         ),
       ),
     );
@@ -94,7 +110,7 @@ class _LoadedDashboard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final brandColor = context.brandPrimaryColor(catalog.partner.slug);
+    final brand = context.brandColor;
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(ThemeSizes.lg),
@@ -105,13 +121,44 @@ class _LoadedDashboard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               InfoContainer(
-                title: "InVibe x Fantavacanze",
+                title: 'Le tue leghe InVibe',
                 message:
-                    "Una collab fresca e piena di entusiasmo, per garantirti l'esperienza migliore possibile durante il viaggio. Pronto a rendere la vacanza indimenticabile?",
-                icon: Icons.handshake_rounded,
-                color: brandColor,
+                    'Ogni lega è per il tuo gruppo di amici. Presto arriverà anche una classifica generale tra tutte le leghe della destinazione!',
+                icon: Icons.groups_rounded,
+                color: brand,
               ),
-              PartnerEntrySection(catalog: catalog),
+              const SizedBox(height: ThemeSizes.lg),
+              ActionCard(
+                title: 'Crea una lega',
+                description: 'Parti da una destinazione e invita i tuoi amici.',
+                imagePath: 'assets/images/invibe-card-bg.jpeg',
+                iconData: Icons.add_circle_outline,
+                iconGlowColor: brand,
+                showBottomGradient: true,
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => CreatePartnerLeaguePage(catalog: catalog),
+                  ),
+                ),
+              ),
+              const SizedBox(height: ThemeSizes.lg),
+              ActionCard(
+                title: 'Unisciti a una lega',
+                description: 'Hai un codice? Inseriscilo e parti.',
+                imagePath: 'assets/images/add-event-bg.jpg',
+                iconData: Icons.login_rounded,
+                iconGlowColor: brand,
+                showBottomGradient: true,
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => SearchPartnerLeaguePage(
+                      partnerSlug: catalog.partner.slug,
+                    ),
+                  ),
+                ),
+              ),
             ],
           ),
         ),
