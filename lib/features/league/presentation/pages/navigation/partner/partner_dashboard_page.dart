@@ -111,6 +111,7 @@ class _LoadedDashboard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final brand = context.brandColor;
+    final cubit = context.read<PartnerCubit>();
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(ThemeSizes.lg),
@@ -138,7 +139,10 @@ class _LoadedDashboard extends StatelessWidget {
                 onTap: () => Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (_) => CreatePartnerLeaguePage(catalog: catalog),
+                    builder: (_) => BlocProvider.value(
+                      value: cubit,
+                      child: CreatePartnerLeaguePage(catalog: catalog),
+                    ),
                   ),
                 ),
               ),
@@ -153,8 +157,11 @@ class _LoadedDashboard extends StatelessWidget {
                 onTap: () => Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (_) => SearchPartnerLeaguePage(
-                      partnerSlug: catalog.partner.slug,
+                    builder: (_) => BlocProvider.value(
+                      value: cubit,
+                      child: SearchPartnerLeaguePage(
+                        partnerSlug: catalog.partner.slug,
+                      ),
                     ),
                   ),
                 ),
