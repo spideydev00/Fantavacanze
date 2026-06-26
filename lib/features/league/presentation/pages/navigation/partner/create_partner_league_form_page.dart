@@ -1,8 +1,10 @@
+import 'package:fantavacanze_official/core/constants/constants.dart';
 import 'package:fantavacanze_official/core/cubits/app_league/app_league_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/app_navigation/app_navigation_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit.dart';
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/extensions/context_extension.dart';
+import 'package:fantavacanze_official/core/theme/brand_theme.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:fantavacanze_official/core/theme/theme.dart';
@@ -48,6 +50,8 @@ class CreatePartnerLeagueFormPage extends StatefulWidget {
 class _CreatePartnerLeagueFormPageState
     extends State<CreatePartnerLeagueFormPage> {
   static const String _slug = 'invibe';
+
+  final invibeLightPrimary = BrandThemes.of('invibe')!.primary(ThemeMode.light);
 
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
@@ -103,6 +107,14 @@ class _CreatePartnerLeagueFormPageState
 
               return ElevatedButton.icon(
                 onPressed: isLoading ? null : _submit,
+                style: context.elevatedButtonThemeData.style!.copyWith(
+                  backgroundColor: WidgetStatePropertyAll(
+                    invibeLightPrimary,
+                  ),
+                  fixedSize: WidgetStatePropertyAll(
+                    Size(Constants.getWidth(context) * 0.48, 52),
+                  ),
+                ),
                 icon: isLoading
                     ? SizedBox(
                         width: ThemeSizes.iconSm,
