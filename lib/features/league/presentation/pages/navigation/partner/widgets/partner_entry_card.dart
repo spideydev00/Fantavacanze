@@ -19,8 +19,6 @@ class PartnerEntrySection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final brandColor = context.brandPrimaryColor(catalog.partner.slug);
-
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(ThemeSizes.lg),
