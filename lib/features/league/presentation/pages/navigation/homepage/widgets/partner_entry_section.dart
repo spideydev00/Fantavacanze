@@ -3,6 +3,7 @@ import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:fantavacanze_official/core/widgets/divider.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/homepage/widgets/action_card.dart';
+import 'package:fantavacanze_official/features/league/presentation/pages/navigation/partner/invibe_bridge_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -38,7 +39,22 @@ class PartnerEntrySection extends StatelessWidget {
                   child: ActionCard(
                     title: "Leghe InVibe",
                     imagePath: "assets/images/invibe-card-bg.jpeg",
-                    onTap: () {},
+                    onTap: () {
+                      // --- "Mostra una volta sola" il ponte InVibe (DA ATTIVARE) ---
+                      // final flags = Hive.box('app_flags'); // box da aprire all'avvio
+                      // final seen = flags.get(
+                      //   'invibe_bridge_seen',
+                      //   defaultValue: false,
+                      // ) as bool;
+                      // if (seen) {
+                      //   Navigator.push(context, PartnerDashboardPage.route('invibe'));
+                      // } else {
+                      //   flags.put('invibe_bridge_seen', true);
+                      //   Navigator.push(context, InvibeBridgePage.route());
+                      // }
+                      // --- fino ad allora: mostra SEMPRE il ponte (per rifinitura grafica) ---
+                      Navigator.push(context, InvibeBridgePage.route());
+                    },
                     iconData: Icons.arrow_circle_right_outlined,
                     iconGlowColor: context.brandPrimaryColor("invibe"),
                     description:
