@@ -3,6 +3,7 @@ import 'package:fantavacanze_official/core/cubits/app_league/app_league_cubit.da
 import 'package:fantavacanze_official/core/cubits/app_theme/app_theme_cubit.dart';
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/extensions/context_extension.dart';
+import 'package:fantavacanze_official/core/theme/brand_colors.dart';
 import 'package:fantavacanze_official/core/theme/brand_theme.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
@@ -42,18 +43,32 @@ class AppTheme {
   }
 
   //getTheme
-  static ThemeData getTheme(BuildContext context) {
+  static ThemeData getTheme(
+    BuildContext context, {
+    String? partnerSlugOverride,
+  }) {
     final cubit = context.read<AppThemeCubit>();
     final isDark = cubit.isDarkMode(context);
     final mode = isDark ? ThemeMode.dark : ThemeMode.light;
-    final brand = BrandThemes.of(_selectedPartnerSlug(context));
+    final slug = partnerSlugOverride ?? _selectedPartnerSlug(context);
+    final brand = BrandThemes.of(slug);
     final primary = brand?.primary(mode) ?? ColorPalette.primary(mode);
+    // Accento dei field/step: primary del partner se la lega ha un partner,
+    // altrimenti secondaryColor.
+    final accent = brand != null ? primary : context.secondaryColor;
 
     final baseTheme = isDark ? ThemeData.dark() : ThemeData.light();
 
     return baseTheme.copyWith(
       /* ---------------------------------------------------------------- */
       // GLOBAL COLOR SCHEME
+      extensions: <ThemeExtension<dynamic>>[
+        BrandColors(
+          primary: primary,
+          accent: accent,
+          hasPartner: brand != null,
+        ),
+      ],
       colorScheme: ColorScheme(
         brightness: isDark ? Brightness.dark : Brightness.light,
         primary: primary,
@@ -139,9 +154,10 @@ class AppTheme {
         contentPadding: const EdgeInsets.all(24),
         filled: true,
         fillColor: context.secondaryBgColor,
+        prefixIconColor: accent,
         border: border(),
         enabledBorder: border(Colors.transparent, 0),
-        focusedBorder: border(ColorPalette.focusedBorder),
+        focusedBorder: border(accent),
         errorBorder: border(ColorPalette.error),
       ),
 
