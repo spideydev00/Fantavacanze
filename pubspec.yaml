@@ -148,6 +148,7 @@ flutter:
     - assets/images/about-us.jpg
     - assets/images/boys_add_event.png
     - assets/images/girls_add_event.png
+    - assets/images/invibe-fv-bridge.jpg
 
     # ===== AUTHENTICATION ICONS =====
     - assets/images/otp-verification-icon.png
