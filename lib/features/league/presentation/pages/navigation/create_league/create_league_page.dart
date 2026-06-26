@@ -7,6 +7,7 @@ import 'package:fantavacanze_official/core/extensions/context_extension.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:fantavacanze_official/core/utils/show-snackbar-or-paywall/show_snackbar.dart';
+import 'package:fantavacanze_official/core/widgets/ambient_glow.dart';
 import 'package:fantavacanze_official/core/widgets/dialogs/form_dialog.dart';
 import 'package:fantavacanze_official/core/widgets/rules/type_selector.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/league/league.dart';
@@ -498,7 +499,7 @@ class _CreateLeaguePageState extends State<CreateLeaguePage> {
               onPressed: Navigator.of(context).pop,
             ),
           ),
-          body: _AmbientGlow(
+          body: AmbientGlow(
             child: Column(
               children: [
                 Expanded(
@@ -564,6 +565,9 @@ class _CreateLeaguePageState extends State<CreateLeaguePage> {
                             'Tipo',
                             style: context.textTheme.labelLarge,
                           ),
+                          stepStyle: _currentStep < 1
+                              ? StepStyle(color: context.secondaryBgColor)
+                              : null,
                           content: TeamTypeStep(
                               leagueType: _leagueType,
                               onTeamTypeChanged: (value) {
@@ -581,6 +585,9 @@ class _CreateLeaguePageState extends State<CreateLeaguePage> {
                         Step(
                           title: Text('Regole',
                               style: context.textTheme.labelLarge),
+                          stepStyle: _currentStep < 2
+                              ? StepStyle(color: context.secondaryBgColor)
+                              : null,
                           content: RulesStep(
                             scrollController: _scrollController,
                             selectedRuleMode:
@@ -740,55 +747,6 @@ class _CreateLeaguePageState extends State<CreateLeaguePage> {
           ),
         );
       },
-    );
-  }
-}
-
-class _AmbientGlow extends StatelessWidget {
-  final Widget child;
-
-  const _AmbientGlow({required this.child});
-
-  @override
-  Widget build(BuildContext context) {
-    final glow = context.primaryColor;
-
-    return Stack(
-      children: [
-        Positioned.fill(
-          child: IgnorePointer(
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                gradient: RadialGradient(
-                  center: const Alignment(-0.7, -0.6),
-                  radius: 0.8,
-                  colors: [
-                    glow.withValues(alpha: 0.15),
-                    Colors.transparent,
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ),
-        Positioned.fill(
-          child: IgnorePointer(
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                gradient: RadialGradient(
-                  center: const Alignment(0.8, 0.7),
-                  radius: 0.7,
-                  colors: [
-                    glow.withValues(alpha: 0.12),
-                    Colors.transparent,
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ),
-        child,
-      ],
     );
   }
 }

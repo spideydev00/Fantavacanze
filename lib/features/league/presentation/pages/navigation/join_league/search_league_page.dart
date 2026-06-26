@@ -6,14 +6,15 @@ import 'package:fantavacanze_official/core/extensions/context_extension.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:fantavacanze_official/core/utils/show-snackbar-or-paywall/show_snackbar.dart';
+import 'package:fantavacanze_official/core/widgets/ambient_glow.dart';
+import 'package:fantavacanze_official/core/widgets/dialogs/confirmation_dialog.dart';
+import 'package:fantavacanze_official/core/widgets/info_banner.dart';
 import 'package:fantavacanze_official/core/widgets/loader.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/league/league.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc/league_bloc.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc/league_event.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc/league_state.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/join_league/choose_team_page.dart';
-import 'package:fantavacanze_official/core/widgets/dialogs/confirmation_dialog.dart';
-import 'package:fantavacanze_official/core/widgets/info_banner.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -96,112 +97,114 @@ class _SearchLeaguePageState extends State<SearchLeaguePage> {
         ),
         centerTitle: true,
       ),
-      body: Stack(
-        children: [
-          BlocConsumer<LeagueBloc, LeagueState>(
-            listener: (context, state) {
-              if (state is LeagueError) {
-                showSnackBar(
-                  state.message,
-                  color: ColorPalette.error,
-                );
-                setState(() {
-                  _searchingStatus = SearchingStatus.initial;
-                  _isJoiningLeague = false;
-                });
-              } else if (state is MultiplePossibleLeagues) {
-                setState(
-                  () => _searchingStatus = SearchingStatus.initial,
-                );
-                _showMultipleLeaguesDialog(
-                  state.possibleLeagues,
-                  state.inviteCode,
-                );
-              } else if (state is LeagueWithInviteCode) {
-                setState(
-                  () => _searchingStatus = SearchingStatus.initial,
-                );
-                _showLeagueFoundConfirmation(
-                  context,
-                  state.league,
-                  state.inviteCode,
-                );
-              } else if (state is LeagueSuccess &&
-                  state.operation == 'join_league') {
-                setState(
-                  () => _isJoiningLeague = false,
-                );
-                Navigator.of(context).popUntil(
-                  (route) => route.isFirst,
-                );
-                context.read<AppNavigationCubit>().setIndex(0);
+      body: AmbientGlow(
+        child: Stack(
+          children: [
+            BlocConsumer<LeagueBloc, LeagueState>(
+              listener: (context, state) {
+                if (state is LeagueError) {
+                  showSnackBar(
+                    state.message,
+                    color: ColorPalette.error,
+                  );
+                  setState(() {
+                    _searchingStatus = SearchingStatus.initial;
+                    _isJoiningLeague = false;
+                  });
+                } else if (state is MultiplePossibleLeagues) {
+                  setState(
+                    () => _searchingStatus = SearchingStatus.initial,
+                  );
+                  _showMultipleLeaguesDialog(
+                    state.possibleLeagues,
+                    state.inviteCode,
+                  );
+                } else if (state is LeagueWithInviteCode) {
+                  setState(
+                    () => _searchingStatus = SearchingStatus.initial,
+                  );
+                  _showLeagueFoundConfirmation(
+                    context,
+                    state.league,
+                    state.inviteCode,
+                  );
+                } else if (state is LeagueSuccess &&
+                    state.operation == 'join_league') {
+                  setState(
+                    () => _isJoiningLeague = false,
+                  );
+                  Navigator.of(context).popUntil(
+                    (route) => route.isFirst,
+                  );
+                  context.read<AppNavigationCubit>().setIndex(0);
 
-                showSnackBar(
-                  'Unione alla lega completata!',
-                  color: ColorPalette.success,
+                  showSnackBar(
+                    'Unione alla lega completata!',
+                    color: ColorPalette.success,
+                  );
+                }
+              },
+              builder: (context, state) {
+                // Wrap the content in SingleChildScrollView to prevent overflow
+                return SingleChildScrollView(
+                  // Make sure it fills available space for proper positioning
+                  child: Container(
+                    // This ensures the container takes at least the full screen height
+                    // minus the app bar height, preventing awkward scrolling for small content
+                    constraints: BoxConstraints(
+                      minHeight: MediaQuery.of(context).size.height -
+                          AppBar().preferredSize.height -
+                          MediaQuery.of(context).padding.top,
+                    ),
+                    child: _buildSearchView(),
+                  ),
                 );
-              }
-            },
-            builder: (context, state) {
-              // Wrap the content in SingleChildScrollView to prevent overflow
-              return SingleChildScrollView(
-                // Make sure it fills available space for proper positioning
-                child: Container(
-                  // This ensures the container takes at least the full screen height
-                  // minus the app bar height, preventing awkward scrolling for small content
-                  constraints: BoxConstraints(
-                    minHeight: MediaQuery.of(context).size.height -
-                        AppBar().preferredSize.height -
-                        MediaQuery.of(context).padding.top,
-                  ),
-                  child: _buildSearchView(),
-                ),
-              );
-            },
-          ),
-          if (_isJoiningLeague)
-            // ------------------------------
-            // Overlay full-screen di attesa durante l'unione alla lega
-            // ------------------------------
-            Container(
-              color: Colors.black.withValues(alpha: 0.5),
-              child: Center(
-                child: Card(
-                  color: context.colorScheme.surface,
-                  elevation: 8,
-                  shape: RoundedRectangleBorder(
-                    borderRadius:
-                        BorderRadius.circular(ThemeSizes.borderRadiusMd),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(ThemeSizes.xl),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Loader(color: ColorPalette.success),
-                        const SizedBox(height: ThemeSizes.md),
-                        Text(
-                          'Unione alla lega in corso...',
-                          style: TextStyle(
-                            color: context.textPrimaryColor,
-                            fontWeight: FontWeight.bold,
+              },
+            ),
+            if (_isJoiningLeague)
+              // ------------------------------
+              // Overlay full-screen di attesa durante l'unione alla lega
+              // ------------------------------
+              Container(
+                color: Colors.black.withValues(alpha: 0.5),
+                child: Center(
+                  child: Card(
+                    color: context.colorScheme.surface,
+                    elevation: 8,
+                    shape: RoundedRectangleBorder(
+                      borderRadius:
+                          BorderRadius.circular(ThemeSizes.borderRadiusMd),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(ThemeSizes.xl),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Loader(color: ColorPalette.success),
+                          const SizedBox(height: ThemeSizes.md),
+                          Text(
+                            'Unione alla lega in corso...',
+                            style: TextStyle(
+                              color: context.textPrimaryColor,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: ThemeSizes.xs),
-                        Text(
-                          'Attendi il completamento',
-                          style: TextStyle(
-                            color: context.textSecondaryColor,
-                            fontSize: 12,
+                          const SizedBox(height: ThemeSizes.xs),
+                          Text(
+                            'Attendi il completamento',
+                            style: TextStyle(
+                              color: context.textSecondaryColor,
+                              fontSize: 12,
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -212,7 +215,7 @@ class _SearchLeaguePageState extends State<SearchLeaguePage> {
   Widget _buildSearchView() {
     return Container(
       decoration: BoxDecoration(
-        color: context.colorScheme.surface,
+        color: Colors.transparent,
         borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusMd),
       ),
       margin: const EdgeInsets.all(ThemeSizes.md),

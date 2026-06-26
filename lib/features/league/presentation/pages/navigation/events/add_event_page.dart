@@ -7,6 +7,7 @@ import 'package:fantavacanze_official/core/extensions/context_extension.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:fantavacanze_official/core/utils/show-snackbar-or-paywall/show_snackbar.dart';
+import 'package:fantavacanze_official/core/widgets/ambient_glow.dart';
 import 'package:fantavacanze_official/core/widgets/buttons/gradient_option_button.dart';
 import 'package:fantavacanze_official/core/widgets/divider.dart';
 import 'package:fantavacanze_official/core/widgets/info_container.dart';
@@ -346,11 +347,13 @@ class _AddEventPageState extends State<AddEventPage> {
               )
             : null,
         backgroundColor: context.bgColor,
-        body: !isAdmin
-            ? _buildUnauthorizedView()
-            : (league == null
-                ? _buildNoLeagueView()
-                : _buildEventCreationStepper(league)),
+        body: AmbientGlow(
+          child: !isAdmin
+              ? _buildUnauthorizedView()
+              : (league == null
+                  ? _buildNoLeagueView()
+                  : _buildEventCreationStepper(league)),
+        ),
       ),
     );
   }
@@ -385,9 +388,9 @@ class _AddEventPageState extends State<AddEventPage> {
           Expanded(
             child: Theme(
               data: Theme.of(context).copyWith(
-                canvasColor: context.secondaryBgColor,
+                canvasColor: Colors.transparent,
                 colorScheme: context.colorScheme.copyWith(
-                  surface: context.secondaryBgColor,
+                  surface: Colors.transparent,
                 ),
               ),
               child: Stepper(
@@ -433,6 +436,9 @@ class _AddEventPageState extends State<AddEventPage> {
                       'Dettagli',
                       style: context.textTheme.labelLarge,
                     ),
+                    stepStyle: _currentStep < 1
+                        ? StepStyle(color: context.secondaryBgColor)
+                        : null,
                     content: _buildEventDetailsStep(),
                     isActive: _currentStep >= 1,
                     state: _currentStep > 1
@@ -446,6 +452,9 @@ class _AddEventPageState extends State<AddEventPage> {
                       'Assegna',
                       style: context.textTheme.labelLarge,
                     ),
+                    stepStyle: _currentStep < 2
+                        ? StepStyle(color: context.secondaryBgColor)
+                        : null,
                     content: _buildAssignEventStep(league),
                     isActive: _currentStep >= 2,
                     state: _currentStep == 2
