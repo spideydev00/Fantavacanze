@@ -165,15 +165,15 @@ class AppTheme {
       //ELEVATED BUTTON
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ButtonStyle(
-          // Glass: fill translucido brand-aware con stati piu' marcati al tocco.
+          // Light: pieno. Dark: glass discreto.
           backgroundColor: WidgetStateProperty.resolveWith<Color>((states) {
             if (states.contains(WidgetState.disabled)) {
-              return primary.withValues(alpha: 0.10);
+              return primary.withValues(alpha: 0.12);
             }
             if (states.contains(WidgetState.pressed)) {
-              return primary.withValues(alpha: 0.42);
+              return primary.withValues(alpha: isDark ? 0.42 : 1.0);
             }
-            return primary.withValues(alpha: 0.26);
+            return isDark ? primary.withValues(alpha: 0.26) : primary;
           }),
           foregroundColor: WidgetStateProperty.all(
             ColorPalette.textPrimary(ThemeMode.dark),
