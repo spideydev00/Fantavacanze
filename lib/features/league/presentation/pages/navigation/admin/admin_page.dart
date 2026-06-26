@@ -327,14 +327,6 @@ class _AdminPageState extends State<AdminPage> {
                     },
                     icon: const Icon(Icons.add),
                     label: const Text('Crea Bonus/Malus'),
-                    style: ElevatedButton.styleFrom(
-                      padding:
-                          const EdgeInsets.symmetric(vertical: ThemeSizes.md),
-                      backgroundColor: context.primaryColor,
-                      foregroundColor: Colors.white,
-                      elevation: 2,
-                      shadowColor: context.primaryColor.withValues(alpha: 0.3),
-                    ),
                   ),
                 ),
               ],

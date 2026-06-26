@@ -5,7 +5,6 @@ import 'package:fantavacanze_official/core/cubits/app_theme/app_theme_cubit.dart
 import 'package:fantavacanze_official/core/entities/navigation/navigation_item.dart';
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/theme/brand_assets.dart';
-import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc/league_bloc.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/dashboard/widgets/bottom_navbar/bottom_navigation_asset.dart';
@@ -158,38 +157,50 @@ class _PartnerFab extends StatelessWidget {
     final partner =
         state is AppLeagueExists ? state.selectedLeague.partner : null;
     final fabSlug = partner == 'b-eazy' ? 'b-eazy' : 'invibe';
+    final brandColor = context.brandPrimaryColor(fabSlug);
+
     final logo = BrandAssets.logoFor(
       fabSlug,
       isDark: isDark,
     );
 
     void onTap() {
-      if (!hasLeague) {
+      if (!hasLeague || (hasLeague && partner == null)) {
         Navigator.push(context, PartnerDashboardPage.route('invibe'));
         return;
       }
+
       Navigator.push(context, PartnerThankYouPage.route(fabSlug));
     }
 
-    return FloatingActionButton(
-      heroTag: 'partner-fab',
-      shape: const CircleBorder(),
-      backgroundColor: ColorPalette.black,
-      elevation: 2,
-      onPressed: onTap,
-      child: logo == null
-          ? const Icon(Icons.travel_explore_rounded, color: Colors.white)
-          : Padding(
-              padding: const EdgeInsets.all(ThemeSizes.sm),
-              child: Image.asset(
-                logo,
-                fit: BoxFit.contain,
-                errorBuilder: (_, __, ___) => const Icon(
-                  Icons.travel_explore_rounded,
-                  color: Colors.white,
+    return Container(
+      decoration: BoxDecoration(shape: BoxShape.circle, boxShadow: [
+        BoxShadow(
+          color: brandColor.withValues(alpha: 0.4),
+          blurRadius: 24,
+          spreadRadius: 2,
+        )
+      ]),
+      child: FloatingActionButton(
+        heroTag: 'partner-fab',
+        shape: const CircleBorder(),
+        backgroundColor: context.bgColor,
+        elevation: 2,
+        onPressed: onTap,
+        child: logo == null
+            ? const Icon(Icons.travel_explore_rounded, color: Colors.white)
+            : Padding(
+                padding: const EdgeInsets.all(ThemeSizes.xs),
+                child: Image.asset(
+                  logo,
+                  fit: BoxFit.contain,
+                  errorBuilder: (_, __, ___) => const Icon(
+                    Icons.travel_explore_rounded,
+                    color: Colors.white,
+                  ),
                 ),
               ),
-            ),
+      ),
     );
   }
 }

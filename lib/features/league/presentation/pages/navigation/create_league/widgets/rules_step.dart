@@ -1,6 +1,8 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fantavacanze_official/core/constants/game_mode.dart';
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/extensions/context_extension.dart';
+import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:fantavacanze_official/core/widgets/loader.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/partner/partner_destination.dart';
@@ -10,7 +12,7 @@ import 'package:fantavacanze_official/features/league/presentation/pages/navigat
 import 'package:flutter/material.dart';
 
 class RulesStep extends StatelessWidget {
-  final GameMode selectedRuleMode;
+  final GameMode? selectedRuleMode;
   final bool isLoadingRules;
   final bool rulesLoaded;
   final List<Rule> rules;
@@ -50,18 +52,6 @@ class RulesStep extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Modalità Regole',
-            style: context.textTheme.titleLarge?.copyWith(
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: ThemeSizes.md),
-          RuleModeSelector(
-            selectedMode: selectedRuleMode,
-            isLoading: isLoadingRules,
-            onModeChanged: onRuleModeChanged,
-          ),
           if (isLoadingPackageDestinations ||
               packageDestinations.isNotEmpty) ...[
             const SizedBox(height: ThemeSizes.lg),
@@ -73,6 +63,24 @@ class RulesStep extends StatelessWidget {
               onDestinationSelected: onPartnerDestinationSelected,
             ),
           ],
+          const SizedBox(height: ThemeSizes.lg),
+          Text(
+            'I Nostri Regolamenti',
+            style: context.textTheme.titleLarge?.copyWith(
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: ThemeSizes.md),
+          Text(
+            'Una volta selezionato un regolamento puoi vedere le singole regole in fondo a questa pagina ed eventualmente fare modifiche.',
+            style: context.textTheme.bodyMedium,
+          ),
+          const SizedBox(height: ThemeSizes.md),
+          RuleModeSelector(
+            selectedMode: selectedRuleMode,
+            isLoading: isLoadingRules,
+            onModeChanged: onRuleModeChanged,
+          ),
           const SizedBox(height: ThemeSizes.lg),
           if (isLoadingRules)
             _buildLoadingIndicator(context)
@@ -115,7 +123,8 @@ class RulesStep extends StatelessWidget {
               onPressed: onAddRule,
               icon: Icon(
                 Icons.add_circle,
-                color: context.primaryColor,
+                color: ColorPalette.success,
+                size: ThemeSizes.iconLg,
               ),
               tooltip: 'Aggiungi Regola',
             ),
@@ -200,136 +209,102 @@ class _PackageDestinationsSection extends StatelessWidget {
   Widget build(BuildContext context) {
     final brandColor = context.brandPrimaryColor(partnerSlug);
 
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(ThemeSizes.md),
-      decoration: BoxDecoration(
-        color: context.secondaryBgColor,
-        borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusLg),
-        border: Border.all(color: brandColor.withValues(alpha: 0.28)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(
-                Icons.business_center_outlined,
-                color: brandColor,
-                size: ThemeSizes.iconSm,
-              ),
-              const SizedBox(width: ThemeSizes.sm),
-              Expanded(
-                child: Text(
-                  'Pacchetti partner',
-                  style: context.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ],
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Pacchetti Partner',
+          style: context.textTheme.titleLarge?.copyWith(
+            fontWeight: FontWeight.bold,
           ),
-          const SizedBox(height: ThemeSizes.xs),
-          Text(
-            'Seleziona un pacchetto per partire dalle sue regole, poi modificale liberamente.',
-            style: context.textTheme.bodySmall?.copyWith(
-              color: context.textSecondaryColor,
+        ),
+        const SizedBox(height: ThemeSizes.md),
+        if (isLoading)
+          Center(child: Loader(color: brandColor))
+        else
+          for (final destination in destinations)
+            _PackageDestinationCard(
+              destination: destination,
+              color: brandColor,
+              selected: destination.id == selectedDestinationId,
+              onTap: () => onDestinationSelected(destination),
             ),
-          ),
-          const SizedBox(height: ThemeSizes.md),
-          if (isLoading)
-            Center(child: Loader(color: brandColor))
-          else
-            for (final destination in destinations)
-              _PackageDestinationTile(
-                destination: destination,
-                color: brandColor,
-                selected: destination.id == selectedDestinationId,
-                onTap: () => onDestinationSelected(destination),
-              ),
-        ],
-      ),
+      ],
     );
   }
 }
 
-class _PackageDestinationTile extends StatelessWidget {
+class _PackageDestinationCard extends StatelessWidget {
   final PartnerDestination destination;
   final Color color;
   final bool selected;
   final VoidCallback onTap;
 
-  const _PackageDestinationTile({
+  const _PackageDestinationCard({
     required this.destination,
     required this.color,
     required this.selected,
     required this.onTap,
   });
 
+  static const double _imageHeight = 140;
+
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: ThemeSizes.sm),
+      padding: const EdgeInsets.only(bottom: ThemeSizes.md),
       child: Material(
         color: Colors.transparent,
-        borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusMd),
+        borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusLg),
         child: InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusMd),
+          borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusLg),
           child: Container(
-            padding: const EdgeInsets.all(ThemeSizes.md),
+            clipBehavior: Clip.antiAlias,
             decoration: BoxDecoration(
-              color: selected
-                  ? color.withValues(alpha: 0.14)
-                  : context.bgColor.withValues(alpha: 0.7),
-              borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusMd),
-              border: Border.all(
-                color: selected
-                    ? color.withValues(alpha: 0.7)
-                    : context.borderColor,
-              ),
+              color: context.secondaryBgColor,
+              borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusLg),
             ),
-            child: Row(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Icon(
-                  selected
-                      ? Icons.check_circle_rounded
-                      : Icons.radio_button_unchecked_rounded,
-                  color: selected ? color : context.textSecondaryColor,
-                ),
-                const SizedBox(width: ThemeSizes.md),
-                Expanded(
+                _buildImage(context),
+                Padding(
+                  padding: const EdgeInsets.all(ThemeSizes.md),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        destination.name,
-                        style: context.textTheme.bodyLarge?.copyWith(
-                          color: context.textPrimaryColor,
-                          fontWeight:
-                              selected ? FontWeight.bold : FontWeight.w600,
-                        ),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              destination.name,
+                              style: context.textTheme.titleLarge?.copyWith(
+                                color: context.textPrimaryColor,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: ThemeSizes.sm),
+                          Icon(
+                            selected
+                                ? Icons.check_circle_rounded
+                                : Icons.radio_button_unchecked_rounded,
+                            color:
+                                selected ? color : context.textSecondaryColor,
+                          ),
+                        ],
                       ),
                       if (destination.description != null) ...[
                         const SizedBox(height: ThemeSizes.xs),
                         Text(
                           destination.description!,
-                          style: context.textTheme.bodySmall?.copyWith(
+                          style: context.textTheme.bodyMedium?.copyWith(
                             color: context.textSecondaryColor,
                           ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
                         ),
                       ],
                     ],
-                  ),
-                ),
-                const SizedBox(width: ThemeSizes.sm),
-                Text(
-                  '${destination.rules.length} regole',
-                  style: context.textTheme.labelMedium?.copyWith(
-                    color: color,
-                    fontWeight: FontWeight.bold,
                   ),
                 ),
               ],
@@ -337,6 +312,35 @@ class _PackageDestinationTile extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildImage(BuildContext context) {
+    final placeholder = Container(
+      height: _imageHeight,
+      width: double.infinity,
+      color: color.withValues(alpha: 0.12),
+      child: Icon(
+        Icons.business_center_outlined,
+        color: color,
+        size: ThemeSizes.iconLg,
+      ),
+    );
+
+    final url = destination.imageUrl;
+    if (url == null || url.isEmpty) return placeholder;
+
+    return CachedNetworkImage(
+      imageUrl: url,
+      height: _imageHeight,
+      width: double.infinity,
+      fit: BoxFit.cover,
+      placeholder: (context, _) => Container(
+        height: _imageHeight,
+        color: color.withValues(alpha: 0.12),
+        child: Center(child: Loader(color: color)),
+      ),
+      errorWidget: (context, _, __) => placeholder,
     );
   }
 }

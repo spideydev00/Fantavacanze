@@ -1,11 +1,11 @@
 import 'package:fantavacanze_official/core/constants/game_mode.dart';
-import 'package:flutter/material.dart';
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
-import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
+import 'package:fantavacanze_official/core/theme/sizes.dart';
+import 'package:flutter/material.dart';
 
 class RuleModeSelector extends StatelessWidget {
-  final GameMode selectedMode;
+  final GameMode? selectedMode;
   final bool isLoading;
   final Function(GameMode) onModeChanged;
 
@@ -61,7 +61,7 @@ class RuleModeSelector extends StatelessWidget {
                 GameMode.allTogether,
                 'All Together',
                 'Mix di regole per gruppi misti',
-                ColorPalette.info,
+                ColorPalette.truthSecondary,
                 "assets/images/icons/homepage_icons/mixed-genders-icon.png",
               ),
               const Divider(thickness: 0.2),
@@ -95,8 +95,8 @@ class RuleModeSelector extends StatelessWidget {
             borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusMd),
             gradient: LinearGradient(
               colors: [
-                context.secondaryBgColor,
-                context.secondaryBgColor,
+                accentColor.withValues(alpha: 0.02),
+                accentColor.withValues(alpha: 0.10),
                 accentColor.withValues(alpha: 0.25),
               ],
               stops: const [0.0, 0.45, 1.0],

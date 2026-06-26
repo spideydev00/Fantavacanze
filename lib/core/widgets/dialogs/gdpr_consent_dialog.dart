@@ -123,7 +123,7 @@ class _GdprConsentDialogState extends State<GdprConsentDialog> {
       title: 'Consenso Annunci (GDPR)',
       message:
           'Gestisci le tue preferenze per la personalizzazione degli annunci o revoca il consenso.',
-      confirmText: 'Chiudi',
+      confirmText: 'Salva',
       elevatedButtonStyle: ButtonStyle(
         backgroundColor: WidgetStatePropertyAll(
           Color.fromARGB(255, 30, 137, 231),
@@ -133,6 +133,7 @@ class _GdprConsentDialogState extends State<GdprConsentDialog> {
         foregroundColor: WidgetStatePropertyAll(
           Color.fromARGB(255, 30, 137, 231),
         ),
+        backgroundColor: WidgetStatePropertyAll(Colors.transparent),
         side: WidgetStatePropertyAll(
           BorderSide(
             color: Color.fromARGB(255, 30, 137, 231),
