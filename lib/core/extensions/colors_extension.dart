@@ -1,4 +1,5 @@
 import 'package:fantavacanze_official/core/cubits/app_theme/app_theme_cubit.dart';
+import 'package:fantavacanze_official/core/theme/brand_colors.dart';
 import 'package:fantavacanze_official/core/theme/brand_theme.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:flutter/material.dart';
@@ -39,4 +40,12 @@ extension ThemeColorsExtension on BuildContext {
     final brand = BrandThemes.of(slug);
     return brand?.foreground ?? textPrimaryColor;
   }
+
+  /// Accento partner-aware letto dalla ThemeExtension [BrandColors].
+  Color get leagueAccentColor =>
+      Theme.of(this).extension<BrandColors>()?.accent ?? secondaryColor;
+
+  /// Primary partner-aware letto dalla ThemeExtension [BrandColors].
+  Color get brandColor =>
+      Theme.of(this).extension<BrandColors>()?.primary ?? primaryColor;
 }
