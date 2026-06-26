@@ -1,7 +1,5 @@
-import 'package:fantavacanze_official/core/cubits/app_league/app_league_cubit.dart';
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 
 class AmbientGlow extends StatelessWidget {
   final Widget child;
@@ -10,11 +8,7 @@ class AmbientGlow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final partnerSlug = context.select<AppLeagueCubit, String?>((cubit) {
-      final state = cubit.state;
-      return state is AppLeagueExists ? state.selectedLeague.partner : null;
-    });
-    final glow = context.brandPrimaryColor(partnerSlug);
+    final glow = context.brandColor;
 
     return Stack(
       children: [
