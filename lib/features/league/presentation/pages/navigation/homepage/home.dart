@@ -17,7 +17,7 @@ import 'package:fantavacanze_official/features/league/presentation/bloc/league_b
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/create_league/create_league_page.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/events/add_event_page.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/homepage/widgets/action_buttons_row.dart';
-import 'package:fantavacanze_official/features/league/presentation/pages/navigation/homepage/widgets/admin_action_card.dart';
+import 'package:fantavacanze_official/features/league/presentation/pages/navigation/homepage/widgets/action_card.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/homepage/widgets/articles_list.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/homepage/widgets/daily_goals.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/homepage/widgets/partner_entry_section.dart';
@@ -151,7 +151,7 @@ class HomePage extends StatelessWidget {
   Widget _buildAdminActions(BuildContext context, bool isFemale) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: ThemeSizes.xl),
-      child: AdminActionCard(
+      child: ActionCard(
         title: 'Aggiungi \n Bonus o Malus',
         imagePath: isFemale
             ? 'assets/images/girls_add_event.png'

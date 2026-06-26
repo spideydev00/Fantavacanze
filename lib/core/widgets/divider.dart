@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 
 class CustomDivider extends StatefulWidget {
   final String text;
+  final String? imagePath;
   final double thickness;
   final double lineHeight;
   final EdgeInsets padding;
@@ -17,6 +18,7 @@ class CustomDivider extends StatefulWidget {
   const CustomDivider({
     super.key,
     required this.text,
+    this.imagePath,
     this.thickness = 0.25,
     this.lineHeight = 1,
     this.padding = const EdgeInsets.symmetric(horizontal: 12),
@@ -121,14 +123,19 @@ class _CustomDividerState extends State<CustomDivider>
                           ),
                         ),
                       ),
-                    Text(
-                      widget.text,
-                      style: context.textTheme.labelMedium!.copyWith(
-                        color: dividerColor,
-                        fontWeight: FontWeight.w600,
-                        fontSize: 14,
-                      ),
-                    ),
+                    widget.imagePath == null
+                        ? Text(
+                            widget.text,
+                            style: context.textTheme.labelMedium!.copyWith(
+                              color: dividerColor,
+                              fontWeight: FontWeight.w600,
+                              fontSize: 14,
+                            ),
+                          )
+                        : Image.asset(
+                            widget.imagePath!,
+                            width: 70,
+                          ),
                     if (widget.hasDropdown) ...[
                       const SizedBox(width: ThemeSizes.xs),
                       GestureDetector(

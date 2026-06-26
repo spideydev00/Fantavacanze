@@ -5,24 +5,30 @@ import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:fantavacanze_official/core/widgets/buttons/modern_icon_button.dart';
 import 'package:flutter/material.dart';
 
-class AdminActionCard extends StatelessWidget {
+class ActionCard extends StatelessWidget {
   final String title;
+  final String? description;
   final String imagePath;
   final IconData iconData;
   final VoidCallback onTap;
   final double height;
   final double buttonPadding;
   final double buttonPosition;
+  final Color? iconGlowColor;
+  final bool showBottomGradient;
 
-  const AdminActionCard({
+  const ActionCard({
     super.key,
     required this.title,
+    this.description,
     required this.imagePath,
     this.iconData = Icons.add,
     required this.onTap,
     this.height = 160.0,
     this.buttonPadding = 18.0,
     this.buttonPosition = 25.0,
+    this.iconGlowColor,
+    this.showBottomGradient = false,
   });
 
   @override
@@ -73,6 +79,25 @@ class AdminActionCard extends StatelessWidget {
                         ),
                       ),
                     ),
+
+                    // Optional bottom shadow gradient (covers bottom half)
+                    if (showBottomGradient)
+                      Positioned.fill(
+                        child: Container(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.bottomCenter,
+                              end: Alignment.topCenter,
+                              colors: [
+                                Colors.black.withValues(alpha: 0.5),
+                                Colors.black.withValues(alpha: 0.0),
+                              ],
+                              stops: const [0.0, 0.5],
+                            ),
+                          ),
+                        ),
+                      ),
+
                     // Content
                     Padding(
                       padding: const EdgeInsets.all(ThemeSizes.lg),
@@ -83,9 +108,8 @@ class AdminActionCard extends StatelessWidget {
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisAlignment: MainAxisAlignment.center,
+                              mainAxisAlignment: MainAxisAlignment.end,
                               children: [
-                                const SizedBox(height: ThemeSizes.xs),
                                 Text(
                                   title,
                                   style:
@@ -94,10 +118,24 @@ class AdminActionCard extends StatelessWidget {
                                       ThemeMode.dark,
                                     ),
                                   ),
-                                  textAlign: TextAlign.center,
+                                  textAlign: TextAlign.start,
                                   maxLines: 2,
                                   overflow: TextOverflow.ellipsis,
                                 ),
+                                if (description != null) ...[
+                                  const SizedBox(height: ThemeSizes.xs),
+                                  Text(
+                                    description!,
+                                    style:
+                                        context.textTheme.bodyMedium?.copyWith(
+                                      color: ColorPalette.textSecondary(
+                                        ThemeMode.dark,
+                                      ),
+                                    ),
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ],
                                 const SizedBox(height: ThemeSizes.xs),
                               ],
                             ),
@@ -125,6 +163,12 @@ class AdminActionCard extends StatelessWidget {
                   blurRadius: 10,
                   spreadRadius: 1,
                 ),
+                if (iconGlowColor != null)
+                  BoxShadow(
+                    color: iconGlowColor!.withValues(alpha: 0.3),
+                    blurRadius: 16,
+                    spreadRadius: 4,
+                  ),
               ],
             ),
             child: ModernIconButton(

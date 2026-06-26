@@ -2,6 +2,7 @@ import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/extensions/context_extension.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:fantavacanze_official/core/widgets/empty_state.dart';
+import 'package:fantavacanze_official/core/widgets/info_container.dart';
 import 'package:fantavacanze_official/core/widgets/loader.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/partner/partner_catalog.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/partner_bloc/partner_cubit.dart';
@@ -44,7 +45,7 @@ class _PartnerDashboardView extends StatelessWidget {
     return Scaffold(
       backgroundColor: context.bgColor,
       appBar: AppBar(
-        title: const Text('Partner'),
+        title: Text('Partner', style: context.textTheme.bodyLarge),
         centerTitle: true,
       ),
       body: SafeArea(
@@ -103,41 +104,14 @@ class _LoadedDashboard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Container(
-                padding: const EdgeInsets.all(ThemeSizes.lg),
-                decoration: BoxDecoration(
-                  color: brandColor.withValues(alpha: 0.14),
-                  borderRadius: BorderRadius.circular(ThemeSizes.cardRadiusLg),
-                  border: Border.all(color: brandColor.withValues(alpha: 0.35)),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Icon(
-                      Icons.handshake_rounded,
-                      color: brandColor,
-                      size: ThemeSizes.iconXl,
-                    ),
-                    const SizedBox(height: ThemeSizes.md),
-                    Text(
-                      catalog.partner.name,
-                      style: context.textTheme.headlineSmall?.copyWith(
-                        color: context.textPrimaryColor,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: ThemeSizes.sm),
-                    Text(
-                      'Scegli una destinazione partner, crea una lega dedicata o entra in quella del tuo gruppo.',
-                      style: context.textTheme.bodyMedium?.copyWith(
-                        color: context.textSecondaryColor,
-                      ),
-                    ),
-                  ],
-                ),
+              InfoContainer(
+                title: "InVibe x Fantavacanze",
+                message:
+                    "Una collab fresca e piena di entusiasmo, per garantirti l'esperienza migliore possibile durante il viaggio. Pronto a rendere la vacanza indimenticabile?",
+                icon: Icons.handshake_rounded,
+                color: brandColor,
               ),
-              const SizedBox(height: ThemeSizes.lg),
-              PartnerEntryCard(catalog: catalog),
+              PartnerEntrySection(catalog: catalog),
             ],
           ),
         ),

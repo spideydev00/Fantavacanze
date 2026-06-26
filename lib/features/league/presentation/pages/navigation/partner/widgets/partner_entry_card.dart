@@ -9,10 +9,10 @@ import 'package:fantavacanze_official/features/league/presentation/pages/navigat
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-class PartnerEntryCard extends StatelessWidget {
+class PartnerEntrySection extends StatelessWidget {
   final PartnerCatalog catalog;
 
-  const PartnerEntryCard({
+  const PartnerEntrySection({
     super.key,
     required this.catalog,
   });
@@ -24,13 +24,8 @@ class PartnerEntryCard extends StatelessWidget {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(ThemeSizes.lg),
-      decoration: BoxDecoration(
-        color: context.secondaryBgColor,
-        borderRadius: BorderRadius.circular(ThemeSizes.cardRadiusLg),
-        border: Border.all(color: brandColor.withValues(alpha: 0.35)),
-      ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Text(
             'Cosa vuoi fare?',
@@ -42,6 +37,7 @@ class PartnerEntryCard extends StatelessWidget {
           const SizedBox(height: ThemeSizes.xs),
           Text(
             'Crea una nuova lega partner o cercane una già esistente.',
+            textAlign: TextAlign.center,
             style: context.textTheme.bodyMedium?.copyWith(
               color: context.textSecondaryColor,
             ),
