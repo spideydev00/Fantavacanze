@@ -1,10 +1,10 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fantavacanze_official/core/constants/game_mode.dart';
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/extensions/context_extension.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:fantavacanze_official/core/widgets/loader.dart';
+import 'package:fantavacanze_official/core/widgets/partner_destination_card.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/partner/partner_destination.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/rule/rule.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/create_league/widgets/game_mode_selector.dart';
@@ -223,124 +223,15 @@ class _PackageDestinationsSection extends StatelessWidget {
           Center(child: Loader(color: brandColor))
         else
           for (final destination in destinations)
-            _PackageDestinationCard(
-              destination: destination,
-              color: brandColor,
+            PartnerDestinationCard(
+              name: destination.name,
+              description: destination.description,
+              imageUrl: destination.imageUrl,
+              accentColor: brandColor,
               selected: destination.id == selectedDestinationId,
               onTap: () => onDestinationSelected(destination),
             ),
       ],
-    );
-  }
-}
-
-class _PackageDestinationCard extends StatelessWidget {
-  final PartnerDestination destination;
-  final Color color;
-  final bool selected;
-  final VoidCallback onTap;
-
-  const _PackageDestinationCard({
-    required this.destination,
-    required this.color,
-    required this.selected,
-    required this.onTap,
-  });
-
-  static const double _imageHeight = 140;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: ThemeSizes.md),
-      child: Material(
-        color: Colors.transparent,
-        borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusLg),
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusLg),
-          child: Container(
-            clipBehavior: Clip.antiAlias,
-            decoration: BoxDecoration(
-              color: context.secondaryBgColor,
-              borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusLg),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildImage(context),
-                Padding(
-                  padding: const EdgeInsets.all(ThemeSizes.md),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              destination.name,
-                              style: context.textTheme.titleLarge?.copyWith(
-                                color: context.textPrimaryColor,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: ThemeSizes.sm),
-                          Icon(
-                            selected
-                                ? Icons.check_circle_rounded
-                                : Icons.radio_button_unchecked_rounded,
-                            color:
-                                selected ? color : context.textSecondaryColor,
-                          ),
-                        ],
-                      ),
-                      if (destination.description != null) ...[
-                        const SizedBox(height: ThemeSizes.xs),
-                        Text(
-                          destination.description!,
-                          style: context.textTheme.bodyMedium?.copyWith(
-                            color: context.textSecondaryColor,
-                          ),
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildImage(BuildContext context) {
-    final placeholder = Container(
-      height: _imageHeight,
-      width: double.infinity,
-      color: color.withValues(alpha: 0.12),
-      child: Icon(
-        Icons.business_center_outlined,
-        color: color,
-        size: ThemeSizes.iconLg,
-      ),
-    );
-
-    final url = destination.imageUrl;
-    if (url == null || url.isEmpty) return placeholder;
-
-    return CachedNetworkImage(
-      imageUrl: url,
-      height: _imageHeight,
-      width: double.infinity,
-      fit: BoxFit.cover,
-      placeholder: (context, _) => Container(
-        height: _imageHeight,
-        color: color.withValues(alpha: 0.12),
-        child: Center(child: Loader(color: color)),
-      ),
-      errorWidget: (context, _, __) => placeholder,
     );
   }
 }
