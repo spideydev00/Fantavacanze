@@ -66,12 +66,16 @@ const tGeneralRanking = <GeneralRankingEntry>[
     userId: 'user-1',
     name: 'Mario',
     points: 42,
+    bonusTotal: 50,
+    malusTotal: -8,
     leagueName: 'InVibe Gallipoli',
   ),
   GeneralRankingEntry(
     userId: 'user-2',
     name: 'Luigi',
     points: 30,
+    bonusTotal: 32,
+    malusTotal: -2,
     leagueName: 'InVibe Pag',
   ),
 ];
@@ -82,12 +86,16 @@ const tGeneralRankingModels = <GeneralRankingEntryModel>[
     userId: 'user-1',
     name: 'Mario',
     points: 42,
+    bonusTotal: 50,
+    malusTotal: -8,
     leagueName: 'InVibe Gallipoli',
   ),
   GeneralRankingEntryModel(
     userId: 'user-2',
     name: 'Luigi',
     points: 30,
+    bonusTotal: 32,
+    malusTotal: -2,
     leagueName: 'InVibe Pag',
   ),
 ];
