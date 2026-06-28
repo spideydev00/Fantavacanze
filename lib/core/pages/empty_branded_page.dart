@@ -13,6 +13,13 @@ class EmptyBrandedPage extends StatefulWidget {
   final List<Widget> widgets;
   final List<Widget>? newColumnWidgets;
 
+  /// Ombra/gradiente scuro opzionale ancorato in alto, per migliorare il
+  /// contrasto del logo sopra immagini di sfondo chiare.
+  final bool hasTopShadow;
+
+  /// Altezza dell'ombra dall'alto. Default: 35% dell'altezza schermo.
+  final double? topShadowHeight;
+
   const EmptyBrandedPage({
     super.key,
     required this.logoImagePath,
@@ -22,6 +29,8 @@ class EmptyBrandedPage extends StatefulWidget {
     required this.widgets,
     this.newColumnWidgets,
     this.logoTopMargin = 30,
+    this.hasTopShadow = false,
+    this.topShadowHeight,
   });
 
   // Versione senza immagine di sfondo
@@ -33,6 +42,8 @@ class EmptyBrandedPage extends StatefulWidget {
     required this.widgets,
     this.newColumnWidgets,
     this.logoTopMargin = 30,
+    this.hasTopShadow = false,
+    this.topShadowHeight,
   }) : bgImagePath = null;
 
   @override
@@ -55,6 +66,28 @@ class _EmptyBrandedPageState extends State<EmptyBrandedPage> {
           widget.bgImagePath != null ? Colors.transparent : context.bgColor,
       body: Stack(
         children: [
+          if (widget.hasTopShadow)
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              height:
+                  widget.topShadowHeight ?? Constants.getHeight(context) * 0.55,
+              child: IgnorePointer(
+                child: DecoratedBox(
+                  decoration: const BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Color(0x99000000),
+                        Color(0x00000000),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
           Center(
             child: Column(
               mainAxisAlignment: widget.mainColumnAlignment,
