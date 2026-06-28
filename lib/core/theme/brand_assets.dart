@@ -4,8 +4,8 @@ class BrandAssets {
 
   static const Map<String, ({String dark, String light})> _logos = {
     'invibe': (
-      dark: 'assets/images/logos/invibe-logo.png',
-      light: 'assets/images/logos/logo-invibe-naked.png',
+      dark: 'assets/images/logos/invibe.png',
+      light: 'assets/images/logos/invibe-naked.png',
     ),
     'b-eazy': (
       dark: 'assets/images/logos/b-eazy.png',

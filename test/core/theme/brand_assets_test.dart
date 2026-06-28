@@ -6,11 +6,11 @@ void main() {
     test('InVibe: variante dark/light', () {
       expect(
         BrandAssets.logoFor('invibe', isDark: true),
-        'assets/images/logos/invibe-logo.png',
+        'assets/images/logos/invibe.png',
       );
       expect(
         BrandAssets.logoFor('invibe', isDark: false),
-        'assets/images/logos/logo-invibe-naked.png',
+        'assets/images/logos/invibe-naked.png',
       );
     });
 

@@ -25,8 +25,8 @@ class PartnerEntrySection extends StatelessWidget {
               child: CustomDivider(
                 text: 'InVibe',
                 imagePath: state.themeMode == ThemeMode.dark
-                    ? "assets/images/logos/invibe-logo.png"
-                    : "assets/images/logos/logo-invibe-naked.png",
+                    ? "assets/images/logos/invibe.png"
+                    : "assets/images/logos/invibe-naked.png",
                 color: brandColor,
                 thickness: state.themeMode == ThemeMode.dark ? 0.25 : 0.75,
               ),
