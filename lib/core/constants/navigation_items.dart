@@ -95,6 +95,15 @@ List<NavigationItem> participantNavbarItems = [
     subsection: "Naviga",
   ),
   NavigationItem(
+    title: "Classifica Globale",
+    darkSvgIcon:
+        'assets/images/icons/homepage_icons/global-rankings-icon-dark.svg',
+    lightSvgIcon: 'assets/images/icons/homepage_icons/global-rankings-icon.svg',
+    screen: const GeneralRankingPage(),
+    subsection: "Naviga",
+    requiresPartnerRound: true,
+  ),
+  NavigationItem(
     title: "Admin",
     darkSvgIcon: 'assets/images/icons/homepage_icons/admin-icon.svg',
     lightSvgIcon: 'assets/images/icons/homepage_icons/admin-icon-dark.svg',
@@ -123,14 +132,6 @@ List<NavigationItem> participantNavbarItems = [
     lightSvgIcon: 'assets/images/icons/homepage_icons/rules-icon-dark.svg',
     screen: const RulesPage(),
     subsection: "Naviga",
-  ),
-  NavigationItem(
-    title: "Classifica Generale",
-    darkSvgIcon: 'assets/images/icons/homepage_icons/rankings-icon.svg',
-    lightSvgIcon: 'assets/images/icons/homepage_icons/rankings-icon-dark.svg',
-    screen: const GeneralRankingPage(),
-    subsection: "Naviga",
-    requiresPartnerRound: true,
   ),
   NavigationItem(
     title: "La Mia Squadra",

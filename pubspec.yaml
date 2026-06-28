@@ -181,6 +181,8 @@ flutter:
     - assets/images/icons/homepage_icons/premium-icon.svg
     - assets/images/icons/homepage_icons/rankings-icon.svg
     - assets/images/icons/homepage_icons/rankings-icon-dark.svg
+    - assets/images/icons/homepage_icons/global-rankings-icon.svg
+    - assets/images/icons/homepage_icons/global-rankings-icon-dark.svg
     - assets/images/icons/homepage_icons/rules-icon.svg
     - assets/images/icons/homepage_icons/rules-icon-dark.svg
     - assets/images/icons/homepage_icons/team-icon.svg

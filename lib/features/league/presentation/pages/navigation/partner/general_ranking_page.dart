@@ -1,5 +1,6 @@
 import 'package:fantavacanze_official/core/cubits/app_league/app_league_cubit.dart';
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
+import 'package:fantavacanze_official/core/extensions/context_extension.dart';
 import 'package:fantavacanze_official/core/widgets/empty_state.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/partner_bloc/partner_cubit.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/partner/widgets/general_ranking_tab.dart';
@@ -23,14 +24,17 @@ class GeneralRankingPage extends StatelessWidget {
           return Scaffold(
             backgroundColor: context.bgColor,
             appBar: AppBar(
-              title: const Text('Classifica Generale'),
+              title: Text(
+                'Classifica Globale',
+                style: context.textTheme.bodyLarge,
+              ),
               centerTitle: true,
             ),
             body: const EmptyState(
               icon: Icons.emoji_events_outlined,
-              title: 'Classifica generale non disponibile',
+              title: 'Classifica globale non disponibile',
               subtitle:
-                  'La classifica generale e disponibile solo nelle leghe travel partner.',
+                  'La classifica globale e disponibile solo nelle leghe travel partner.',
             ),
           );
         }
@@ -38,7 +42,10 @@ class GeneralRankingPage extends StatelessWidget {
         return Scaffold(
           backgroundColor: context.bgColor,
           appBar: AppBar(
-            title: const Text('Classifica Generale'),
+            title: Text(
+              'Classifica Globale',
+              style: context.textTheme.bodyLarge,
+            ),
             centerTitle: true,
           ),
           body: BlocProvider(
