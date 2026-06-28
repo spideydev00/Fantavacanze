@@ -65,10 +65,24 @@ class _AddEventPageState extends State<AddEventPage> {
   bool _areButtonsVisible = true;
   bool _isScrolling = false;
   bool _showTeamMembers = false; // Toggle between teams and members view
+  bool _isTravelPartner = false;
+
+  int get _detailsStep => _isTravelPartner ? 0 : 1;
+  int get _assignStep => _isTravelPartner ? 1 : 2;
+  int get _lastStep => _assignStep;
 
   @override
   void initState() {
     super.initState();
+    final leagueState = context.read<AppLeagueCubit>().state;
+    if (leagueState is AppLeagueExists) {
+      final league = leagueState.selectedLeague;
+      _isTravelPartner =
+          league.partner != null && league.partnerRoundId != null;
+      if (_isTravelPartner) {
+        _isFromRule = true;
+      }
+    }
     _scrollController.addListener(_scrollListener);
     _searchController.addListener(() {
       setState(() {
@@ -89,7 +103,7 @@ class _AddEventPageState extends State<AddEventPage> {
   }
 
   void _scrollListener() {
-    if (_currentStep == 1 && _isFromRule) {
+    if (_currentStep == _detailsStep && _isFromRule) {
       if (_scrollController.position.isScrollingNotifier.value) {
         if (_areButtonsVisible) {
           setState(() {
@@ -111,6 +125,7 @@ class _AddEventPageState extends State<AddEventPage> {
   }
 
   void _toggleEventSource(bool value) {
+    if (_isTravelPartner && !value) return;
     setState(() {
       _isFromRule = value;
       if (!_isFromRule) {
@@ -251,11 +266,7 @@ class _AddEventPageState extends State<AddEventPage> {
   }
 
   bool _validateStep(int step) {
-    if (step == 0) {
-      // No validation needed for source selection
-      return true;
-    } else if (step == 1) {
-      // Validate event details
+    if (step == _detailsStep) {
       if (_nameController.text.trim().isEmpty) {
         showSnackBar('Inserisci un nome per l\'evento',
             color: ColorPalette.warning);
@@ -269,10 +280,7 @@ class _AddEventPageState extends State<AddEventPage> {
       }
 
       try {
-        // Normalize input with comma to period
-        final normalizedInput =
-            _pointsController.text.trim().replaceAll(',', '.');
-        double.parse(normalizedInput);
+        double.parse(_pointsController.text.trim().replaceAll(',', '.'));
       } catch (e) {
         showSnackBar('Inserisci un valore numerico valido',
             color: ColorPalette.warning);
@@ -280,8 +288,7 @@ class _AddEventPageState extends State<AddEventPage> {
       }
 
       return true;
-    } else if (step == 2) {
-      // Validate participant selection
+    } else if (step == _assignStep) {
       if (_selectedParticipantId == null) {
         showSnackBar('Seleziona un partecipante', color: ColorPalette.warning);
         return false;
@@ -408,7 +415,7 @@ class _AddEventPageState extends State<AddEventPage> {
                   currentStep: _currentStep,
                   onStepTapped: _onStepTapped,
                   onStepContinue: () {
-                    if (_currentStep < 2) {
+                    if (_currentStep < _lastStep) {
                       if (!_validateStep(_currentStep)) {
                         return;
                       }
@@ -427,24 +434,25 @@ class _AddEventPageState extends State<AddEventPage> {
                     }
                   },
                   steps: [
+                    if (!_isTravelPartner)
+                      Step(
+                        title: Text(
+                          'Fonte',
+                          style: context.textTheme.labelLarge,
+                        ),
+                        stepStyle: StepStyle(color: context.leagueAccentColor),
+                        content: _buildSourceSelectionStep(),
+                        isActive: _currentStep >= 0,
+                        state: _currentStep > 0
+                            ? StepState.complete
+                            : StepState.editing,
+                      ),
                     Step(
                       title: Text(
-                        'Fonte',
+                        _isTravelPartner ? 'Bonus/Malus' : 'Dettagli',
                         style: context.textTheme.labelLarge,
                       ),
-                      stepStyle: StepStyle(color: context.leagueAccentColor),
-                      content: _buildSourceSelectionStep(),
-                      isActive: _currentStep >= 0,
-                      state: _currentStep > 0
-                          ? StepState.complete
-                          : StepState.editing,
-                    ),
-                    Step(
-                      title: Text(
-                        'Dettagli',
-                        style: context.textTheme.labelLarge,
-                      ),
-                      stepStyle: _currentStep < 1
+                      stepStyle: _currentStep < _detailsStep
                           ? StepStyle(
                               color: context.secondaryBgColor,
                               indexStyle: TextStyle(
@@ -453,10 +461,10 @@ class _AddEventPageState extends State<AddEventPage> {
                             )
                           : StepStyle(color: context.leagueAccentColor),
                       content: _buildEventDetailsStep(),
-                      isActive: _currentStep >= 1,
-                      state: _currentStep > 1
+                      isActive: _currentStep >= _detailsStep,
+                      state: _currentStep > _detailsStep
                           ? StepState.complete
-                          : (_currentStep == 1
+                          : (_currentStep == _detailsStep
                               ? StepState.editing
                               : StepState.indexed),
                     ),
@@ -465,7 +473,7 @@ class _AddEventPageState extends State<AddEventPage> {
                         'Assegna',
                         style: context.textTheme.labelLarge,
                       ),
-                      stepStyle: _currentStep < 2
+                      stepStyle: _currentStep < _assignStep
                           ? StepStyle(
                               color: context.secondaryBgColor,
                               indexStyle: TextStyle(
@@ -474,8 +482,8 @@ class _AddEventPageState extends State<AddEventPage> {
                             )
                           : StepStyle(color: context.leagueAccentColor),
                       content: _buildAssignEventStep(league),
-                      isActive: _currentStep >= 2,
-                      state: _currentStep == 2
+                      isActive: _currentStep >= _assignStep,
+                      state: _currentStep == _assignStep
                           ? StepState.editing
                           : StepState.indexed,
                     ),
@@ -535,7 +543,7 @@ class _AddEventPageState extends State<AddEventPage> {
               label: Text(
                 _isSubmitting
                     ? 'Salvataggio...'
-                    : _currentStep < 2
+                    : _currentStep < _lastStep
                         ? 'Continua'
                         : 'Crea Evento',
               ),
