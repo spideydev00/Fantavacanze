@@ -59,7 +59,9 @@ class LeagueGuidePage extends StatelessWidget {
               children: const [
                 'Una lega a squadre è composta da diversi team, ognuno con un numero diverso di componenti.',
                 'Una lega individuale è invece composta dai singoli partecipanti.',
-                'CONSIGLIO: Se volete includere anche amiche (o amici) che non partono con voi, quelli che restano a casa creano la lega e le squadre (così da esserne capitani), e voi vi unite al loro team (possono anche fare un\'asta per prendervi). Loro vedranno gli obiettivi che fate e la classifica aggiornata.',
+              ],
+              tips: const [
+                'Se volete includere anche amiche (o amici) che non partono con voi, quelli che restano a casa creano la lega e le squadre (così da esserne capitani), e voi vi unite al loro team (possono anche fare un\'asta per prendervi). Loro vedranno gli obiettivi che fate e la classifica aggiornata.',
               ],
             ),
             const SizedBox(height: ThemeSizes.md),
@@ -70,6 +72,8 @@ class LeagueGuidePage extends StatelessWidget {
               children: const [
                 'Solo gli admin della lega possono aggiungere bonus e malus.',
                 'Gli admin possono nominare altri admin dalla sezione "Admin".',
+              ],
+              tips: [
                 'Se vuoi che tutti possano aggiungersi bonus, malus e sfide giornaliere, rendi tutti amministratori.',
               ],
             ),
@@ -81,8 +85,11 @@ class LeagueGuidePage extends StatelessWidget {
               children: const [
                 'Ogni partecipante riceve obiettivi giornalieri ogni giorno alle 7 ed avrà 24 ore per completarli.',
                 'Per completare una sfida giornaliera, fai scroll col dito verso destra.',
-                'Se chi completa la sfida non è admin, agli admin arriva una notifica di approvazione. In una lega in cui tutti sono amministratori, i punti vengono subito aggiunti senza approvazione.',
+                'Se chi completa la sfida non è admin, agli admin arriva una notifica di approvazione.',
                 'In caso contrario la sfida viene conteggiata solo dopo approvazione dell\'admin. Questo mantiene il controllo sulla lega ed evita imbrogli.',
+              ],
+              tips: [
+                "In una lega in cui tutti sono amministratori, i punti vengono subito aggiunti senza approvazione."
               ],
             ),
             const SizedBox(height: ThemeSizes.md),
@@ -113,7 +120,10 @@ class LeagueGuidePage extends StatelessWidget {
               color: context.secondaryColor,
               title: 'Giochi e nuove leghe',
               children: const [
-                '"Giochi" contiene mini-giochi pensati per il gruppo, separati dalla gestione admin della lega.',
+                '"Giochi" contiene mini-giochi pensati per il gruppo.',
+              ],
+              tips: [
+                "I giochi possono essere giocati sia in multiplayer (ognuno dal suo dispositivo) che singolarmente.",
               ],
             ),
           ],
@@ -129,11 +139,15 @@ class _GuideInfoCard extends StatelessWidget {
   final String title;
   final List<String> children;
 
+  /// Consigli messi in risalto (box con icona a stella), opzionali.
+  final List<String> tips;
+
   const _GuideInfoCard({
     required this.icon,
     required this.color,
     required this.title,
     required this.children,
+    this.tips = const [],
   });
 
   @override
@@ -215,6 +229,60 @@ class _GuideInfoCard extends StatelessWidget {
                   ),
                 ],
               ),
+            ),
+          ),
+          ...tips.map(
+            (text) => Padding(
+              padding: const EdgeInsets.only(top: ThemeSizes.xs),
+              child: _GuideTip(text: text),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Box di risalto per un consiglio, in stile [InfoContainer] con icona a stella.
+class _GuideTip extends StatelessWidget {
+  final String text;
+
+  const _GuideTip({required this.text});
+
+  @override
+  Widget build(BuildContext context) {
+    const color = Colors.amber;
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(ThemeSizes.md),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusMd),
+        border: Border.all(color: color.withValues(alpha: 0.35)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.star_rounded, color: color, size: 20),
+              const SizedBox(width: ThemeSizes.sm),
+              Text(
+                'Consiglio',
+                style: context.textTheme.titleSmall?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: color,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: ThemeSizes.xs),
+          Text(
+            text,
+            style: context.textTheme.bodyMedium?.copyWith(
+              color: context.textSecondaryColor,
+              height: 1.35,
             ),
           ),
         ],
