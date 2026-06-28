@@ -1,10 +1,13 @@
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/extensions/context_extension.dart';
+import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:fantavacanze_official/core/utils/dates-and-numbers/number_formatter.dart';
 import 'package:fantavacanze_official/core/widgets/empty_state.dart';
+import 'package:fantavacanze_official/core/widgets/leaderboard/leaderboard_header.dart';
 import 'package:fantavacanze_official/core/widgets/loader.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/partner/general_ranking_entry.dart';
+import 'package:fantavacanze_official/features/league/domain/entities/partner/general_ranking_sort.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/partner_bloc/partner_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -55,10 +58,8 @@ class _GeneralRankingTabState extends State<GeneralRankingTab> {
                 child: const Text('Riprova'),
               ),
             ),
-          PartnerRankingLoaded(:final ranking) => _RankingList(
-              ranking: ranking,
-              brandColor: brandColor,
-            ),
+          PartnerRankingLoaded(:final ranking) =>
+            _RankingList(ranking: ranking),
           _ => EmptyState(
               icon: Icons.emoji_events_outlined,
               title: 'Classifica non disponibile',
@@ -72,12 +73,8 @@ class _GeneralRankingTabState extends State<GeneralRankingTab> {
 
 class _RankingList extends StatelessWidget {
   final List<GeneralRankingEntry> ranking;
-  final Color brandColor;
 
-  const _RankingList({
-    required this.ranking,
-    required this.brandColor,
-  });
+  const _RankingList({required this.ranking});
 
   @override
   Widget build(BuildContext context) {
@@ -89,17 +86,18 @@ class _RankingList extends StatelessWidget {
       );
     }
 
-    final sorted = List<GeneralRankingEntry>.from(ranking)
-      ..sort((a, b) => b.points.compareTo(a.points));
+    final sorted = sortGeneralRanking(ranking);
 
     return ListView.builder(
-      padding: const EdgeInsets.all(ThemeSizes.md),
-      itemCount: sorted.length,
+      padding: const EdgeInsets.symmetric(horizontal: ThemeSizes.md),
+      itemCount: sorted.length + 1,
       itemBuilder: (context, index) {
+        if (index == 0) {
+          return const LeaderboardHeader(isTeamBased: false);
+        }
         return _RankingRow(
-          entry: sorted[index],
-          position: index + 1,
-          brandColor: brandColor,
+          entry: sorted[index - 1],
+          position: index,
         );
       },
     );
@@ -109,78 +107,122 @@ class _RankingList extends StatelessWidget {
 class _RankingRow extends StatelessWidget {
   final GeneralRankingEntry entry;
   final int position;
-  final Color brandColor;
 
   const _RankingRow({
     required this.entry,
     required this.position,
-    required this.brandColor,
   });
 
   @override
   Widget build(BuildContext context) {
+    final medalColor = switch (position) {
+      1 => Colors.amber,
+      2 => Colors.grey.shade400,
+      3 => Colors.brown.shade300,
+      _ => null,
+    };
+
+    final points = NumberFormatter.formatPoints(entry.points);
+    final bonus = NumberFormatter.formatPoints(entry.bonusTotal);
+    final malus = NumberFormatter.formatPoints(entry.malusTotal);
+
     return Container(
-      margin: const EdgeInsets.only(bottom: ThemeSizes.sm),
-      padding: const EdgeInsets.all(ThemeSizes.md),
+      margin: const EdgeInsets.only(bottom: ThemeSizes.xs),
+      padding: const EdgeInsets.symmetric(
+        vertical: ThemeSizes.sm,
+        horizontal: ThemeSizes.md,
+      ),
       decoration: BoxDecoration(
         color: context.secondaryBgColor,
-        borderRadius: BorderRadius.circular(ThemeSizes.cardRadiusMd),
-        border: Border.all(color: context.borderColor),
+        borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusMd),
+        boxShadow: [
+          BoxShadow(
+            color: context.textSecondaryColor.withValues(alpha: 0.05),
+            blurRadius: 2,
+            offset: const Offset(0, 1),
+          ),
+        ],
       ),
       child: Row(
         children: [
           SizedBox(
-            width: ThemeSizes.xl,
-            child: Text(
-              '$position',
-              style: context.textTheme.titleMedium?.copyWith(
-                color: brandColor,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
+            width: 28,
+            child: medalColor != null
+                ? Icon(Icons.emoji_events, color: medalColor, size: 24)
+                : Text(
+                    '$position',
+                    style: context.textTheme.labelLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: context.textPrimaryColor,
+                    ),
+                  ),
           ),
-          CircleAvatar(
-            backgroundColor: brandColor.withValues(alpha: 0.14),
-            child: Icon(
-              Icons.person,
-              color: brandColor,
-              size: ThemeSizes.iconSm,
-            ),
-          ),
-          const SizedBox(width: ThemeSizes.md),
+          const SizedBox(width: 6),
           Expanded(
+            flex: 4,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
                   entry.name,
-                  style: context.textTheme.bodyLarge?.copyWith(
-                    color: context.textPrimaryColor,
-                    fontWeight: FontWeight.w600,
+                  style: context.textTheme.labelLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
                   ),
-                  maxLines: 1,
                   overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
                 ),
-                const SizedBox(height: ThemeSizes.xs),
                 Text(
                   entry.leagueName,
-                  style: context.textTheme.bodySmall?.copyWith(
+                  style: context.textTheme.labelSmall?.copyWith(
                     color: context.textSecondaryColor,
                   ),
-                  maxLines: 1,
                   overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
                 ),
               ],
             ),
           ),
-          const SizedBox(width: ThemeSizes.md),
-          Text(
-            '${NumberFormatter.formatPoints(entry.points)} pt',
-            style: context.textTheme.titleMedium?.copyWith(
-              color: brandColor,
-              fontWeight: FontWeight.bold,
+          Expanded(
+            flex: 2,
+            child: Text(
+              bonus,
+              textAlign: TextAlign.center,
+              style: context.textTheme.labelLarge?.copyWith(
+                color: ColorPalette.success,
+                fontWeight: FontWeight.w500,
+              ),
+              overflow: TextOverflow.ellipsis,
+              maxLines: 1,
             ),
           ),
+          Expanded(
+            flex: 2,
+            child: Text(
+              malus,
+              textAlign: TextAlign.center,
+              style: context.textTheme.labelLarge?.copyWith(
+                color: ColorPalette.error,
+                fontWeight: FontWeight.w500,
+              ),
+              overflow: TextOverflow.ellipsis,
+              maxLines: 1,
+            ),
+          ),
+          Expanded(
+            flex: 2,
+            child: Text(
+              points,
+              textAlign: TextAlign.center,
+              style: context.textTheme.labelLarge?.copyWith(
+                fontWeight: FontWeight.bold,
+                color: context.textPrimaryColor,
+              ),
+              overflow: TextOverflow.ellipsis,
+              maxLines: 1,
+            ),
+          ),
+          const SizedBox(width: 32),
         ],
       ),
     );
