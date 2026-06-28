@@ -1,7 +1,7 @@
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/extensions/context_extension.dart';
-import 'package:fantavacanze_official/core/theme/theme.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
+import 'package:fantavacanze_official/core/theme/theme.dart';
 import 'package:fantavacanze_official/core/widgets/ambient_glow.dart';
 import 'package:fantavacanze_official/core/widgets/empty_state.dart';
 import 'package:fantavacanze_official/core/widgets/info_container.dart';
@@ -126,7 +126,7 @@ class _LoadedDashboard extends StatelessWidget {
               InfoContainer(
                 title: 'Le tue leghe InVibe',
                 message:
-                    'Ogni lega è per il tuo gruppo di amici. Presto arriverà anche una classifica generale tra tutte le leghe della destinazione!',
+                    'Crea una lega con il tuo gruppo di amici o amiche. Sfidati a suon di bonus e malus e alla fine consulta la classifica generale.',
                 icon: Icons.groups_rounded,
                 color: brand,
               ),
