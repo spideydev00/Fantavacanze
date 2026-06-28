@@ -2,6 +2,7 @@ import 'package:fantavacanze_official/core/extensions/context_extension.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:fantavacanze_official/core/utils/dates-and-numbers/number_formatter.dart';
+import 'package:fantavacanze_official/core/utils/media/brand_logo_assets.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/league/league.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/participant.dart';
 import 'package:flutter/material.dart';
@@ -13,12 +14,14 @@ class ShareableLeaderboardCard extends StatelessWidget {
   final League league;
   final List<Map<String, dynamic>>? membersOverride;
   final ThemeMode themeMode;
+  final String? titleOverride;
 
   const ShareableLeaderboardCard({
     super.key,
     required this.league,
     this.membersOverride,
     required this.themeMode,
+    this.titleOverride,
   });
 
   @override
@@ -39,8 +42,9 @@ class ShareableLeaderboardCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           _ShareLeaderboardBrandHeader(
-            leagueName: league.name,
+            leagueName: titleOverride ?? league.name,
             themeMode: themeMode,
+            partnerSlug: league.partner,
           ),
           const SizedBox(height: ThemeSizes.md),
           if (participants.isEmpty)
@@ -116,28 +120,41 @@ class ShareableLeaderboardCard extends StatelessWidget {
 class _ShareLeaderboardBrandHeader extends StatelessWidget {
   final String leagueName;
   final ThemeMode themeMode;
+  final String? partnerSlug;
 
   const _ShareLeaderboardBrandHeader({
     required this.leagueName,
     required this.themeMode,
+    this.partnerSlug,
   });
 
   @override
   Widget build(BuildContext context) {
     final textPrimaryColor = ColorPalette.textPrimary(themeMode);
     final textSecondaryColor = ColorPalette.textSecondary(themeMode);
-    final logoPath = themeMode == ThemeMode.dark
-        ? 'assets/images/logos/logo-neon.png'
-        : 'assets/images/logos/logo-naked.png';
 
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         const SizedBox(height: ThemeSizes.lg),
-        Image.asset(
-          logoPath,
-          height: 72,
-          fit: BoxFit.contain,
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Image.asset(
+              BrandLogoAssets.fvLogo(themeMode),
+              height: 72,
+              fit: BoxFit.contain,
+            ),
+            if (partnerSlug != null) ...[
+              const SizedBox(width: ThemeSizes.lg),
+              Image.asset(
+                BrandLogoAssets.partnerLogo(partnerSlug!, themeMode),
+                height: 72,
+                fit: BoxFit.contain,
+              ),
+            ],
+          ],
         ),
         const SizedBox(height: ThemeSizes.sm),
         Text(
