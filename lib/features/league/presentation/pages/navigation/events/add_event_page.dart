@@ -23,7 +23,6 @@ import 'package:fantavacanze_official/features/league/presentation/bloc/league_b
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc/league_state.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/events/widgets/app_search_bar.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/events/widgets/event_preview_card.dart';
-import 'package:fantavacanze_official/features/league/presentation/pages/navigation/events/widgets/selected_rule_card.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/rules/widgets/rule_item.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -627,24 +626,19 @@ class _AddEventPageState extends State<AddEventPage> {
             },
           ),
 
-          // If a rule is selected, show it above the list
-          if (_selectedRule != null)
-            SelectedRuleCard(
-              rule: _selectedRule!,
-              onClear: () {
-                setState(() {
-                  _selectedRule = null;
-                  _nameController.clear();
-                  _pointsController.clear();
-                });
-              },
-            ),
-
           const SizedBox(height: ThemeSizes.sm),
 
           // Rules container - takes most of the available space
           Container(
-            height: Constants.getHeight(context) * 0.24,
+            // ponytail: fill to bottom minus app chrome; tune `chromeOffset`
+            // on device (appbar + stepper header + title + search + controls).
+            height: () {
+              final media = MediaQuery.of(context);
+              const chromeOffset = 320.0;
+              final height =
+                  media.size.height - media.padding.top - chromeOffset;
+              return height < 180 ? 180.0 : height;
+            }(),
             decoration: BoxDecoration(
               color: context.secondaryBgColor,
               borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusMd),
