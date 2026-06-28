@@ -2,7 +2,9 @@ import 'dart:io';
 import 'dart:math' as math;
 
 import 'package:dio/dio.dart';
+import 'package:fantavacanze_official/core/utils/media/brand_logo_assets.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:gallery_saver_plus/gallery_saver.dart';
 import 'package:image/image.dart' as img;
@@ -10,22 +12,18 @@ import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 
 class ImageBrandingUtil {
-  static const String _logoAssetPath = 'assets/images/logos/logo-neon.png';
+  static final Map<String, Uint8List> _logoCache = {};
 
-  static Uint8List? _cachedLogoBytes;
-
-  static Future<Uint8List> _loadLogoBytes() async {
-    final cachedLogoBytes = _cachedLogoBytes;
-    if (cachedLogoBytes != null) return cachedLogoBytes;
-
-    final logoData = await rootBundle.load(_logoAssetPath);
-    final logoBytes = logoData.buffer.asUint8List(
-      logoData.offsetInBytes,
-      logoData.lengthInBytes,
+  static Future<Uint8List> _loadAsset(String path) async {
+    final cached = _logoCache[path];
+    if (cached != null) return cached;
+    final data = await rootBundle.load(path);
+    final bytes = data.buffer.asUint8List(
+      data.offsetInBytes,
+      data.lengthInBytes,
     );
-
-    _cachedLogoBytes = logoBytes;
-    return logoBytes;
+    _logoCache[path] = bytes;
+    return bytes;
   }
 
   static Future<File> brandImageFromUrl(
@@ -33,6 +31,8 @@ class ImageBrandingUtil {
     void Function(double progress)? onDownloadProgress,
     VoidCallback? onBrandingStart,
     CancelToken? cancelToken,
+    ThemeMode themeMode = ThemeMode.dark,
+    String? partnerSlug,
   }) async {
     final response = await Dio().get<List<int>>(
       imageUrl,
@@ -52,14 +52,18 @@ class ImageBrandingUtil {
       throw Exception('Errore elaborazione immagine');
     }
 
-    final logoBytes = await _loadLogoBytes();
+    final fvLogoBytes = await _loadAsset(BrandLogoAssets.fvLogo(themeMode));
+    final partnerLogoBytes = partnerSlug == null
+        ? null
+        : await _loadAsset(BrandLogoAssets.partnerLogo(partnerSlug, themeMode));
     onBrandingStart?.call();
 
     final brandedBytes = await compute(
       _brandImageInIsolate,
       _BrandPayload(
         baseBytes: Uint8List.fromList(response.data!),
-        logoBytes: logoBytes,
+        fvLogoBytes: fvLogoBytes,
+        partnerLogoBytes: partnerLogoBytes,
       ),
     );
 
@@ -77,12 +81,16 @@ class ImageBrandingUtil {
     VoidCallback? onBrandingStart,
     VoidCallback? onSavingStart,
     CancelToken? cancelToken,
+    ThemeMode themeMode = ThemeMode.dark,
+    String? partnerSlug,
   }) async {
     final file = await brandImageFromUrl(
       imageUrl,
       onDownloadProgress: onDownloadProgress,
       onBrandingStart: onBrandingStart,
       cancelToken: cancelToken,
+      themeMode: themeMode,
+      partnerSlug: partnerSlug,
     );
 
     try {
@@ -122,9 +130,12 @@ class ImageBrandingUtil {
 
 Uint8List _brandImageInIsolate(_BrandPayload payload) {
   var baseImage = img.decodeImage(payload.baseBytes);
-  final logoImage = img.decodeImage(payload.logoBytes);
+  final fvLogo = img.decodeImage(payload.fvLogoBytes);
+  final partnerLogo = payload.partnerLogoBytes == null
+      ? null
+      : img.decodeImage(payload.partnerLogoBytes!);
 
-  if (baseImage == null || logoImage == null) {
+  if (baseImage == null || fvLogo == null) {
     throw Exception('Errore elaborazione immagine');
   }
 
@@ -145,36 +156,55 @@ Uint8List _brandImageInIsolate(_BrandPayload payload) {
           );
   }
 
-  final logoWidth = math.max(1, (baseImage.width * 0.22).round());
-  final logoHeight = math.max(
-    1,
-    (logoImage.height * logoWidth / logoImage.width).round(),
-  );
-  final scaledLogo = img.copyResize(
-    logoImage,
-    width: logoWidth,
-    height: logoHeight,
-    interpolation: img.Interpolation.cubic,
-  );
+  img.Image scaled(img.Image logo) {
+    final width = math.max(1, (baseImage!.width * 0.18).round());
+    final height = math.max(1, (logo.height * width / logo.width).round());
+    return img.copyResize(
+      logo,
+      width: width,
+      height: height,
+      interpolation: img.Interpolation.cubic,
+    );
+  }
+
+  final scaledFv = scaled(fvLogo);
+  final scaledPartner = partnerLogo == null ? null : scaled(partnerLogo);
+
+  final gap = (baseImage.width * 0.04).round();
+  final totalWidth =
+      scaledFv.width + (scaledPartner == null ? 0 : gap + scaledPartner.width);
+  final maxHeight = math.max(scaledFv.height, scaledPartner?.height ?? 0);
+  final startX = ((baseImage.width - totalWidth) / 2).round();
+  final baseY =
+      baseImage.height - maxHeight - (baseImage.height * 0.03).round();
 
   img.compositeImage(
     baseImage,
-    scaledLogo,
-    dstX: ((baseImage.width - scaledLogo.width) / 2).round(),
-    dstY: baseImage.height -
-        scaledLogo.height -
-        (baseImage.height * 0.03).round(),
+    scaledFv,
+    dstX: startX,
+    dstY: baseY + ((maxHeight - scaledFv.height) / 2).round(),
   );
+
+  if (scaledPartner != null) {
+    img.compositeImage(
+      baseImage,
+      scaledPartner,
+      dstX: startX + scaledFv.width + gap,
+      dstY: baseY + ((maxHeight - scaledPartner.height) / 2).round(),
+    );
+  }
 
   return img.encodeJpg(baseImage, quality: 85);
 }
 
 class _BrandPayload {
   final Uint8List baseBytes;
-  final Uint8List logoBytes;
+  final Uint8List fvLogoBytes;
+  final Uint8List? partnerLogoBytes;
 
   const _BrandPayload({
     required this.baseBytes,
-    required this.logoBytes,
+    required this.fvLogoBytes,
+    this.partnerLogoBytes,
   });
 }

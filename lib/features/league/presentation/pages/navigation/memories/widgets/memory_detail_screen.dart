@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dio/dio.dart';
 import 'package:fantavacanze_official/core/cubits/app_league/app_league_cubit.dart';
+import 'package:fantavacanze_official/core/cubits/app_theme/app_theme_cubit.dart';
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
@@ -43,6 +44,9 @@ class MemoryDetailScreen extends StatefulWidget {
 
 class _MemoryDetailScreenState extends State<MemoryDetailScreen> {
   bool _isProcessing = false;
+
+  ThemeMode get _themeMode => context.read<AppThemeCubit>().state.themeMode;
+  String? get _partnerSlug => widget.league?.partner;
 
   Future<void> _runWithDialog({
     required IconData icon,
@@ -178,9 +182,13 @@ class _MemoryDetailScreenState extends State<MemoryDetailScreen> {
         progress: 0,
       ),
       work: (notifier, token) async {
+        final themeMode = _themeMode;
+        final partnerSlug = _partnerSlug;
         final brandedFile = await ImageBrandingUtil.brandImageFromUrl(
           widget.memory.mediaUrl,
           cancelToken: token,
+          themeMode: themeMode,
+          partnerSlug: partnerSlug,
           onDownloadProgress: (progress) => notifier.value = ProcessingState(
             "Download dell'immagine...",
             progress: progress,
@@ -267,9 +275,13 @@ class _MemoryDetailScreenState extends State<MemoryDetailScreen> {
         progress: 0,
       ),
       work: (notifier, token) async {
+        final themeMode = _themeMode;
+        final partnerSlug = _partnerSlug;
         final saved = await ImageBrandingUtil.saveBrandedImageToGallery(
           widget.memory.mediaUrl,
           cancelToken: token,
+          themeMode: themeMode,
+          partnerSlug: partnerSlug,
           onDownloadProgress: (progress) => notifier.value = ProcessingState(
             "Download dell'immagine...",
             progress: progress,
