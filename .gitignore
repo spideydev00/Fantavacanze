@@ -62,3 +62,6 @@ TO-DO.md
 
 # Instructions
 /custom-gpt
+
+# Claude Settings
+.claude/settings.local.json
