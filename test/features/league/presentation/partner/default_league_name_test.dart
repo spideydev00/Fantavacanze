@@ -6,21 +6,21 @@ void main() {
     test('male -> tori', () {
       expect(
         defaultLeagueName(gender: 'male', destination: 'Ibiza'),
-        'I tori di Ibiza',
+        'I tori di Ibiza (scegli il tuo...)',
       );
     });
 
     test('female -> baddies', () {
       expect(
         defaultLeagueName(gender: 'female', destination: 'Ibiza'),
-        'Le baddies di Ibiza',
+        'Le baddies di Ibiza (scegli il tuo...)',
       );
     });
 
     test('null -> generico', () {
       expect(
         defaultLeagueName(gender: null, destination: 'Ibiza'),
-        'La lega di Ibiza',
+        'La lega di Ibiza (scegli il tuo...)',
       );
     });
   });
