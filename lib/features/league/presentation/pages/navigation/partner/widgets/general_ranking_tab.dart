@@ -1,3 +1,5 @@
+import 'package:fantavacanze_official/core/constants/navigation_items.dart';
+import 'package:fantavacanze_official/core/cubits/app_navigation/app_navigation_cubit.dart';
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/extensions/context_extension.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
@@ -27,46 +29,47 @@ class GeneralRankingTab extends StatefulWidget {
 }
 
 class _GeneralRankingTabState extends State<GeneralRankingTab> {
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        context.read<PartnerCubit>().loadGeneralRanking(widget.leagueId);
-      }
-    });
+  // Indice della voce "Classifica Globale" nello stack del dashboard.
+  static final int _globalRankingIndex = participantNavbarItems
+      .indexWhere((item) => item.title == 'Classifica Globale');
+
+  void _reload(BuildContext context) {
+    context.read<PartnerCubit>().loadGeneralRanking(widget.leagueId);
   }
 
   @override
   Widget build(BuildContext context) {
     final brandColor = context.brandPrimaryColor(widget.partnerSlug);
 
-    return BlocBuilder<PartnerCubit, PartnerState>(
-      builder: (context, state) {
-        return switch (state) {
-          PartnerLoading() || PartnerInitial() => Center(
-              child: Loader(color: brandColor),
-            ),
-          PartnerFailure(:final message) => EmptyState(
-              icon: Icons.error_outline,
-              title: 'Classifica non disponibile',
-              subtitle: message,
-              action: ElevatedButton(
-                onPressed: () => context
-                    .read<PartnerCubit>()
-                    .loadGeneralRanking(widget.leagueId),
-                child: const Text('Riprova'),
+    return BlocListener<AppNavigationCubit, int>(
+      listenWhen: (prev, curr) =>
+          curr == _globalRankingIndex && prev != _globalRankingIndex,
+      listener: (context, _) => _reload(context),
+      child: BlocBuilder<PartnerCubit, PartnerState>(
+        builder: (context, state) {
+          return switch (state) {
+            PartnerLoading() || PartnerInitial() => Center(
+                child: Loader(color: brandColor),
               ),
-            ),
-          PartnerRankingLoaded(:final ranking) =>
-            _RankingList(ranking: ranking),
-          _ => EmptyState(
-              icon: Icons.emoji_events_outlined,
-              title: 'Classifica non disponibile',
-              subtitle: 'Riprova tra qualche istante.',
-            ),
-        };
-      },
+            PartnerFailure(:final message) => EmptyState(
+                icon: Icons.error_outline,
+                title: 'Classifica non disponibile',
+                subtitle: message,
+                action: ElevatedButton(
+                  onPressed: () => _reload(context),
+                  child: const Text('Riprova'),
+                ),
+              ),
+            PartnerRankingLoaded(:final ranking) =>
+              _RankingList(ranking: ranking),
+            _ => EmptyState(
+                icon: Icons.emoji_events_outlined,
+                title: 'Classifica non disponibile',
+                subtitle: 'Riprova tra qualche istante.',
+              ),
+          };
+        },
+      ),
     );
   }
 }
