@@ -4,6 +4,7 @@ import 'package:fantavacanze_official/core/constants/lock_type.dart';
 import 'package:fantavacanze_official/core/cubits/app_league/app_league_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit.dart';
 import 'package:fantavacanze_official/core/services/ad_helper.dart';
+import 'package:fantavacanze_official/core/theme/brand_theme.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:fantavacanze_official/core/utils/show-snackbar-or-paywall/show_snackbar.dart';
@@ -159,12 +160,22 @@ class _DailyGoalsState extends State<DailyGoals> {
     );
   }
 
+  /// Colore base delle card: primary partner-aware, sempre nella variante
+  /// dark (anche in light mode). Senza partner usa il primary di default.
+  Color _challengeBaseColor() {
+    final leagueState = context.read<AppLeagueCubit>().state;
+    final slug =
+        leagueState is AppLeagueExists ? leagueState.selectedLeague.partner : null;
+    return BrandThemes.of(slug)?.primary(ThemeMode.dark) ??
+        ColorPalette.primary(ThemeMode.dark);
+  }
+
   Widget _buildGoalCard(DailyChallenge c, int index) {
-    // Colore base sempre quello previsto per il dark mode, anche in light.
     final colors = ColorPalette.challengeGradientFor(
-      ColorPalette.primary(ThemeMode.dark),
+      _challengeBaseColor(),
       index,
     );
+
     final locked = !c.isUnlocked;
 
     final lockType = locked
@@ -305,7 +316,7 @@ class _DailyGoalsState extends State<DailyGoals> {
       mainAxisSize: MainAxisSize.min,
       children: List.generate(3, (i) {
         final gradient = ColorPalette.challengeGradientFor(
-          ColorPalette.primary(ThemeMode.dark),
+          _challengeBaseColor(),
           i,
         );
         return Container(
