@@ -3,6 +3,9 @@ import 'dart:typed_data';
 import 'package:fantavacanze_official/core/cubits/app_league/app_league_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/app_theme/app_theme_cubit.dart';
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
+import 'package:fantavacanze_official/core/services/ads/ad_access_gate.dart';
+import 'package:fantavacanze_official/core/services/ads/ad_manager.dart';
+import 'package:fantavacanze_official/core/services/ads/feature_access_session.dart';
 import 'package:fantavacanze_official/core/services/share_service.dart';
 import 'package:fantavacanze_official/core/utils/show-snackbar-or-paywall/show_snackbar.dart';
 import 'package:fantavacanze_official/core/widgets/buttons/animated_share_button.dart';
@@ -26,6 +29,7 @@ class GeneralRankingPage extends StatefulWidget {
 
 class _GeneralRankingPageState extends State<GeneralRankingPage> {
   bool _isSharing = false;
+  bool _unlocked = false;
 
   @override
   Widget build(BuildContext context) {
@@ -48,6 +52,26 @@ class _GeneralRankingPageState extends State<GeneralRankingPage> {
           );
         }
 
+        final hasAccess =
+            _unlocked || AdManager().session.isActive(kFeatureGlobalRanking);
+
+        if (!hasAccess) {
+          return Scaffold(
+            backgroundColor: context.bgColor,
+            body: EmptyState(
+              icon: Icons.public,
+              title: 'Sblocca la Classifica Globale',
+              subtitle:
+                  'Guarda un annuncio per consultare la classifica globale in questa apertura dell’app.',
+              action: ElevatedButton.icon(
+                onPressed: () => _unlock(context),
+                icon: const Icon(Icons.ondemand_video),
+                label: const Text('Sblocca con un annuncio'),
+              ),
+            ),
+          );
+        }
+
         return BlocProvider(
           create: (_) => serviceLocator<PartnerCubit>(),
           child: Builder(
@@ -66,6 +90,16 @@ class _GeneralRankingPageState extends State<GeneralRankingPage> {
         );
       },
     );
+  }
+
+  Future<void> _unlock(BuildContext context) async {
+    final granted = await ensureAccess(
+      context,
+      feature: kFeatureGlobalRanking,
+      timed: null,
+      unlockedMessage: 'Classifica Globale sbloccata!',
+    );
+    if (granted && mounted) setState(() => _unlocked = true);
   }
 
   Widget _buildShareFab(BuildContext cubitContext, League league) {

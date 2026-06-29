@@ -1,15 +1,12 @@
+import 'package:fantavacanze_official/core/services/ads/ad_access_gate.dart';
+import 'package:fantavacanze_official/core/services/ads/ad_config.dart';
+import 'package:fantavacanze_official/core/services/ads/feature_access_session.dart';
 import 'package:fantavacanze_official/core/extensions/context_extension.dart';
-import 'package:fantavacanze_official/core/utils/show-snackbar-or-paywall/show_snackbar.dart';
 import 'package:fantavacanze_official/features/games/presentation/pages/game_selection_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fantavacanze_official/core/widgets/info_banner.dart';
-import 'package:fantavacanze_official/core/widgets/dialogs/premium_access_dialog.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
-import 'package:fantavacanze_official/core/services/ad_helper.dart';
-import 'package:fantavacanze_official/core/theme/colors.dart';
-import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit.dart';
 
 class DrinkGames extends StatelessWidget {
   static const String routeName = '/drink_games';
@@ -89,61 +86,14 @@ class DrinkGames extends StatelessWidget {
   }
 
   Future<void> _onPlayTapped(BuildContext context) async {
-    final adHelper = AdHelper();
-
-    // Se siamo ancora in sessione drink games, vai subito
-    if (adHelper.isDrinkGamesSessionActive()) {
+    final granted = await ensureAccess(
+      context,
+      feature: kFeatureGames,
+      timed: AdConfig.gamesSessionDuration,
+      unlockedMessage: 'Giochi sbloccati per 15 minuti!',
+    );
+    if (granted && context.mounted) {
       _navigateToGames(context);
-      return;
-    }
-
-    // Controllo se l'utente è premium
-    final userState = context.read<AppUserCubit>().state;
-    final isPremium =
-        userState is AppUserIsLoggedIn && userState.user.isPremium;
-
-    if (isPremium) {
-      _navigateToGames(context);
-      return;
-    }
-
-    // Mostro il dialog e attendo il risultato:
-    // - true  = accesso garantito (ads guardate con successo)
-    // - false = premium o chiusura manuale
-    final accessGranted = await showDialog<bool>(
-          context: context,
-          barrierDismissible: true,
-          builder: (_) => PremiumAccessDialog(
-            description: "Scegli come sbloccare:",
-            // Ads: ritorna Future<bool>
-            onAdsBtnTapped: () async {
-              late bool granted;
-              try {
-                granted = await adHelper.showRewardedAd(context);
-              } catch (e) {
-                granted = true;
-              }
-
-              // Mostro lo snack solo se ha guadagnato il reward
-              if (granted) {
-                showSnackBar(
-                  "Giochi sbloccati per 15 minuti!",
-                  color: ColorPalette.success,
-                );
-              }
-
-              return granted;
-            },
-          ),
-        ) ??
-        false;
-
-    if (accessGranted) {
-      if (context.mounted) {
-        adHelper.grantDrinkGamesAccess();
-
-        _navigateToGames(context);
-      }
     }
   }
 

@@ -3,7 +3,7 @@ import 'dart:math' show min;
 import 'package:fantavacanze_official/core/constants/lock_type.dart';
 import 'package:fantavacanze_official/core/cubits/app_league/app_league_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit.dart';
-import 'package:fantavacanze_official/core/services/ad_helper.dart';
+import 'package:fantavacanze_official/core/services/ads/ad_manager.dart';
 import 'package:fantavacanze_official/core/theme/brand_theme.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
@@ -164,8 +164,9 @@ class _DailyGoalsState extends State<DailyGoals> {
   /// dark (anche in light mode). Senza partner usa il primary di default.
   Color _challengeBaseColor() {
     final leagueState = context.read<AppLeagueCubit>().state;
-    final slug =
-        leagueState is AppLeagueExists ? leagueState.selectedLeague.partner : null;
+    final slug = leagueState is AppLeagueExists
+        ? leagueState.selectedLeague.partner
+        : null;
     return BrandThemes.of(slug)?.primary(ThemeMode.dark) ??
         ColorPalette.primary(ThemeMode.dark);
   }
@@ -226,7 +227,7 @@ class _DailyGoalsState extends State<DailyGoals> {
             ? 'Per sbloccare tutte le sfide è necessario un abbonamento premium!'
             : 'Scegli come sbloccare questa sfida giornaliera:',
         onAdsBtnTapped: lockType == LockType.ads
-            ? () => AdHelper().showRewardedAd(context)
+            ? () => AdManager().showRewardedAd(context)
             : null,
       ),
     ).then((granted) {
