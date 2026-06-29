@@ -1,4 +1,3 @@
-import 'package:fantavacanze_official/core/constants/constants.dart';
 import 'package:fantavacanze_official/core/cubits/app_league/app_league_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/app_navigation/app_navigation_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit.dart';
@@ -356,7 +355,6 @@ class _AddEventPageState extends State<AddEventPage> {
               )
             : null,
         backgroundColor: context.bgColor,
-        floatingActionButton: _buildContinueFab(context),
         body: AmbientGlow(
           child: !isAdmin
               ? _buildUnauthorizedView()
@@ -493,13 +491,6 @@ class _AddEventPageState extends State<AddEventPage> {
                 ),
               ),
             ),
-            if (_isSubmitting)
-              SizedBox(
-                height: Constants.getHeight(context) * 0.1,
-                child: Loader(
-                  color: ColorPalette.success,
-                ),
-              )
           ],
         ),
       ),
@@ -507,11 +498,6 @@ class _AddEventPageState extends State<AddEventPage> {
   }
 
   Widget _buildStepperControls(BuildContext context, ControlsDetails details) {
-    // When the floating "Continua" is showing (details step + rule selected),
-    // hide the inline primary button so there is only one continue affordance.
-    final hideInlineContinue =
-        _isFromRule && _currentStep == _detailsStep && _selectedRule != null;
-
     return Padding(
       padding: const EdgeInsets.only(top: ThemeSizes.lg),
       child: Row(
@@ -528,68 +514,36 @@ class _AddEventPageState extends State<AddEventPage> {
               ),
             ),
           if (_currentStep > 0) const SizedBox(width: ThemeSizes.sm),
-          if (hideInlineContinue)
-            const Spacer(flex: 4)
-          else
-            Expanded(
-              flex: 4,
-              child: ElevatedButton.icon(
-                onPressed: _isSubmitting
-                    ? null
-                    : () {
-                        // Dismiss keyboard before continuing
-                        FocusScope.of(context).unfocus();
+          Expanded(
+            flex: 4,
+            child: ElevatedButton(
+              onPressed: _isSubmitting
+                  ? null
+                  : () {
+                      // Dismiss keyboard before continuing
+                      FocusScope.of(context).unfocus();
 
-                        details.onStepContinue?.call();
-                      },
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(
-                    vertical: ThemeSizes.md,
-                    horizontal: ThemeSizes.sm,
-                  ),
-                  elevation: 2,
+                      details.onStepContinue?.call();
+                    },
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(
+                  vertical: ThemeSizes.md,
+                  horizontal: ThemeSizes.sm,
                 ),
-                label: Text(
-                  _isSubmitting
-                      ? 'Salvataggio...'
-                      : _currentStep < _lastStep
-                          ? 'Continua'
-                          : 'Crea Evento',
-                ),
+                elevation: 2,
               ),
+              child: _isSubmitting
+                  ? SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: const Loader(color: Colors.white))
+                  : Text(
+                      _currentStep < _lastStep ? 'Continua' : 'Crea Evento',
+                    ),
             ),
+          ),
         ],
       ),
-    );
-  }
-
-  // Floating "Continua" shown once a rule card is selected in the details
-  // step. Styled like the InVibe partner-form FAB (see
-  // create_partner_league_form_page.dart): a sized ElevatedButton.icon, NOT a
-  // circular FloatingActionButton (the label would overflow).
-  Widget? _buildContinueFab(BuildContext context) {
-    final showFab =
-        _isFromRule && _currentStep == _detailsStep && _selectedRule != null;
-    if (!showFab) return null;
-
-    return ElevatedButton.icon(
-      onPressed: _isSubmitting
-          ? null
-          : () {
-              FocusScope.of(context).unfocus();
-              if (!_validateStep(_currentStep)) return;
-              setState(() {
-                _currentStep++;
-              });
-            },
-      style: context.elevatedButtonThemeData.style!.copyWith(
-        backgroundColor: WidgetStatePropertyAll(context.leagueAccentColor),
-        fixedSize: WidgetStatePropertyAll(
-          Size(Constants.getWidth(context) * 0.48, 52),
-        ),
-      ),
-      icon: const Icon(Icons.arrow_forward_rounded),
-      label: const Text('Continua'),
     );
   }
 
@@ -681,7 +635,7 @@ class _AddEventPageState extends State<AddEventPage> {
             // on device (appbar + stepper header + title + search + controls).
             height: () {
               final media = MediaQuery.of(context);
-              const chromeOffset = 320.0;
+              const chromeOffset = 400.0;
               final height =
                   media.size.height - media.padding.top - chromeOffset;
               return height < 180 ? 180.0 : height;
@@ -799,7 +753,7 @@ class _AddEventPageState extends State<AddEventPage> {
             ),
             validator: (value) {
               if (value == null || value.trim().isEmpty) {
-                return 'Inserisci un nome per l\'evento';
+                return 'Seleziona un evento';
               }
               return null;
             },
