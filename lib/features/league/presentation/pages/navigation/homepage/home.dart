@@ -1,7 +1,7 @@
 import 'package:fantavacanze_official/core/cubits/app_league/app_league_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit.dart';
 // import 'package:fantavacanze_official/core/cubits/seasonal_event/seasonal_event_cubit.dart';
-// import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
+import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 // import 'package:fantavacanze_official/core/extensions/context_extension.dart';
 // import 'package:fantavacanze_official/core/services/seasonal_event_service.dart';
 // import 'package:fantavacanze_official/core/theme/colors.dart';
@@ -46,21 +46,31 @@ class HomePage extends StatelessWidget {
             state is AppLeagueExists ? state.selectedLeague : null;
 
         return Scaffold(
-          body: SingleChildScrollView(
-            physics: const ClampingScrollPhysics(),
-            child: Column(
-              children: [
-                if (selectedLeague != null)
-                  _buildParticipantContent(
-                    context,
-                    selectedLeague.admins.contains(currentUserId),
-                    selectedLeague,
-                    isFemale,
-                  )
-                else
-                  _buildNonParticipantContent(context),
-                // _buildSeasonalTestForm(context),
-              ],
+          body: RefreshIndicator(
+            onRefresh: () async {
+              if (selectedLeague != null) {
+                context
+                    .read<LeagueBloc>()
+                    .add(GetLeagueEvent(leagueId: selectedLeague.id));
+              }
+            },
+            color: context.primaryColor,
+            backgroundColor: context.secondaryBgColor,
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              child: Column(
+                children: [
+                  if (selectedLeague != null)
+                    _buildParticipantContent(
+                      context,
+                      selectedLeague.admins.contains(currentUserId),
+                      selectedLeague,
+                      isFemale,
+                    )
+                  else
+                    _buildNonParticipantContent(context),
+                ],
+              ),
             ),
           ),
         );

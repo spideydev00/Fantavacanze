@@ -25,6 +25,9 @@ class LeaderboardList extends StatelessWidget {
   /// Custom empty state widget when there are no participants
   final Widget? emptyStateWidget;
 
+  /// Physics della ListView interna.
+  final ScrollPhysics? physics;
+
   /// Controls how to sort participants
   final List<Participant> Function(List<Participant>)? sortParticipants;
 
@@ -35,6 +38,7 @@ class LeaderboardList extends StatelessWidget {
     this.itemBuilder,
     this.padding,
     this.emptyStateWidget,
+    this.physics,
     this.sortParticipants,
   });
 
@@ -62,6 +66,7 @@ class LeaderboardList extends StatelessWidget {
     return Padding(
       padding: padding ?? const EdgeInsets.symmetric(horizontal: 16.0),
       child: ListView.builder(
+        physics: physics,
         itemCount: sortedParticipants.length + 1,
         itemBuilder: (context, index) {
           if (index == 0) {

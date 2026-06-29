@@ -16,6 +16,8 @@ import 'package:fantavacanze_official/core/widgets/empty_state.dart';
 import 'package:fantavacanze_official/core/widgets/participants/participant_card.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/league/league.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/team_participant.dart';
+import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc/league_bloc.dart';
+import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc/league_event.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/leaderboard/widgets/index.dart';
 import 'package:fantavacanze_official/init_dependencies/init_dependencies.dart';
 import 'package:flutter/material.dart';
@@ -143,15 +145,31 @@ class _LeaderboardPageState extends State<LeaderboardPage>
   }
 
   Widget _buildTeamLeaderboard(BuildContext context, League league) {
-    return LeaderboardList(
-      league: league,
-      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-      emptyStateWidget: EmptyState(
-        icon: Icons.people_outline,
-        title: 'Nessun partecipante trovato',
-        subtitle:
-            'Controlla se la lega è attiva o se hai partecipato a qualche evento',
+    return _refreshable(
+      context,
+      league,
+      LeaderboardList(
+        league: league,
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+        emptyStateWidget: EmptyState(
+          icon: Icons.people_outline,
+          title: 'Nessun partecipante trovato',
+          subtitle:
+              'Controlla se la lega è attiva o se hai partecipato a qualche evento',
+        ),
       ),
+    );
+  }
+
+  Widget _refreshable(BuildContext context, League league, Widget child) {
+    return RefreshIndicator(
+      onRefresh: () async {
+        context.read<LeagueBloc>().add(GetLeagueEvent(leagueId: league.id));
+      },
+      color: context.primaryColor,
+      backgroundColor: context.secondaryBgColor,
+      child: child,
     );
   }
 
@@ -274,30 +292,36 @@ class _LeaderboardPageState extends State<LeaderboardPage>
       );
     }
 
-    return ListView.builder(
-      padding: const EdgeInsets.all(ThemeSizes.md),
-      itemCount: allMembers.length,
-      itemBuilder: (context, index) {
-        final member = allMembers[index];
-        final userId = member['userId'] as String;
-        // Format points using our NumberFormatter
-        final formattedPoints = NumberFormatter.formatPoints(member['points']);
+    return _refreshable(
+      context,
+      league,
+      ListView.builder(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.all(ThemeSizes.md),
+        itemCount: allMembers.length,
+        itemBuilder: (context, index) {
+          final member = allMembers[index];
+          final userId = member['userId'] as String;
+          // Format points using our NumberFormatter
+          final formattedPoints =
+              NumberFormatter.formatPoints(member['points']);
 
-        // Use our new ParticipantCard for a cleaner, consistent UI
-        return Padding(
-          padding: const EdgeInsets.only(bottom: ThemeSizes.md),
-          child: ParticipantCard(
-            name: member['name'],
-            points: member['points'],
-            formattedPoints: formattedPoints, // Pass formatted points
-            showPoints: true,
-            isFullWidth: true,
-            subtitle: '${member['teamName']}',
-            avatarUrl:
-                context.watch<AppLeagueCubit>().getProfileImageFor(userId),
-          ),
-        );
-      },
+          // Use our new ParticipantCard for a cleaner, consistent UI
+          return Padding(
+            padding: const EdgeInsets.only(bottom: ThemeSizes.md),
+            child: ParticipantCard(
+              name: member['name'],
+              points: member['points'],
+              formattedPoints: formattedPoints, // Pass formatted points
+              showPoints: true,
+              isFullWidth: true,
+              subtitle: '${member['teamName']}',
+              avatarUrl:
+                  context.watch<AppLeagueCubit>().getProfileImageFor(userId),
+            ),
+          );
+        },
+      ),
     );
   }
 }
