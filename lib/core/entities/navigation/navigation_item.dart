@@ -9,6 +9,9 @@ class NavigationItem {
   final bool isAdminOnly;
   final bool requiresPartnerRound;
 
+  /// Mostrato solo per leghe partner di tipo package (partner senza round).
+  final bool requiresPackage;
+
   /// Se false l'item compare solo nel side menu, non nella bottom navbar.
   final bool showInNavbar;
 
@@ -20,6 +23,7 @@ class NavigationItem {
     required this.subsection,
     this.isAdminOnly = false,
     this.requiresPartnerRound = false,
+    this.requiresPackage = false,
     this.showInNavbar = true,
   });
 }

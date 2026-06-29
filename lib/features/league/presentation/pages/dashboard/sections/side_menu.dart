@@ -18,6 +18,7 @@ import 'package:fantavacanze_official/core/widgets/profile_image_avatar.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc/league_bloc.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/dashboard/widgets/side_menu/league_dropdown.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/dashboard/widgets/side_menu/side_menu_navigation_asset.dart';
+import 'package:fantavacanze_official/features/league/presentation/pages/navigation/partner/invibe_bridge_page.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/settings/privacy_policy.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -111,6 +112,9 @@ class _SideMenuState extends State<SideMenu> {
                               ? leagueState.selectedLeague.partnerRoundId !=
                                   null
                               : false;
+                          final isPackage = leagueState is AppLeagueExists &&
+                              leagueState.selectedLeague.partner != null &&
+                              leagueState.selectedLeague.partnerRoundId == null;
                           return BlocBuilder<AppNavigationCubit, int>(
                             builder: (context, selectedIndex) {
                               return Column(
@@ -119,6 +123,7 @@ class _SideMenuState extends State<SideMenu> {
                                   selectedIndex: selectedIndex,
                                   hasLeagues: hasLeagues,
                                   hasPartnerRound: hasPartnerRound,
+                                  isPackage: isPackage,
                                 ),
                               );
                             },
@@ -155,6 +160,7 @@ class _SideMenuState extends State<SideMenu> {
     required int selectedIndex,
     required bool hasLeagues,
     required bool hasPartnerRound,
+    required bool isPackage,
   }) {
     // 1. Prendo l'elenco base degli item
     final navItems =
@@ -175,7 +181,8 @@ class _SideMenuState extends State<SideMenu> {
             (!item.isAdminOnly || // tutti gli standard…
                 (item.isAdminOnly &&
                     userIsAdmin)) && // …e solo gli admin-only se userIsAdmin
-            (!item.requiresPartnerRound || hasPartnerRound))
+            (!item.requiresPartnerRound || hasPartnerRound) &&
+            (!item.requiresPackage || isPackage))
         .toList();
 
     // 5. Raggruppo per sottosezione
@@ -236,11 +243,16 @@ class _SideMenuState extends State<SideMenu> {
     if (item.title == "Crea Lega" ||
         item.title == "Cerca Lega" ||
         item.title == "Bonus o Malus" ||
-        item.title == "Aggiungi Bonus/Malus") {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => item.screen),
-      );
+        item.title == "Aggiungi Bonus/Malus" ||
+        item.title == "Crea Lega InVibe") {
+      if (item.title == "Crea Lega InVibe") {
+        Navigator.push(context, InvibeBridgePage.route());
+      } else {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => item.screen),
+        );
+      }
       // Close menu even after pushing a new route
       widget.closeMenuCallback?.call();
       return;

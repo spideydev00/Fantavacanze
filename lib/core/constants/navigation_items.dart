@@ -164,6 +164,16 @@ List<NavigationItem> participantNavbarItems = [
     subsection: "Naviga",
   ),
   NavigationItem(
+    title: "Crea Lega InVibe",
+    darkSvgIcon: 'assets/images/icons/homepage_icons/create-league-icon.svg',
+    lightSvgIcon:
+        'assets/images/icons/homepage_icons/create-league-icon-dark.svg',
+    screen: const SizedBox.shrink(),
+    subsection: "Nuova Lega",
+    requiresPackage: true,
+    showInNavbar: false,
+  ),
+  NavigationItem(
     title: "Crea Lega",
     darkSvgIcon: 'assets/images/icons/homepage_icons/create-league-icon.svg',
     lightSvgIcon:
