@@ -1,5 +1,4 @@
 import 'package:fantavacanze_official/core/constants/constants.dart';
-import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:flutter/material.dart';
@@ -64,7 +63,7 @@ class _AgeVerificationFormState extends State<AgeVerificationForm> {
       padding: const EdgeInsets.all(1),
       width: Constants.getWidth(context) * 0.65,
       decoration: BoxDecoration(
-        color: context.bgColor,
+        color: ColorPalette.bgColor(ThemeMode.dark),
         borderRadius: BorderRadius.circular(ThemeSizes.sm),
       ),
       child: Row(

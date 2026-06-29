@@ -1,8 +1,8 @@
-import 'package:fantavacanze_official/core/widgets/loader.dart';
 import 'package:fantavacanze_official/core/constants/constants.dart';
 import 'package:fantavacanze_official/core/extensions/context_extension.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
+import 'package:fantavacanze_official/core/widgets/loader.dart';
 import 'package:fantavacanze_official/features/auth/presentation/widgets/google_loader.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
@@ -67,6 +67,10 @@ class SocialButton extends StatelessWidget {
                 backgroundColor: Colors.transparent,
                 foregroundColor: ColorPalette.textPrimary(ThemeMode.dark),
                 elevation: 0,
+                side: BorderSide(
+                  width: 0,
+                  color: Colors.transparent,
+                ),
               ),
               child: SvgPicture.asset(
                 'assets/images/icons/auth_icons/${socialName.toLowerCase()}.svg',
