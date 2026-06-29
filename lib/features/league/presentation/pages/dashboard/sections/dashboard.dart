@@ -331,7 +331,8 @@ class _DashboardScreenState extends State<DashboardScreen>
                                     final selectedItem = navItems[safeIndex];
 
                                     if (selectedItem.title == 'Crea Lega' ||
-                                        selectedItem.title == 'Cerca Lega') {
+                                        selectedItem.title == 'Cerca Lega' ||
+                                        selectedItem.title == 'Bonus o Malus') {
                                       WidgetsBinding.instance
                                           .addPostFrameCallback((_) {
                                         if (!mounted) return;
