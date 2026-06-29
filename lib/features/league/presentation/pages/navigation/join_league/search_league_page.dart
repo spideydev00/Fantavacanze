@@ -510,69 +510,22 @@ class _SearchLeaguePageState extends State<SearchLeaguePage> {
   /// ------------------------------
   /// Chiede la parola d'ordine per unirsi a una lega partner di tipo travel
   /// ------------------------------
-  void _showTravelPasswordDialog(League league, String inviteCode) {
-    final passwordController = TextEditingController();
+  Future<void> _showTravelPasswordDialog(
+    League league,
+    String inviteCode,
+  ) async {
+    // Chiudi la keyboard prima di aprire il dialog: si riaprirà solo se
+    // l'utente tocca il campo password.
+    FocusManager.instance.primaryFocus?.unfocus();
 
-    showDialog(
+    final password = await showDialog<String>(
       context: context,
       barrierDismissible: false,
-      builder: (dialogContext) => AlertDialog(
-        backgroundColor: context.bgColor,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusLg),
-        ),
-        title: Text(
-          'Parola d\'ordine',
-          style: context.textTheme.titleMedium!
-              .copyWith(fontWeight: FontWeight.bold),
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              '"${league.name}" è una lega partner: inserisci la parola d\'ordine per unirti.',
-              style: context.textTheme.bodyMedium?.copyWith(
-                color: context.textSecondaryColor,
-              ),
-            ),
-            const SizedBox(height: ThemeSizes.md),
-            TextField(
-              controller: passwordController,
-              obscureText: true,
-              autofocus: true,
-              decoration: InputDecoration(
-                labelText: 'Parola d\'ordine',
-                prefixIcon: const Icon(Icons.lock_outline),
-                filled: true,
-                fillColor: context.secondaryBgColor,
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          OutlinedButton(
-            onPressed: () => Navigator.of(dialogContext).pop(),
-            child: const Text('Annulla'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              final password = passwordController.text.trim();
-              if (password.isEmpty) {
-                showSnackBar(
-                  'Inserisci la parola d\'ordine',
-                  color: ColorPalette.warning,
-                );
-                return;
-              }
-              Navigator.of(dialogContext).pop();
-              _joinTravelLeague(inviteCode, password);
-            },
-            child: const Text('Unisciti'),
-          ),
-        ],
-      ),
-    ).then((_) => passwordController.dispose());
+      builder: (_) => _TravelPasswordDialog(leagueName: league.name),
+    );
+
+    if (password == null || !mounted) return;
+    _joinTravelLeague(inviteCode, password);
   }
 
   /// ------------------------------
@@ -800,6 +753,117 @@ class _SearchLeaguePageState extends State<SearchLeaguePage> {
           ),
         );
       },
+    );
+  }
+}
+
+/// ------------------------------
+/// Dialog (stateful) per la parola d'ordine di una lega partner travel.
+/// Possiede il proprio controller e lo dispone nel ciclo di vita del widget
+/// (niente dispose in `.then`, che causava un crash all'annullamento).
+/// Niente autofocus: la keyboard si apre solo toccando il campo.
+/// Restituisce la password tramite `Navigator.pop`, oppure `null` se annullato.
+/// ------------------------------
+class _TravelPasswordDialog extends StatefulWidget {
+  final String leagueName;
+
+  const _TravelPasswordDialog({required this.leagueName});
+
+  @override
+  State<_TravelPasswordDialog> createState() => _TravelPasswordDialogState();
+}
+
+class _TravelPasswordDialogState extends State<_TravelPasswordDialog> {
+  final _controller = TextEditingController();
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _submit() {
+    final password = _controller.text.trim();
+    if (password.isEmpty) {
+      showSnackBar(
+        'Inserisci la parola d\'ordine',
+        color: ColorPalette.warning,
+      );
+      return;
+    }
+    Navigator.of(context).pop(password);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      backgroundColor: context.bgColor,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusLg),
+      ),
+      title: Text(
+        'Parola d\'ordine',
+        style:
+            context.textTheme.titleMedium!.copyWith(fontWeight: FontWeight.bold),
+      ),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            '"${widget.leagueName}" è una lega partner: inserisci la parola d\'ordine per unirti.',
+            style: context.textTheme.bodyMedium?.copyWith(
+              color: context.textSecondaryColor,
+            ),
+          ),
+          const SizedBox(height: ThemeSizes.md),
+          TextField(
+            controller: _controller,
+            obscureText: true,
+            textInputAction: TextInputAction.done,
+            onSubmitted: (_) => _submit(),
+            decoration: InputDecoration(
+              labelText: 'Parola d\'ordine',
+              prefixIcon: const Icon(Icons.lock_outline),
+              filled: true,
+              fillColor: context.secondaryBgColor,
+            ),
+          ),
+        ],
+      ),
+      actionsPadding: const EdgeInsets.fromLTRB(
+        ThemeSizes.lg,
+        0,
+        ThemeSizes.lg,
+        ThemeSizes.lg,
+      ),
+      actions: [
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            ElevatedButton(
+              onPressed: _submit,
+              child: const Text('Unisciti'),
+            ),
+            const SizedBox(height: ThemeSizes.xs),
+            OutlinedButton(
+              style: context.outlinedButtonThemeData.style!.copyWith(
+                foregroundColor: WidgetStatePropertyAll(
+                  context.textPrimaryColor,
+                ),
+                side: WidgetStatePropertyAll(
+                  BorderSide(
+                    color: context.textPrimaryColor,
+                    width: 1,
+                  ),
+                ),
+              ),
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Annulla'),
+            ),
+          ],
+        ),
+      ],
     );
   }
 }
