@@ -11,10 +11,7 @@ import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc/league_bloc.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/dashboard/widgets/bottom_navbar/bottom_navigation_asset.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/dashboard/widgets/bottom_navbar/partner_expandable_fab.dart';
-import 'package:fantavacanze_official/features/league/presentation/pages/navigation/events/add_event_page.dart';
-import 'package:fantavacanze_official/features/league/presentation/pages/navigation/guide/league_guide_page.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/partner/invibe_bridge_page.dart';
-import 'package:fantavacanze_official/features/league/presentation/pages/navigation/partner/partner_thank_you_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -167,29 +164,37 @@ class _PartnerFab extends StatelessWidget {
       final fabSlug = partner == 'b-eazy' ? 'b-eazy' : 'invibe';
       final brandColor = context.brandPrimaryColor(fabSlug);
       final logo = BrandAssets.logoFor(fabSlug, isDark: isDark);
+      final isAdmin = context.read<LeagueBloc>().isAdmin();
 
       return PartnerExpandableFab(
         brandColor: brandColor,
         backgroundColor: context.bgColor,
         logo: logo,
         actions: [
-          PartnerFabAction(
-            icon: Icons.add_rounded,
-            label: 'Aggiungi evento',
-            color: brandColor,
-            onTap: () => Navigator.push(context, AddEventPage.route),
-          ),
+          if (isAdmin)
+            PartnerFabAction(
+              icon: Icons.add_rounded,
+              label: 'Aggiungi evento',
+              color: brandColor,
+              onTap: () => _setNavigationIndex(context, 'Bonus o Malus'),
+            )
+          else
+            PartnerFabAction(
+              icon: Icons.photo_library_rounded,
+              label: 'Ricordi',
+              color: brandColor,
+              onTap: () => _setNavigationIndex(context, 'Ricordi'),
+            ),
           PartnerFabAction(
             icon: Icons.help_outline_rounded,
-            label: 'Ringrazia',
-            color: ColorPalette.info,
-            onTap: () =>
-                Navigator.push(context, PartnerThankYouPage.route(fabSlug)),
+            label: 'Guida',
+            color: brandColor,
+            onTap: () => _setNavigationIndex(context, 'Tutorial'),
           ),
           PartnerFabAction(
             icon: Icons.close_rounded,
             label: 'Chiudi',
-            color: Colors.grey.shade600,
+            color: ColorPalette.rejectedEnd,
             onTap: () {},
           ),
         ],
@@ -203,21 +208,7 @@ class _PartnerFab extends StatelessWidget {
             icon: Icons.help_outline_rounded,
             color: context.primaryColor,
             backgroundColor: context.bgColor,
-            onTap: () => Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => Scaffold(
-                  backgroundColor: context.bgColor,
-                  appBar: AppBar(
-                    title: const Text('Guida'),
-                    centerTitle: true,
-                    backgroundColor: Colors.transparent,
-                    scrolledUnderElevation: 0,
-                  ),
-                  body: const LeagueGuidePage(),
-                ),
-              ),
-            ),
+            onTap: () => _setNavigationIndex(context, 'Tutorial'),
           );
         }
 
@@ -257,6 +248,15 @@ class _PartnerFab extends StatelessWidget {
         );
       },
     );
+  }
+
+  void _setNavigationIndex(BuildContext context, String title) {
+    final index = participantNavbarItems.indexWhere(
+      (item) => item.title == title,
+    );
+    if (index == -1) return;
+
+    context.read<AppNavigationCubit>().setIndex(index);
   }
 }
 

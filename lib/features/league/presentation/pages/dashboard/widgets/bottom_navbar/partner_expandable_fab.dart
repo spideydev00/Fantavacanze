@@ -1,4 +1,5 @@
 import 'dart:math' as math;
+import 'dart:ui' as ui;
 
 import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:flutter/material.dart';
@@ -117,7 +118,7 @@ class _PartnerExpandableFabState extends State<PartnerExpandableFab>
         shape: BoxShape.circle,
         boxShadow: [
           BoxShadow(
-            color: widget.brandColor.withValues(alpha: 0.4),
+            color: widget.brandColor.withValues(alpha: 0.2),
             blurRadius: 24,
             spreadRadius: 2,
           ),
@@ -168,7 +169,7 @@ class _PartnerFabOverlay extends StatelessWidget {
     required this.onActionTap,
   });
 
-  static const double _radius = 26;
+  static const double _radius = 28;
 
   @override
   Widget build(BuildContext context) {
@@ -203,6 +204,7 @@ class _PartnerFabOverlay extends StatelessWidget {
   Widget _buildAction(int i, double deg, double t) {
     final offset = Offset.fromDirection(deg * math.pi / 180.0, distance * t);
     final action = actions[i];
+    final (gradient, edgeColor) = _gradientAndEdgeFor(action.color, i);
 
     return Positioned(
       left: center.dx + offset.dx - _radius,
@@ -213,17 +215,46 @@ class _PartnerFabOverlay extends StatelessWidget {
           opacity: t,
           child: Tooltip(
             message: action.label,
-            child: Material(
-              color: action.color,
-              shape: const CircleBorder(),
-              elevation: 4,
-              child: InkWell(
-                customBorder: const CircleBorder(),
-                onTap: () => onActionTap(action),
-                child: SizedBox(
-                  width: _radius * 2,
-                  height: _radius * 2,
-                  child: Icon(action.icon, color: Colors.white, size: 22),
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: gradient,
+                border: Border.all(
+                  color: edgeColor,
+                  width: 0.8,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: action.color.withValues(alpha: 0.08),
+                    blurRadius: 18,
+                    spreadRadius: 1,
+                  ),
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.02),
+                    blurRadius: 14,
+                    offset: const Offset(0, 8),
+                  ),
+                ],
+              ),
+              child: ClipOval(
+                child: BackdropFilter(
+                  filter: ui.ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                  child: Material(
+                    type: MaterialType.transparency,
+                    child: InkWell(
+                      customBorder: const CircleBorder(),
+                      onTap: () => onActionTap(action),
+                      child: SizedBox(
+                        width: _radius * 2,
+                        height: _radius * 2,
+                        child: Icon(
+                          action.icon,
+                          color: Colors.white,
+                          size: 23,
+                        ),
+                      ),
+                    ),
+                  ),
                 ),
               ),
             ),
@@ -231,5 +262,31 @@ class _PartnerFabOverlay extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  (RadialGradient, Color) _gradientAndEdgeFor(Color base, int index) {
+    final hsl = HSLColor.fromColor(base);
+    final offset = index * 0.035;
+    final center = hsl
+        .withLightness((hsl.lightness + 0.06 - offset).clamp(0.15, 0.85))
+        .toColor()
+        .withValues(alpha: 0.96);
+    final middle = hsl
+        .withLightness((hsl.lightness - 0.02 - offset).clamp(0.12, 0.75))
+        .toColor()
+        .withValues(alpha: 0.92);
+    final edge = hsl
+        .withLightness((hsl.lightness - 0.10 - offset).clamp(0.08, 0.65))
+        .toColor()
+        .withValues(alpha: 0.98);
+
+    final gradient = RadialGradient(
+      center: const Alignment(-0.25, -0.25),
+      radius: 0.95,
+      colors: [center, middle, edge],
+      stops: const [0, 0.55, 1],
+    );
+
+    return (gradient, edge);
   }
 }

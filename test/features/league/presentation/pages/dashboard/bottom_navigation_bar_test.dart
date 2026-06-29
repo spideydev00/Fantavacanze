@@ -2,6 +2,7 @@ import 'package:bloc_test/bloc_test.dart';
 import 'package:fantavacanze_official/core/cubits/app_league/app_league_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/app_navigation/app_navigation_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/app_theme/app_theme_cubit.dart';
+import 'package:fantavacanze_official/core/cubits/partner_fab/partner_fab_cubit.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/dashboard/sections/bottom_navigation_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -17,12 +18,15 @@ class MockAppNavigationCubit extends MockCubit<int>
 class MockAppLeagueCubit extends MockCubit<AppLeagueState>
     implements AppLeagueCubit {}
 
+class MockPartnerFabCubit extends MockCubit<bool> implements PartnerFabCubit {}
+
 class _FakeBuildContext extends Fake implements BuildContext {}
 
 void main() {
   late MockAppThemeCubit theme;
   late MockAppNavigationCubit nav;
   late MockAppLeagueCubit league;
+  late MockPartnerFabCubit partnerFab;
 
   setUpAll(() {
     registerFallbackValue(_FakeBuildContext());
@@ -32,11 +36,13 @@ void main() {
     theme = MockAppThemeCubit();
     nav = MockAppNavigationCubit();
     league = MockAppLeagueCubit();
+    partnerFab = MockPartnerFabCubit();
 
     when(() => theme.state).thenReturn(AppThemeState(ThemeMode.dark));
     when(() => theme.isDarkMode(any())).thenReturn(true);
     when(() => nav.state).thenReturn(0);
     when(() => league.state).thenReturn(AppLeagueInitial());
+    when(() => partnerFab.state).thenReturn(true);
   });
 
   group('CustomBottomNavigationBar', () {
@@ -47,6 +53,7 @@ void main() {
             BlocProvider<AppThemeCubit>.value(value: theme),
             BlocProvider<AppNavigationCubit>.value(value: nav),
             BlocProvider<AppLeagueCubit>.value(value: league),
+            BlocProvider<PartnerFabCubit>.value(value: partnerFab),
           ],
           child: const MaterialApp(
             home: Scaffold(
