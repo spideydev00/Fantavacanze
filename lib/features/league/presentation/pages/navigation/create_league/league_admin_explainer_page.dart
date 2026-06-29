@@ -121,7 +121,7 @@ class _LeagueAdminExplainerPageState extends State<LeagueAdminExplainerPage> {
               ),
               const SizedBox(height: ThemeSizes.sm),
               Text(
-                'Queste regole servono a mantenere la lega controllata e a evitare imbrogli.',
+                'Queste regole servono a mantenere la lega controllata e ad evitare imbrogli.',
                 style: context.textTheme.bodyLarge?.copyWith(
                   color: context.textSecondaryColor,
                 ),
@@ -132,8 +132,11 @@ class _LeagueAdminExplainerPageState extends State<LeagueAdminExplainerPage> {
                 color: ColorPalette.info,
                 title: 'Bonus, malus e nuovi admin',
                 children: const [
-                  'Solo gli admin della lega possono aggiungere bonus e malus. All\'inizio l\'unico admin è il creatore.',
+                  'Solo gli admin della lega possono aggiungere bonus e malus.',
                   'Puoi nominare nuovi admin dalla sezione "Admin".',
+                ],
+                tips: const [
+                  'All\'inizio l\'unico admin è il creatore.',
                   'Se vuoi che tutti i partecipanti possano aggiungersi bonus, malus e sfide giornaliere, rendi tutti amministratori da quella pagina.',
                 ],
               ),
@@ -144,9 +147,11 @@ class _LeagueAdminExplainerPageState extends State<LeagueAdminExplainerPage> {
                 title: 'Sfide giornaliere',
                 children: const [
                   'Si tratta di obiettivi speciali, diversi ogni giorno e che non compaiono nel regolamento.',
-                  'Se un partecipante non admin completa una sfida giornaliera, agli admin arriverà una notifica.',
                   'Un admin dovrà approvare o rifiutare la sfida prima che venga conteggiata.',
                   'Se il partecipante è già admin, la sfida viene accettata direttamente.',
+                ],
+                tips: [
+                  'Se un partecipante non admin completa una sfida giornaliera, agli admin arriverà una notifica.',
                 ],
               ),
             ],
@@ -162,12 +167,14 @@ class _AdminInfoCard extends StatelessWidget {
   final Color color;
   final String title;
   final List<String> children;
+  final List<String> tips;
 
   const _AdminInfoCard({
     required this.icon,
     required this.color,
     required this.title,
     required this.children,
+    this.tips = const [],
   });
 
   @override
@@ -249,6 +256,60 @@ class _AdminInfoCard extends StatelessWidget {
                   ),
                 ],
               ),
+            ),
+          ),
+          ...tips.map(
+            (text) => Padding(
+              padding: const EdgeInsets.only(top: ThemeSizes.xs),
+              child: _AdminTip(text: text),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Box di risalto per un consiglio, in stile [InfoContainer] con icona a stella.
+class _AdminTip extends StatelessWidget {
+  final String text;
+
+  const _AdminTip({required this.text});
+
+  @override
+  Widget build(BuildContext context) {
+    const color = Colors.amber;
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(ThemeSizes.md),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusMd),
+        border: Border.all(color: color.withValues(alpha: 0.35)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.star_rounded, color: color, size: 20),
+              const SizedBox(width: ThemeSizes.sm),
+              Text(
+                "Consiglio",
+                style: context.textTheme.titleSmall?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: color,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: ThemeSizes.xs),
+          Text(
+            text,
+            style: context.textTheme.bodyMedium?.copyWith(
+              color: context.textSecondaryColor,
+              height: 1.35,
             ),
           ),
         ],
