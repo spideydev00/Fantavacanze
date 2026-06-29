@@ -3,7 +3,6 @@ import 'dart:math' show min;
 import 'package:fantavacanze_official/core/constants/lock_type.dart';
 import 'package:fantavacanze_official/core/cubits/app_league/app_league_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit.dart';
-import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/services/ad_helper.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
@@ -161,8 +160,11 @@ class _DailyGoalsState extends State<DailyGoals> {
   }
 
   Widget _buildGoalCard(DailyChallenge c, int index) {
-    final colors =
-        ColorPalette.challengeGradientFor(context.primaryColor, index);
+    // Colore base sempre quello previsto per il dark mode, anche in light.
+    final colors = ColorPalette.challengeGradientFor(
+      ColorPalette.primary(ThemeMode.dark),
+      index,
+    );
     final locked = !c.isUnlocked;
 
     final lockType = locked
@@ -302,8 +304,10 @@ class _DailyGoalsState extends State<DailyGoals> {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: List.generate(3, (i) {
-        final gradient =
-            ColorPalette.challengeGradientFor(context.primaryColor, i);
+        final gradient = ColorPalette.challengeGradientFor(
+          ColorPalette.primary(ThemeMode.dark),
+          i,
+        );
         return Container(
           margin: const EdgeInsets.only(bottom: ThemeSizes.md),
           child: Stack(

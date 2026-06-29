@@ -356,8 +356,9 @@ class ColorPalette {
     final hsl = HSLColor.fromColor(base);
     // saturazione minima così le tonalità non sbiadiscono su colori poco saturi
     final sat = hsl.saturation.clamp(0.40, 1.0);
-    const starts = [0.58, 0.48, 0.40];
-    const ends = [0.46, 0.36, 0.28];
+    // Passi di luminosità più distanziati: le 3 card si distinguono di più.
+    const starts = [0.62, 0.46, 0.30];
+    const ends = [0.50, 0.34, 0.20];
     final i = index % 3;
     HSLColor shade(double l) =>
         hsl.withSaturation(sat).withLightness(l.clamp(0.0, 1.0));
