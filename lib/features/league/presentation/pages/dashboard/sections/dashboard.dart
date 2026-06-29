@@ -7,6 +7,7 @@ import 'package:fantavacanze_official/core/cubits/app_navigation/app_navigation_
 import 'package:fantavacanze_official/core/cubits/app_theme/app_theme_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/notification_count/notification_count_cubit.dart';
+import 'package:fantavacanze_official/core/cubits/partner_fab/partner_fab_cubit.dart';
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/services/ad_helper.dart';
 import 'package:fantavacanze_official/core/services/review_service.dart';
@@ -100,6 +101,12 @@ class _DashboardScreenState extends State<DashboardScreen>
     context.read<NotificationsBloc>().add(GetNotificationsEvent());
     // Listen for new notifications
     context.read<NotificationsBloc>().add(ListenToNotificationEvent());
+
+    // Carica la preferenza per-utente del pulsante partner (default leagues).
+    final userState = context.read<AppUserCubit>().state;
+    if (userState is AppUserIsLoggedIn) {
+      context.read<PartnerFabCubit>().loadFor(userState.user.id);
+    }
   }
 
   @override
@@ -399,7 +406,7 @@ class _DashboardScreenState extends State<DashboardScreen>
     final widthFactor = isTablet ? 0.20 : 0.25; //after fall go back to 0.3
     final logoWidth = Constants.getWidth(context) * widthFactor;
     final isDark = context.read<AppThemeCubit>().isDarkMode(context);
-    
+
     final appLogoPath = isDark
         ? 'assets/images/logos/logo-neon.png'
         : 'assets/images/logos/logo-naked.png';

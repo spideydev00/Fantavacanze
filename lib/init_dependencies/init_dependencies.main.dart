@@ -100,6 +100,12 @@ Future<void> initDependencies() async {
           prefs: serviceLocator<SharedPreferences>(),
         ),
       )
+      //3.1 partner FAB cubit
+      ..registerLazySingleton<PartnerFabCubit>(
+        () => PartnerFabCubit(
+          prefs: serviceLocator<SharedPreferences>(),
+        ),
+      )
       //4. league cubit - now with SharedPreferences
       ..registerLazySingleton(
         () => AppLeagueCubit(
