@@ -1,6 +1,7 @@
 import 'package:fantavacanze_official/core/cubits/app_league/app_league_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/app_theme/app_theme_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit.dart';
+import 'package:fantavacanze_official/core/cubits/partner_fab/partner_fab_cubit.dart';
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/extensions/context_extension.dart';
 import 'package:fantavacanze_official/core/pages/app_terms.dart';
@@ -78,6 +79,8 @@ class SettingsPage extends StatelessWidget {
                           _buildDivider("Aspetto"),
                           //section
                           _buildAppearanceSection(context),
+                          //section: partner button (solo leghe default)
+                          _buildPartnerFabSection(context),
                           //divider
                           _buildDivider("Privacy e Sicurezza"),
                           //section
@@ -156,6 +159,37 @@ class SettingsPage extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+
+  /// Mostra il toggle "Pulsante InVibe" solo quando la lega selezionata e una
+  /// lega default (senza partner package/travel).
+  Widget _buildPartnerFabSection(BuildContext context) {
+    return BlocBuilder<AppLeagueCubit, AppLeagueState>(
+      builder: (context, leagueState) {
+        final isDefaultLeague = leagueState is AppLeagueExists &&
+            leagueState.selectedLeague.partner == null;
+        if (!isDefaultLeague) return const SizedBox.shrink();
+
+        return Column(
+          children: [
+            _buildDivider("Lega"),
+            SettingsTile(
+              icon: Icons.travel_explore,
+              title: 'Pulsante InVibe',
+              subtitle: 'Mostra il pulsante partner sulla barra',
+              trailing: BlocBuilder<PartnerFabCubit, bool>(
+                builder: (context, enabled) {
+                  return Switch(
+                    value: enabled,
+                    onChanged: (_) => context.read<PartnerFabCubit>().toggle(),
+                  );
+                },
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 
