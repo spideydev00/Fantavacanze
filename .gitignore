@@ -65,3 +65,8 @@ TO-DO.md
 
 # Claude Settings
 .claude/settings.local.json
+.mcp.json
+
+# Ephemeral planning docs (brainstorming specs + implementation plans)
+docs/superpowers/plans/
+docs/superpowers/specs/
