@@ -356,6 +356,7 @@ class _AddEventPageState extends State<AddEventPage> {
               )
             : null,
         backgroundColor: context.bgColor,
+        floatingActionButton: _buildContinueFab(context),
         body: AmbientGlow(
           child: !isAdmin
               ? _buildUnauthorizedView()
@@ -506,6 +507,11 @@ class _AddEventPageState extends State<AddEventPage> {
   }
 
   Widget _buildStepperControls(BuildContext context, ControlsDetails details) {
+    // When the floating "Continua" is showing (details step + rule selected),
+    // hide the inline primary button so there is only one continue affordance.
+    final hideInlineContinue =
+        _isFromRule && _currentStep == _detailsStep && _selectedRule != null;
+
     return Padding(
       padding: const EdgeInsets.only(top: ThemeSizes.lg),
       child: Row(
@@ -522,35 +528,68 @@ class _AddEventPageState extends State<AddEventPage> {
               ),
             ),
           if (_currentStep > 0) const SizedBox(width: ThemeSizes.sm),
-          Expanded(
-            flex: 4,
-            child: ElevatedButton.icon(
-              onPressed: _isSubmitting
-                  ? null
-                  : () {
-                      // Dismiss keyboard before continuing
-                      FocusScope.of(context).unfocus();
+          if (hideInlineContinue)
+            const Spacer(flex: 4)
+          else
+            Expanded(
+              flex: 4,
+              child: ElevatedButton.icon(
+                onPressed: _isSubmitting
+                    ? null
+                    : () {
+                        // Dismiss keyboard before continuing
+                        FocusScope.of(context).unfocus();
 
-                      details.onStepContinue?.call();
-                    },
-              style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(
-                  vertical: ThemeSizes.md,
-                  horizontal: ThemeSizes.sm,
+                        details.onStepContinue?.call();
+                      },
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(
+                    vertical: ThemeSizes.md,
+                    horizontal: ThemeSizes.sm,
+                  ),
+                  elevation: 2,
                 ),
-                elevation: 2,
-              ),
-              label: Text(
-                _isSubmitting
-                    ? 'Salvataggio...'
-                    : _currentStep < _lastStep
-                        ? 'Continua'
-                        : 'Crea Evento',
+                label: Text(
+                  _isSubmitting
+                      ? 'Salvataggio...'
+                      : _currentStep < _lastStep
+                          ? 'Continua'
+                          : 'Crea Evento',
+                ),
               ),
             ),
-          ),
         ],
       ),
+    );
+  }
+
+  // Floating "Continua" shown once a rule card is selected in the details
+  // step. Styled like the InVibe partner-form FAB (see
+  // create_partner_league_form_page.dart): a sized ElevatedButton.icon, NOT a
+  // circular FloatingActionButton (the label would overflow).
+  Widget? _buildContinueFab(BuildContext context) {
+    final showFab =
+        _isFromRule && _currentStep == _detailsStep && _selectedRule != null;
+    if (!showFab) return null;
+
+    return ElevatedButton.icon(
+      onPressed: _isSubmitting
+          ? null
+          : () {
+              FocusScope.of(context).unfocus();
+              if (!_validateStep(_currentStep)) return;
+              setState(() {
+                _currentStep++;
+              });
+            },
+      style: context.elevatedButtonThemeData.style!.copyWith(
+        backgroundColor: WidgetStatePropertyAll(context.leagueAccentColor),
+        fixedSize: WidgetStatePropertyAll(
+          Size(Constants.getWidth(context) * 0.48, 52),
+        ),
+      ),
+      icon: const Icon(Icons.arrow_forward_rounded),
+      label: const Text('Continua'),
     );
   }
 
