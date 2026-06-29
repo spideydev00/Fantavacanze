@@ -38,6 +38,18 @@ class _GeneralRankingTabState extends State<GeneralRankingTab> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    // Carica al mount: con il gate rewarded il tab viene montato dopo lo
+    // sblocco, quando l'indice di navigazione è già su "Classifica Globale"
+    // (nessuna transizione che faccia scattare il BlocListener). Il listener
+    // resta per i refetch sulle visite successive.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _reload(context);
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     final brandColor = context.brandPrimaryColor(widget.partnerSlug);
 
