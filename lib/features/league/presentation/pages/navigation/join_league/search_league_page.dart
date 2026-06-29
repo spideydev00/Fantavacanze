@@ -1,4 +1,5 @@
 import 'package:fantavacanze_official/core/constants/constants.dart';
+import 'package:fantavacanze_official/core/cubits/app_league/app_league_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/app_navigation/app_navigation_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit.dart';
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
@@ -14,7 +15,9 @@ import 'package:fantavacanze_official/features/league/domain/entities/league/lea
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc/league_bloc.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc/league_event.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc/league_state.dart';
+import 'package:fantavacanze_official/features/league/presentation/bloc/partner_bloc/partner_cubit.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/join_league/choose_team_page.dart';
+import 'package:fantavacanze_official/init_dependencies/init_dependencies.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -43,12 +46,17 @@ class _SearchLeaguePageState extends State<SearchLeaguePage> {
   String? _userId;
   bool _isJoiningLeague = false;
 
+  // Cubit partner dedicato a questa pagina, usato per l'unione alle leghe
+  // travel (che richiedono la parola d'ordine validata lato server).
+  late final PartnerCubit _partnerCubit;
+
   /// ------------------------------
   /// Inizializza lo stato recuperando l'userId dal cubit
   /// ------------------------------
   @override
   void initState() {
     super.initState();
+    _partnerCubit = serviceLocator<PartnerCubit>();
     final userState = context.read<AppUserCubit>().state;
     if (userState is AppUserIsLoggedIn) {
       _userId = userState.user.id;
@@ -61,6 +69,7 @@ class _SearchLeaguePageState extends State<SearchLeaguePage> {
   @override
   void dispose() {
     _inviteCodeController.dispose();
+    _partnerCubit.close();
     super.dispose();
   }
 
@@ -86,6 +95,14 @@ class _SearchLeaguePageState extends State<SearchLeaguePage> {
   /// ------------------------------
   @override
   Widget build(BuildContext context) {
+    return BlocListener<PartnerCubit, PartnerState>(
+      bloc: _partnerCubit,
+      listener: _onPartnerState,
+      child: _buildScaffold(context),
+    );
+  }
+
+  Widget _buildScaffold(BuildContext context) {
     return Scaffold(
       extendBodyBehindAppBar: true,
       resizeToAvoidBottomInset: true,
@@ -469,6 +486,117 @@ class _SearchLeaguePageState extends State<SearchLeaguePage> {
   // --------------------------------------------------
 
   /// ------------------------------
+  /// Reagisce agli stati del PartnerCubit per l'unione alle leghe travel
+  /// ------------------------------
+  void _onPartnerState(BuildContext context, PartnerState state) {
+    if (state is PartnerFailure) {
+      showSnackBar(state.message, color: ColorPalette.error);
+      setState(() => _isJoiningLeague = false);
+      return;
+    }
+
+    if (state is PartnerLeagueReady) {
+      setState(() => _isJoiningLeague = false);
+      context.read<AppLeagueCubit>().selectLeague(state.league);
+      context.read<AppNavigationCubit>().setIndex(0);
+      Navigator.of(context).popUntil((route) => route.isFirst);
+      showSnackBar(
+        'Unione alla lega completata!',
+        color: ColorPalette.success,
+      );
+    }
+  }
+
+  /// ------------------------------
+  /// Chiede la parola d'ordine per unirsi a una lega partner di tipo travel
+  /// ------------------------------
+  void _showTravelPasswordDialog(League league, String inviteCode) {
+    final passwordController = TextEditingController();
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: context.bgColor,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusLg),
+        ),
+        title: Text(
+          'Parola d\'ordine',
+          style: context.textTheme.titleMedium!
+              .copyWith(fontWeight: FontWeight.bold),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              '"${league.name}" è una lega partner: inserisci la parola d\'ordine per unirti.',
+              style: context.textTheme.bodyMedium?.copyWith(
+                color: context.textSecondaryColor,
+              ),
+            ),
+            const SizedBox(height: ThemeSizes.md),
+            TextField(
+              controller: passwordController,
+              obscureText: true,
+              autofocus: true,
+              decoration: InputDecoration(
+                labelText: 'Parola d\'ordine',
+                prefixIcon: const Icon(Icons.lock_outline),
+                filled: true,
+                fillColor: context.secondaryBgColor,
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          OutlinedButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: const Text('Annulla'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              final password = passwordController.text.trim();
+              if (password.isEmpty) {
+                showSnackBar(
+                  'Inserisci la parola d\'ordine',
+                  color: ColorPalette.warning,
+                );
+                return;
+              }
+              Navigator.of(dialogContext).pop();
+              _joinTravelLeague(inviteCode, password);
+            },
+            child: const Text('Unisciti'),
+          ),
+        ],
+      ),
+    ).then((_) => passwordController.dispose());
+  }
+
+  /// ------------------------------
+  /// Avvia l'unione partner (con password) tramite il PartnerCubit
+  /// ------------------------------
+  void _joinTravelLeague(String inviteCode, String password) {
+    final userState = context.read<AppUserCubit>().state;
+    if (userState is! AppUserIsLoggedIn) {
+      showSnackBar(
+        'Devi effettuare l\'accesso per unirti alla lega.',
+        color: ColorPalette.error,
+      );
+      return;
+    }
+
+    setState(() => _isJoiningLeague = true);
+    _partnerCubit.joinLeague(
+      userName: userState.user.name,
+      inviteCode: inviteCode,
+      password: password,
+    );
+  }
+
+  /// ------------------------------
   /// Naviga alla pagina per scegliere la squadra nella lega team-based
   /// ------------------------------
   void _navigateToChooseTeamPage(
@@ -518,6 +646,16 @@ class _SearchLeaguePageState extends State<SearchLeaguePage> {
         onConfirm: () {
           Navigator.of(dialogContext).pop();
           if (!mounted) return;
+
+          // Lega travel: serve la parola d'ordine (validata lato server dal
+          // flusso partner). Non usare l'unione generica che la salterebbe.
+          final isTravelPartner =
+              league.partner != null && league.partnerRoundId != null;
+          if (isTravelPartner) {
+            _showTravelPasswordDialog(league, inviteCode);
+            return;
+          }
+
           if (league.type == LeagueType.individual) {
             _showJoinIndividualLeagueConfirmationWithAnimation(
               context,
