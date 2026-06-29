@@ -1,11 +1,14 @@
 import 'dart:ui';
 
 import 'package:fantavacanze_official/core/constants/lock_type.dart';
+import 'package:fantavacanze_official/core/cubits/app_theme/app_theme_cubit.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fantavacanze_official/core/extensions/context_extension.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/widgets/dialogs/confirmation_dialog.dart';
+import 'package:fantavacanze_official/core/widgets/liquid_glass_container.dart';
 
 class DailyGoalCard extends StatefulWidget {
   final String name;
@@ -177,30 +180,16 @@ class _DailyGoalCardState extends State<DailyGoalCard>
           );
         },
       ),
-      child: Container(
+      // Dark: liquid glass; Light: gradiente solido pieno.
+      child: LiquidGlassContainer(
+        startColor: widget.startColor,
+        endColor: widget.endColor,
+        isDark: context.read<AppThemeCubit>().isDarkMode(context),
         margin: const EdgeInsets.symmetric(horizontal: ThemeSizes.lg),
         constraints: const BoxConstraints(minHeight: 60),
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [widget.startColor, widget.endColor],
-          ),
-          borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusMd),
-          boxShadow: [
-            BoxShadow(
-              color: widget.endColor.withValues(alpha: 0.3),
-              blurRadius: 8,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusMd),
-          child: Material(
-            color: Colors.transparent,
-            child: _buildUnlockedContent(context),
-          ),
+        child: Material(
+          color: Colors.transparent,
+          child: _buildUnlockedContent(context),
         ),
       ),
     );
