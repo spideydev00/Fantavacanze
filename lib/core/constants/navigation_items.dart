@@ -102,6 +102,7 @@ List<NavigationItem> participantNavbarItems = [
     screen: const GeneralRankingPage(),
     subsection: "Naviga",
     requiresPartnerRound: true,
+    showInNavbar: false,
   ),
   NavigationItem(
     title: "Admin",

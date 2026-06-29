@@ -9,6 +9,9 @@ class NavigationItem {
   final bool isAdminOnly;
   final bool requiresPartnerRound;
 
+  /// Se false l'item compare solo nel side menu, non nella bottom navbar.
+  final bool showInNavbar;
+
   const NavigationItem({
     required this.title,
     required this.lightSvgIcon,
@@ -17,5 +20,6 @@ class NavigationItem {
     required this.subsection,
     this.isAdminOnly = false,
     this.requiresPartnerRound = false,
+    this.showInNavbar = true,
   });
 }

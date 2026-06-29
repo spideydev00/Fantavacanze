@@ -236,8 +236,7 @@ class _SideMenuState extends State<SideMenu> {
     if (item.title == "Crea Lega" ||
         item.title == "Cerca Lega" ||
         item.title == "Bonus o Malus" ||
-        item.title == "Aggiungi Bonus/Malus" ||
-        item.title == "Classifica Globale") {
+        item.title == "Aggiungi Bonus/Malus") {
       Navigator.push(
         context,
         MaterialPageRoute(builder: (context) => item.screen),

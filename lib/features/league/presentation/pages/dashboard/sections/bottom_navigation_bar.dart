@@ -44,6 +44,7 @@ class CustomBottomNavigationBar extends StatelessWidget {
                   items = participantNavbarItems
                       .where(
                         (item) =>
+                            item.showInNavbar &&
                             (!item.isAdminOnly || isAdmin) &&
                             (!item.requiresPartnerRound || hasPartnerRound),
                       )

@@ -3,7 +3,6 @@ import 'dart:typed_data';
 import 'package:fantavacanze_official/core/cubits/app_league/app_league_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/app_theme/app_theme_cubit.dart';
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
-import 'package:fantavacanze_official/core/extensions/context_extension.dart';
 import 'package:fantavacanze_official/core/services/share_service.dart';
 import 'package:fantavacanze_official/core/utils/show-snackbar-or-paywall/show_snackbar.dart';
 import 'package:fantavacanze_official/core/widgets/buttons/animated_share_button.dart';
@@ -40,13 +39,6 @@ class _GeneralRankingPageState extends State<GeneralRankingPage> {
             selectedLeague.partnerRoundId == null) {
           return Scaffold(
             backgroundColor: context.bgColor,
-            appBar: AppBar(
-              title: Text(
-                'Classifica Globale',
-                style: context.textTheme.bodyLarge,
-              ),
-              centerTitle: true,
-            ),
             body: const EmptyState(
               icon: Icons.emoji_events_outlined,
               title: 'Classifica globale non disponibile',
@@ -62,13 +54,6 @@ class _GeneralRankingPageState extends State<GeneralRankingPage> {
             builder: (innerContext) {
               return Scaffold(
                 backgroundColor: context.bgColor,
-                appBar: AppBar(
-                  title: Text(
-                    'Classifica Globale',
-                    style: context.textTheme.bodyLarge,
-                  ),
-                  centerTitle: true,
-                ),
                 body: GeneralRankingTab(
                   leagueId: selectedLeague.id,
                   partnerSlug: selectedLeague.partner,
