@@ -3,6 +3,7 @@ import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/extensions/context_extension.dart';
 import 'package:fantavacanze_official/core/theme/brand_assets.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
+import 'package:fantavacanze_official/core/widgets/ambient_glow.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -28,47 +29,88 @@ class PartnerThankYouPage extends StatelessWidget {
     final content = _content(slug);
 
     return Scaffold(
+      extendBodyBehindAppBar: true,
       backgroundColor: context.bgColor,
       appBar: AppBar(
         title: const Text('Grazie'),
         centerTitle: true,
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        scrolledUnderElevation: 0,
       ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(ThemeSizes.lg),
-          child: Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 520),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  if (partnerLogo != null) ...[
-                    Image.asset(
-                      partnerLogo,
-                      height: ThemeSizes.imageThumbSizeLg,
-                      fit: BoxFit.contain,
-                      errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+      body: AmbientGlow(
+        child: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(ThemeSizes.lg),
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 520),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    const SizedBox(height: ThemeSizes.xl),
+                    Container(
+                      padding: const EdgeInsets.all(ThemeSizes.lg),
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: context.secondaryBgColor,
+                        boxShadow: [
+                          BoxShadow(
+                            color: brandColor.withValues(alpha: 0.45),
+                            blurRadius: 36,
+                            spreadRadius: 4,
+                          ),
+                        ],
+                      ),
+                      child: partnerLogo != null
+                          ? Image.asset(
+                              partnerLogo,
+                              height: ThemeSizes.imageThumbSizeLg,
+                              fit: BoxFit.contain,
+                              errorBuilder: (_, __, ___) => Icon(
+                                Icons.favorite_rounded,
+                                color: brandColor,
+                                size: ThemeSizes.imageThumbSizeLg,
+                              ),
+                            )
+                          : Icon(
+                              Icons.favorite_rounded,
+                              color: brandColor,
+                              size: ThemeSizes.imageThumbSizeLg,
+                            ),
+                    ),
+                    const SizedBox(height: ThemeSizes.xl),
+                    Text(
+                      'Grazie di cuore ❤️',
+                      textAlign: TextAlign.center,
+                      style: context.textTheme.headlineSmall?.copyWith(
+                        color: brandColor,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: ThemeSizes.lg),
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(ThemeSizes.lg),
+                      decoration: BoxDecoration(
+                        color: context.secondaryBgColor,
+                        borderRadius:
+                            BorderRadius.circular(ThemeSizes.cardRadiusLg),
+                        border: Border.all(
+                          color: brandColor.withValues(alpha: 0.25),
+                        ),
+                      ),
+                      child: Text(
+                        content.body,
+                        textAlign: TextAlign.center,
+                        style: context.textTheme.bodyLarge?.copyWith(
+                          color: context.textPrimaryColor,
+                          height: 1.5,
+                        ),
+                      ),
                     ),
                   ],
-                  const SizedBox(height: ThemeSizes.xl),
-                  Text(
-                    'Grazie di cuore ❤️',
-                    textAlign: TextAlign.center,
-                    style: context.textTheme.headlineSmall?.copyWith(
-                      color: brandColor,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: ThemeSizes.md),
-                  Text(
-                    content.body,
-                    textAlign: TextAlign.center,
-                    style: context.textTheme.bodyLarge?.copyWith(
-                      color: context.textPrimaryColor,
-                      height: 1.45,
-                    ),
-                  ),
-                ],
+                ),
               ),
             ),
           ),
