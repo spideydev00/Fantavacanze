@@ -110,9 +110,6 @@ class HomePage extends StatelessWidget {
           _buildAdminActions(context, isFemale),
         ],
 
-        // Latest events section
-        const SizedBox(height: 25),
-
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: ThemeSizes.xl),
           child: CustomDivider(
@@ -120,11 +117,9 @@ class HomePage extends StatelessWidget {
             hasDropdown: true,
             dropdownText: isAdmin
                 ? 'Fai scroll verso sinistra su un evento per eliminarlo rimuovere i punti associati.'
-                : 'Qui puoi consultare gli ultimi eventi.',
+                : 'Qui puoi consultare gli ultimi bonus o malus.',
           ),
         ),
-
-        const SizedBox(height: 15),
 
         // Events list with dismiss capability for admins only
         EventsListWidget(
@@ -149,16 +144,21 @@ class HomePage extends StatelessWidget {
   }
 
   Widget _buildAdminActions(BuildContext context, bool isFemale) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: ThemeSizes.xl),
-      child: ActionCard(
-        title: 'Aggiungi \n Bonus o Malus',
-        imagePath: isFemale
-            ? 'assets/images/girls_add_event.png'
-            : 'assets/images/boys_add_event.png',
-        iconData: Icons.add,
-        onTap: () => _navigateToAddEvent(context),
-      ),
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: ThemeSizes.xl),
+          child: ActionCard(
+            title: 'Aggiungi \n Bonus o Malus',
+            imagePath: isFemale
+                ? 'assets/images/girls_add_event.png'
+                : 'assets/images/boys_add_event.png',
+            iconData: Icons.add,
+            onTap: () => _navigateToAddEvent(context),
+          ),
+        ),
+        SizedBox(height: 25)
+      ],
     );
   }
 

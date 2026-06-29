@@ -161,7 +161,8 @@ class _DailyGoalsState extends State<DailyGoals> {
   }
 
   Widget _buildGoalCard(DailyChallenge c, int index) {
-    final colors = ColorPalette.challengeGradientFor(context.primaryColor, index);
+    final colors =
+        ColorPalette.challengeGradientFor(context.primaryColor, index);
     final locked = !c.isUnlocked;
 
     final lockType = locked
