@@ -3,10 +3,11 @@ import 'dart:ui' as ui;
 
 import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 
 /// Una singola azione del [PartnerExpandableFab].
 class PartnerFabAction {
-  final IconData icon;
+  final dynamic icon; // Can be IconData, String (image asset path), or Widget
   final String label;
   final Color color;
   final VoidCallback onTap;
@@ -247,11 +248,7 @@ class _PartnerFabOverlay extends StatelessWidget {
                       child: SizedBox(
                         width: _radius * 2,
                         height: _radius * 2,
-                        child: Icon(
-                          action.icon,
-                          color: Colors.white,
-                          size: 23,
-                        ),
+                        child: _buildActionIcon(action),
                       ),
                     ),
                   ),
@@ -262,6 +259,28 @@ class _PartnerFabOverlay extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Widget _buildActionIcon(PartnerFabAction action) {
+    if (action.icon is IconData) {
+      return Icon(
+        action.icon as IconData,
+        color: Colors.white,
+        size: 23,
+      );
+    } else if (action.icon is String) {
+      return Center(
+        child: SvgPicture.asset(
+          action.icon as String,
+          width: 24,
+          height: 24,
+          fit: BoxFit.contain,
+        ),
+      );
+    } else if (action.icon is Widget) {
+      return Center(child: action.icon as Widget);
+    }
+    return const SizedBox.shrink();
   }
 
   (RadialGradient, Color) _gradientAndEdgeFor(Color base, int index) {

@@ -14,6 +14,7 @@ import 'package:fantavacanze_official/features/league/presentation/pages/dashboa
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/partner/invibe_bridge_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 const int maxSlots = 4;
 
@@ -186,7 +187,7 @@ class _PartnerFab extends StatelessWidget {
               onTap: () => _setNavigationIndex(context, 'Ricordi'),
             ),
           PartnerFabAction(
-            icon: Icons.help_outline_rounded,
+            icon: "assets/images/icons/homepage_icons/question-mark-icon.svg",
             label: 'Guida',
             color: brandColor,
             onTap: () => _setNavigationIndex(context, 'Tutorial'),
@@ -205,7 +206,7 @@ class _PartnerFab extends StatelessWidget {
       builder: (context, partnerFabEnabled) {
         if (!partnerFabEnabled) {
           return _SimpleBrandFab(
-            icon: Icons.help_outline_rounded,
+            icon: "assets/images/icons/homepage_icons/question-mark-icon.svg",
             color: context.primaryColor,
             backgroundColor: context.bgColor,
             onTap: () => _setNavigationIndex(context, 'Tutorial'),
@@ -263,7 +264,7 @@ class _PartnerFab extends StatelessWidget {
 /// FAB circolare semplice usato per l'alternativa "?" (guida) quando l'utente
 /// ha disattivato il pulsante partner su una lega default.
 class _SimpleBrandFab extends StatelessWidget {
-  final IconData icon;
+  final dynamic icon; // Can be IconData, String (SVG asset path), or Widget
   final Color color;
   final Color backgroundColor;
   final VoidCallback onTap;
@@ -294,9 +295,27 @@ class _SimpleBrandFab extends StatelessWidget {
         backgroundColor: backgroundColor,
         elevation: 2,
         onPressed: onTap,
-        child: Icon(icon, color: color),
+        child: _buildIconWidget(),
       ),
     );
+  }
+
+  Widget _buildIconWidget() {
+    if (icon is IconData) {
+      return Icon(icon as IconData, color: color);
+    } else if (icon is String) {
+      return Center(
+        child: SvgPicture.asset(
+          icon as String,
+          width: 24,
+          height: 24,
+          fit: BoxFit.contain,
+        ),
+      );
+    } else if (icon is Widget) {
+      return Center(child: icon as Widget);
+    }
+    return const SizedBox.shrink();
   }
 }
 
