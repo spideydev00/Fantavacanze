@@ -14,7 +14,6 @@ import 'package:fantavacanze_official/features/auth/presentation/pages/social_lo
 import 'package:fantavacanze_official/features/league/presentation/pages/dashboard/sections/dashboard.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 class InitialPage extends StatefulWidget {
   const InitialPage({super.key});
@@ -34,7 +33,6 @@ class _InitialPageState extends State<InitialPage> {
 
   Future<void> _initializeConsentFlow() async {
     await GdprService().initializeAndShowForm();
-    await MobileAds.instance.initialize();
   }
 
   @override

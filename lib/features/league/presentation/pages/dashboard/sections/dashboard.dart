@@ -9,7 +9,7 @@ import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/notification_count/notification_count_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/partner_fab/partner_fab_cubit.dart';
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
-import 'package:fantavacanze_official/core/services/ad_helper.dart';
+import 'package:fantavacanze_official/core/services/ads/ad_manager.dart';
 import 'package:fantavacanze_official/core/services/review_service.dart';
 import 'package:fantavacanze_official/core/theme/brand_assets.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
@@ -48,7 +48,7 @@ class DashboardScreen extends StatefulWidget {
 class _DashboardScreenState extends State<DashboardScreen>
     with SingleTickerProviderStateMixin {
   bool isSideMenuOpen = false;
-  AdHelper? _adHelper;
+  AdManager? _adManager;
   final _reviewService = GetIt.instance<ReviewService>();
   late final List<Widget> _participantScreens;
   late final List<Widget> _nonParticipantScreens;
@@ -111,7 +111,7 @@ class _DashboardScreenState extends State<DashboardScreen>
 
   @override
   void dispose() {
-    _adHelper?.stopAdTimer();
+    _adManager?.stopInterstitialTimer();
     _animationController.dispose();
     super.dispose();
   }
@@ -131,16 +131,14 @@ class _DashboardScreenState extends State<DashboardScreen>
   }
 
   void _loadAds() async {
-    // Pre-carica gli annunci usando il tuo AdHelper.
-    // Usa l'istanza singleton
-    _adHelper = AdHelper();
+    _adManager = AdManager();
 
-    await _adHelper!.initialize();
+    await _adManager!.initialize();
 
-    _adHelper!.connectToUserCubit(serviceLocator<AppUserCubit>());
+    _adManager!.connectToUserCubit(serviceLocator<AppUserCubit>());
 
     if (mounted) {
-      _adHelper!.startAdTimer(context);
+      _adManager!.startInterstitialTimer(context);
     }
   }
 

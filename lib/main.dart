@@ -11,6 +11,7 @@ import 'package:fantavacanze_official/core/cubits/notification_count/notificatio
 import 'package:fantavacanze_official/core/cubits/partner_fab/partner_fab_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/share_button_animation/share_button_animation_cubit.dart';
 import 'package:fantavacanze_official/core/network/connection_checker.dart';
+import 'package:fantavacanze_official/core/services/ads/ad_manager.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/theme.dart';
 import 'package:fantavacanze_official/core/utils/show-snackbar-or-paywall/show_snackbar.dart';
@@ -103,12 +104,13 @@ class MyApp extends StatefulWidget {
   State<MyApp> createState() => _MyAppState();
 }
 
-class _MyAppState extends State<MyApp> {
+class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   StreamSubscription<bool>? _connectionSubscription;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _initializeApp();
     _listenToPremiumStatusChanges();
     _listenToConnectionChanges();
@@ -200,8 +202,16 @@ class _MyAppState extends State<MyApp> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _connectionSubscription?.cancel();
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      unawaited(AdManager().onAppResumed());
+    }
   }
 
   @override
