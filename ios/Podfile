@@ -47,6 +47,10 @@ target 'Runner' do
   pod 'GoogleMobileAdsMediationMintegral'
   pod 'GoogleMobileAdsMediationUnity'
   pod 'GoogleMobileAdsMediationVungle'
+  # Pre-integrati: si attivano automaticamente quando li abiliti su AdMob.
+  pod 'GoogleMobileAdsMediationIronSource'
+  pod 'GoogleMobileAdsMediationInMobi'
+  pod 'GoogleMobileAdsMediationFyber'
 
   flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
   target 'RunnerTests' do
