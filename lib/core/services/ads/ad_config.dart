@@ -12,9 +12,7 @@ class AdConfig {
   static const String _testInterstitial =
       'ca-app-pub-3940256099942544/1033173712';
   static const String _testRewarded = 'ca-app-pub-3940256099942544/5224354917';
-  static String get _testAppOpen => Platform.isIOS
-      ? 'ca-app-pub-3940256099942544/5575463023'
-      : 'ca-app-pub-3940256099942544/9257395921';
+  static const String _testAppOpen = 'ca-app-pub-3940256099942544/9257395921';
 
   static String get interstitialUnitId {
     if (useTestAds) return _testInterstitial;
