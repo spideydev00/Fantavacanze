@@ -2,6 +2,7 @@ import 'dart:typed_data';
 
 import 'package:fantavacanze_official/core/cubits/app_league/app_league_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/app_theme/app_theme_cubit.dart';
+import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit.dart';
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/services/ads/ad_access_gate.dart';
 import 'package:fantavacanze_official/core/services/ads/ad_manager.dart';
@@ -52,8 +53,13 @@ class _GeneralRankingPageState extends State<GeneralRankingPage> {
           );
         }
 
-        final hasAccess =
-            _unlocked || AdManager().session.isActive(kFeatureGlobalRanking);
+        final appUserState = context.read<AppUserCubit>().state;
+        final isPremium =
+            appUserState is AppUserIsLoggedIn && appUserState.user.isPremium;
+
+        final hasAccess = isPremium ||
+            _unlocked ||
+            AdManager().session.isActive(kFeatureGlobalRanking);
 
         if (!hasAccess) {
           return Scaffold(
@@ -62,7 +68,7 @@ class _GeneralRankingPageState extends State<GeneralRankingPage> {
               icon: Icons.public,
               title: 'Sblocca la Classifica Globale',
               subtitle:
-                  'Guarda un annuncio per consultare la classifica globale in questa apertura dell’app.',
+                  'Guarda un annuncio per consultare la classifica globale.',
               action: ElevatedButton.icon(
                 onPressed: () => _unlock(context),
                 icon: const Icon(Icons.ondemand_video),

@@ -1,5 +1,4 @@
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
-import 'package:fantavacanze_official/core/extensions/context_extension.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:fantavacanze_official/core/theme/theme.dart';
 import 'package:fantavacanze_official/core/widgets/ambient_glow.dart';
@@ -53,8 +52,6 @@ class _PartnerDashboardView extends StatelessWidget {
           extendBodyBehindAppBar: true,
           backgroundColor: context.bgColor,
           appBar: AppBar(
-            title: Text('Partner', style: context.textTheme.bodyLarge),
-            centerTitle: true,
             backgroundColor: Colors.transparent,
             elevation: 0,
             scrolledUnderElevation: 0,
@@ -113,7 +110,6 @@ class _LoadedDashboard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final brand = context.brandColor;
-    final cubit = context.read<PartnerCubit>();
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(ThemeSizes.lg),
@@ -141,8 +137,8 @@ class _LoadedDashboard extends StatelessWidget {
                 onTap: () => Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (_) => BlocProvider.value(
-                      value: cubit,
+                    builder: (_) => BlocProvider(
+                      create: (_) => serviceLocator<PartnerCubit>(),
                       child: CreatePartnerLeaguePage(catalog: catalog),
                     ),
                   ),
@@ -159,8 +155,8 @@ class _LoadedDashboard extends StatelessWidget {
                 onTap: () => Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (_) => BlocProvider.value(
-                      value: cubit,
+                    builder: (_) => BlocProvider(
+                      create: (_) => serviceLocator<PartnerCubit>(),
                       child: SearchPartnerLeaguePage(
                         partnerSlug: catalog.partner.slug,
                       ),

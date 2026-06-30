@@ -19,6 +19,7 @@ import 'package:fantavacanze_official/features/league/presentation/bloc/league_b
 import 'package:fantavacanze_official/features/league/presentation/pages/dashboard/widgets/side_menu/league_dropdown.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/dashboard/widgets/side_menu/side_menu_navigation_asset.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/partner/invibe_bridge_page.dart';
+import 'package:fantavacanze_official/features/league/presentation/pages/navigation/partner/partner_dashboard_page.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/settings/privacy_policy.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -115,6 +116,11 @@ class _SideMenuState extends State<SideMenu> {
                           final isPackage = leagueState is AppLeagueExists &&
                               leagueState.selectedLeague.partner != null &&
                               leagueState.selectedLeague.partnerRoundId == null;
+                          final hasInvibeLeague =
+                              leagueState is AppLeagueExists &&
+                                  leagueState.leagues.any(
+                                    (league) => league.partner == 'invibe',
+                                  );
                           return BlocBuilder<AppNavigationCubit, int>(
                             builder: (context, selectedIndex) {
                               return Column(
@@ -124,6 +130,7 @@ class _SideMenuState extends State<SideMenu> {
                                   hasLeagues: hasLeagues,
                                   hasPartnerRound: hasPartnerRound,
                                   isPackage: isPackage,
+                                  hasInvibeLeague: hasInvibeLeague,
                                 ),
                               );
                             },
@@ -161,6 +168,7 @@ class _SideMenuState extends State<SideMenu> {
     required bool hasLeagues,
     required bool hasPartnerRound,
     required bool isPackage,
+    required bool hasInvibeLeague,
   }) {
     // 1. Prendo l'elenco base degli item
     final navItems =
@@ -182,7 +190,9 @@ class _SideMenuState extends State<SideMenu> {
                 (item.isAdminOnly &&
                     userIsAdmin)) && // …e solo gli admin-only se userIsAdmin
             (!item.requiresPartnerRound || hasPartnerRound) &&
-            (!item.requiresPackage || isPackage))
+            (!item.requiresPackage || isPackage) &&
+            (!item.requiresNoInvibeLeague || !hasInvibeLeague) &&
+            (!item.requiresInvibeLeague || hasInvibeLeague))
         .toList();
 
     // 5. Raggruppo per sottosezione
@@ -245,9 +255,12 @@ class _SideMenuState extends State<SideMenu> {
         item.title == "Cerca Lega" ||
         item.title == "Bonus o Malus" ||
         item.title == "Aggiungi Bonus/Malus" ||
-        item.title == "Crea Lega InVibe") {
-      if (item.title == "Crea Lega InVibe") {
+        item.title == "Parti Con InVibe" ||
+        item.title == "Leghe InVibe") {
+      if (item.title == "Parti Con InVibe") {
         Navigator.push(context, InvibeBridgePage.route());
+      } else if (item.title == "Leghe InVibe") {
+        Navigator.push(context, PartnerDashboardPage.route('invibe'));
       } else {
         Navigator.push(
           context,

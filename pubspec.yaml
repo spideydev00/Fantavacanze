@@ -210,6 +210,8 @@ flutter:
     - assets/images/icons/homepage_icons/pass-illustration.png
     - assets/images/icons/homepage_icons/smash-illustration.png
     - assets/images/icons/homepage_icons/love-key-icon.svg
+    - assets/images/icons/homepage_icons/palm.svg
+    - assets/images/icons/homepage_icons/palm-black.svg
 
     # ===== LEAGUE TYPE ICONS =====
     - assets/images/icons/homepage_icons/bro-code-icon.png

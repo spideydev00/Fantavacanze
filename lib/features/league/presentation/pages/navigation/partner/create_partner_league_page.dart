@@ -1,5 +1,4 @@
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
-import 'package:fantavacanze_official/core/extensions/context_extension.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:fantavacanze_official/core/theme/theme.dart';
 import 'package:fantavacanze_official/core/widgets/ambient_glow.dart';
@@ -11,6 +10,27 @@ import 'package:fantavacanze_official/features/league/presentation/bloc/partner_
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/partner/create_partner_league_form_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+
+List<PartnerDestination> sortDestinationsByImminentRound(
+  List<PartnerDestination> destinations,
+) {
+  final sorted = [...destinations];
+  sorted.sort((a, b) {
+    final aRound = a.activeRound;
+    final bRound = b.activeRound;
+    if (aRound == null && bRound == null) {
+      return 0;
+    }
+    if (aRound == null) {
+      return 1;
+    }
+    if (bRound == null) {
+      return -1;
+    }
+    return aRound.startDate.compareTo(bRound.startDate);
+  });
+  return sorted;
+}
 
 class CreatePartnerLeaguePage extends StatelessWidget {
   static const String _slug = 'invibe';
@@ -37,10 +57,10 @@ class CreatePartnerLeaguePage extends StatelessWidget {
           extendBodyBehindAppBar: true,
           backgroundColor: context.bgColor,
           appBar: AppBar(
-            title: Text(
-              'Crea Lega Partner',
-              style: context.textTheme.bodyLarge,
-            ),
+            // title: Text(
+            //   'Crea Lega Partner',
+            //   style: context.textTheme.bodyLarge,
+            // ),
             centerTitle: true,
             backgroundColor: Colors.transparent,
             elevation: 0,
@@ -65,7 +85,10 @@ class CreatePartnerLeaguePage extends StatelessWidget {
                           color: context.brandColor,
                         ),
                         const SizedBox(height: ThemeSizes.lg),
-                        for (final destination in catalog.destinations)
+                        for (final destination
+                            in sortDestinationsByImminentRound(
+                          catalog.destinations,
+                        ))
                           PartnerDestinationCard(
                             name: destination.name,
                             description: destination.description,

@@ -13,6 +13,12 @@ class NavigationItem {
   /// Mostrato solo per leghe partner di tipo package (partner senza round).
   final bool requiresPackage;
 
+  /// Mostrato solo se l'utente NON ha ancora leghe del partner "invibe".
+  final bool requiresNoInvibeLeague;
+
+  /// Mostrato solo se l'utente ha almeno una lega del partner "invibe".
+  final bool requiresInvibeLeague;
+
   /// Se false l'item compare solo nel side menu, non nella bottom navbar.
   final bool showInNavbar;
 
@@ -26,6 +32,8 @@ class NavigationItem {
     this.isAdminOnly = false,
     this.requiresPartnerRound = false,
     this.requiresPackage = false,
+    this.requiresNoInvibeLeague = false,
+    this.requiresInvibeLeague = false,
     this.showInNavbar = true,
   });
 }
