@@ -19,8 +19,8 @@ class AppSecrets {
   static const String androidRewardedAdUnitId = 'ca-app-pub-your_key';
 
   // TEST DEVICE ID
-  static const String androidTestDevice = "EBD4D98B76A21ACAEF831E80A3078FFB";
-  static const String iosTestDevice = "F93C579F-141A-4D00-95DA-DA866D4A2671";
+  static const String androidTestDevice = "YOUR_IDFA";
+  static const String iosTestDevice = "YOUR_IDFA";
 
   //RevenueCat
   static const String revenueCatIosApiKey = 'appl_your_key';
