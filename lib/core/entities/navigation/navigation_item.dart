@@ -4,6 +4,7 @@ class NavigationItem {
   final String title;
   final String darkSvgIcon;
   final String lightSvgIcon;
+  final IconData? icon;
   final Widget screen;
   final String subsection;
   final bool isAdminOnly;
@@ -21,6 +22,7 @@ class NavigationItem {
     required this.darkSvgIcon,
     required this.screen,
     required this.subsection,
+    this.icon,
     this.isAdminOnly = false,
     this.requiresPartnerRound = false,
     this.requiresPackage = false,

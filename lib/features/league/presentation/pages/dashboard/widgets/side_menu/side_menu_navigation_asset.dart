@@ -9,12 +9,15 @@ class SideMenuNavigationAsset extends NavigationAsset {
     super.key,
     required super.svgIcon,
     required super.title,
+    this.icon,
     super.height,
     super.width,
     super.isActive = false,
     super.effectsEnabled = false,
     super.onTap,
   });
+
+  final IconData? icon;
 
   @override
   Widget build(BuildContext context) {
@@ -60,11 +63,17 @@ class SideMenuNavigationAsset extends NavigationAsset {
   Widget buildIcon() {
     return AnimatedSwitcher(
       duration: const Duration(milliseconds: 300),
-      child: SvgPicture.asset(
-        svgIcon,
-        width: width,
-        height: height,
-      ),
+      child: icon == null
+          ? SvgPicture.asset(
+              svgIcon,
+              width: width,
+              height: height,
+            )
+          : Icon(
+              icon,
+              key: ValueKey(icon),
+              size: height,
+            ),
     );
   }
 }

@@ -212,6 +212,7 @@ class _SideMenuState extends State<SideMenu> {
           menuWidgets.add(
             SideMenuNavigationAsset(
               title: item.title,
+              icon: item.icon,
               svgIcon: context.read<AppThemeCubit>().isDarkMode(context)
                   ? item.darkSvgIcon
                   : item.lightSvgIcon,

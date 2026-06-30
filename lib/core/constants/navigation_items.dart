@@ -168,6 +168,7 @@ List<NavigationItem> participantNavbarItems = [
     darkSvgIcon: 'assets/images/icons/homepage_icons/create-league-icon.svg',
     lightSvgIcon:
         'assets/images/icons/homepage_icons/create-league-icon-dark.svg',
+    icon: Icons.add_business_rounded,
     screen: const SizedBox.shrink(),
     subsection: "Nuova Lega",
     requiresPackage: true,
