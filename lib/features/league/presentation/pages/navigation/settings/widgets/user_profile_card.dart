@@ -68,6 +68,14 @@ class UserProfileCard extends StatelessWidget {
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
+                        Text(
+                          "Cambia immagine profilo da qui!",
+                          style: context.textTheme.labelSmall!.copyWith(
+                            fontStyle: FontStyle.italic,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ],
                     ),
                   ),
