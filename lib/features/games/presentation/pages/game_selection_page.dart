@@ -109,36 +109,17 @@ class _GameSelectionPageState extends State<GameSelectionPage> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Expanded(
-                          child: ModernDrinkCard(
-                            onTap: () {
-                              setState(() {
-                                _selectedGameType = GameType.truthOrDare;
-                              });
-                            },
-                            isSelected:
-                                _selectedGameType == GameType.truthOrDare,
-                            pngIconPath:
-                                'assets/images/icons/games_icons/balance.png',
-                            label: "Truth or Dare",
-                            description: "Un classico obbligo o verità",
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: ModernDrinkCard(
-                            onTap: () {
-                              setState(() {
-                                _selectedGameType = GameType.neverHaveIEver;
-                              });
-                            },
-                            isSelected:
-                                _selectedGameType == GameType.neverHaveIEver,
-                            pngIconPath:
-                                'assets/images/icons/games_icons/team-icon.png',
-                            label: "Non Ho Mai",
-                            description: "E tu cosa non hai mai fatto?",
-                          ),
+                        ModernDrinkCard(
+                          onTap: () {
+                            setState(() {
+                              _selectedGameType = GameType.truthOrDare;
+                            });
+                          },
+                          isSelected: _selectedGameType == GameType.truthOrDare,
+                          pngIconPath:
+                              'assets/images/icons/games_icons/balance.png',
+                          label: "Truth or Dare",
+                          description: "Un classico obbligo o verità",
                         ),
                       ],
                     ),

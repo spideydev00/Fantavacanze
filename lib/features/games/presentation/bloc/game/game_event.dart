@@ -80,6 +80,13 @@ class _PlayersUpdated extends LobbyEvent {
   List<Object?> get props => [players];
 }
 
+class _PresenceUpdated extends LobbyEvent {
+  final Set<String> onlineUserIds;
+  const _PresenceUpdated(this.onlineUserIds);
+  @override
+  List<Object?> get props => [onlineUserIds];
+}
+
 class _StreamErrorOccurred extends LobbyEvent {
   final String message;
   const _StreamErrorOccurred(this.message);

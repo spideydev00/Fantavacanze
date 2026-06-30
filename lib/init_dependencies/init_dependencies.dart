@@ -47,19 +47,24 @@ import 'package:fantavacanze_official/features/auth/domain/use-cases/update_prof
 import 'package:fantavacanze_official/features/auth/domain/use-cases/verify_otp.dart';
 import 'package:fantavacanze_official/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:fantavacanze_official/features/games/data/datasources/game_remote_data_source.dart';
-import 'package:fantavacanze_official/features/games/data/datasources/never_have_i_ever_remote_data_source.dart';
+import 'package:fantavacanze_official/features/games/data/datasources/realtime/game_realtime_manager.dart';
+// TODO(non-ho-mai): riattivare quando il realtime DB di Non Ho Mai sarà sistemato.
+// import 'package:fantavacanze_official/features/games/data/datasources/never_have_i_ever_remote_data_source.dart';
 import 'package:fantavacanze_official/features/games/data/datasources/truth_or_dare_remote_data_source.dart';
 import 'package:fantavacanze_official/features/games/data/datasources/word_bomb_remote_data_source.dart';
 import 'package:fantavacanze_official/features/games/data/repositories/game_repository_impl.dart';
-import 'package:fantavacanze_official/features/games/data/repositories/never_have_i_ever_repository_impl.dart';
+// TODO(non-ho-mai): riattivare quando il realtime DB di Non Ho Mai sarà sistemato.
+// import 'package:fantavacanze_official/features/games/data/repositories/never_have_i_ever_repository_impl.dart';
 import 'package:fantavacanze_official/features/games/data/repositories/truth_or_dare_repository_impl.dart';
 import 'package:fantavacanze_official/features/games/data/repositories/word_bomb_repository_impl.dart';
 import 'package:fantavacanze_official/features/games/domain/repositories/game_repository.dart';
-import 'package:fantavacanze_official/features/games/domain/repositories/never_have_i_ever_repository.dart';
+// TODO(non-ho-mai): riattivare quando il realtime DB di Non Ho Mai sarà sistemato.
+// import 'package:fantavacanze_official/features/games/domain/repositories/never_have_i_ever_repository.dart';
 import 'package:fantavacanze_official/features/games/domain/repositories/truth_or_dare_repository.dart';
 import 'package:fantavacanze_official/features/games/domain/repositories/word_bomb_repository.dart';
 import 'package:fantavacanze_official/features/games/domain/usecases/create_game_session.dart';
-import 'package:fantavacanze_official/features/games/domain/usecases/get_never_have_i_ever_cards.dart';
+// TODO(non-ho-mai): riattivare quando il realtime DB di Non Ho Mai sarà sistemato.
+// import 'package:fantavacanze_official/features/games/domain/usecases/get_never_have_i_ever_cards.dart';
 import 'package:fantavacanze_official/features/games/domain/usecases/get_truth_or_dare_cards.dart';
 import 'package:fantavacanze_official/features/games/domain/usecases/join_game_session.dart';
 import 'package:fantavacanze_official/features/games/domain/usecases/kill_game_session.dart';
@@ -67,12 +72,14 @@ import 'package:fantavacanze_official/features/games/domain/usecases/leave_game_
 import 'package:fantavacanze_official/features/games/domain/usecases/remove_game_player_from_lobby.dart';
 import 'package:fantavacanze_official/features/games/domain/usecases/set_word_bomb_trial_status.dart';
 import 'package:fantavacanze_official/features/games/domain/usecases/stream_game_session.dart';
+import 'package:fantavacanze_official/features/games/domain/usecases/stream_lobby_presence.dart';
 import 'package:fantavacanze_official/features/games/domain/usecases/stream_lobby_players.dart';
 import 'package:fantavacanze_official/features/games/domain/usecases/update_game_player.dart';
 import 'package:fantavacanze_official/features/games/domain/usecases/update_game_player_name_in_lobby.dart';
 import 'package:fantavacanze_official/features/games/domain/usecases/update_game_state.dart';
 import 'package:fantavacanze_official/features/games/presentation/bloc/game/game_bloc.dart';
-import 'package:fantavacanze_official/features/games/presentation/bloc/never_have_i_ever/never_have_i_ever_bloc.dart';
+// TODO(non-ho-mai): riattivare quando il realtime DB di Non Ho Mai sarà sistemato.
+// import 'package:fantavacanze_official/features/games/presentation/bloc/never_have_i_ever/never_have_i_ever_bloc.dart';
 import 'package:fantavacanze_official/features/games/presentation/bloc/truth_or_dare/truth_or_dare_bloc.dart';
 import 'package:fantavacanze_official/features/games/presentation/bloc/word_bomb/word_bomb_bloc.dart';
 import 'package:fantavacanze_official/features/league/data/datasources/local/local_data_source.dart';

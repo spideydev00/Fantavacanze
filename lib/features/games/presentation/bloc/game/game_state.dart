@@ -18,25 +18,34 @@ final class LobbyLoading extends LobbyState {
 final class LobbySessionActive extends LobbyState {
   final GameSession session;
   final List<GamePlayer> players;
+  final Set<String> onlinePlayerIds;
   final bool isLoadingNextAction;
 
   const LobbySessionActive({
     required this.session,
     required this.players,
+    this.onlinePlayerIds = const {},
     this.isLoadingNextAction = false,
   });
 
   @override
-  List<Object?> get props => [session, players, isLoadingNextAction];
+  List<Object?> get props => [
+        session,
+        players,
+        onlinePlayerIds,
+        isLoadingNextAction,
+      ];
 
   LobbySessionActive copyWith({
     GameSession? session,
     List<GamePlayer>? players,
+    Set<String>? onlinePlayerIds,
     bool? isLoadingNextAction,
   }) {
     return LobbySessionActive(
       session: session ?? this.session,
       players: players ?? this.players,
+      onlinePlayerIds: onlinePlayerIds ?? this.onlinePlayerIds,
       isLoadingNextAction: isLoadingNextAction ?? this.isLoadingNextAction,
     );
   }

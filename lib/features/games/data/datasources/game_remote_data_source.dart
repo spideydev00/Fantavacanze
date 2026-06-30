@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:fantavacanze_official/core/errors/exceptions.dart';
+import 'package:fantavacanze_official/features/games/data/datasources/realtime/game_realtime_manager.dart';
 import 'package:fantavacanze_official/features/games/data/models/game_player_model.dart';
 import 'package:fantavacanze_official/features/games/data/models/game_session_model.dart';
 import 'package:fantavacanze_official/features/games/domain/entities/game_type_enum.dart';
@@ -28,6 +29,10 @@ abstract interface class GameRemoteDataSource {
   });
 
   Stream<List<GamePlayerModel>> streamLobbyPlayers({
+    required String sessionId,
+  });
+
+  Stream<Set<String>> streamLobbyPresence({
     required String sessionId,
   });
 
@@ -64,8 +69,12 @@ abstract interface class GameRemoteDataSource {
 
 class GameRemoteDataSourceImpl implements GameRemoteDataSource {
   final SupabaseClient supabaseClient;
+  final GameRealtimeManager realtimeManager;
 
-  GameRemoteDataSourceImpl({required this.supabaseClient});
+  GameRemoteDataSourceImpl({
+    required this.supabaseClient,
+    required this.realtimeManager,
+  });
 
   // =====================================================================
   // ERROR HANDLING UTILITIES
@@ -157,25 +166,8 @@ class GameRemoteDataSourceImpl implements GameRemoteDataSource {
 
   // ------------------ STREAM GAME SESSION ------------------ //
   @override
-  Stream<GameSessionModel> streamGameSession({required String sessionId}) {
-    try {
-      return supabaseClient
-          .from('game_sessions')
-          .stream(primaryKey: ['id'])
-          .eq('id', sessionId)
-          .map(
-            (maps) {
-              if (maps.isEmpty) {
-                throw ServerException('Sessione non trovata o accesso negato.');
-              }
-              return GameSessionModel.fromJson(maps.first);
-            },
-          );
-    } catch (e) {
-      throw ServerException(
-          'Errore nello streaming della sessione: ${_extractErrorMessage(e)}');
-    }
-  }
+  Stream<GameSessionModel> streamGameSession({required String sessionId}) =>
+      realtimeManager.sessionStream(sessionId: sessionId);
 
   // ------------------ KILL SESSION ------------------ //
   @override
@@ -195,24 +187,12 @@ class GameRemoteDataSourceImpl implements GameRemoteDataSource {
   // ------------------ STREAM LOBBY PLAYERS ------------------ //
   @override
   Stream<List<GamePlayerModel>> streamLobbyPlayers(
-      {required String sessionId}) {
-    try {
-      return supabaseClient
-          .from('game_players')
-          .stream(primaryKey: ['id'])
-          .eq('session_id', sessionId)
-          .map(
-            (listOfMaps) {
-              return listOfMaps.map((playerMap) {
-                return GamePlayerModel.fromJson(playerMap);
-              }).toList();
-            },
-          );
-    } catch (e) {
-      throw ServerException(
-          'Errore nello streaming dei giocatori: ${_extractErrorMessage(e)}');
-    }
-  }
+          {required String sessionId}) =>
+      realtimeManager.playersStream(sessionId: sessionId);
+
+  @override
+  Stream<Set<String>> streamLobbyPresence({required String sessionId}) =>
+      realtimeManager.presenceStream(sessionId: sessionId);
 
   // ------------------ UPDATE GAME PLAYER ------------------ //
   @override

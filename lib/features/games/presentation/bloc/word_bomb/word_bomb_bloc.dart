@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io';
 import 'dart:math';
 import 'package:equatable/equatable.dart';
 import 'package:fantavacanze_official/core/constants/game_constants.dart';
@@ -1380,29 +1379,11 @@ class WordBombBloc extends Bloc<WordBombEvent, WordBombState> {
   // ------------------ START ROUND TIMER ------------------ //
 
   void _startRoundTimer(Emitter<WordBombState> emit) {
-    // 1. Cancella sempre qualsiasi timer precedente per evitare duplicati.
     _roundTimer?.cancel();
-
-    // 2. Controlla se la piattaforma è iOS.
-    if (Platform.isIOS) {
-      _roundTimer = Timer(const Duration(milliseconds: 1500), () {
-        // a. Il ritardo di 1.5 secondi è terminato. Esegui il primo "tick".
-        add(const _TimerTick());
-
-        _roundTimer =
-            Timer.periodic(const Duration(milliseconds: _timerIntervalMs), (_) {
-          add(
-            const _TimerTick(),
-          );
-        });
-      });
-    } else {
-      // Avvia il timer periodico immediatamente, come nel codice originale.
-      _roundTimer =
-          Timer.periodic(const Duration(milliseconds: _timerIntervalMs), (_) {
-        add(const _TimerTick());
-      });
-    }
+    _roundTimer =
+        Timer.periodic(const Duration(milliseconds: _timerIntervalMs), (_) {
+      add(const _TimerTick());
+    });
   }
 
   // ------------------ CANCEL SUBSCRIPTIONS ------------------ //

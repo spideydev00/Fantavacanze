@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:fantavacanze_official/core/constants/constants.dart';
 import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit.dart';
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
@@ -23,9 +21,14 @@ import 'package:share_plus/share_plus.dart';
 class GameLobbyPage extends StatelessWidget {
   final GameSession session;
   final List<GamePlayer> players;
+  final Set<String> onlinePlayerIds;
 
-  const GameLobbyPage(
-      {super.key, required this.session, required this.players});
+  const GameLobbyPage({
+    super.key,
+    required this.session,
+    required this.players,
+    this.onlinePlayerIds = const {},
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -172,15 +175,43 @@ class GameLobbyPage extends StatelessWidget {
                           final bool isCurrentUserAdmin = isAdmin;
                           final bool isThisPlayerTheAdmin =
                               player.userId == session.adminId;
+                          final isOnline = onlinePlayerIds.contains(
+                            player.userId,
+                          );
 
                           return ListTile(
-                            leading: CircleAvatar(
-                              backgroundColor:
-                                  context.primaryColor.withValues(alpha: 0.1),
-                              foregroundColor: context.primaryColor,
-                              child: Text(
-                                player.userName.substring(0, 1).toUpperCase(),
-                              ),
+                            leading: Stack(
+                              clipBehavior: Clip.none,
+                              children: [
+                                CircleAvatar(
+                                  backgroundColor: context.primaryColor
+                                      .withValues(alpha: 0.1),
+                                  foregroundColor: context.primaryColor,
+                                  child: Text(
+                                    player.userName
+                                        .substring(0, 1)
+                                        .toUpperCase(),
+                                  ),
+                                ),
+                                Positioned(
+                                  right: -1,
+                                  bottom: -1,
+                                  child: Container(
+                                    width: 12,
+                                    height: 12,
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: isOnline
+                                          ? ColorPalette.success
+                                          : context.borderColor,
+                                      border: Border.all(
+                                        color: context.secondaryBgColor,
+                                        width: 2,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
                             title: Text(
                               player.userName,
@@ -233,25 +264,9 @@ class GameLobbyPage extends StatelessWidget {
                                     .isLoadingNextAction
                                 ? null
                                 : () {
-                                    // Aggiungi il StartGameRequested
                                     context
                                         .read<LobbyBloc>()
                                         .add(StartGameRequested(session.id));
-
-                                    // SAFETY NET: Reset automatico dopo 10 secondi se bloccato
-                                    Timer(const Duration(seconds: 3), () {
-                                      final currentState =
-                                          context.read<LobbyBloc>().state;
-                                      if (currentState is LobbySessionActive &&
-                                          currentState.isLoadingNextAction) {
-                                        // Force reset se ancora in loading dopo 10 secondi
-                                        showSpecificSnackBar(
-                                          context,
-                                          "Errore di connessione durante l'avvio. Riprova.",
-                                          color: ColorPalette.warning,
-                                        );
-                                      }
-                                    });
                                   },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: (context.watch<LobbyBloc>().state

@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'package:equatable/equatable.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit.dart';
 import 'package:fantavacanze_official/features/auth/domain/entities/user.dart'
@@ -13,6 +12,7 @@ import 'package:fantavacanze_official/features/games/domain/usecases/create_game
 import 'package:fantavacanze_official/features/games/domain/usecases/join_game_session.dart';
 import 'package:fantavacanze_official/features/games/domain/usecases/leave_game_session.dart';
 import 'package:fantavacanze_official/features/games/domain/usecases/stream_game_session.dart';
+import 'package:fantavacanze_official/features/games/domain/usecases/stream_lobby_presence.dart';
 import 'package:fantavacanze_official/features/games/domain/usecases/stream_lobby_players.dart';
 import 'package:fantavacanze_official/features/games/domain/usecases/update_game_state.dart';
 import 'package:fantavacanze_official/features/games/domain/usecases/kill_game_session.dart';
@@ -31,6 +31,7 @@ class LobbyBloc extends Bloc<LobbyEvent, LobbyState> {
   final LeaveGameSession _leaveGameSession;
   final StreamGameSession _streamGameSession;
   final StreamLobbyPlayers _streamLobbyPlayers;
+  final StreamLobbyPresence _streamLobbyPresence;
   final UpdateGameState _updateGameState;
   final AppUserCubit _appUserCubit;
   final KillGameSession _killGameSession;
@@ -39,8 +40,7 @@ class LobbyBloc extends Bloc<LobbyEvent, LobbyState> {
 
   StreamSubscription<dynamic>? _sessionSubscription;
   StreamSubscription<dynamic>? _playersSubscription;
-
-  bool _isFirstPlayersStreamAttempt = true;
+  StreamSubscription<dynamic>? _presenceSubscription;
 
   // =====================================================================
   // CONSTRUCTOR
@@ -51,6 +51,7 @@ class LobbyBloc extends Bloc<LobbyEvent, LobbyState> {
     required LeaveGameSession leaveGameSession,
     required StreamGameSession streamGameSession,
     required StreamLobbyPlayers streamLobbyPlayers,
+    required StreamLobbyPresence streamLobbyPresence,
     required UpdateGameState updateGameState,
     required AppUserCubit appUserCubit,
     required KillGameSession killGameSession,
@@ -61,6 +62,7 @@ class LobbyBloc extends Bloc<LobbyEvent, LobbyState> {
         _leaveGameSession = leaveGameSession,
         _streamGameSession = streamGameSession,
         _streamLobbyPlayers = streamLobbyPlayers,
+        _streamLobbyPresence = streamLobbyPresence,
         _updateGameState = updateGameState,
         _appUserCubit = appUserCubit,
         _killGameSession = killGameSession,
@@ -76,6 +78,7 @@ class LobbyBloc extends Bloc<LobbyEvent, LobbyState> {
     on<RemovePlayerFromLobbyRequested>(_onRemovePlayerFromLobbyRequested);
     on<_SessionUpdated>(_onSessionUpdated);
     on<_PlayersUpdated>(_onPlayersUpdated);
+    on<_PresenceUpdated>(_onPresenceUpdated);
     on<_StreamErrorOccurred>(_onStreamErrorOccurred);
   }
 
@@ -117,7 +120,7 @@ class LobbyBloc extends Bloc<LobbyEvent, LobbyState> {
     result.fold(
       (failure) => emit(LobbyError(failure.message)),
       (session) {
-        _initStreams(session.id, emit);
+        _initStreams(session.id);
         emit(LobbySessionActive(session: session, players: const []));
       },
     );
@@ -145,7 +148,7 @@ class LobbyBloc extends Bloc<LobbyEvent, LobbyState> {
     result.fold(
       (failure) => emit(LobbyError(failure.message)),
       (session) {
-        _initStreams(session.id, emit);
+        _initStreams(session.id);
         emit(LobbySessionActive(session: session, players: const []));
       },
     );
@@ -234,7 +237,8 @@ class LobbyBloc extends Bloc<LobbyEvent, LobbyState> {
         );
       } catch (e) {
         // IMPORTANTE: Cattura eccezioni non gestite
-        emit(LobbyError("Errore durante l'avvio della partita: ${e.toString()}"));
+        emit(LobbyError(
+            "Errore durante l'avvio della partita: ${e.toString()}"));
         emit(currentLobbyState.copyWith(isLoadingNextAction: false));
       }
     }
@@ -428,34 +432,21 @@ class LobbyBloc extends Bloc<LobbyEvent, LobbyState> {
     }
   }
 
+  void _onPresenceUpdated(_PresenceUpdated event, Emitter<LobbyState> emit) {
+    if (state is LobbySessionActive) {
+      emit(
+        (state as LobbySessionActive).copyWith(
+          onlinePlayerIds: event.onlineUserIds,
+        ),
+      );
+    }
+  }
+
   // ------------------ ON STREAM ERROR OCCURRED ------------------ //
   void _onStreamErrorOccurred(
     _StreamErrorOccurred event,
     Emitter<LobbyState> emit,
   ) {
-    debugPrint('Stream error occurred: ${event.message}');
-
-    // Se è il primo tentativo e contiene errore Realtime, riprova
-    if (_isFirstPlayersStreamAttempt &&
-        (event.message.contains('Realtime') ||
-            event.message.contains('connect') ||
-            event.message.contains('unable to connect'))) {
-      _isFirstPlayersStreamAttempt = false;
-
-      if (state is LobbySessionActive) {
-        final currentState = state as LobbySessionActive;
-        debugPrint('Riprovando connessione Realtime...');
-
-        // Riprova dopo un delay più lungo
-        Future.delayed(const Duration(seconds: 3), () {
-          if (!isClosed) {
-            _startPlayersStream(currentState.session.id);
-          }
-        });
-        return;
-      }
-    }
-
     _cancelSubscriptions();
     emit(LobbyError(event.message));
   }
@@ -465,16 +456,11 @@ class LobbyBloc extends Bloc<LobbyEvent, LobbyState> {
   // =====================================================================
 
   // ------------------ INIT STREAMS ------------------ //
-  void _initStreams(String sessionId, Emitter<LobbyState> emit) {
+  void _initStreams(String sessionId) {
     _cancelSubscriptions();
-
-    // Aggiungi un delay per assicurarti che Supabase sia completamente inizializzato
-    Future.delayed(const Duration(milliseconds: 1000), () {
-      if (!isClosed) {
-        _startSessionStream(sessionId);
-        _startPlayersStream(sessionId);
-      }
-    });
+    _startSessionStream(sessionId);
+    _startPlayersStream(sessionId);
+    _startPresenceStream(sessionId);
   }
 
   void _startSessionStream(String sessionId) {
@@ -485,7 +471,6 @@ class LobbyBloc extends Bloc<LobbyEvent, LobbyState> {
         (session) => add(_SessionUpdated(session)),
       ),
       onError: (error) {
-        debugPrint('Session stream error: $error');
         add(_StreamErrorOccurred('Errore stream sessione: $error'));
       },
     );
@@ -499,13 +484,20 @@ class LobbyBloc extends Bloc<LobbyEvent, LobbyState> {
         (players) => add(_PlayersUpdated(players)),
       ),
       onError: (error) {
-        debugPrint('Players stream error: $error');
-        // Riprova automaticamente dopo il primo errore
-        Future.delayed(const Duration(seconds: 2), () {
-          if (!isClosed) {
-            _startPlayersStream(sessionId);
-          }
-        });
+        add(_StreamErrorOccurred('Errore stream giocatori: $error'));
+      },
+    );
+  }
+
+  void _startPresenceStream(String sessionId) {
+    _presenceSubscription = _streamLobbyPresence(sessionId).listen(
+      (eitherPresence) => eitherPresence.fold(
+        (failure) =>
+            add(_StreamErrorOccurred('Errore presenza: ${failure.message}')),
+        (onlineUserIds) => add(_PresenceUpdated(onlineUserIds)),
+      ),
+      onError: (error) {
+        add(_StreamErrorOccurred('Errore stream presenza: $error'));
       },
     );
   }
@@ -516,6 +508,8 @@ class LobbyBloc extends Bloc<LobbyEvent, LobbyState> {
     _sessionSubscription = null;
     _playersSubscription?.cancel();
     _playersSubscription = null;
+    _presenceSubscription?.cancel();
+    _presenceSubscription = null;
   }
 
   // =====================================================================

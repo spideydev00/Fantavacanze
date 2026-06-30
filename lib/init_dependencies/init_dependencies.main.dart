@@ -586,14 +586,23 @@ void _initLeague() {
 void _initGames() {
   // DataSources
   serviceLocator
+    ..registerLazySingleton(
+      () => GameRealtimeManager(supabaseClient: serviceLocator()),
+    )
     ..registerFactory<GameRemoteDataSource>(
-        () => GameRemoteDataSourceImpl(supabaseClient: serviceLocator()))
+      () => GameRemoteDataSourceImpl(
+        supabaseClient: serviceLocator(),
+        realtimeManager: serviceLocator(),
+      ),
+    )
     ..registerFactory<TruthOrDareRemoteDataSource>(
         () => TruthOrDareRemoteDataSourceImpl(supabaseClient: serviceLocator()))
     ..registerFactory<WordBombRemoteDataSource>(
-        () => WordBombRemoteDataSourceImpl(supabaseClient: serviceLocator()))
-    ..registerFactory<NeverHaveIEverRemoteDataSource>(() =>
-        NeverHaveIEverRemoteDataSourceImpl(supabaseClient: serviceLocator()));
+        () => WordBombRemoteDataSourceImpl(supabaseClient: serviceLocator()));
+  // TODO(non-ho-mai): riattivare quando il realtime DB di Non Ho Mai sarà sistemato.
+  // serviceLocator.registerFactory<NeverHaveIEverRemoteDataSource>(
+  //   () => NeverHaveIEverRemoteDataSourceImpl(supabaseClient: serviceLocator()),
+  // );
 
   // Repositories
   serviceLocator
@@ -614,13 +623,14 @@ void _initGames() {
         remoteDataSource: serviceLocator(),
         connectionChecker: serviceLocator(),
       ),
-    )
-    ..registerFactory<NeverHaveIEverRepository>(
-      () => NeverHaveIEverRepositoryImpl(
-        remoteDataSource: serviceLocator(),
-        connectionChecker: serviceLocator(),
-      ),
     );
+  // TODO(non-ho-mai): riattivare quando il realtime DB di Non Ho Mai sarà sistemato.
+  // serviceLocator.registerFactory<NeverHaveIEverRepository>(
+  //   () => NeverHaveIEverRepositoryImpl(
+  //     remoteDataSource: serviceLocator(),
+  //     connectionChecker: serviceLocator(),
+  //   ),
+  // );
 
   // UseCases - Generic Game
   serviceLocator
@@ -629,6 +639,7 @@ void _initGames() {
     ..registerFactory(() => LeaveGameSession(serviceLocator()))
     ..registerFactory(() => StreamGameSession(serviceLocator()))
     ..registerFactory(() => StreamLobbyPlayers(serviceLocator()))
+    ..registerFactory(() => StreamLobbyPresence(serviceLocator()))
     ..registerFactory(() => UpdateGameState(serviceLocator()))
     ..registerFactory(() => UpdateGamePlayer(serviceLocator()))
     ..registerFactory(() => KillGameSession(serviceLocator()))
@@ -647,13 +658,14 @@ void _initGames() {
       () => SetWordBombTrialStatus(
         serviceLocator(),
       ),
-    )
-    // UseCases - Never Have I Ever
-    ..registerFactory(
-      () => GetNeverHaveIEverCards(
-        serviceLocator(),
-      ),
     );
+  // UseCases - Never Have I Ever
+  // TODO(non-ho-mai): riattivare quando il realtime DB di Non Ho Mai sarà sistemato.
+  // serviceLocator.registerFactory(
+  //   () => GetNeverHaveIEverCards(
+  //     serviceLocator(),
+  //   ),
+  // );
 
   // BLoCs
   serviceLocator
@@ -664,6 +676,7 @@ void _initGames() {
           killGameSession: serviceLocator(),
           streamGameSession: serviceLocator(),
           streamLobbyPlayers: serviceLocator(),
+          streamLobbyPresence: serviceLocator(),
           updateGameState: serviceLocator(),
           appUserCubit: serviceLocator(),
           updateGamePlayerNameInLobby: serviceLocator(),
@@ -686,16 +699,17 @@ void _initGames() {
         appUserCubit: serviceLocator(),
         setWordBombTrialStatus: serviceLocator(),
       ),
-    )
-    ..registerFactory(
-      () => NeverHaveIEverBloc(
-        getNeverHaveIEverCards: serviceLocator(),
-        streamGameSession: serviceLocator(),
-        streamLobbyPlayers: serviceLocator(),
-        updateGameState: serviceLocator(),
-        appUserCubit: serviceLocator(),
-      ),
     );
+  // TODO(non-ho-mai): riattivare quando il realtime DB di Non Ho Mai sarà sistemato.
+  // serviceLocator.registerFactory(
+  //   () => NeverHaveIEverBloc(
+  //     getNeverHaveIEverCards: serviceLocator(),
+  //     streamGameSession: serviceLocator(),
+  //     streamLobbyPlayers: serviceLocator(),
+  //     updateGameState: serviceLocator(),
+  //     appUserCubit: serviceLocator(),
+  //   ),
+  // );
 }
 
 Future<void> _initNotifications() async {

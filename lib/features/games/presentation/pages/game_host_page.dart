@@ -6,8 +6,6 @@ import 'package:fantavacanze_official/features/games/domain/entities/game_type_e
 import 'package:fantavacanze_official/features/games/presentation/bloc/game/game_bloc.dart';
 import 'package:fantavacanze_official/features/games/presentation/bloc/truth_or_dare/truth_or_dare_bloc.dart';
 import 'package:fantavacanze_official/features/games/presentation/bloc/word_bomb/word_bomb_bloc.dart';
-import 'package:fantavacanze_official/features/games/presentation/bloc/never_have_i_ever/never_have_i_ever_bloc.dart';
-import 'package:fantavacanze_official/features/games/presentation/pages/never_have_i_ever_page.dart';
 import 'package:fantavacanze_official/features/games/presentation/pages/game_lobby_page.dart';
 import 'package:fantavacanze_official/features/games/presentation/pages/truth_or_dare_page.dart';
 import 'package:fantavacanze_official/features/games/presentation/pages/word_bomb_page.dart';
@@ -34,6 +32,7 @@ class GameHostPage extends StatelessWidget {
               key: ValueKey(gameSession.id),
               session: gameSession,
               players: lobbyState.players,
+              onlinePlayerIds: lobbyState.onlinePlayerIds,
             );
           } else if (gameSession.status == GameStatus.inProgress ||
               gameSession.status == GameStatus.paused) {
@@ -144,12 +143,11 @@ class GameHostPage extends StatelessWidget {
           child: const WordBombPage(),
         );
       case GameType.neverHaveIEver:
-        return BlocProvider(
-          create: (context) => serviceLocator<NeverHaveIEverBloc>()
-            ..add(
-              InitializeNeverHaveIEverGame(session),
-            ),
-          child: const NeverHaveIEverGamePage(),
+        // TODO(non-ho-mai): riattivare quando il realtime DB di Non Ho Mai sarà sistemato.
+        return const Scaffold(
+          body: Center(
+            child: Text('Non Ho Mai non è disponibile al momento.'),
+          ),
         );
     }
   }

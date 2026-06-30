@@ -94,6 +94,15 @@ class GameRepositoryImpl implements GameRepository {
   }
 
   @override
+  Stream<Either<Failure, Set<String>>> streamLobbyPresence({
+    required String sessionId,
+  }) {
+    return _handleStreamRequest(
+      () => remoteDataSource.streamLobbyPresence(sessionId: sessionId),
+    );
+  }
+
+  @override
   Future<Either<Failure, GameSession>> updateGameState({
     required String sessionId,
     Map<String, dynamic>? newGameState,

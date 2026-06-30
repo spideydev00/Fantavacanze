@@ -30,6 +30,10 @@ abstract interface class GameRepository {
     required String sessionId,
   });
 
+  Stream<Either<Failure, Set<String>>> streamLobbyPresence({
+    required String sessionId,
+  });
+
   Future<Either<Failure, GameSession>> updateGameState({
     required String sessionId,
     Map<String, dynamic>? newGameState,
