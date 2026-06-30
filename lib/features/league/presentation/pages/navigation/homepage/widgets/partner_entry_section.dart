@@ -40,18 +40,6 @@ class PartnerEntrySection extends StatelessWidget {
                     title: "Leghe InVibe",
                     imagePath: "assets/images/invibe-card-bg.jpeg",
                     onTap: () {
-                      // --- "Mostra una volta sola" il ponte InVibe (DA ATTIVARE) ---
-                      // final flags = Hive.box('app_flags'); // box da aprire all'avvio
-                      // final seen = flags.get(
-                      //   'invibe_bridge_seen',
-                      //   defaultValue: false,
-                      // ) as bool;
-                      // if (seen) {
-                      //   Navigator.push(context, PartnerDashboardPage.route('invibe'));
-                      // } else {
-                      //   flags.put('invibe_bridge_seen', true);
-                      //   Navigator.push(context, InvibeBridgePage.route());
-                      // }
                       // --- fino ad allora: mostra SEMPRE il ponte (per rifinitura grafica) ---
                       Navigator.push(context, InvibeBridgePage.route());
                     },
