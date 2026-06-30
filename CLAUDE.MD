@@ -167,6 +167,14 @@ Project-specific skills live in `.claude/skills/`. They are auto-loaded; invoke 
 | [flutter-ui-ux](.claude/skills/flutter-ui-ux/SKILL.md) | Building a screen or widget, theming with the app color/size system, adding animations, or extracting a reusable widget into `core/widgets` (bloc-driven, Italian copy). |
 | [flutter-responsive-ui](.claude/skills/flutter-responsive-ui/SKILL.md) | Making a layout adapt across phone sizes/tablet, avoiding overflow on small devices, or constraining content width on large ones (`LayoutBuilder`, `Expanded`, `ThemeSizes`). |
 
+## Planning docs are ephemeral
+
+Files under `docs/superpowers/plans/` and `docs/superpowers/specs/` (brainstorming
+design specs + implementation plans) are **gitignored and untracked by design**.
+They are working scaffolding for a single implementation cycle and get deleted once
+the work ships — never commit them, and never assume they exist in git history.
+Persistent documentation lives under `docs/ai/`.
+
 ## Additional documentation
 
 For deeper project context, consult the documentation files under `docs/ai/` when relevant.
