@@ -28,12 +28,12 @@ class AdManager {
     if (_isPremium) return;
     await MobileAds.instance.initialize();
 
-    // Device di test: su questi telefoni vengono mostrati test ads anche con
-    // gli ad unit reali (evita invalid traffic quando useTestAds è false).
+    // Test device: solo iPhone (IDFA in AppSecrets). Su iOS la GMA SDK accetta
+    // l'IDFA in testDeviceIds → quel telefono vede test ads anche con gli ad
+    // unit reali (evita invalid traffic). Su Android si resta sui test ad unit.
     // I placeholder (es. "YOUR_IDFA") vengono ignorati.
     final testDeviceIds = [
       AppSecrets.iosTestDevice,
-      AppSecrets.androidTestDevice,
     ].where((id) => id.isNotEmpty && !id.startsWith('YOUR')).toList();
     if (testDeviceIds.isNotEmpty) {
       await MobileAds.instance.updateRequestConfiguration(
