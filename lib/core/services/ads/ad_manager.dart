@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit.dart';
+import 'package:fantavacanze_official/core/secrets/app_secrets.dart';
 import 'package:fantavacanze_official/core/services/ads/app_open_ad_manager.dart';
 import 'package:fantavacanze_official/core/services/ads/feature_access_session.dart';
 import 'package:fantavacanze_official/core/services/ads/interstitial_ad_manager.dart';
@@ -26,6 +27,20 @@ class AdManager {
   Future<void> initialize() async {
     if (_isPremium) return;
     await MobileAds.instance.initialize();
+
+    // Device di test: su questi telefoni vengono mostrati test ads anche con
+    // gli ad unit reali (evita invalid traffic quando useTestAds è false).
+    // I placeholder (es. "YOUR_IDFA") vengono ignorati.
+    final testDeviceIds = [
+      AppSecrets.iosTestDevice,
+      AppSecrets.androidTestDevice,
+    ].where((id) => id.isNotEmpty && !id.startsWith('YOUR')).toList();
+    if (testDeviceIds.isNotEmpty) {
+      await MobileAds.instance.updateRequestConfiguration(
+        RequestConfiguration(testDeviceIds: testDeviceIds),
+      );
+    }
+
     await Future.wait([
       _interstitial.load(),
       _rewarded.load(),
