@@ -89,7 +89,7 @@ class SettingsPage extends StatelessWidget {
                           _buildDivider("Informazioni"),
                           //section
                           _buildAboutSection(context),
-                          const SizedBox(height: ThemeSizes.spaceBtwSections),
+
                           _buildLogoutButton(context),
                           const SizedBox(
                             height: ThemeSizes.spaceBtwSections,

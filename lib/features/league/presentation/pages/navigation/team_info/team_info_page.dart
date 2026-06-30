@@ -533,7 +533,6 @@ class _TeamBasedInfoState extends State<_TeamBasedInfo>
                   ),
 
                   // Leave league button
-                  const SizedBox(height: ThemeSizes.lg),
                   Padding(
                     padding: const EdgeInsets.symmetric(
                       horizontal: ThemeSizes.lg,
@@ -862,7 +861,6 @@ class _IndividualInfoState extends State<_IndividualInfo> {
 
                 // Leave league button (only for current user)
                 if (isCurrentUser) ...[
-                  const SizedBox(height: ThemeSizes.lg),
                   Padding(
                     padding: const EdgeInsets.symmetric(
                       horizontal: ThemeSizes.lg,

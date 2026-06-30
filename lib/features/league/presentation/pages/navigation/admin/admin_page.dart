@@ -215,8 +215,6 @@ class _AdminPageState extends State<AdminPage> {
           ),
           _buildEventManagementCard(),
 
-          const SizedBox(height: ThemeSizes.lg),
-
           // Danger zone
           const CustomDivider(
             text: 'ELIMINA LEGA',
