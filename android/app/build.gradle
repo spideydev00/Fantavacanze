@@ -67,6 +67,9 @@ android {
         release {
             // Usa la configurazione di firma "release" per la build di release
             signingConfig = signingConfigs.getByName("release")
+
+            // Applica le regole di Proguard/R8
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
 }
