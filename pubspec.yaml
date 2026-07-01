@@ -128,7 +128,6 @@ flutter:
     - assets/images/logos/logo-fall.png
     - assets/images/logos/logo-fall-no-neon.png
     - assets/images/logos/logo-halloween.png
-    - assets/images/logos/logo-smash-or-pass.png
     - assets/images/logos/logo-winter-neon.png
     - assets/images/logos/logo-winter.png
     - assets/images/logos/invibe.png
@@ -150,6 +149,8 @@ flutter:
     - assets/images/girls_add_event.png
     - assets/images/invibe-fv-bridge.jpg
     - assets/images/invibe-card-bg.jpeg
+    - assets/images/join-league-bg.png
+    - assets/images/add-event-bg-unisex.jpeg
 
     # ===== AUTHENTICATION ICONS =====
     - assets/images/otp-verification-icon.png
@@ -207,8 +208,6 @@ flutter:
     - assets/images/icons/homepage_icons/fanta-serata-emoji.svg
     - assets/images/icons/homepage_icons/question-mark-icon-sp.svg
     - assets/images/icons/homepage_icons/broken-heart.svg
-    - assets/images/icons/homepage_icons/pass-illustration.png
-    - assets/images/icons/homepage_icons/smash-illustration.png
     - assets/images/icons/homepage_icons/love-key-icon.svg
     - assets/images/icons/homepage_icons/palm.svg
     - assets/images/icons/homepage_icons/palm-black.svg
