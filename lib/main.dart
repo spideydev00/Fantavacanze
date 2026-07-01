@@ -89,8 +89,6 @@ void main() async {
           BlocProvider(create: (_) => serviceLocator<WordBombBloc>()),
           BlocProvider(create: (_) => serviceLocator<TruthOrDareBloc>()),
           BlocProvider(create: (_) => serviceLocator<NeverHaveIEverBloc>()),
-
-          // Seasonal Events Cubit
         ],
         child: const MyApp(),
       ),
@@ -216,34 +214,49 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
+    // Solo il tema dark/light ricostruisce la MaterialApp/Navigator. Il brand
+    // partner viene applicato sotto al Navigator, così il cambio lega aggiorna
+    // i colori senza smontare le route pushate.
     return BlocBuilder<AppThemeCubit, AppThemeState>(
       builder: (context, state) {
-        return BlocBuilder<AppLeagueCubit, AppLeagueState>(
-          builder: (context, _) {
-            return MaterialApp(
-              showSemanticsDebugger: false,
-              navigatorKey: navigatorKey,
-              scaffoldMessengerKey: messengerKey,
-              title: 'Fantavacanze',
-              home: const InitialPage(),
-              themeMode: state.themeMode,
-              theme: AppTheme.getLightTheme(context),
-              darkTheme: AppTheme.getDarkTheme(context),
-              debugShowCheckedModeBanner: false,
-              localizationsDelegates: const [
-                GlobalMaterialLocalizations.delegate,
-                GlobalWidgetsLocalizations.delegate,
-                GlobalCupertinoLocalizations.delegate,
-              ],
-              supportedLocales: const [
-                Locale('it', 'IT'),
-              ],
-              locale: const Locale(
-                'it',
-                'IT',
-              ),
+        return MaterialApp(
+          showSemanticsDebugger: false,
+          navigatorKey: navigatorKey,
+          scaffoldMessengerKey: messengerKey,
+          title: 'Fantavacanze',
+          home: const InitialPage(),
+          themeMode: state.themeMode,
+          theme: AppTheme.getLightTheme(context),
+          darkTheme: AppTheme.getDarkTheme(context),
+          builder: (context, child) {
+            return BlocSelector<AppLeagueCubit, AppLeagueState, String?>(
+              selector: (state) => state is AppLeagueExists
+                  ? state.selectedLeague.partner
+                  : null,
+              builder: (context, partnerSlug) {
+                return Theme(
+                  data: AppTheme.getTheme(
+                    context,
+                    partnerSlugOverride: partnerSlug,
+                  ),
+                  child: child ?? const SizedBox.shrink(),
+                );
+              },
             );
           },
+          debugShowCheckedModeBanner: false,
+          localizationsDelegates: const [
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          supportedLocales: const [
+            Locale('it', 'IT'),
+          ],
+          locale: const Locale(
+            'it',
+            'IT',
+          ),
         );
       },
     );
