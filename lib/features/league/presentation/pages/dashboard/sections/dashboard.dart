@@ -132,10 +132,9 @@ class _DashboardScreenState extends State<DashboardScreen>
 
   void _loadAds() async {
     _adManager = AdManager();
+    _adManager!.connectToUserCubit(serviceLocator<AppUserCubit>());
 
     await _adManager!.initialize();
-
-    _adManager!.connectToUserCubit(serviceLocator<AppUserCubit>());
 
     if (mounted) {
       _adManager!.startInterstitialTimer(context);

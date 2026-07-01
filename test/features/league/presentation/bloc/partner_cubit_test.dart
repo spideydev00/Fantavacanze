@@ -1,6 +1,9 @@
+import 'dart:async';
+
 import 'package:bloc_test/bloc_test.dart';
 import 'package:fantavacanze_official/core/cubits/app_league/app_league_cubit.dart';
 import 'package:fantavacanze_official/core/errors/failure.dart';
+import 'package:fantavacanze_official/features/league/domain/entities/partner/partner_catalog.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/partner/partner_search_result.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/remote/partner/create_partner_league.dart';
 import 'package:fantavacanze_official/features/league/domain/use_cases/remote/partner/get_partner_destinations.dart';
@@ -80,6 +83,20 @@ void main() {
   }
 
   group('PartnerCubit', () {
+    test('loadDestinations non emette dopo close', () async {
+      final completer = Completer<Either<Failure, PartnerCatalog>>();
+      when(() => getDestinations(any())).thenAnswer((_) => completer.future);
+
+      final cubit = buildCubit();
+      final future = cubit.loadDestinations('invibe');
+      await Future<void>.delayed(Duration.zero);
+
+      await cubit.close();
+      completer.complete(right(tPartnerCatalog));
+
+      await expectLater(future, completes);
+    });
+
     blocTest<PartnerCubit, PartnerState>(
       'emette [Loading, DestinationsLoaded] quando loadDestinations ha successo',
       build: () {

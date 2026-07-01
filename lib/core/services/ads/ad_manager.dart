@@ -21,11 +21,14 @@ class AdManager {
   final FeatureAccessSession session = FeatureAccessSession();
 
   StreamSubscription? _userSub;
+  bool _isLoggedIn = false;
   bool _isPremium = false;
+
+  bool get canShowAds => _isLoggedIn && !_isPremium;
   bool get isPremium => _isPremium;
 
   Future<void> initialize() async {
-    if (_isPremium) return;
+    if (!canShowAds) return;
     await MobileAds.instance.initialize();
 
     // Test device: solo iPhone (IDFA in AppSecrets). Su iOS la GMA SDK accetta
@@ -55,19 +58,24 @@ class AdManager {
   }
 
   void _applyPremium(AppUserState state) {
-    final premium = state is AppUserIsLoggedIn && state.user.isPremium;
+    final loggedIn = state is AppUserIsLoggedIn;
+    final premium = loggedIn && state.user.isPremium;
+    final adsBlocked = !loggedIn || premium;
+    _isLoggedIn = loggedIn;
     _isPremium = premium;
-    _interstitial.isPremium = premium;
-    _rewarded.isPremium = premium;
-    _appOpen.isPremium = premium;
-    if (premium) _interstitial.stopTimer();
+    _interstitial.isPremium = adsBlocked;
+    _rewarded.isPremium = adsBlocked;
+    _appOpen.isPremium = adsBlocked;
+    if (!canShowAds) _interstitial.stopTimer();
   }
 
   Future<void> showInterstitialAd({bool ignoreInterval = false}) {
+    if (!canShowAds) return Future.value();
     return _interstitial.show(ignoreInterval: ignoreInterval);
   }
 
   void startInterstitialTimer(BuildContext context) {
+    if (!canShowAds) return;
     _interstitial.startTimer(context);
   }
 
@@ -76,14 +84,17 @@ class AdManager {
   }
 
   Future<bool> showRewardedAd(BuildContext context) {
+    if (!canShowAds) return Future.value(false);
     return _rewarded.show(context);
   }
 
   Future<bool> loadRewardedAd() {
+    if (!canShowAds) return Future.value(false);
     return _rewarded.load();
   }
 
   Future<void> onAppResumed() {
+    if (!canShowAds) return Future.value();
     return _appOpen.showIfAvailable();
   }
 

@@ -37,10 +37,12 @@ class PartnerCubit extends Cubit<PartnerState> {
         super(const PartnerInitial());
 
   Future<void> loadDestinations(String partnerSlug) async {
+    if (isClosed) return;
     emit(const PartnerLoading());
     final result = await _getPartnerDestinations(
       GetPartnerDestinationsParams(partnerSlug: partnerSlug),
     );
+    if (isClosed) return;
     result.fold(
       (failure) => emit(PartnerFailure(failure.message)),
       (catalog) => emit(PartnerDestinationsLoaded(catalog)),
@@ -54,6 +56,7 @@ class PartnerCubit extends Cubit<PartnerState> {
     required String password,
     String? description,
   }) async {
+    if (isClosed) return;
     emit(const PartnerLoading());
     final result = await _createPartnerLeague(
       CreatePartnerLeagueParams(
@@ -64,10 +67,15 @@ class PartnerCubit extends Cubit<PartnerState> {
         description: description,
       ),
     );
+    if (isClosed) return;
     await result.fold(
       (failure) async => emit(PartnerFailure(failure.message)),
       (league) async {
+        // Aggiorna le leghe globali, poi emetti lo stato finale solo se il
+        // cubit è ancora vivo (la pagina che lo possiede potrebbe essere stata
+        // smontata durante la chiamata di rete).
         await _appLeagueCubit.getUserLeagues();
+        if (isClosed) return;
         emit(PartnerLeagueReady(league));
       },
     );
@@ -77,10 +85,12 @@ class PartnerCubit extends Cubit<PartnerState> {
     required String inviteCode,
     required String password,
   }) async {
+    if (isClosed) return;
     emit(const PartnerLoading());
     final result = await _searchPartnerLeague(
       SearchPartnerLeagueParams(inviteCode: inviteCode, password: password),
     );
+    if (isClosed) return;
     result.fold(
       (failure) => emit(PartnerFailure(failure.message)),
       (searchResult) => emit(PartnerSearchLoaded(searchResult)),
@@ -92,6 +102,7 @@ class PartnerCubit extends Cubit<PartnerState> {
     required String inviteCode,
     required String password,
   }) async {
+    if (isClosed) return;
     emit(const PartnerLoading());
     final result = await _joinPartnerLeague(
       JoinPartnerLeagueParams(
@@ -100,20 +111,27 @@ class PartnerCubit extends Cubit<PartnerState> {
         password: password,
       ),
     );
+    if (isClosed) return;
     await result.fold(
       (failure) async => emit(PartnerFailure(failure.message)),
       (league) async {
+        // Aggiorna le leghe globali, poi emetti lo stato finale solo se il
+        // cubit è ancora vivo (la pagina che lo possiede potrebbe essere stata
+        // smontata durante la chiamata di rete).
         await _appLeagueCubit.getUserLeagues();
+        if (isClosed) return;
         emit(PartnerLeagueReady(league));
       },
     );
   }
 
   Future<void> loadGeneralRanking(String leagueId) async {
+    if (isClosed) return;
     emit(const PartnerLoading());
     final result = await _getPartnerGeneralRanking(
       GetPartnerGeneralRankingParams(leagueId: leagueId),
     );
+    if (isClosed) return;
     result.fold(
       (failure) => emit(PartnerFailure(failure.message)),
       (ranking) => emit(PartnerRankingLoaded(ranking)),
@@ -121,6 +139,7 @@ class PartnerCubit extends Cubit<PartnerState> {
   }
 
   void reset() {
+    if (isClosed) return;
     emit(const PartnerInitial());
   }
 }
