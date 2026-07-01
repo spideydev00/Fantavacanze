@@ -1,4 +1,3 @@
-// FIXME: PRODUCTION SECRETS
 class AppSecrets {
   static const String supabaseKey = 'sb_publishable_your_key';
   static const String supabaseUrl = 'https://your_url.supabase.co';
