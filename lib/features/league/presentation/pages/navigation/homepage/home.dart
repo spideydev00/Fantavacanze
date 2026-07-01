@@ -159,11 +159,13 @@ class HomePage extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: ThemeSizes.xl),
           child: ActionCard(
-            title: 'Aggiungi \n Bonus o Malus',
+            title: 'Aggiungi\nBonus o Malus',
+            showBottomGradient: true,
             imagePath: isFemale
-                ? 'assets/images/girls_add_event.png'
-                : 'assets/images/boys_add_event.png',
+                ? 'assets/images/add-event-bg-unisex.jpeg'
+                : 'assets/images/add-event-bg-unisex.jpeg',
             iconData: Icons.add,
+            iconGlowColor: context.primaryColor,
             onTap: () => _navigateToAddEvent(context),
           ),
         ),

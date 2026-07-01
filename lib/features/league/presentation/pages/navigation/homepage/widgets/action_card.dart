@@ -136,7 +136,6 @@ class ActionCard extends StatelessWidget {
                                     overflow: TextOverflow.ellipsis,
                                   ),
                                 ],
-                                const SizedBox(height: ThemeSizes.xs),
                               ],
                             ),
                           ),

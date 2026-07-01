@@ -276,7 +276,7 @@ class LeagueBloc extends Bloc<LeagueEvent, LeagueState> {
       result.fold(
         (failure) => emit(LeagueError(message: failure.message)),
         (league) {
-          appLeagueCubit.selectLeague(league);
+          appLeagueCubit.updateLeagues(league);
 
           emit(LeagueSuccess(league: league, operation: 'get_league'));
         },

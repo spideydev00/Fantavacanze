@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:bloc_test/bloc_test.dart';
 import 'package:fantavacanze_official/core/cubits/app_league/app_league_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/app_theme/app_theme_cubit.dart';
@@ -104,5 +106,90 @@ void main() {
         ColorPalette.primary(ThemeMode.dark),
       );
     });
+
+    testWidgets(
+      'lo scope sotto MaterialApp aggiorna il brand senza ricreare il child',
+      (tester) async {
+        final leagueStates = StreamController<AppLeagueState>.broadcast();
+        addTearDown(leagueStates.close);
+        final colors = <Color>[];
+        var initCount = 0;
+
+        when(() => league.state).thenReturn(AppLeagueInitial());
+        when(() => league.stream).thenAnswer((_) => leagueStates.stream);
+
+        await tester.pumpWidget(
+          MultiBlocProvider(
+            providers: [
+              BlocProvider<AppThemeCubit>.value(value: theme),
+              BlocProvider<AppLeagueCubit>.value(value: league),
+            ],
+            child: MaterialApp(
+              builder: (context, child) {
+                return BlocSelector<AppLeagueCubit, AppLeagueState, String?>(
+                  selector: (state) => state is AppLeagueExists
+                      ? state.selectedLeague.partner
+                      : null,
+                  builder: (context, partnerSlug) {
+                    return Theme(
+                      data: AppTheme.getTheme(
+                        context,
+                        partnerSlugOverride: partnerSlug,
+                      ),
+                      child: child ?? const SizedBox.shrink(),
+                    );
+                  },
+                );
+              },
+              home: _ThemeProbe(
+                onInit: () => initCount++,
+                onBuild: (context) => colors.add(context.primaryColor),
+              ),
+            ),
+          ),
+        );
+
+        expect(colors.last, ColorPalette.primary(ThemeMode.dark));
+        expect(initCount, 1);
+
+        leagueStates.add(
+          AppLeagueExists(
+            leagues: const [],
+            selectedLeague: makePartnerLeague(partner: 'invibe'),
+          ),
+        );
+        await tester.pump();
+
+        expect(colors.last, const Color(0xFF6AC5E6));
+        expect(initCount, 1);
+      },
+    );
   });
+}
+
+class _ThemeProbe extends StatefulWidget {
+  final VoidCallback onInit;
+  final ValueChanged<BuildContext> onBuild;
+
+  const _ThemeProbe({
+    required this.onInit,
+    required this.onBuild,
+  });
+
+  @override
+  State<_ThemeProbe> createState() => _ThemeProbeState();
+}
+
+class _ThemeProbeState extends State<_ThemeProbe> {
+  @override
+  void initState() {
+    super.initState();
+    widget.onInit();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    widget.onBuild(context);
+    return const SizedBox.shrink();
+  }
 }
