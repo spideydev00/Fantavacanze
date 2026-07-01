@@ -21,6 +21,7 @@ class NotificationsBloc extends Bloc<NotificationsEvent, NotificationsState> {
   // Stream subscription for notifications
   StreamSubscription<Notification>? _notificationSubscription;
   StreamSubscription<AppLeagueState>? _leagueSubscription;
+  bool _isStartingNotificationListener = false;
   String? _lastLeagueId;
 
   NotificationsBloc({
@@ -34,6 +35,8 @@ class NotificationsBloc extends Bloc<NotificationsEvent, NotificationsState> {
     on<DeleteNotificationEvent>(_onDeleteNotification);
     on<ListenToNotificationEvent>(_onListenToNotification);
     on<ResetNotificationsEvent>(_onResetNotifications);
+    on<_NotificationStreamReceived>(_onNotificationStreamReceived);
+    on<_NotificationStreamErrorOccurred>(_onNotificationStreamErrorOccurred);
 
     _leagueSubscription = appLeagueCubit.stream.listen(_onLeagueStateChanged);
   }
@@ -110,29 +113,46 @@ class NotificationsBloc extends Bloc<NotificationsEvent, NotificationsState> {
     ListenToNotificationEvent event,
     Emitter<NotificationsState> emit,
   ) async {
-    _notificationSubscription?.cancel();
+    if (_notificationSubscription != null || _isStartingNotificationListener) {
+      return;
+    }
 
-    final result = await listenToNotification(NoParams());
+    _isStartingNotificationListener = true;
+    try {
+      final result = await listenToNotification(NoParams());
 
-    result.fold(
-      (failure) {
-        emit(NotificationsError(message: failure.message));
-      },
-      (notificationStream) {
-        emit.forEach<Notification>(
-          notificationStream,
-          onData: (notification) {
-            // Increment notification count
-            notificationCountCubit.increment();
-            // Return the notification state that will be emitted
-            return NotificationReceived(notification: notification);
-          },
-          onError: (error, stackTrace) => NotificationsError(
-            message: error.toString(),
-          ),
-        );
-      },
-    );
+      result.fold(
+        (failure) {
+          emit(NotificationsError(message: failure.message));
+        },
+        (notificationStream) {
+          _notificationSubscription = notificationStream.listen(
+            (notification) => add(_NotificationStreamReceived(notification)),
+            onError: (Object error, StackTrace stackTrace) {
+              add(_NotificationStreamErrorOccurred(error.toString()));
+            },
+            onDone: () => _notificationSubscription = null,
+          );
+        },
+      );
+    } finally {
+      _isStartingNotificationListener = false;
+    }
+  }
+
+  void _onNotificationStreamReceived(
+    _NotificationStreamReceived event,
+    Emitter<NotificationsState> emit,
+  ) {
+    notificationCountCubit.increment();
+    emit(NotificationReceived(notification: event.notification));
+  }
+
+  void _onNotificationStreamErrorOccurred(
+    _NotificationStreamErrorOccurred event,
+    Emitter<NotificationsState> emit,
+  ) {
+    emit(NotificationsError(message: event.message));
   }
 
   void _onLeagueStateChanged(AppLeagueState leagueState) {
@@ -150,9 +170,27 @@ class NotificationsBloc extends Bloc<NotificationsEvent, NotificationsState> {
   }
 
   @override
-  Future<void> close() {
-    _notificationSubscription?.cancel();
-    _leagueSubscription?.cancel();
+  Future<void> close() async {
+    await _notificationSubscription?.cancel();
+    await _leagueSubscription?.cancel();
     return super.close();
   }
+}
+
+final class _NotificationStreamReceived extends NotificationsEvent {
+  const _NotificationStreamReceived(this.notification);
+
+  final Notification notification;
+
+  @override
+  List<Object?> get props => [notification];
+}
+
+final class _NotificationStreamErrorOccurred extends NotificationsEvent {
+  const _NotificationStreamErrorOccurred(this.message);
+
+  final String message;
+
+  @override
+  List<Object?> get props => [message];
 }
