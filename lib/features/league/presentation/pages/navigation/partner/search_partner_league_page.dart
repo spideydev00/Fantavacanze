@@ -125,8 +125,7 @@ class _SearchPartnerLeaguePageState extends State<SearchPartnerLeaguePage> {
                                       controller: _inviteCodeController,
                                       decoration: InputDecoration(
                                         labelText: 'Codice Invito',
-                                        hintText:
-                                            'Esempio: ${expectedPrefix}ABC123',
+                                        hintText: '${expectedPrefix}ABC123',
                                         prefixIcon: const Icon(Icons.code),
                                         filled: true,
                                         fillColor: context.secondaryBgColor,
