@@ -3,6 +3,7 @@ import 'package:fantavacanze_official/core/errors/exceptions.dart';
 import 'package:fantavacanze_official/features/games/data/datasources/realtime/game_realtime_manager.dart';
 import 'package:fantavacanze_official/features/games/data/models/game_player_model.dart';
 import 'package:fantavacanze_official/features/games/data/models/game_session_model.dart';
+import 'package:fantavacanze_official/features/games/domain/entities/game_invite_code.dart';
 import 'package:fantavacanze_official/features/games/domain/entities/game_type_enum.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -120,6 +121,11 @@ class GameRemoteDataSourceImpl implements GameRemoteDataSource {
           .single();
 
       final gameSession = GameSessionModel.fromJson(response);
+      if (!isExactGameInviteCode(gameSession.inviteCode)) {
+        throw ServerException(
+          'La sessione è stata creata con un codice invito non valido.',
+        );
+      }
 
       return gameSession;
     });
@@ -133,8 +139,15 @@ class GameRemoteDataSourceImpl implements GameRemoteDataSource {
     required String userName,
   }) async {
     return _tryDatabaseOperation(() async {
+      final normalizedInviteCode = normalizeGameInviteCode(inviteCode);
+      if (normalizedInviteCode == null) {
+        throw ServerException(
+          'Inserisci un codice invito valido di 7 caratteri.',
+        );
+      }
+
       final params = {
-        'p_invite_code': inviteCode.toUpperCase(),
+        'p_invite_code': normalizedInviteCode,
         'p_user_id': userId,
         'p_user_name': userName,
       };

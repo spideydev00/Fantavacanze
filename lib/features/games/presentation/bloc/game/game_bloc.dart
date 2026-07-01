@@ -406,7 +406,7 @@ class LobbyBloc extends Bloc<LobbyEvent, LobbyState> {
       final currentLobbyState = state as LobbySessionActive;
       final currentUser = _currentUser;
 
-      if (currentUser != null) {
+      if (currentUser != null && event.players.isNotEmpty) {
         // Check if the current user is still in the updated list of players
         final currentPlayerInList = event.players.any(
           (player) => player.userId == currentUser.id,

@@ -50,9 +50,12 @@ class MockAppUserCubit extends Mock implements AppUserCubit {}
 class FakeCreateGameSessionParams extends Fake
     implements CreateGameSessionParams {}
 
+class FakeJoinGameSessionParams extends Fake implements JoinGameSessionParams {}
+
 void main() {
   setUpAll(() {
     registerFallbackValue(FakeCreateGameSessionParams());
+    registerFallbackValue(FakeJoinGameSessionParams());
   });
 
   group('LobbyBloc', () {
@@ -99,9 +102,29 @@ void main() {
       joinedAt: DateTime(2026, 6, 30, 10),
     );
 
-    LobbyBloc buildBloc() {
+    final joiner = User(
+      id: 'u2',
+      email: 'bob@example.com',
+      name: 'Bob',
+      gender: 'male',
+      isOnboarded: true,
+      isAdult: true,
+      isWordBombTrialAvailable: true,
+      sentimentalStatus: 'single',
+    );
+
+    final hostedSession = GameSession(
+      id: 's2',
+      inviteCode: 'W12AB3B',
+      adminId: 'u1',
+      gameType: GameType.wordBomb,
+      status: GameStatus.waiting,
+      createdAt: DateTime(2026, 6, 30),
+    );
+
+    LobbyBloc buildBloc({User currentUser = user}) {
       when(() => appUserCubit.state).thenReturn(
-        AppUserIsLoggedIn(user: user),
+        AppUserIsLoggedIn(user: currentUser),
       );
       when(() => createGameSession(any())).thenAnswer((_) async {
         return right(session);
@@ -186,5 +209,33 @@ void main() {
         verify(() => streamLobbyPresence('s1')).called(1);
       },
     );
+
+    test('seed vuoto non espelle il joiner prima dei delta realtime', () async {
+      when(() => appUserCubit.state).thenReturn(
+        AppUserIsLoggedIn(user: joiner),
+      );
+      when(() => joinGameSession(any())).thenAnswer((_) async {
+        return right(hostedSession);
+      });
+      when(() => streamGameSession(any())).thenAnswer(
+        (_) => sessionController.stream,
+      );
+      when(() => streamLobbyPlayers(any())).thenAnswer(
+        (_) => playersController.stream,
+      );
+      when(() => streamLobbyPresence(any())).thenAnswer(
+        (_) => presenceController.stream,
+      );
+
+      final bloc = buildBloc(currentUser: joiner);
+      addTearDown(bloc.close);
+
+      bloc.add(const JoinSessionRequested('W12AB3B'));
+      await Future<void>.delayed(Duration.zero);
+      playersController.add(right(const []));
+      await Future<void>.delayed(Duration.zero);
+
+      expect(bloc.state, isA<LobbySessionActive>());
+    });
   });
 }

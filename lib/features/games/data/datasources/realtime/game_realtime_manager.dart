@@ -25,6 +25,32 @@ Set<String> onlineUserIdsFromPresencePayloads(
   };
 }
 
+/// Broadcast messages arrive wrapped as `{ event, type, payload: {...} }`.
+/// `realtime.broadcast_changes` puts the row change (`table` / `operation` /
+/// `record` / `old_record`) inside that inner `payload`. Returns the inner
+/// data map, or null if the envelope has no payload.
+Map<String, dynamic>? broadcastChangeData(Map<String, dynamic> message) {
+  return _payloadMap(message['payload']) ??
+      (message.containsKey('table')
+          ? Map<String, dynamic>.from(message)
+          : null);
+}
+
+GameSessionModel? sessionModelFromBroadcastChange(Map<String, dynamic> data) {
+  final operation = (data['operation'] ?? data['eventType']) as String;
+  final record = _payloadMap(data['record'] ?? data['new']) ??
+      _payloadMap(data['old_record'] ?? data['old']);
+  if (record == null) {
+    return null;
+  }
+
+  if (operation == 'DELETE') {
+    record['status'] = 'finished';
+  }
+
+  return GameSessionModel.fromJson(record);
+}
+
 List<Map<String, dynamic>> _applyPlayerMapDelta(
   List<Map<String, dynamic>> current,
   String op,
@@ -98,6 +124,7 @@ class GameRealtimeManager {
 
   final SupabaseClient supabaseClient;
   final Map<String, _SessionChannel> _channels = {};
+  final Map<String, Future<_SessionChannel>> _pendingChannels = {};
 
   Stream<GameSessionModel> sessionStream({required String sessionId}) {
     return _bind(
@@ -139,6 +166,23 @@ class GameRealtimeManager {
       return existing;
     }
 
+    final pending = _pendingChannels[sessionId];
+    if (pending != null) {
+      final session = await pending;
+      session.refCount++;
+      return session;
+    }
+
+    final future = _openChannel(sessionId);
+    _pendingChannels[sessionId] = future;
+    try {
+      return await future;
+    } finally {
+      _pendingChannels.remove(sessionId);
+    }
+  }
+
+  Future<_SessionChannel> _openChannel(String sessionId) async {
     try {
       await supabaseClient.realtime.setAuth(
         supabaseClient.auth.currentSession?.accessToken,
@@ -204,35 +248,39 @@ class GameRealtimeManager {
 
   void _routeChange(
     _SessionChannel session,
-    Map<String, dynamic> payload,
+    Map<String, dynamic> message,
   ) {
-    if (payload['table'] == 'game_sessions') {
-      _onSession(session, payload);
-    } else if (payload['table'] == 'game_players') {
-      _onPlayer(session, payload);
+    // Unwrap the broadcast envelope: row data lives under message['payload'].
+    final data = broadcastChangeData(message);
+    if (data == null) {
+      return;
+    }
+    if (data['table'] == 'game_sessions') {
+      _onSession(session, data);
+    } else if (data['table'] == 'game_players') {
+      _onPlayer(session, data);
     }
   }
 
   void _onSession(
     _SessionChannel session,
-    Map<String, dynamic> payload,
+    Map<String, dynamic> data,
   ) {
-    final record = _payloadMap(payload['record']);
-    if (payload['operation'] == 'DELETE' || record == null) {
+    final model = sessionModelFromBroadcastChange(data);
+    if (model == null) {
       return;
     }
-    final model = GameSessionModel.fromJson(record);
     session.lastSession = model;
     session.sessionCtrl.add(model);
   }
 
   void _onPlayer(
     _SessionChannel session,
-    Map<String, dynamic> payload,
+    Map<String, dynamic> data,
   ) {
-    final operation = payload['operation'] as String;
-    final record = _payloadMap(payload['record']);
-    final oldRecord = _payloadMap(payload['old_record']);
+    final operation = (data['operation'] ?? data['eventType']) as String;
+    final record = _payloadMap(data['record'] ?? data['new']);
+    final oldRecord = _payloadMap(data['old_record'] ?? data['old']);
 
     session.playerMaps = _applyPlayerMapDelta(
       session.playerMaps,

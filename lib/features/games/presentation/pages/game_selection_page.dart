@@ -5,11 +5,12 @@ import 'package:fantavacanze_official/core/extensions/context_extension.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:fantavacanze_official/core/utils/show-snackbar-or-paywall/show_page_specific_snackbar.dart';
+import 'package:fantavacanze_official/core/widgets/app_information_dialog.dart';
 import 'package:fantavacanze_official/core/widgets/buttons/modern_drink_card.dart';
 import 'package:fantavacanze_official/core/widgets/dialogs/premium_access_dialog.dart';
 import 'package:fantavacanze_official/core/widgets/divider.dart';
 import 'package:fantavacanze_official/core/widgets/loader.dart';
-import 'package:fantavacanze_official/core/widgets/app_information_dialog.dart';
+import 'package:fantavacanze_official/features/games/domain/entities/game_invite_code.dart';
 import 'package:fantavacanze_official/features/games/domain/entities/game_type_enum.dart';
 import 'package:fantavacanze_official/features/games/presentation/bloc/game/game_bloc.dart';
 import 'package:fantavacanze_official/features/games/presentation/bloc/word_bomb/word_bomb_bloc.dart';
@@ -78,7 +79,9 @@ class _GameSelectionPageState extends State<GameSelectionPage> {
       ),
       body: BlocListener<LobbyBloc, LobbyState>(
         listenWhen: (previous, current) =>
-            previous is! LobbySessionActive && current is LobbySessionActive,
+            (previous is! LobbySessionActive &&
+                current is LobbySessionActive) ||
+            current is LobbyError,
         listener: (context, state) {
           if (state is LobbySessionActive) {
             // Navigate to GameHostPage when a session becomes active
@@ -105,10 +108,9 @@ class _GameSelectionPageState extends State<GameSelectionPage> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
-                    // First row: Two cards side by side
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
+                    // Game cards: 2 per row, last one centered if odd.
+                    _GameCardsGrid(
+                      cards: [
                         ModernDrinkCard(
                           onTap: () {
                             setState(() {
@@ -121,14 +123,9 @@ class _GameSelectionPageState extends State<GameSelectionPage> {
                           label: "Truth or Dare",
                           description: "Un classico obbligo o verità",
                         ),
-                      ],
-                    ),
-
-                    SizedBox(height: ThemeSizes.md),
-                    // Second row: Third card with Prosegui button next to it horizontally
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
+                        // TODO(non-ho-mai): riattivare qui la card "Non Ho Mai";
+                        // la griglia la dispone da sola (2 per riga, ultima
+                        // centrata se il numero è dispari).
                         ModernDrinkCard(
                           onTap: () {
                             setState(() {
@@ -207,48 +204,46 @@ class _GameSelectionPageState extends State<GameSelectionPage> {
                               ? "Occhio a non far scoppiare la bomba!"
                               : null,
                         ),
-                        const SizedBox(width: 26),
-                        // Prosegui button right next to the third card
-                        GestureDetector(
-                          onTap: () {
-                            if (_selectedGameType == GameType.wordBomb &&
-                                (!isPremiumUser && hasWordBombTrial)) {
-                              context
-                                  .read<WordBombBloc>()
-                                  .add(DeactivateTrialRequested());
+                      ],
+                    ),
 
-                              context.read<LobbyBloc>().add(
-                                    CreateSessionRequested(_selectedGameType),
-                                  );
-                            } else {
-                              context.read<LobbyBloc>().add(
-                                    CreateSessionRequested(_selectedGameType),
-                                  );
-                            }
-                          },
-                          child: Container(
-                            width: 70,
-                            height: 70,
-                            decoration: BoxDecoration(
-                              color: context.textPrimaryColor
-                                  .withValues(alpha: 0.1),
-                              shape: BoxShape.circle,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withValues(alpha: 0.05),
-                                  blurRadius: 8,
-                                  offset: const Offset(0, 2),
-                                )
-                              ],
-                            ),
-                            child: Icon(
-                              Icons.arrow_forward_rounded,
-                              size: 32,
-                              color: context.textPrimaryColor,
+                    SizedBox(height: ThemeSizes.lg),
+                    // Continue button: full width, below the last card row.
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        onPressed: () {
+                          if (_selectedGameType == GameType.wordBomb &&
+                              (!isPremiumUser && hasWordBombTrial)) {
+                            context
+                                .read<WordBombBloc>()
+                                .add(DeactivateTrialRequested());
+                          }
+                          context.read<LobbyBloc>().add(
+                                CreateSessionRequested(_selectedGameType),
+                              );
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: ColorPalette.info,
+                          foregroundColor: Colors.white,
+                          padding: EdgeInsets.symmetric(
+                            vertical: ThemeSizes.md,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(
+                              ThemeSizes.borderRadiusLg,
                             ),
                           ),
                         ),
-                      ],
+                        icon: const Icon(Icons.arrow_forward_rounded),
+                        label: Text(
+                          'Continua',
+                          style: TextStyle(
+                            fontSize: ThemeSizes.fontSizeMd,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
                     ),
 
                     const SizedBox(height: 20),
@@ -276,15 +271,23 @@ class _GameSelectionPageState extends State<GameSelectionPage> {
                         ),
                         suffixIcon: IconButton(
                           onPressed: () {
-                            final isWordBombInviteCode = _inviteCodeController
-                                    .text
-                                    .toUpperCase()
-                                    .startsWith('W') &&
-                                _inviteCodeController.text
-                                    .toUpperCase()
-                                    .endsWith('B');
+                            final inviteCode = normalizeGameInviteCode(
+                              _inviteCodeController.text,
+                            );
+                            if (_inviteCodeController.text.trim().isNotEmpty) {
+                              if (inviteCode == null) {
+                                showSpecificSnackBar(
+                                  context,
+                                  'Inserisci un codice invito valido.',
+                                  color: ColorPalette.warning,
+                                );
+                                return;
+                              }
 
-                            if (_inviteCodeController.text.isNotEmpty) {
+                              final isWordBombInviteCode =
+                                  inviteCode.startsWith('W') &&
+                                      inviteCode.endsWith('B');
+
                               if (isWordBombInviteCode &&
                                   !hasWordBombTrial &&
                                   !isPremiumUser) {
@@ -303,7 +306,7 @@ class _GameSelectionPageState extends State<GameSelectionPage> {
 
                               context.read<LobbyBloc>().add(
                                     JoinSessionRequested(
-                                      _inviteCodeController.text.trim(),
+                                      inviteCode,
                                     ),
                                   );
                             }
@@ -324,5 +327,37 @@ class _GameSelectionPageState extends State<GameSelectionPage> {
         ),
       ),
     );
+  }
+}
+
+/// Lays out game cards two per row. A lone last card (odd count) is centered.
+/// Cards keep their own intrinsic width (ModernDrinkCard self-sizes and animates
+/// on selection), so they are not wrapped in Expanded.
+class _GameCardsGrid extends StatelessWidget {
+  const _GameCardsGrid({required this.cards});
+
+  final List<Widget> cards;
+
+  @override
+  Widget build(BuildContext context) {
+    final rows = <Widget>[];
+    for (var i = 0; i < cards.length; i += 2) {
+      if (i > 0) {
+        rows.add(const SizedBox(height: ThemeSizes.md));
+      }
+      final rowChildren = <Widget>[cards[i]];
+      if (i + 1 < cards.length) {
+        rowChildren
+          ..add(const SizedBox(width: ThemeSizes.md))
+          ..add(cards[i + 1]);
+      }
+      rows.add(
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: rowChildren,
+        ),
+      );
+    }
+    return Column(children: rows);
   }
 }

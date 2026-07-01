@@ -96,7 +96,6 @@ class GameHostPage extends StatelessWidget {
         // Default or error state: navigate back or show error
         // This might happen if the session ID doesn't match or lobby state is initial.
         return Scaffold(
-          appBar: AppBar(title: const Text("Caricamento...")),
           body: Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
