@@ -7,7 +7,7 @@ class AdConfig {
   AdConfig._();
 
   // FIXME: mettere a false prima del deploy.
-  static bool get useTestAds => true;
+  static bool get useTestAds => false;
 
   static const String _testInterstitial =
       'ca-app-pub-3940256099942544/1033173712';
