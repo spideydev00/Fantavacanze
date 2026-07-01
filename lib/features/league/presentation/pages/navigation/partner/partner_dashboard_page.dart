@@ -148,18 +148,15 @@ class _LoadedDashboard extends StatelessWidget {
               ActionCard(
                 title: 'Unisciti a una lega',
                 description: 'Hai un codice? Inseriscilo e parti.',
-                imagePath: 'assets/images/add-event-bg.jpg',
+                imagePath: 'assets/images/join-league-bg.png',
                 iconData: Icons.login_rounded,
                 iconGlowColor: brand,
                 showBottomGradient: true,
                 onTap: () => Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (_) => BlocProvider(
-                      create: (_) => serviceLocator<PartnerCubit>(),
-                      child: SearchPartnerLeaguePage(
-                        partnerSlug: catalog.partner.slug,
-                      ),
+                    builder: (_) => SearchPartnerLeaguePage(
+                      partnerSlug: catalog.partner.slug,
                     ),
                   ),
                 ),

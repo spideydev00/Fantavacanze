@@ -60,15 +60,6 @@ List<NavigationItem> nonParticipantNavbarItems = [
   //   lightSvgIcon: 'assets/images/icons/homepage_icons/robot-icon.svg',
   //   screen: const FvBotPage(),
   //   subsection: "Games",
-  // ),
-  // TODO: Remove this in production
-  // NavigationItem(
-  //   title: "Smash Or Pass",
-  //   lightSvgIcon:
-  //       'assets/images/icons/homepage_icons/question-mark-icon-sp.svg',
-  //   darkSvgIcon: 'assets/images/icons/homepage_icons/question-mark-icon-sp.svg',
-  //   screen: SmashOrPass(),
-  //   subsection: "IRL",
   // )
 ];
 
@@ -203,14 +194,5 @@ List<NavigationItem> participantNavbarItems = [
   //   lightSvgIcon: 'assets/images/icons/homepage_icons/articles-icon-dark.svg',
   //   screen: const ArticlesPage(),
   //   subsection: "Altro",
-  // ),
-  // TODO: Remove this in production
-  // NavigationItem(
-  //   title: "Smash Or Pass",
-  //   lightSvgIcon:
-  //       'assets/images/icons/homepage_icons/question-mark-icon-sp.svg',
-  //   darkSvgIcon: 'assets/images/icons/homepage_icons/question-mark-icon-sp.svg',
-  //   screen: SmashOrPass(),
-  //   subsection: "IRL",
   // )
 ];

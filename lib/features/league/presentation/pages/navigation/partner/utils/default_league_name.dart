@@ -3,8 +3,8 @@ String defaultLeagueName({
   required String destination,
 }) {
   return switch (gender) {
-    'male' => 'I tori di $destination (scegli il tuo...)',
-    'female' => 'Le baddies di $destination (scegli il tuo...)',
-    _ => 'La lega di $destination (scegli il tuo...)',
+    'male' => 'I tori di $destination',
+    'female' => 'Le baddies di $destination',
+    _ => 'La lega di $destination',
   };
 }

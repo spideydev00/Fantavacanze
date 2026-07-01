@@ -3,6 +3,9 @@ import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/extensions/context_extension.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
+import 'package:fantavacanze_official/features/league/presentation/pages/dashboard/sections/dashboard.dart';
+import 'package:fantavacanze_official/features/league/presentation/pages/navigation/create_league/widgets/explainer_info_card.dart';
+import 'package:fantavacanze_official/main.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -30,17 +33,25 @@ class _LeagueAdminExplainerPageState extends State<LeagueAdminExplainerPage> {
   void _goHome() {
     context.read<AppNavigationCubit>().setIndex(0);
 
-    Navigator.of(context).popUntil((route) => route.isFirst);
+    // Reset all'intero stack sul root navigator: garantisce di tornare alla
+    // home reale anche dal flusso partner (dove popUntil(isFirst) si fermava
+    // sulla partner dashboard).
+    navigatorKey.currentState?.pushAndRemoveUntil(
+      DashboardScreen.route,
+      (route) => false,
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        elevation: 0,
-        automaticallyImplyLeading: false,
-        scrolledUnderElevation: 0,
-      ),
+    return PopScope(
+      canPop: false,
+      child: Scaffold(
+        appBar: AppBar(
+          elevation: 0,
+          automaticallyImplyLeading: false,
+          scrolledUnderElevation: 0,
+        ),
       floatingActionButton: AnimatedScale(
         scale: _showHomeButton ? 1 : 0.8,
         duration: const Duration(milliseconds: 250),
@@ -127,7 +138,7 @@ class _LeagueAdminExplainerPageState extends State<LeagueAdminExplainerPage> {
                 ),
               ),
               const SizedBox(height: ThemeSizes.xl),
-              _AdminInfoCard(
+              ExplainerInfoCard(
                 icon: Icons.rule_folder_rounded,
                 color: ColorPalette.info,
                 title: 'Bonus, malus e nuovi admin',
@@ -141,7 +152,7 @@ class _LeagueAdminExplainerPageState extends State<LeagueAdminExplainerPage> {
                 ],
               ),
               const SizedBox(height: ThemeSizes.md),
-              _AdminInfoCard(
+              ExplainerInfoCard(
                 icon: Icons.notifications_active_rounded,
                 color: ColorPalette.info,
                 title: 'Sfide giornaliere',
@@ -158,161 +169,6 @@ class _LeagueAdminExplainerPageState extends State<LeagueAdminExplainerPage> {
           ),
         ),
       ),
-    );
-  }
-}
-
-class _AdminInfoCard extends StatelessWidget {
-  final IconData icon;
-  final Color color;
-  final String title;
-  final List<String> children;
-  final List<String> tips;
-
-  const _AdminInfoCard({
-    required this.icon,
-    required this.color,
-    required this.title,
-    required this.children,
-    this.tips = const [],
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(ThemeSizes.md),
-      decoration: BoxDecoration(
-        color: context.secondaryBgColor,
-        borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusLg),
-        border: Border.all(
-          color: color.withValues(alpha: 0.18),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(ThemeSizes.sm),
-                decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.12),
-                  borderRadius:
-                      BorderRadius.circular(ThemeSizes.borderRadiusMd),
-                ),
-                child: Icon(
-                  icon,
-                  color: color,
-                  size: 24,
-                ),
-              ),
-              const SizedBox(width: ThemeSizes.md),
-              Expanded(
-                child: Text(
-                  title,
-                  style: context.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: context.textPrimaryColor,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: ThemeSizes.md),
-          ...children.map(
-            (text) => Padding(
-              padding: const EdgeInsets.only(bottom: ThemeSizes.sm),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.only(top: 7),
-                    child: Container(
-                      width: 6,
-                      height: 6,
-                      decoration: BoxDecoration(
-                        color: color,
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: ThemeSizes.sm),
-                  Expanded(
-                    child: Text(
-                      text,
-                      style: context.textTheme.bodyMedium?.copyWith(
-                        color: context.textSecondaryColor,
-                        height: 1.35,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          ...tips.map(
-            (text) => Padding(
-              padding: const EdgeInsets.only(top: ThemeSizes.xs),
-              child: _AdminTip(text: text),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// Box di risalto per un consiglio, in stile [InfoContainer] con icona a stella.
-class _AdminTip extends StatelessWidget {
-  final String text;
-
-  const _AdminTip({required this.text});
-
-  @override
-  Widget build(BuildContext context) {
-    const color = Colors.amber;
-
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(ThemeSizes.md),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusMd),
-        border: Border.all(color: color.withValues(alpha: 0.35)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(Icons.star_rounded, color: color, size: 20),
-              const SizedBox(width: ThemeSizes.sm),
-              Text(
-                "Consiglio",
-                style: context.textTheme.titleSmall?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: color,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: ThemeSizes.xs),
-          Text(
-            text,
-            style: context.textTheme.bodyMedium?.copyWith(
-              color: context.textSecondaryColor,
-              height: 1.35,
-            ),
-          ),
-        ],
       ),
     );
   }

@@ -143,7 +143,7 @@ class ConfirmationDialog extends StatelessWidget {
   factory ConfirmationDialog.leagueFound({
     required String leagueName,
     required VoidCallback onConfirm,
-    required VoidCallback onCancel,
+    VoidCallback? onCancel,
     String? description,
     Color? iconColor,
     IconData? icon,
@@ -158,6 +158,7 @@ class ConfirmationDialog extends StatelessWidget {
       icon: icon ?? Icons.emoji_events_rounded,
       iconColor: iconColor ?? ColorPalette.info,
       onConfirm: onConfirm,
+      onCancel: onCancel,
       outlinedButtonStyle: outlinedButtonStyle,
       elevatedButtonStyle: elevatedButtonStyle,
       isPrimaryAction: true,

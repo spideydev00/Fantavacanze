@@ -5,7 +5,6 @@ import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit.dart';
 import 'package:fantavacanze_official/core/extensions/colors_extension.dart';
 import 'package:fantavacanze_official/core/extensions/context_extension.dart';
 import 'package:fantavacanze_official/core/theme/brand_theme.dart';
-import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/sizes.dart';
 import 'package:fantavacanze_official/core/theme/theme.dart';
 import 'package:fantavacanze_official/core/utils/show-snackbar-or-paywall/show_snackbar.dart';
@@ -15,6 +14,7 @@ import 'package:fantavacanze_official/core/widgets/loader.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/partner/partner_catalog.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/partner/partner_destination.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/partner_bloc/partner_cubit.dart';
+import 'package:fantavacanze_official/features/league/presentation/pages/navigation/create_league/league_admin_explainer_page.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/partner/utils/default_league_name.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/rules/widgets/rule_item.dart';
 import 'package:flutter/material.dart';
@@ -61,15 +61,6 @@ class _CreatePartnerLeagueFormPageState
   @override
   void initState() {
     super.initState();
-    final userState = context.read<AppUserCubit>().state;
-    final gender = switch (userState) {
-      AppUserIsLoggedIn(:final user) => user.gender,
-      _ => null,
-    };
-    _nameController.text = defaultLeagueName(
-      gender: gender,
-      destination: widget.destination.name,
-    );
   }
 
   @override
@@ -82,6 +73,12 @@ class _CreatePartnerLeagueFormPageState
 
   @override
   Widget build(BuildContext context) {
+    final userState = context.read<AppUserCubit>().state;
+    final gender = switch (userState) {
+      AppUserIsLoggedIn(:final user) => user.gender,
+      _ => null,
+    };
+
     return Theme(
       data: AppTheme.getTheme(context, partnerSlugOverride: _slug),
       child: Builder(
@@ -157,6 +154,8 @@ class _CreatePartnerLeagueFormPageState
                               ),
                               const SizedBox(height: ThemeSizes.lg),
                               _LeagueFields(
+                                gender: gender!,
+                                destination: widget.destination,
                                 nameController: _nameController,
                                 mottoController: _mottoController,
                                 passwordController: _passwordController,
@@ -189,10 +188,10 @@ class _CreatePartnerLeagueFormPageState
     if (state is PartnerLeagueReady) {
       context.read<AppLeagueCubit>().selectLeague(state.league);
       context.read<AppNavigationCubit>().setIndex(0);
-      Navigator.of(context).popUntil((route) => route.isFirst);
-      showSnackBar(
-        'Lega creata con successo',
-        color: ColorPalette.success,
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => const LeagueAdminExplainerPage(),
+        ),
       );
     }
   }
@@ -224,14 +223,17 @@ class _LeagueFields extends StatelessWidget {
   final TextEditingController nameController;
   final TextEditingController mottoController;
   final TextEditingController passwordController;
+  final String gender;
+  final PartnerDestination destination;
   final bool requiresPassword;
 
-  const _LeagueFields({
-    required this.nameController,
-    required this.mottoController,
-    required this.passwordController,
-    required this.requiresPassword,
-  });
+  const _LeagueFields(
+      {required this.nameController,
+      required this.mottoController,
+      required this.passwordController,
+      required this.requiresPassword,
+      required this.gender,
+      required this.destination});
 
   @override
   Widget build(BuildContext context) {
@@ -240,6 +242,10 @@ class _LeagueFields extends StatelessWidget {
         TextFormField(
           controller: nameController,
           decoration: InputDecoration(
+            hintText: defaultLeagueName(
+              gender: gender,
+              destination: destination.name,
+            ),
             labelText: 'Nome',
             prefixIcon: const Icon(Icons.emoji_events_outlined),
             filled: true,
@@ -277,7 +283,7 @@ class _LeagueFields extends StatelessWidget {
               filled: true,
               fillColor: context.secondaryBgColor,
             ),
-            obscureText: true,
+            // obscureText: true,
             textInputAction: TextInputAction.done,
             validator: (value) {
               if (value == null || value.trim().isEmpty) {

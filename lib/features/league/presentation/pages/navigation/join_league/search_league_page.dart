@@ -10,12 +10,14 @@ import 'package:fantavacanze_official/core/utils/show-snackbar-or-paywall/show_s
 import 'package:fantavacanze_official/core/widgets/ambient_glow.dart';
 import 'package:fantavacanze_official/core/widgets/dialogs/confirmation_dialog.dart';
 import 'package:fantavacanze_official/core/widgets/info_banner.dart';
+import 'package:fantavacanze_official/core/widgets/joining_league_overlay.dart';
 import 'package:fantavacanze_official/core/widgets/loader.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/league/league.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc/league_bloc.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc/league_event.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/league_bloc/league_state.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/partner_bloc/partner_cubit.dart';
+import 'package:fantavacanze_official/features/league/presentation/pages/navigation/create_league/league_user_explainer_page.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/join_league/choose_team_page.dart';
 import 'package:fantavacanze_official/init_dependencies/init_dependencies.dart';
 import 'package:flutter/material.dart';
@@ -154,14 +156,11 @@ class _SearchLeaguePageState extends State<SearchLeaguePage> {
                     setState(
                       () => _isJoiningLeague = false,
                     );
-                    Navigator.of(context).popUntil(
-                      (route) => route.isFirst,
-                    );
                     context.read<AppNavigationCubit>().setIndex(0);
-
-                    showSnackBar(
-                      'Unione alla lega completata!',
-                      color: ColorPalette.success,
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => const LeagueUserExplainerPage(),
+                      ),
                     );
                   }
                 },
@@ -182,48 +181,7 @@ class _SearchLeaguePageState extends State<SearchLeaguePage> {
                   );
                 },
               ),
-              if (_isJoiningLeague)
-                // ------------------------------
-                // Overlay full-screen di attesa durante l'unione alla lega
-                // ------------------------------
-                Container(
-                  color: Colors.black.withValues(alpha: 0.5),
-                  child: Center(
-                    child: Card(
-                      color: context.colorScheme.surface,
-                      elevation: 8,
-                      shape: RoundedRectangleBorder(
-                        borderRadius:
-                            BorderRadius.circular(ThemeSizes.borderRadiusMd),
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(ThemeSizes.xl),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Loader(color: ColorPalette.success),
-                            const SizedBox(height: ThemeSizes.md),
-                            Text(
-                              'Unione alla lega in corso...',
-                              style: TextStyle(
-                                color: context.textPrimaryColor,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const SizedBox(height: ThemeSizes.xs),
-                            Text(
-                              'Attendi il completamento',
-                              style: TextStyle(
-                                color: context.textSecondaryColor,
-                                fontSize: 12,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
+              if (_isJoiningLeague) const JoiningLeagueOverlay(),
             ],
           ),
         ),
@@ -499,10 +457,10 @@ class _SearchLeaguePageState extends State<SearchLeaguePage> {
       setState(() => _isJoiningLeague = false);
       context.read<AppLeagueCubit>().selectLeague(state.league);
       context.read<AppNavigationCubit>().setIndex(0);
-      Navigator.of(context).popUntil((route) => route.isFirst);
-      showSnackBar(
-        'Unione alla lega completata!',
-        color: ColorPalette.success,
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => const LeagueUserExplainerPage(),
+        ),
       );
     }
   }
@@ -576,7 +534,7 @@ class _SearchLeaguePageState extends State<SearchLeaguePage> {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (dialogContext) => ConfirmationDialog.leagueFound(
+      builder: (_) => ConfirmationDialog.leagueFound(
         leagueName: league.name,
         description: league.description,
         outlinedButtonStyle: context.outlinedButtonThemeData.style!.copyWith(
@@ -595,9 +553,7 @@ class _SearchLeaguePageState extends State<SearchLeaguePage> {
             ColorPalette.info,
           ),
         ),
-        onCancel: () => Navigator.of(dialogContext).pop(),
         onConfirm: () {
-          Navigator.of(dialogContext).pop();
           if (!mounted) return;
 
           // Lega travel: serve la parola d'ordine (validata lato server dal
@@ -803,8 +759,8 @@ class _TravelPasswordDialogState extends State<_TravelPasswordDialog> {
       ),
       title: Text(
         'Parola d\'ordine',
-        style:
-            context.textTheme.titleMedium!.copyWith(fontWeight: FontWeight.bold),
+        style: context.textTheme.titleMedium!
+            .copyWith(fontWeight: FontWeight.bold),
       ),
       content: Column(
         mainAxisSize: MainAxisSize.min,
@@ -819,7 +775,7 @@ class _TravelPasswordDialogState extends State<_TravelPasswordDialog> {
           const SizedBox(height: ThemeSizes.md),
           TextField(
             controller: _controller,
-            obscureText: true,
+            // obscureText: true,
             textInputAction: TextInputAction.done,
             onSubmitted: (_) => _submit(),
             decoration: InputDecoration(
