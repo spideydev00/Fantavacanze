@@ -71,3 +71,6 @@ TO-DO.md
 # Ephemeral planning docs (brainstorming specs + implementation plans)
 docs/superpowers/plans/
 docs/superpowers/specs/
+
+# Claude Code local settings (machine-specific)
+.claude/settings.json
