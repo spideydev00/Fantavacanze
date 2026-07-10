@@ -3,9 +3,12 @@
 -- Elenco delle destinazioni attive di un partner (per la flow "CREA LEGA").
 -- Per ogni destinazione include il regolamento (rules) e `rounds`: array dei
 -- turni disponibili (end_date >= now), ognuno con requires_password. [] per package.
+-- RETROCOMPAT: espone ANCHE `active_round` (singolo) e `requires_password` a
+--   livello destinazione, per non rompere l'app deployata che legge quei campi.
+--   Rimuovibili quando il vecchio client sarà fuori dagli store.
 -- `requires_password` (booleano): indica se lo scope ha una parola d'ordine,
---   SENZA esporla. Serve al client per mostrare il campo password solo quando
---   necessario (travel -> round attivo; package -> destinazione).
+--   SENZA esporla. Serve al client vecchio per mostrare il campo password
+--   (travel -> round attivo; package -> destinazione).
 -- Output: { status, partner: {slug,name,kind}, destinations: [ ... ] }
 -- =====================================================================
 CREATE OR REPLACE FUNCTION public.get_partner_destinations(
@@ -61,9 +64,25 @@ BEGIN
             ), '[]'::jsonb)
             ELSE '[]'::jsonb
           END,
+        -- RETROCOMPAT: il client vecchio legge ancora `active_round` + il
+        -- `requires_password` a livello destinazione. Manteniamoli finché l'app
+        -- deployata non passa a `rounds`. Rimuovibili quando il vecchio è fuori.
+        'active_round',
+          CASE
+            WHEN v_partner.kind = 'travel' THEN (
+              SELECT to_jsonb(r) - 'join_password'
+              FROM public.partner_rounds r
+              WHERE r.id = public.get_active_partner_round(dest.id)
+            )
+            ELSE NULL
+          END,
         'requires_password',
           CASE
-            WHEN v_partner.kind = 'travel' THEN false
+            WHEN v_partner.kind = 'travel' THEN COALESCE((
+              SELECT r.join_password IS NOT NULL
+              FROM public.partner_rounds r
+              WHERE r.id = public.get_active_partner_round(dest.id)
+            ), false)
             ELSE (dest.join_password IS NOT NULL)
           END
       ) AS d,

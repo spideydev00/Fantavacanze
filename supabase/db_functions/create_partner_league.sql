@@ -7,6 +7,15 @@
 --  - imposta join_password (parola d'ordine in chiaro, mai esposta in lettura)
 -- Ritorna { status: 'created', league: {...} } (senza join_password).
 -- =====================================================================
+
+-- Rimuove il vecchio overload a 5 argomenti (senza p_round_id): CREATE OR
+-- REPLACE non cambia la firma, quindi l'aggiunta di p_round_id aveva creato un
+-- secondo overload. Con entrambi presenti una chiamata a 5 arg risultava
+-- ambigua ("Could not choose the best candidate function"). Tenendo solo la
+-- versione a 6 arg con p_round_id DEFAULT NULL, l'app vecchia (5 arg) resta
+-- compatibile cadendo sul default.
+DROP FUNCTION IF EXISTS public.create_partner_league(text, uuid, text, text, text);
+
 CREATE OR REPLACE FUNCTION public.create_partner_league(
   p_user_name       text,
   p_destination_id  uuid,
@@ -53,24 +62,30 @@ BEGIN
     RAISE EXCEPTION 'Partner non trovato o non attivo';
   END IF;
 
-  -- 2) turno scelto dall'utente (solo travel): deve esistere, appartenere alla
-  --    destinazione e non essere concluso.
+  -- 2) turno (solo travel):
+  --    - se il client passa p_round_id (nuovo flow): deve esistere, appartenere
+  --      alla destinazione e non essere concluso.
+  --    - se p_round_id è NULL (RETROCOMPAT: app vecchia): fallback al turno
+  --      attivo. Rimuovibile quando il vecchio client sarà fuori dagli store.
   IF v_partner.kind = 'travel' THEN
-    IF p_round_id IS NULL THEN
-      RAISE EXCEPTION 'Turno non selezionato';
+    IF p_round_id IS NOT NULL THEN
+      PERFORM 1
+      FROM public.partner_rounds r
+      WHERE r.id = p_round_id
+        AND r.destination_id = p_destination_id
+        AND (r.end_date >= now() OR r.end_date IS NULL);
+
+      IF NOT FOUND THEN
+        RAISE EXCEPTION 'Turno non valido o non più disponibile';
+      END IF;
+
+      v_round_id := p_round_id;
+    ELSE
+      v_round_id := public.get_active_partner_round(p_destination_id);
+      IF v_round_id IS NULL THEN
+        RAISE EXCEPTION 'Nessun turno disponibile per questa destinazione';
+      END IF;
     END IF;
-
-    PERFORM 1
-    FROM public.partner_rounds r
-    WHERE r.id = p_round_id
-      AND r.destination_id = p_destination_id
-      AND (r.end_date >= now() OR r.end_date IS NULL);
-
-    IF NOT FOUND THEN
-      RAISE EXCEPTION 'Turno non valido o non più disponibile';
-    END IF;
-
-    v_round_id := p_round_id;
   ELSE
     v_round_id := NULL;
   END IF;
