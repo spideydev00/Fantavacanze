@@ -54,6 +54,7 @@ class PartnerCubit extends Cubit<PartnerState> {
     required String destinationId,
     required String name,
     required String password,
+    required String roundId,
     String? description,
   }) async {
     if (isClosed) return;
@@ -64,6 +65,7 @@ class PartnerCubit extends Cubit<PartnerState> {
         destinationId: destinationId,
         name: name,
         password: password,
+        roundId: roundId,
         description: description,
       ),
     );

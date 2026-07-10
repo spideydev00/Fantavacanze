@@ -141,13 +141,17 @@ void main() {
         destinationId: 'dest-1',
         name: 'Lega InVibe',
         password: 'password',
+        roundId: 'round-1',
       ),
       expect: () => [
         const PartnerLoading(),
         PartnerLeagueReady(tPartnerLeagueModel),
       ],
       verify: (_) {
-        verify(() => createLeague(any())).called(1);
+        final captured = verify(() => createLeague(captureAny()))
+            .captured
+            .single as CreatePartnerLeagueParams;
+        expect(captured.roundId, 'round-1');
         verify(() => appLeagueCubit.getUserLeagues()).called(1);
       },
     );
