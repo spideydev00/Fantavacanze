@@ -6,11 +6,13 @@ class PartnerRound {
   final String name;
   final DateTime startDate;
   final DateTime? endDate;
+  final bool requiresPassword;
 
   const PartnerRound({
     required this.id,
     required this.name,
     required this.startDate,
     this.endDate,
+    this.requiresPassword = false,
   });
 }

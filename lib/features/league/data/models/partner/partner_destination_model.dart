@@ -9,7 +9,7 @@ class PartnerDestinationModel extends PartnerDestination {
     super.description,
     required super.rules,
     super.imageUrl,
-    super.activeRound,
+    super.rounds,
     super.requiresPassword,
   });
 
@@ -19,10 +19,22 @@ class PartnerDestinationModel extends PartnerDestination {
         .map((e) => RuleModel.fromJson(e as Map<String, dynamic>))
         .toList();
 
+    final rawRounds = json['rounds'] as List<dynamic>?;
     final activeRoundRaw = json['active_round'] ?? json['activeRound'];
-    final activeRoundModel = activeRoundRaw != null
-        ? PartnerRoundModel.fromJson(activeRoundRaw as Map<String, dynamic>)
-        : null;
+    final roundsList = rawRounds != null
+        ? rawRounds
+            .map(
+              (e) => PartnerRoundModel.fromJson(
+                Map<String, dynamic>.from(e as Map),
+              ),
+            )
+            .toList()
+        : [
+            if (activeRoundRaw != null)
+              PartnerRoundModel.fromJson(
+                Map<String, dynamic>.from(activeRoundRaw as Map),
+              ),
+          ];
 
     return PartnerDestinationModel(
       id: json['id'] as String,
@@ -30,7 +42,7 @@ class PartnerDestinationModel extends PartnerDestination {
       description: json['description'] as String?,
       rules: rulesList,
       imageUrl: (json['image_url'] ?? json['imageUrl']) as String?,
-      activeRound: activeRoundModel,
+      rounds: roundsList,
       requiresPassword:
           (json['requires_password'] ?? json['requiresPassword']) as bool? ??
               false,
@@ -44,9 +56,8 @@ class PartnerDestinationModel extends PartnerDestination {
       'description': description,
       'rules': rules.map((rule) => (rule as RuleModel).toJson()).toList(),
       'image_url': imageUrl,
-      'active_round': activeRound != null
-          ? (activeRound as PartnerRoundModel).toJson()
-          : null,
+      'rounds':
+          rounds.map((round) => (round as PartnerRoundModel).toJson()).toList(),
       'requires_password': requiresPassword,
     };
   }

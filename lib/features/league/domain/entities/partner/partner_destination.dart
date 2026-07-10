@@ -9,7 +9,7 @@ class PartnerDestination {
   final String? description;
   final List<Rule> rules;
   final String? imageUrl;
-  final PartnerRound? activeRound;
+  final List<PartnerRound> rounds;
   final bool requiresPassword;
 
   const PartnerDestination({
@@ -18,7 +18,7 @@ class PartnerDestination {
     this.description,
     required this.rules,
     this.imageUrl,
-    this.activeRound,
+    this.rounds = const [],
     this.requiresPassword = false,
   });
 }

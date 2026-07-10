@@ -44,7 +44,7 @@ final tPartnerDestination = PartnerDestination(
   description: 'Salento',
   rules: const [],
   imageUrl: null,
-  activeRound: tPartnerRound,
+  rounds: [tPartnerRound],
 );
 
 const tPartner = Partner(slug: 'invibe', name: 'InVibe', kind: 'travel');
