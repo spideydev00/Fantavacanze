@@ -2,7 +2,8 @@ import 'dart:async';
 
 import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit.dart';
 import 'package:fantavacanze_official/core/secrets/app_secrets.dart';
-import 'package:fantavacanze_official/core/services/ads/app_open_ad_manager.dart';
+// APP_OPEN_DISABLED 2026-07-10: riattivare scommentando questo import.
+// import 'package:fantavacanze_official/core/services/ads/app_open_ad_manager.dart';
 import 'package:fantavacanze_official/core/services/ads/feature_access_session.dart';
 import 'package:fantavacanze_official/core/services/ads/interstitial_ad_manager.dart';
 import 'package:fantavacanze_official/core/services/ads/rewarded_ad_manager.dart';
@@ -17,7 +18,9 @@ class AdManager {
 
   final InterstitialAdManager _interstitial = InterstitialAdManager();
   final RewardedAdManager _rewarded = RewardedAdManager();
-  final AppOpenAdManager _appOpen = AppOpenAdManager();
+  // APP_OPEN_DISABLED 2026-07-10: riattivare scommentando questo campo e tutti
+  // i riferimenti `_appOpen` marcati sotto.
+  // final AppOpenAdManager _appOpen = AppOpenAdManager();
   final FeatureAccessSession session = FeatureAccessSession();
 
   StreamSubscription? _userSub;
@@ -47,7 +50,7 @@ class AdManager {
     await Future.wait([
       _interstitial.load(),
       _rewarded.load(),
-      _appOpen.load(),
+      // APP_OPEN_DISABLED 2026-07-10: riattivare aggiungendo `_appOpen.load(),`.
     ]);
   }
 
@@ -65,7 +68,8 @@ class AdManager {
     _isPremium = premium;
     _interstitial.isPremium = adsBlocked;
     _rewarded.isPremium = adsBlocked;
-    _appOpen.isPremium = adsBlocked;
+    // APP_OPEN_DISABLED 2026-07-10: riattivare scommentando la riga sotto.
+    // _appOpen.isPremium = adsBlocked;
     if (!canShowAds) _interstitial.stopTimer();
   }
 
@@ -93,15 +97,17 @@ class AdManager {
     return _rewarded.load();
   }
 
-  Future<void> onAppResumed() {
-    if (!canShowAds) return Future.value();
-    return _appOpen.showIfAvailable();
-  }
+  // APP_OPEN_DISABLED 2026-07-10: no-op. Ancora chiamato da main.dart al resume,
+  // ma non mostra più nulla. Per riattivare, ripristinare il corpo originale:
+  //   if (!canShowAds) return Future.value();
+  //   return _appOpen.showIfAvailable();
+  Future<void> onAppResumed() => Future.value();
 
   void dispose() {
     _userSub?.cancel();
     _interstitial.dispose();
     _rewarded.dispose();
-    _appOpen.dispose();
+    // APP_OPEN_DISABLED 2026-07-10: riattivare scommentando la riga sotto.
+    // _appOpen.dispose();
   }
 }
