@@ -11,7 +11,8 @@ import 'package:fantavacanze_official/core/cubits/notification_count/notificatio
 import 'package:fantavacanze_official/core/cubits/partner_fab/partner_fab_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/share_button_animation/share_button_animation_cubit.dart';
 import 'package:fantavacanze_official/core/network/connection_checker.dart';
-import 'package:fantavacanze_official/core/services/ads/ad_manager.dart';
+// APP_OPEN_DISABLED 2026-07-10: riattivare scommentando questo import.
+// import 'package:fantavacanze_official/core/services/ads/ad_manager.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
 import 'package:fantavacanze_official/core/theme/theme.dart';
 import 'package:fantavacanze_official/core/utils/show-snackbar-or-paywall/show_snackbar.dart';
@@ -208,7 +209,10 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
-      unawaited(AdManager().onAppResumed());
+      // APP_OPEN_DISABLED 2026-07-10: App Open disattivati. Per riattivare,
+      // scommentare la riga sotto (AdManager.onAppResumed è già no-op finché
+      // il wiring in ad_manager.dart resta commentato).
+      // unawaited(AdManager().onAppResumed());
     }
   }
 
