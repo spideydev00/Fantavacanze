@@ -58,6 +58,7 @@ void main() {
             destinationId: any(named: 'destinationId'),
             name: any(named: 'name'),
             password: any(named: 'password'),
+            roundId: any(named: 'roundId'),
             description: any(named: 'description'),
           )).thenAnswer((_) async => Right(tPartnerLeagueModel));
 
@@ -66,6 +67,7 @@ void main() {
         destinationId: 'dest-1',
         name: 'La mia lega',
         password: 'LUGLIO26',
+        roundId: 'round-1',
         description: 'desc',
       ));
 
@@ -75,16 +77,19 @@ void main() {
             destinationId: 'dest-1',
             name: 'La mia lega',
             password: 'LUGLIO26',
+            roundId: 'round-1',
             description: 'desc',
           )).called(1);
     });
 
-    test('forwards Failure (e.g. wrong password) from the repository', () async {
+    test('forwards Failure (e.g. wrong password) from the repository',
+        () async {
       when(() => repository.createPartnerLeague(
             userName: any(named: 'userName'),
             destinationId: any(named: 'destinationId'),
             name: any(named: 'name'),
             password: any(named: 'password'),
+            roundId: any(named: 'roundId'),
             description: any(named: 'description'),
           )).thenAnswer((_) async => Left(Failure('Parola d\'ordine errata')));
 
@@ -93,6 +98,7 @@ void main() {
         destinationId: 'dest-1',
         name: 'La mia lega',
         password: 'sbagliata',
+        roundId: 'round-1',
       ));
 
       expect(result.isLeft(), true);
@@ -146,7 +152,8 @@ void main() {
 
   group('GetPartnerGeneralRanking', () {
     late GetPartnerGeneralRanking useCase;
-    setUp(() => useCase = GetPartnerGeneralRanking(leagueRepository: repository));
+    setUp(
+        () => useCase = GetPartnerGeneralRanking(leagueRepository: repository));
 
     test('forwards the ranking list on success', () async {
       when(() => repository.getPartnerGeneralRanking('league-1'))

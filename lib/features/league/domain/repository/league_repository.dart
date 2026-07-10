@@ -154,6 +154,7 @@ abstract class LeagueRepository {
     required String destinationId,
     required String name,
     required String password,
+    required String roundId,
     String? description,
   });
 

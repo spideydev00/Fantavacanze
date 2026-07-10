@@ -803,6 +803,7 @@ class LeagueRepositoryImpl implements LeagueRepository {
     required String destinationId,
     required String name,
     required String password,
+    required String roundId,
     String? description,
   }) async {
     try {
@@ -816,6 +817,7 @@ class LeagueRepositoryImpl implements LeagueRepository {
         destinationId: destinationId,
         name: name,
         password: password,
+        roundId: roundId,
         description: description,
       );
 

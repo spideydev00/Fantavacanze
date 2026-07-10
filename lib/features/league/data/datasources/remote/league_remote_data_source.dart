@@ -173,6 +173,7 @@ abstract class LeagueRemoteDataSource {
     required String destinationId,
     required String name,
     required String password,
+    required String roundId,
     String? description,
   });
 
@@ -1737,6 +1738,7 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
     required String destinationId,
     required String name,
     required String password,
+    required String roundId,
     String? description,
   }) async {
     return _tryDatabaseOperation(() async {
@@ -1750,6 +1752,7 @@ class LeagueRemoteDataSourceImpl implements LeagueRemoteDataSource {
           'p_destination_id': destinationId,
           'p_name': name,
           'p_password': password,
+          'p_round_id': roundId,
           'p_description': description,
         },
       );

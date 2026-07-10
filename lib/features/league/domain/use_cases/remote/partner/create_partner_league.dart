@@ -5,7 +5,8 @@ import 'package:fantavacanze_official/features/league/domain/repository/league_r
 import 'package:fpdart/fpdart.dart';
 import 'package:flutter/foundation.dart';
 
-class CreatePartnerLeague implements Usecase<League, CreatePartnerLeagueParams> {
+class CreatePartnerLeague
+    implements Usecase<League, CreatePartnerLeagueParams> {
   final LeagueRepository leagueRepository;
 
   CreatePartnerLeague({required this.leagueRepository});
@@ -17,6 +18,7 @@ class CreatePartnerLeague implements Usecase<League, CreatePartnerLeagueParams> 
       destinationId: params.destinationId,
       name: params.name,
       password: params.password,
+      roundId: params.roundId,
       description: params.description,
     );
   }
@@ -28,6 +30,7 @@ class CreatePartnerLeagueParams {
   final String destinationId;
   final String name;
   final String password;
+  final String roundId;
   final String? description;
 
   const CreatePartnerLeagueParams({
@@ -35,6 +38,7 @@ class CreatePartnerLeagueParams {
     required this.destinationId,
     required this.name,
     required this.password,
+    required this.roundId,
     this.description,
   });
 }
