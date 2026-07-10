@@ -1,7 +1,7 @@
 -- =====================================================================
 -- create_partner_league
 -- Crea una lega INDIVIDUALE legata a un partner (InVibe, b-eazy, …).
---  - ricava il turno attivo se il partner è 'travel' (NULL se 'package')
+--  - usa il turno scelto se il partner è 'travel' (NULL se 'package')
 --  - COPIA il regolamento dalla destinazione (rules non modificabili dal client)
 --  - genera invite_code = <code_prefix> + 8 char esadecimali (univoco)
 --  - imposta join_password (parola d'ordine in chiaro, mai esposta in lettura)
@@ -12,6 +12,7 @@ CREATE OR REPLACE FUNCTION public.create_partner_league(
   p_destination_id  uuid,
   p_name            text,
   p_password        text,
+  p_round_id        uuid DEFAULT NULL,
   p_description     text DEFAULT NULL
 )
 RETURNS jsonb
@@ -52,12 +53,24 @@ BEGIN
     RAISE EXCEPTION 'Partner non trovato o non attivo';
   END IF;
 
-  -- 2) turno attivo (solo travel)
+  -- 2) turno scelto dall'utente (solo travel): deve esistere, appartenere alla
+  --    destinazione e non essere concluso.
   IF v_partner.kind = 'travel' THEN
-    v_round_id := public.get_active_partner_round(p_destination_id);
-    IF v_round_id IS NULL THEN
-      RAISE EXCEPTION 'Nessun turno disponibile per questa destinazione';
+    IF p_round_id IS NULL THEN
+      RAISE EXCEPTION 'Turno non selezionato';
     END IF;
+
+    PERFORM 1
+    FROM public.partner_rounds r
+    WHERE r.id = p_round_id
+      AND r.destination_id = p_destination_id
+      AND (r.end_date >= now() OR r.end_date IS NULL);
+
+    IF NOT FOUND THEN
+      RAISE EXCEPTION 'Turno non valido o non più disponibile';
+    END IF;
+
+    v_round_id := p_round_id;
   ELSE
     v_round_id := NULL;
   END IF;
