@@ -113,6 +113,7 @@ void main() {
             destinationId: any(named: 'destinationId'),
             name: any(named: 'name'),
             password: any(named: 'password'),
+            roundId: any(named: 'roundId'),
             description: any(named: 'description'),
           )).thenAnswer((_) async => tPartnerLeagueModel);
 
@@ -121,6 +122,7 @@ void main() {
         destinationId: 'dest-1',
         name: 'La mia lega',
         password: 'LUGLIO26',
+        roundId: 'round-1',
       );
 
       expect(result.isRight(), true);
@@ -132,6 +134,7 @@ void main() {
             destinationId: any(named: 'destinationId'),
             name: any(named: 'name'),
             password: any(named: 'password'),
+            roundId: any(named: 'roundId'),
             description: any(named: 'description'),
           )).thenThrow(ServerException('Parola d\'ordine errata'));
 
@@ -140,6 +143,7 @@ void main() {
         destinationId: 'dest-1',
         name: 'La mia lega',
         password: 'sbagliata',
+        roundId: 'round-1',
       );
 
       result.match((f) => expect(f.message, 'Parola d\'ordine errata'),

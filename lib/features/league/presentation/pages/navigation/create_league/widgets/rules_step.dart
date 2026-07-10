@@ -237,8 +237,8 @@ class _PackageDestinationsSection extends StatelessWidget {
   }
 
   String? _roundDateLabel(PartnerDestination destination) {
-    final round = destination.activeRound;
-    if (round == null) return null;
+    if (destination.rounds.isEmpty) return null;
+    final round = destination.rounds.first;
     final start = _formatDate(round.startDate);
     final end = round.endDate == null ? null : _formatDate(round.endDate!);
     return end == null ? 'Turno dal $start' : 'Turno $start - $end';

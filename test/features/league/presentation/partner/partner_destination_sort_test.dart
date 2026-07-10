@@ -8,15 +8,15 @@ PartnerDestination _destination(String id, DateTime? start) {
     id: id,
     name: id,
     rules: const [],
-    activeRound: start == null
-        ? null
-        : PartnerRound(id: '$id-r', name: '$id round', startDate: start),
+    rounds: start == null
+        ? const []
+        : [PartnerRound(id: '$id-r', name: '$id round', startDate: start)],
   );
 }
 
 void main() {
   group('sortDestinationsByImminentRound', () {
-    test('orders by activeRound.startDate ascending', () {
+    test('orders by first round startDate ascending', () {
       final input = [
         _destination('late', DateTime(2026, 8, 1)),
         _destination('soon', DateTime(2026, 7, 9)),
@@ -32,7 +32,7 @@ void main() {
       ]);
     });
 
-    test('destinations without an active round go last', () {
+    test('destinations without rounds go last', () {
       final input = [
         _destination('noround', null),
         _destination('dated', DateTime(2026, 7, 9)),
@@ -53,5 +53,50 @@ void main() {
 
       expect(input.map((destination) => destination.id), ['b', 'a']);
     });
+
+    test(
+      'ordina per il turno più imminente e mette in fondo le destinazioni '
+      'senza turni',
+      () {
+        final withEarly = PartnerDestination(
+          id: 'a',
+          name: 'A',
+          rules: const [],
+          rounds: [
+            PartnerRound(
+              id: 'r',
+              name: 'T',
+              startDate: DateTime(2026, 7, 16),
+            ),
+          ],
+        );
+        final withLate = PartnerDestination(
+          id: 'b',
+          name: 'B',
+          rules: const [],
+          rounds: [
+            PartnerRound(
+              id: 'r',
+              name: 'T',
+              startDate: DateTime(2026, 7, 24),
+            ),
+          ],
+        );
+        const noRounds = PartnerDestination(
+          id: 'c',
+          name: 'C',
+          rules: [],
+          rounds: [],
+        );
+
+        final sorted = sortDestinationsByImminentRound([
+          withLate,
+          noRounds,
+          withEarly,
+        ]);
+
+        expect(sorted.map((d) => d.id).toList(), ['a', 'b', 'c']);
+      },
+    );
   });
 }

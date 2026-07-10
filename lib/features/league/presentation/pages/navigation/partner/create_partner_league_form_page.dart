@@ -13,6 +13,7 @@ import 'package:fantavacanze_official/core/widgets/info_container.dart';
 import 'package:fantavacanze_official/core/widgets/loader.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/partner/partner_catalog.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/partner/partner_destination.dart';
+import 'package:fantavacanze_official/features/league/domain/entities/partner/partner_round.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/partner_bloc/partner_cubit.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/create_league/league_admin_explainer_page.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/partner/utils/default_league_name.dart';
@@ -57,10 +58,14 @@ class _CreatePartnerLeagueFormPageState
   final _nameController = TextEditingController();
   final _mottoController = TextEditingController();
   final _passwordController = TextEditingController();
+  PartnerRound? _selectedRound;
 
   @override
   void initState() {
     super.initState();
+    _selectedRound = widget.destination.rounds.isEmpty
+        ? null
+        : widget.destination.rounds.first;
   }
 
   @override
@@ -153,6 +158,31 @@ class _CreatePartnerLeagueFormPageState
                                 color: context.brandColor,
                               ),
                               const SizedBox(height: ThemeSizes.lg),
+                              if (widget.destination.rounds.isNotEmpty) ...[
+                                DropdownButtonFormField<PartnerRound>(
+                                  initialValue: _selectedRound,
+                                  isExpanded: true,
+                                  decoration: InputDecoration(
+                                    labelText: 'Turno',
+                                    prefixIcon: const Icon(
+                                      Icons.event_available_outlined,
+                                    ),
+                                    filled: true,
+                                    fillColor: context.secondaryBgColor,
+                                  ),
+                                  items: [
+                                    for (final round
+                                        in widget.destination.rounds)
+                                      DropdownMenuItem<PartnerRound>(
+                                        value: round,
+                                        child: Text(_roundLabel(round)),
+                                      ),
+                                  ],
+                                  onChanged: (round) =>
+                                      setState(() => _selectedRound = round),
+                                ),
+                                const SizedBox(height: ThemeSizes.lg),
+                              ],
                               _LeagueFields(
                                 gender: gender!,
                                 destination: widget.destination,
@@ -160,7 +190,7 @@ class _CreatePartnerLeagueFormPageState
                                 mottoController: _mottoController,
                                 passwordController: _passwordController,
                                 requiresPassword:
-                                    widget.destination.requiresPassword,
+                                    _selectedRound?.requiresPassword ?? false,
                               ),
                               const SizedBox(height: ThemeSizes.lg),
                               _RulesPreview(destination: widget.destination),
@@ -206,16 +236,34 @@ class _CreatePartnerLeagueFormPageState
       return;
     }
 
+    final round = _selectedRound;
+    if (round == null) {
+      showSnackBar('Nessun turno disponibile per questa destinazione.');
+      return;
+    }
+
     final motto = _mottoController.text.trim();
     context.read<PartnerCubit>().createLeague(
           userName: userState.user.name,
           destinationId: widget.destination.id,
           name: _nameController.text.trim(),
-          password: widget.destination.requiresPassword
-              ? _passwordController.text.trim()
-              : '',
+          roundId: round.id,
+          password:
+              round.requiresPassword ? _passwordController.text.trim() : '',
           description: motto.isEmpty ? null : motto,
         );
+  }
+
+  String _roundLabel(PartnerRound round) {
+    final start = '${round.startDate.day.toString().padLeft(2, '0')}/'
+        '${round.startDate.month.toString().padLeft(2, '0')}';
+    final end = round.endDate == null
+        ? null
+        : '${round.endDate!.day.toString().padLeft(2, '0')}/'
+            '${round.endDate!.month.toString().padLeft(2, '0')}';
+    return end == null
+        ? '${round.name} ($start)'
+        : '${round.name} ($start - $end)';
   }
 }
 

@@ -6,18 +6,22 @@ import 'package:fantavacanze_official/core/widgets/info_container.dart';
 import 'package:fantavacanze_official/core/widgets/partner_destination_card.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/partner/partner_catalog.dart';
 import 'package:fantavacanze_official/features/league/domain/entities/partner/partner_destination.dart';
+import 'package:fantavacanze_official/features/league/domain/entities/partner/partner_round.dart';
 import 'package:fantavacanze_official/features/league/presentation/bloc/partner_bloc/partner_cubit.dart';
 import 'package:fantavacanze_official/features/league/presentation/pages/navigation/partner/create_partner_league_form_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+
+PartnerRound? _firstRound(PartnerDestination destination) =>
+    destination.rounds.isEmpty ? null : destination.rounds.first;
 
 List<PartnerDestination> sortDestinationsByImminentRound(
   List<PartnerDestination> destinations,
 ) {
   final sorted = [...destinations];
   sorted.sort((a, b) {
-    final aRound = a.activeRound;
-    final bRound = b.activeRound;
+    final aRound = _firstRound(a);
+    final bRound = _firstRound(b);
     if (aRound == null && bRound == null) {
       return 0;
     }
@@ -115,8 +119,11 @@ class CreatePartnerLeaguePage extends StatelessWidget {
   }
 
   String? _roundDateLabel(PartnerDestination destination) {
-    final round = destination.activeRound;
-    if (round == null) return null;
+    if (destination.rounds.isEmpty) return null;
+    if (destination.rounds.length > 1) {
+      return '${destination.rounds.length} turni disponibili';
+    }
+    final round = destination.rounds.first;
     final start = _formatDate(round.startDate);
     final end = round.endDate == null ? null : _formatDate(round.endDate!);
     return end == null ? 'Turno dal $start' : 'Turno $start - $end';
