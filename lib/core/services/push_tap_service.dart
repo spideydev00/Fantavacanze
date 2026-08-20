@@ -1,3 +1,7 @@
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/foundation.dart';
+import 'package:url_launcher/url_launcher.dart';
+
 /// Gestisce il tap su una notifica push.
 ///
 /// Unico effetto previsto: se il payload porta un `url` valido, aprire il
@@ -27,5 +31,24 @@ class PushTapService {
     if (!_allowedHosts.contains(uri.host)) return null;
 
     return uri;
+  }
+
+  /// Registra gli handler del tap. Da chiamare una volta sola all'avvio.
+  static void register() {
+    FirebaseMessaging.onMessageOpenedApp.listen(_handle);
+    FirebaseMessaging.instance.getInitialMessage().then((message) {
+      if (message != null) _handle(message);
+    });
+  }
+
+  static Future<void> _handle(RemoteMessage message) async {
+    final uri = resolveUrl(message.data);
+    if (uri == null) return;
+
+    try {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } catch (error) {
+      debugPrint('PushTapService: impossibile aprire $uri — $error');
+    }
   }
 }

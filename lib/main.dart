@@ -11,6 +11,7 @@ import 'package:fantavacanze_official/core/cubits/notification_count/notificatio
 import 'package:fantavacanze_official/core/cubits/partner_fab/partner_fab_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/share_button_animation/share_button_animation_cubit.dart';
 import 'package:fantavacanze_official/core/network/connection_checker.dart';
+import 'package:fantavacanze_official/core/services/push_tap_service.dart';
 // APP_OPEN_DISABLED 2026-07-10: riattivare scommentando questo import.
 // import 'package:fantavacanze_official/core/services/ads/ad_manager.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
@@ -111,6 +112,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _initializeApp();
+    PushTapService.register();
     _listenToPremiumStatusChanges();
     _listenToConnectionChanges();
   }
