@@ -5,6 +5,7 @@ import 'package:fantavacanze_official/core/cubits/app_status/app_status_cubit.da
 import 'package:fantavacanze_official/core/cubits/app_theme/app_theme_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/app_version/app_version_cubit.dart';
+import 'package:fantavacanze_official/core/cubits/drop/drop_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/notification_count/notification_count_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/partner_fab/partner_fab_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/share_button_animation/share_button_animation_cubit.dart';
@@ -46,6 +47,11 @@ import 'package:fantavacanze_official/features/auth/domain/use-cases/update_pass
 import 'package:fantavacanze_official/features/auth/domain/use-cases/update_profile_image.dart';
 import 'package:fantavacanze_official/features/auth/domain/use-cases/verify_otp.dart';
 import 'package:fantavacanze_official/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:fantavacanze_official/features/drop/data/datasources/drop_remote_data_source.dart';
+import 'package:fantavacanze_official/features/drop/data/repository/drop_repository_impl.dart';
+import 'package:fantavacanze_official/features/drop/domain/repository/drop_repository.dart';
+import 'package:fantavacanze_official/features/drop/domain/use_cases/get_drop_check.dart';
+import 'package:fantavacanze_official/features/drop/domain/use_cases/mark_drop_seen.dart';
 import 'package:fantavacanze_official/features/games/data/datasources/game_remote_data_source.dart';
 import 'package:fantavacanze_official/features/games/data/datasources/realtime/game_realtime_manager.dart';
 import 'package:fantavacanze_official/features/games/data/datasources/truth_or_dare_remote_data_source.dart';

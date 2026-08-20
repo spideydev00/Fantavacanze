@@ -7,6 +7,7 @@ import 'package:fantavacanze_official/core/cubits/app_status/app_status_cubit.da
 import 'package:fantavacanze_official/core/cubits/app_theme/app_theme_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/app_version/app_version_cubit.dart';
+import 'package:fantavacanze_official/core/cubits/drop/drop_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/notification_count/notification_count_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/partner_fab/partner_fab_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/share_button_animation/share_button_animation_cubit.dart';
@@ -65,6 +66,9 @@ void main() async {
           // App Status
           BlocProvider(create: (_) => serviceLocator<AppStatusCubit>()),
 
+          // Drop
+          BlocProvider(create: (_) => serviceLocator<DropCubit>()),
+
           // Auth
           BlocProvider(create: (_) => serviceLocator<AuthBloc>()),
           BlocProvider(create: (_) => serviceLocator<AppUserCubit>()),
@@ -122,6 +126,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     final appLeagueCubit = context.read<AppLeagueCubit>();
     final appVersionCubit = context.read<AppVersionCubit>();
     final appStatusCubit = context.read<AppStatusCubit>();
+    final dropCubit = context.read<DropCubit>();
     try {
       await appVersionCubit.checkVersion();
 
@@ -135,6 +140,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
         await _checkSubscriptionOnStartup();
 
         await appLeagueCubit.getUserLeagues();
+        unawaited(dropCubit.check());
       }
     } catch (e) {
       debugPrint("Errore di inizializzazione nel main: $e");

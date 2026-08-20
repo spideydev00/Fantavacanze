@@ -58,6 +58,7 @@ Future<void> initDependencies() async {
 
     _initAppStatus();
     _initAppVersion();
+    _initDrop();
     _initAuth();
     _initLeague();
     _initDailyChallenges();
@@ -137,7 +138,14 @@ Future<void> initDependencies() async {
           getAppStatus: serviceLocator(),
         ),
       )
-      //8. connection checker
+      //8. drop cubit
+      ..registerLazySingleton<DropCubit>(
+        () => DropCubit(
+          getDropCheck: serviceLocator(),
+          markDropSeen: serviceLocator(),
+        ),
+      )
+      //9. connection checker
       ..registerLazySingleton<ConnectionChecker>(
         () => ConnectionCheckerImpl(
           serviceLocator(),
@@ -309,6 +317,30 @@ void _initAppVersion() {
     ..registerFactory(
       () => CheckAppVersion(
         appVersionRepository: serviceLocator(),
+      ),
+    );
+}
+
+void _initDrop() {
+  serviceLocator
+    ..registerFactory<DropRemoteDataSource>(
+      () => DropRemoteDataSourceImpl(
+        supabaseClient: serviceLocator(),
+      ),
+    )
+    ..registerFactory<DropRepository>(
+      () => DropRepositoryImpl(
+        remoteDataSource: serviceLocator(),
+      ),
+    )
+    ..registerFactory(
+      () => GetDropCheck(
+        dropRepository: serviceLocator(),
+      ),
+    )
+    ..registerFactory(
+      () => MarkDropSeen(
+        dropRepository: serviceLocator(),
       ),
     );
 }
