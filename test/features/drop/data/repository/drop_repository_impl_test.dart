@@ -12,9 +12,14 @@ void main() {
   late MockDropRemoteDataSource dataSource;
   late DropRepositoryImpl repository;
 
-  const drop = DropModel(
+  final drop = DropModel(
     code: 'estate-2026',
-    imageUrl: 'https://esempio/estate-2026.png',
+    imageUrls: [
+      'https://esempio/estate-2026-1.png',
+      'https://esempio/estate-2026-2.png',
+      'https://esempio/estate-2026-3.png',
+    ],
+    imageDescriptions: ['Maglietta nera', 'Felpa bianca', 'Cappellino nero'],
     ctaLabel: 'Scopri il drop',
     ctaUrl: 'https://fvstore.it/collections/estate',
   );

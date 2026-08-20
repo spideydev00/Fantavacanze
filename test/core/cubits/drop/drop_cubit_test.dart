@@ -17,9 +17,14 @@ void main() {
   late MockGetDropCheck getDropCheck;
   late MockMarkDropSeen markDropSeen;
 
-  const drop = Drop(
+  final drop = Drop(
     code: 'estate-2026',
-    imageUrl: 'https://esempio/estate-2026.png',
+    imageUrls: [
+      'https://esempio/estate-2026-1.png',
+      'https://esempio/estate-2026-2.png',
+      'https://esempio/estate-2026-3.png',
+    ],
+    imageDescriptions: ['Maglietta nera', 'Felpa bianca', 'Cappellino nero'],
     ctaLabel: 'Scopri il drop',
     ctaUrl: 'https://fvstore.it/collections/estate',
   );
@@ -40,8 +45,7 @@ void main() {
   blocTest<DropCubit, DropState>(
     'mostra il poster quando il drop attivo non è quello già visto',
     setUp: () => when(() => getDropCheck.call(any())).thenAnswer(
-      (_) async =>
-          right(const DropCheck(drop: drop, lastSeenDrop: 'estate-2025')),
+      (_) async => right(DropCheck(drop: drop, lastSeenDrop: 'estate-2025')),
     ),
     build: build,
     act: (cubit) => cubit.check(),
@@ -51,7 +55,7 @@ void main() {
   blocTest<DropCubit, DropState>(
     'mostra il poster a chi non ha mai visto nulla',
     setUp: () => when(() => getDropCheck.call(any())).thenAnswer(
-      (_) async => right(const DropCheck(drop: drop)),
+      (_) async => right(DropCheck(drop: drop)),
     ),
     build: build,
     act: (cubit) => cubit.check(),
@@ -61,8 +65,7 @@ void main() {
   blocTest<DropCubit, DropState>(
     'non mostra nulla quando il codice è già stato visto',
     setUp: () => when(() => getDropCheck.call(any())).thenAnswer(
-      (_) async =>
-          right(const DropCheck(drop: drop, lastSeenDrop: 'estate-2026')),
+      (_) async => right(DropCheck(drop: drop, lastSeenDrop: 'estate-2026')),
     ),
     build: build,
     act: (cubit) => cubit.check(),
@@ -92,7 +95,7 @@ void main() {
   blocTest<DropCubit, DropState>(
     'dismiss marca come visto e nasconde',
     setUp: () => when(() => getDropCheck.call(any())).thenAnswer(
-      (_) async => right(const DropCheck(drop: drop)),
+      (_) async => right(DropCheck(drop: drop)),
     ),
     build: build,
     act: (cubit) async {
@@ -106,7 +109,7 @@ void main() {
   blocTest<DropCubit, DropState>(
     'immagine rotta: nasconde senza marcare come visto',
     setUp: () => when(() => getDropCheck.call(any())).thenAnswer(
-      (_) async => right(const DropCheck(drop: drop)),
+      (_) async => right(DropCheck(drop: drop)),
     ),
     build: build,
     act: (cubit) async {
