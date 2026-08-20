@@ -108,6 +108,21 @@ class MyApp extends StatefulWidget {
   State<MyApp> createState() => _MyAppState();
 }
 
+class DropCheckOnAuthSuccess extends StatelessWidget {
+  const DropCheckOnAuthSuccess({super.key, required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocListener<AuthBloc, AuthState>(
+      listenWhen: (_, current) => current is AuthSuccess,
+      listener: (context, _) => unawaited(context.read<DropCubit>().check()),
+      child: child,
+    );
+  }
+}
+
 class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   StreamSubscription<bool>? _connectionSubscription;
 
@@ -229,48 +244,50 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     // Solo il tema dark/light ricostruisce la MaterialApp/Navigator. Il brand
     // partner viene applicato sotto al Navigator, così il cambio lega aggiorna
     // i colori senza smontare le route pushate.
-    return BlocBuilder<AppThemeCubit, AppThemeState>(
-      builder: (context, state) {
-        return MaterialApp(
-          showSemanticsDebugger: false,
-          navigatorKey: navigatorKey,
-          scaffoldMessengerKey: messengerKey,
-          title: 'Fantavacanze',
-          home: const InitialPage(),
-          themeMode: state.themeMode,
-          theme: AppTheme.getLightTheme(context),
-          darkTheme: AppTheme.getDarkTheme(context),
-          builder: (context, child) {
-            return BlocSelector<AppLeagueCubit, AppLeagueState, String?>(
-              selector: (state) => state is AppLeagueExists
-                  ? state.selectedLeague.partner
-                  : null,
-              builder: (context, partnerSlug) {
-                return Theme(
-                  data: AppTheme.getTheme(
-                    context,
-                    partnerSlugOverride: partnerSlug,
-                  ),
-                  child: child ?? const SizedBox.shrink(),
-                );
-              },
-            );
-          },
-          debugShowCheckedModeBanner: false,
-          localizationsDelegates: const [
-            GlobalMaterialLocalizations.delegate,
-            GlobalWidgetsLocalizations.delegate,
-            GlobalCupertinoLocalizations.delegate,
-          ],
-          supportedLocales: const [
-            Locale('it', 'IT'),
-          ],
-          locale: const Locale(
-            'it',
-            'IT',
-          ),
-        );
-      },
+    return DropCheckOnAuthSuccess(
+      child: BlocBuilder<AppThemeCubit, AppThemeState>(
+        builder: (context, state) {
+          return MaterialApp(
+            showSemanticsDebugger: false,
+            navigatorKey: navigatorKey,
+            scaffoldMessengerKey: messengerKey,
+            title: 'Fantavacanze',
+            home: const InitialPage(),
+            themeMode: state.themeMode,
+            theme: AppTheme.getLightTheme(context),
+            darkTheme: AppTheme.getDarkTheme(context),
+            builder: (context, child) {
+              return BlocSelector<AppLeagueCubit, AppLeagueState, String?>(
+                selector: (state) => state is AppLeagueExists
+                    ? state.selectedLeague.partner
+                    : null,
+                builder: (context, partnerSlug) {
+                  return Theme(
+                    data: AppTheme.getTheme(
+                      context,
+                      partnerSlugOverride: partnerSlug,
+                    ),
+                    child: child ?? const SizedBox.shrink(),
+                  );
+                },
+              );
+            },
+            debugShowCheckedModeBanner: false,
+            localizationsDelegates: const [
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
+            ],
+            supportedLocales: const [
+              Locale('it', 'IT'),
+            ],
+            locale: const Locale(
+              'it',
+              'IT',
+            ),
+          );
+        },
+      ),
     );
   }
 }

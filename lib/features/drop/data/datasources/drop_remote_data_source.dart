@@ -28,6 +28,7 @@ class DropRemoteDataSourceImpl implements DropRemoteDataSource {
       final response = await supabaseClient
           .from('drops')
           .select('code, image_url, cta_label, cta_url')
+          .order('created_at', ascending: false)
           .limit(1)
           .maybeSingle();
       if (response == null) return null;
