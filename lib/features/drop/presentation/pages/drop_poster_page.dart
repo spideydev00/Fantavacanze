@@ -175,15 +175,16 @@ class _DropPosterPageState extends State<DropPosterPage> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    SizedBox(
-                      width: double.infinity,
-                      child: FilledButton(
-                        onPressed: () => _openStore(context),
-                        child: Text(widget.drop.ctaLabel),
-                      ),
+                    _DropCtaButton(
+                      label: widget.drop.ctaLabel,
+                      onPressed: () => _openStore(context),
                     ),
                     TextButton(
                       onPressed: () => context.read<DropCubit>().dismiss(),
+                      style: TextButton.styleFrom(
+                        foregroundColor:
+                            ColorPalette.white.withValues(alpha: 0.7),
+                      ),
                       child: const Text('Chiudi'),
                     ),
                   ],
@@ -192,6 +193,58 @@ class _DropPosterPageState extends State<DropPosterPage> {
             ],
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// La CTA del poster: gradiente chiaro su fondo nero, testo scuro.
+class _DropCtaButton extends StatelessWidget {
+  const _DropCtaButton({required this.label, required this.onPressed});
+
+  final String label;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusMd),
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            ColorPalette.white,
+            ColorPalette.softGrey,
+            ColorPalette.grey,
+          ],
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: ColorPalette.white.withValues(alpha: 0.22),
+            blurRadius: ThemeSizes.sm,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: FilledButton(
+        onPressed: onPressed,
+        style: FilledButton.styleFrom(
+          backgroundColor: Colors.transparent,
+          foregroundColor: ColorPalette.black,
+          shadowColor: Colors.transparent,
+          elevation: 0,
+          padding: const EdgeInsets.symmetric(vertical: ThemeSizes.md),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(ThemeSizes.borderRadiusXlg),
+          ),
+          textStyle: const TextStyle(
+            fontSize: ThemeSizes.fontSizeLg,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        child: Text(label),
       ),
     );
   }
