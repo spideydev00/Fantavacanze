@@ -74,3 +74,11 @@ docs/superpowers/specs/
 
 # Claude Code local settings (machine-specific)
 .claude/settings.json
+
+# Agentic tooling e documentazione di manutenzione: restano in locale, mai su GitHub
+.claude/commands/
+.claude/plan-routing/
+.claude/skills/
+.agents/skills/
+.codex/skills/
+docs/
