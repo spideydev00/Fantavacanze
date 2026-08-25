@@ -7,10 +7,12 @@ import 'package:fantavacanze_official/core/cubits/app_status/app_status_cubit.da
 import 'package:fantavacanze_official/core/cubits/app_theme/app_theme_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/app_user/app_user_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/app_version/app_version_cubit.dart';
+import 'package:fantavacanze_official/core/cubits/drop/drop_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/notification_count/notification_count_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/partner_fab/partner_fab_cubit.dart';
 import 'package:fantavacanze_official/core/cubits/share_button_animation/share_button_animation_cubit.dart';
 import 'package:fantavacanze_official/core/network/connection_checker.dart';
+import 'package:fantavacanze_official/core/services/push_tap_service.dart';
 // APP_OPEN_DISABLED 2026-07-10: riattivare scommentando questo import.
 // import 'package:fantavacanze_official/core/services/ads/ad_manager.dart';
 import 'package:fantavacanze_official/core/theme/colors.dart';
@@ -64,6 +66,9 @@ void main() async {
           // App Status
           BlocProvider(create: (_) => serviceLocator<AppStatusCubit>()),
 
+          // Drop
+          BlocProvider(create: (_) => serviceLocator<DropCubit>()),
+
           // Auth
           BlocProvider(create: (_) => serviceLocator<AuthBloc>()),
           BlocProvider(create: (_) => serviceLocator<AppUserCubit>()),
@@ -103,6 +108,21 @@ class MyApp extends StatefulWidget {
   State<MyApp> createState() => _MyAppState();
 }
 
+class DropCheckOnAuthSuccess extends StatelessWidget {
+  const DropCheckOnAuthSuccess({super.key, required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocListener<AuthBloc, AuthState>(
+      listenWhen: (_, current) => current is AuthSuccess,
+      listener: (context, _) => unawaited(context.read<DropCubit>().check()),
+      child: child,
+    );
+  }
+}
+
 class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   StreamSubscription<bool>? _connectionSubscription;
 
@@ -111,6 +131,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _initializeApp();
+    PushTapService.register();
     _listenToPremiumStatusChanges();
     _listenToConnectionChanges();
   }
@@ -120,6 +141,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     final appLeagueCubit = context.read<AppLeagueCubit>();
     final appVersionCubit = context.read<AppVersionCubit>();
     final appStatusCubit = context.read<AppStatusCubit>();
+    final dropCubit = context.read<DropCubit>();
     try {
       await appVersionCubit.checkVersion();
 
@@ -133,6 +155,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
         await _checkSubscriptionOnStartup();
 
         await appLeagueCubit.getUserLeagues();
+        unawaited(dropCubit.check());
       }
     } catch (e) {
       debugPrint("Errore di inizializzazione nel main: $e");
@@ -221,48 +244,50 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     // Solo il tema dark/light ricostruisce la MaterialApp/Navigator. Il brand
     // partner viene applicato sotto al Navigator, così il cambio lega aggiorna
     // i colori senza smontare le route pushate.
-    return BlocBuilder<AppThemeCubit, AppThemeState>(
-      builder: (context, state) {
-        return MaterialApp(
-          showSemanticsDebugger: false,
-          navigatorKey: navigatorKey,
-          scaffoldMessengerKey: messengerKey,
-          title: 'Fantavacanze',
-          home: const InitialPage(),
-          themeMode: state.themeMode,
-          theme: AppTheme.getLightTheme(context),
-          darkTheme: AppTheme.getDarkTheme(context),
-          builder: (context, child) {
-            return BlocSelector<AppLeagueCubit, AppLeagueState, String?>(
-              selector: (state) => state is AppLeagueExists
-                  ? state.selectedLeague.partner
-                  : null,
-              builder: (context, partnerSlug) {
-                return Theme(
-                  data: AppTheme.getTheme(
-                    context,
-                    partnerSlugOverride: partnerSlug,
-                  ),
-                  child: child ?? const SizedBox.shrink(),
-                );
-              },
-            );
-          },
-          debugShowCheckedModeBanner: false,
-          localizationsDelegates: const [
-            GlobalMaterialLocalizations.delegate,
-            GlobalWidgetsLocalizations.delegate,
-            GlobalCupertinoLocalizations.delegate,
-          ],
-          supportedLocales: const [
-            Locale('it', 'IT'),
-          ],
-          locale: const Locale(
-            'it',
-            'IT',
-          ),
-        );
-      },
+    return DropCheckOnAuthSuccess(
+      child: BlocBuilder<AppThemeCubit, AppThemeState>(
+        builder: (context, state) {
+          return MaterialApp(
+            showSemanticsDebugger: false,
+            navigatorKey: navigatorKey,
+            scaffoldMessengerKey: messengerKey,
+            title: 'Fantavacanze',
+            home: const InitialPage(),
+            themeMode: state.themeMode,
+            theme: AppTheme.getLightTheme(context),
+            darkTheme: AppTheme.getDarkTheme(context),
+            builder: (context, child) {
+              return BlocSelector<AppLeagueCubit, AppLeagueState, String?>(
+                selector: (state) => state is AppLeagueExists
+                    ? state.selectedLeague.partner
+                    : null,
+                builder: (context, partnerSlug) {
+                  return Theme(
+                    data: AppTheme.getTheme(
+                      context,
+                      partnerSlugOverride: partnerSlug,
+                    ),
+                    child: child ?? const SizedBox.shrink(),
+                  );
+                },
+              );
+            },
+            debugShowCheckedModeBanner: false,
+            localizationsDelegates: const [
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
+            ],
+            supportedLocales: const [
+              Locale('it', 'IT'),
+            ],
+            locale: const Locale(
+              'it',
+              'IT',
+            ),
+          );
+        },
+      ),
     );
   }
 }

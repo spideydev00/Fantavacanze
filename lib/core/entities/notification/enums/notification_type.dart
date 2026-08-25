@@ -8,7 +8,8 @@ enum NotificationType {
   newRule('new_rule'),
   memoryAdded('memory_added'),
   appUpdate('app_update'),
-  specialEvent('special_event');
+  specialEvent('special_event'),
+  broadcast('broadcast');
 
   const NotificationType(this.value);
   final String value;
@@ -31,7 +32,8 @@ enum NotificationType {
       this == dailyChallengeReminder ||
       this == dailyChallengeApproved ||
       this == dailyChallengeRejected ||
-      this == appUpdate;
+      this == appUpdate ||
+      this == broadcast;
 
   bool get isPersistent => !isEphemeral;
 }
